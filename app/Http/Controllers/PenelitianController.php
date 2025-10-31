@@ -123,4 +123,65 @@ class PenelitianController extends Controller
             'filterOptions' => $filterOptions,
         ]);
     }
+
+    /**
+     * Export all filtered data for Excel download
+     */
+    public function export(Request $request)
+    {
+        // Build query with same filters as index
+        $query = Penelitian::query();
+
+        // Apply filters
+        if ($request->filled('bidang_fokus')) {
+            $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
+        }
+
+        if ($request->filled('tema_prioritas')) {
+            $query->whereIn('tema_prioritas', (array) $request->tema_prioritas);
+        }
+
+        if ($request->filled('kategori_pt')) {
+            $query->whereIn('kategori_pt', (array) $request->kategori_pt);
+        }
+
+        if ($request->filled('klaster')) {
+            $query->whereIn('klaster', (array) $request->klaster);
+        }
+
+        if ($request->filled('provinsi')) {
+            $query->whereIn('provinsi', (array) $request->provinsi);
+        }
+
+        if ($request->filled('tahun')) {
+            $query->whereIn('thn_pelaksanaan', (array) $request->tahun);
+        }
+
+        // Apply search if provided
+        if ($request->filled('search')) {
+            $query->search($request->search);
+        }
+
+        // Get ALL filtered data for export
+        $data = $query->select(
+            'nama',
+            'nidn',
+            'institusi',
+            'jenis_pt',
+            'kategori_pt',
+            'klaster',
+            'provinsi',
+            'kota',
+            'judul',
+            'skema',
+            'thn_pelaksanaan',
+            'bidang_fokus',
+            'tema_prioritas'
+        )
+        ->orderBy('thn_pelaksanaan', 'desc')
+        ->orderBy('institusi')
+        ->get();
+
+        return response()->json($data);
+    }
 }

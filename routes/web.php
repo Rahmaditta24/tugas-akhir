@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [PenelitianController::class, 'index'])->name('penelitian.index');
 
+// API routes for export
+Route::get('/api/penelitian/export', [PenelitianController::class, 'export'])->name('penelitian.export');
+
 Route::get('/pengabdian', [PengabdianPageController::class, 'index'])->name('pengabdian.index');
 
 Route::get('/hilirisasi', [HilirisasiPageController::class, 'index'])->name('hilirisasi.index');
@@ -38,10 +41,23 @@ Route::get('/admin', function () {
 
 // Admin authenticated routes
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/penelitian', [\App\Http\Controllers\Admin\PenelitianController::class, 'index'])->name('penelitian.index');
-    Route::get('/penelitian/create', [\App\Http\Controllers\Admin\PenelitianController::class, 'create'])->name('penelitian.create');
-    Route::post('/penelitian', [\App\Http\Controllers\Admin\PenelitianController::class, 'store'])->name('penelitian.store');
-    Route::get('/penelitian/{penelitian}/edit', [\App\Http\Controllers\Admin\PenelitianController::class, 'edit'])->name('penelitian.edit');
-    Route::put('/penelitian/{penelitian}', [\App\Http\Controllers\Admin\PenelitianController::class, 'update'])->name('penelitian.update');
-    Route::delete('/penelitian/{penelitian}', [\App\Http\Controllers\Admin\PenelitianController::class, 'destroy'])->name('penelitian.destroy');
+    // Penelitian CRUD
+    Route::resource('penelitian', \App\Http\Controllers\Admin\PenelitianController::class);
+
+    // Pengabdian CRUD
+    Route::resource('pengabdian', \App\Http\Controllers\Admin\PengabdianController::class);
+
+    // Hilirisasi CRUD
+    Route::resource('hilirisasi', \App\Http\Controllers\Admin\HilirisasiController::class);
+
+    // Produk CRUD
+    Route::resource('produk', \App\Http\Controllers\Admin\ProdukController::class);
+
+    // Fasilitas Lab CRUD
+    Route::resource('fasilitas-lab', \App\Http\Controllers\Admin\FasilitasLabController::class);
+
+    // Permasalahan CRUD
+    Route::get('permasalahan', [\App\Http\Controllers\Admin\PermasalahanController::class, 'index'])->name('permasalahan.index');
+    Route::get('permasalahan/create', [\App\Http\Controllers\Admin\PermasalahanController::class, 'create'])->name('permasalahan.create');
+    Route::post('permasalahan', [\App\Http\Controllers\Admin\PermasalahanController::class, 'store'])->name('permasalahan.store');
 });

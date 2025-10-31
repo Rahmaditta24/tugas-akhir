@@ -1,7 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 export default function AdvancedSearch({ filterOptions, onFilterChange, show }) {
-    const [filters, setFilters] = useState({
+    // Temporary filter state (not applied yet)
+    const [tempFilters, setTempFilters] = useState({
+        bidang_fokus: [],
+        tema_prioritas: [],
+        kategori_pt: [],
+        klaster: [],
+        provinsi: [],
+        tahun: []
+    });
+
+    // Applied filters (sent to parent)
+    const [appliedFilters, setAppliedFilters] = useState({
         bidang_fokus: [],
         tema_prioritas: [],
         kategori_pt: [],
@@ -29,23 +40,47 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
     }, [openDropdown]);
 
     const handleFilterToggle = (filterType, value) => {
-        setFilters(prev => {
+        setTempFilters(prev => {
             const currentValues = prev[filterType] || [];
             const newValues = currentValues.includes(value)
                 ? currentValues.filter(v => v !== value)
                 : [...currentValues, value];
 
-            const newFilters = { ...prev, [filterType]: newValues };
-            onFilterChange(newFilters);
-            return newFilters;
+            return { ...prev, [filterType]: newValues };
         });
+        // Don't close dropdown after selection for better UX
+    };
+
+    const handleApplyFilters = () => {
+        setAppliedFilters(tempFilters);
+        onFilterChange(tempFilters);
+        setOpenDropdown(null); // Close any open dropdown
+    };
+
+    const handleResetFilters = () => {
+        const emptyFilters = {
+            bidang_fokus: [],
+            tema_prioritas: [],
+            kategori_pt: [],
+            klaster: [],
+            provinsi: [],
+            tahun: []
+        };
+        setTempFilters(emptyFilters);
+        setAppliedFilters(emptyFilters);
+        onFilterChange(emptyFilters);
+        setOpenDropdown(null);
     };
 
     const getSelectedText = (filterType) => {
-        const selected = filters[filterType] || [];
+        const selected = tempFilters[filterType] || [];
         if (selected.length === 0) return 'Semua';
         if (selected.length === 1) return selected[0];
         return `${selected.length} dipilih`;
+    };
+
+    const hasUnappliedChanges = () => {
+        return JSON.stringify(tempFilters) !== JSON.stringify(appliedFilters);
     };
 
     const renderDropdown = (filterType, label, options) => (
@@ -58,7 +93,7 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
                 <button
                     type="button"
                     onClick={() => setOpenDropdown(openDropdown === filterType ? null : filterType)}
-                    className="appearance-none w-full text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black pr-8 text-left bg-white"
+                    className="appearance-none w-full text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-left bg-white"
                 >
                     <span>{getSelectedText(filterType)}</span>
                 </button>
@@ -81,9 +116,9 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
                                 >
                                     <input
                                         type="checkbox"
-                                        checked={filters[filterType]?.includes(option) || false}
+                                        checked={tempFilters[filterType]?.includes(option) || false}
                                         onChange={() => handleFilterToggle(filterType, option)}
-                                        className="mr-2"
+                                        className="mr-2 accent-blue-600"
                                     />
                                     <span className="text-sm">{option}</span>
                                 </label>
@@ -101,17 +136,36 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
 
     return (
         <div className="w-full mx-auto mb-5">
-            <div className="bg-gray-100 border rounded-xl p-5 shadow-sm mr-[15px]">
+            <div className="bg-gray-100 border border-gray-300 rounded-xl p-5 shadow-sm mr-[15px]">
                 {/* Filter Controls */}
-                <div className="flex flex-wrap gap-5 items-end justify-between">
-                    <div className="flex flex-wrap gap-5">
-                        {renderDropdown('bidang_fokus', 'Bidang Fokus', filterOptions?.bidangFokus)}
-                        {renderDropdown('tema_prioritas', 'Tema Prioritas', filterOptions?.temaPrioritas)}
-                        {renderDropdown('kategori_pt', 'Kategori PT', filterOptions?.kategoriPT)}
-                        {renderDropdown('klaster', 'Klaster', filterOptions?.klaster)}
-                        {renderDropdown('provinsi', 'Provinsi', filterOptions?.provinsi)}
-                        {renderDropdown('tahun', 'Tahun', filterOptions?.tahun)}
-                    </div>
+                <div className="flex flex-wrap gap-5 items-end">
+                    {renderDropdown('bidang_fokus', 'Bidang Fokus', filterOptions?.bidangFokus)}
+                    {renderDropdown('tema_prioritas', 'Tema Prioritas', filterOptions?.temaPrioritas)}
+                    {renderDropdown('kategori_pt', 'Kategori PT', filterOptions?.kategoriPT)}
+                    {renderDropdown('klaster', 'Klaster', filterOptions?.klaster)}
+                    {renderDropdown('provinsi', 'Provinsi', filterOptions?.provinsi)}
+                    {renderDropdown('tahun', 'Tahun', filterOptions?.tahun)}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 mt-5">
+                    <button
+                        onClick={handleApplyFilters}
+                        className={`px-6 py-2 rounded-lg font-medium text-white transition-colors ${
+                            hasUnappliedChanges()
+                                ? 'bg-blue-600 hover:bg-blue-700'
+                                : 'bg-blue-400 cursor-not-allowed'
+                        }`}
+                        disabled={!hasUnappliedChanges()}
+                    >
+                        Terapkan Filter
+                    </button>
+                    <button
+                        onClick={handleResetFilters}
+                        className="px-6 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-medium transition-colors"
+                    >
+                        Reset
+                    </button>
                 </div>
             </div>
         </div>

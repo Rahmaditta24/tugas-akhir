@@ -31,7 +31,7 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
                 />
             </div>
 
-            <div className="w-full lg:max-w-[90%] w-full mx-auto mb-5">
+            <div className="w-full lg:max-w-[90%] mx-auto mb-5">
                 <section className="bg-white/80 backdrop-blur-sm">
                     <div className="container mx-auto sm:px-6 lg:px-0">
                         <StatisticsCards stats={stats} />

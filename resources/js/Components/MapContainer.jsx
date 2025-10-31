@@ -9,7 +9,7 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const markersRef = useRef([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     // Initialize map
     useEffect(() => {
@@ -30,7 +30,7 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
 
         mapInstanceRef.current = map;
 
-        setTimeout(() => setLoading(false), 1000);
+        setLoading(false);
 
         return () => {
             if (mapInstanceRef.current) {
@@ -49,17 +49,16 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
         markersRef.current.forEach(marker => marker.remove());
         markersRef.current = [];
 
-        console.log('MapContainer rendering markers:', source.length, 'items');
+        console.log('MapContainer rendering markers:', source.length, 'items, displayMode:', displayMode);
 
-        // Group nearby points to emulate original clustered bubbles UI
-        // Support different field names across categories
+        // Group data based on display mode
         const groups = {};
+
         source.forEach((item, idx) => {
             const latRaw = item.pt_latitude ?? item.latitude;
             const lngRaw = item.pt_longitude ?? item.longitude;
             const lat = parseFloat(latRaw);
             const lng = parseFloat(lngRaw);
-            const count = parseInt(item.count || 1);
 
             // Validate coordinates (Indonesia bounds)
             if (isNaN(lat) || isNaN(lng) || lat < -11 || lat > 7 || lng < 94 || lng > 142) {
@@ -67,7 +66,11 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
                 return;
             }
 
-            const key = `${lat.toFixed(1)},${lng.toFixed(1)}`; // coarse grouping ~11km
+            // ALWAYS group by institusi + coordinates for clean bubble grouping
+            // This matches the native implementation: aggregateResearchByCampus
+            // Both modes use the same grouping - difference is only in what data is shown
+            const key = `${item.institusi}_${lat.toFixed(4)}_${lng.toFixed(4)}`;
+
             if (!groups[key]) {
                 groups[key] = {
                     lat,
@@ -76,15 +79,25 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
                     institusi: item.institusi ?? null,
                     provinsi: item.provinsi ?? null,
                     bidang_fokus: item.bidang_fokus ?? null,
+                    items: []
                 };
             }
-            groups[key].count += count;
+
+            groups[key].count += 1;  // Count each record
+            groups[key].items.push(item);
+
+            // Use first item's coordinates for the group (campus location)
+            // Don't average - keep the exact campus coordinates
         });
 
+        // Render markers for each group
         Object.values(groups).forEach(group => {
             const count = group.count;
             const color = MARKER_COLOR;
 
+            // Match native bubble size calculation
+            // CONFIG.BUBBLE_SIZE: { min: 50, max: 50, multiplier: 2 }
+            // But with logarithmic scaling for better visualization
             const size = Math.min(64, Math.max(32, 18 + Math.log(count + 1) * 12));
             const fontSize = count > 999 ? 12 : 14;
 
@@ -101,36 +114,29 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
             });
 
             const marker = L.marker([group.lat, group.lng], { icon: divIcon });
+
+            // Enhanced popup content
             const popupContent = `
-                <div class="p-2">
-                    ${group.institusi ? `<h3 class=\"font-bold\">${group.institusi}</h3>` : ''}
-                    ${group.provinsi ? `<p><strong>Provinsi:</strong> ${group.provinsi}</p>` : ''}
-                    <p><strong>Total:</strong> ${count.toLocaleString('id-ID')}</p>
-                    ${group.bidang_fokus ? `<p><strong>Bidang Fokus:</strong> ${group.bidang_fokus}</p>` : ''}
+                <div class="p-3">
+                    ${group.institusi ? `<h3 class="font-bold text-[#3E7DCA] mb-2">${group.institusi}</h3>` : ''}
+                    ${group.provinsi ? `<p class="text-sm"><strong>Provinsi:</strong> ${group.provinsi}</p>` : ''}
+                    <p class="text-sm"><strong>Total ${displayMode === 'institusi' ? 'Penelitian' : 'Item'}:</strong> ${count.toLocaleString('id-ID')}</p>
+                    ${group.bidang_fokus ? `<p class="text-sm"><strong>Bidang Fokus:</strong> ${group.bidang_fokus}</p>` : ''}
+                    ${displayMode === 'institusi' ? '<p class="text-xs text-gray-500 mt-2 italic">Klik untuk melihat detail penelitian</p>' : ''}
                 </div>`;
+
             marker.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
             marker.addTo(mapInstanceRef.current);
             markersRef.current.push(marker);
         });
 
-        console.log('Rendered', markersRef.current.length, 'markers');
+        console.log('Rendered', markersRef.current.length, 'markers from', Object.keys(groups).length, 'groups');
 
-    }, [mapData, displayMode]);
+    }, [mapData, data, displayMode]);
 
     return (
         <section className="relative bg-white flex justify-center mb-2">
-            <div id="map" ref={mapRef} className="lg:w-[90%] w-full h-[65vh] border relative z-0 rounded-lg">
-                {loading && (
-                    <div
-                        className="absolute inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center"
-                    >
-                        <div className="text-center">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                            <p className="text-slate-600">Memuat data penelitian...</p>
-                        </div>
-                    </div>
-                )}
-            </div>
+            <div id="map" ref={mapRef} className="lg:w-[90%] w-full h-[65vh] border relative z-0 rounded-lg" />
         </section>
     );
 }

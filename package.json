@@ -8,10 +8,11 @@
     },
     "dependencies": {
         "@inertiajs/react": "^1.0.0",
+        "leaflet": "^1.9.4",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
-        "leaflet": "^1.9.4",
-        "react-leaflet": "^4.2.1"
+        "react-leaflet": "^4.2.1",
+        "xlsx": "^0.18.5"
     },
     "devDependencies": {
         "@inertiajs/inertia": "^0.11.1",

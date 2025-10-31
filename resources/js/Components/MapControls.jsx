@@ -3,11 +3,9 @@ import React, { useState } from 'react';
 export default function MapControls({
     onSearch,
     onDisplayModeChange,
-    onAdvancedSearchToggle,
     onReset,
     onDownload,
-    displayMode = 'peneliti',
-    showAdvancedSearch = false
+    displayMode = 'peneliti'
 }) {
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -43,7 +41,7 @@ export default function MapControls({
                         value={searchTerm}
                         onChange={handleSearchChange}
                         placeholder="Cari penelitian, universitas, atau peneliti..."
-                        className="w-full pl-9 lg:w-full px-4 py-2 border border-slate-400 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full pl-9 lg:w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                 </div>
             </div>
@@ -85,27 +83,7 @@ export default function MapControls({
                         Institusi
                     </button>
 
-                    {/* Advanced Search Button */}
-                    <button
-                        onClick={onAdvancedSearchToggle}
-                        className="flex items-center justify-center gap-2 lg:text-sm text-xs bg-gray-100 text-black px-2 py-1 lg:px-4 lg:py-2 rounded-full font-semibold transition-colors hover:bg-gray-200"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
-                            <path fill="currentColor"
-                                d="M15 19.88c.04.3-.06.62-.29.83a.996.996 0 0 1-1.41 0L9.29 16.7a.99.99 0 0 1-.29-.83v-5.12L4.21 4.62a1 1 0 0 1 .17-1.4c.19-.14.4-.22.62-.22h14c.22 0 .43.08.62.22a1 1 0 0 1 .17 1.4L15 10.75zM7.04 5L11 10.06v5.52l2 2v-7.53L16.96 5z" />
-                        </svg>
-                        Advanced Search
-                        <svg
-                            className={`ml-1 transition-transform ${showAdvancedSearch ? '' : 'rotate-180'}`}
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 1024 1024"
-                        >
-                            <path fill="currentColor"
-                                d="m488.832 344.32l-339.84 356.672a32 32 0 0 0 0 44.16l.384.384a29.44 29.44 0 0 0 42.688 0l320-335.872l319.872 335.872a29.44 29.44 0 0 0 42.688 0l.384-.384a32 32 0 0 0 0-44.16L535.168 344.32a32 32 0 0 0-46.336 0" />
-                        </svg>
-                    </button>
+            {/* Advanced Search removed for simpler UX */}
 
                     {/* Reset Button */}
                     <button

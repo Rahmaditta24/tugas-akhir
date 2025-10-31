@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
+import * as XLSX from 'xlsx';
 import MainLayout from '../Layouts/MainLayout';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapContainer from '../Components/MapContainer';
@@ -10,8 +11,8 @@ import ResearchList from '../Components/ResearchList';
 
 export default function Home({ mapData = [], researches = [], stats = {}, filterOptions = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
-    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [filters, setFilters] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSearch = (searchTerm) => {
         router.get(route('penelitian.index'), { search: searchTerm }, {
@@ -33,13 +34,79 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         router.get(route('penelitian.index'));
     };
 
-    const handleDownload = () => {
-        // For now, just alert. You can implement actual Excel download later
-        alert('Download Excel feature will be implemented with XLSX library');
+    const handleDownload = async () => {
+        // Show loading state
+        setIsLoading(true);
+
+        try {
+            // Fetch ALL filtered data from server for export
+            const queryParams = new URLSearchParams(filters).toString();
+            const response = await fetch(`/api/penelitian/export?${queryParams}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch data');
+            }
+
+            const allData = await response.json();
+
+            // Prepare data for Excel export
+            const exportData = allData.map(research => ({
+                'Nama Peneliti': research.nama || '-',
+                'NIDN': research.nidn || '-',
+                'Institusi': research.institusi || '-',
+                'Jenis PT': research.jenis_pt || '-',
+                'Kategori PT': research.kategori_pt || '-',
+                'Klaster': research.klaster || '-',
+                'Provinsi': research.provinsi || '-',
+                'Kota': research.kota || '-',
+                'Judul Penelitian': research.judul || '-',
+                'Skema': research.skema || '-',
+                'Tahun': research.thn_pelaksanaan || '-',
+                'Bidang Fokus': research.bidang_fokus || '-',
+                'Tema Prioritas': research.tema_prioritas || '-',
+            }));
+
+            // Create workbook and worksheet
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Penelitian');
+
+            // Auto-size columns
+            const cols = [
+                { wch: 30 }, // Nama Peneliti
+                { wch: 15 }, // NIDN
+                { wch: 40 }, // Institusi
+                { wch: 15 }, // Jenis PT
+                { wch: 12 }, // Kategori PT
+                { wch: 25 }, // Klaster
+                { wch: 20 }, // Provinsi
+                { wch: 20 }, // Kota
+                { wch: 60 }, // Judul
+                { wch: 30 }, // Skema
+                { wch: 10 }, // Tahun
+                { wch: 25 }, // Bidang Fokus
+                { wch: 30 }, // Tema Prioritas
+            ];
+            ws['!cols'] = cols;
+
+            // Generate filename with timestamp and filter info
+            const timestamp = new Date().toISOString().slice(0, 10);
+            const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
+            const filename = `penelitian${filterInfo}_${timestamp}.xlsx`;
+
+            // Download file
+            XLSX.writeFile(wb, filename);
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            alert('Gagal mengexport data. Silakan coba lagi.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
         <MainLayout title="Dashboard Pemetaan Riset - Penelitian">
+
             <NavigationTabs activePage="penelitian" />
 
             <div className="relative">
@@ -52,22 +119,10 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                 <MapControls
                     onSearch={handleSearch}
                     onDisplayModeChange={setDisplayMode}
-                    onAdvancedSearchToggle={() => setShowAdvancedSearch(!showAdvancedSearch)}
                     onReset={handleReset}
                     onDownload={handleDownload}
                     displayMode={displayMode}
-                    showAdvancedSearch={showAdvancedSearch}
                 />
-
-                {showAdvancedSearch && (
-                    <div className="absolute bottom-24 left-1/2 -translate-x-1/2 lg:w-1/2 w-full px-3 lg:px-0 z-10">
-                        <AdvancedSearch
-                            filterOptions={filterOptions}
-                            onFilterChange={handleFilterChange}
-                            show={showAdvancedSearch}
-                        />
-                    </div>
-                )}
             </div>
 
             <div className="w-full lg:max-w-[90%] w-full mx-auto mb-5">

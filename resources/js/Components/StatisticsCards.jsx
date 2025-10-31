@@ -1,4 +1,37 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
+function AnimatedCounter({ value, duration = 300 }) {
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        const start = displayValue;
+        const end = value;
+        const startTime = Date.now();
+        const range = end - start;
+
+        const animate = () => {
+            const now = Date.now();
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Easing function (easeOutQuad)
+            const easeProgress = 1 - (1 - progress) * (1 - progress);
+
+            const current = Math.floor(start + range * easeProgress);
+            setDisplayValue(current);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                setDisplayValue(end);
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }, [value]);
+
+    return <span>{displayValue.toLocaleString('id-ID')}</span>;
+}
 
 export default function StatisticsCards({ stats }) {
     const cards = [
@@ -51,7 +84,9 @@ export default function StatisticsCards({ stats }) {
                     <div className="flex h-full rounded-lg">
                         <div className="py-5 px-5 flex flex-col gap-1">
                             <p className="text-md font-medium">{card.title}</p>
-                            <p className="text-3xl font-bold drop-shadow-sm">{card.value.toLocaleString()}</p>
+                            <p className="text-3xl font-bold drop-shadow-sm">
+                                <AnimatedCounter value={card.value} duration={300} />
+                            </p>
                         </div>
                     </div>
                 </div>
