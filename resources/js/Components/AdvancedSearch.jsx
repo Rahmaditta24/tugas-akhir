@@ -1,0 +1,119 @@
+import React, { useState, useRef, useEffect } from 'react';
+
+export default function AdvancedSearch({ filterOptions, onFilterChange, show }) {
+    const [filters, setFilters] = useState({
+        bidang_fokus: [],
+        tema_prioritas: [],
+        kategori_pt: [],
+        klaster: [],
+        provinsi: [],
+        tahun: []
+    });
+
+    const [openDropdown, setOpenDropdown] = useState(null);
+    const dropdownRefs = useRef({});
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (openDropdown && dropdownRefs.current[openDropdown]) {
+                const dropdown = dropdownRefs.current[openDropdown];
+                if (!dropdown.contains(event.target)) {
+                    setOpenDropdown(null);
+                }
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [openDropdown]);
+
+    const handleFilterToggle = (filterType, value) => {
+        setFilters(prev => {
+            const currentValues = prev[filterType] || [];
+            const newValues = currentValues.includes(value)
+                ? currentValues.filter(v => v !== value)
+                : [...currentValues, value];
+
+            const newFilters = { ...prev, [filterType]: newValues };
+            onFilterChange(newFilters);
+            return newFilters;
+        });
+    };
+
+    const getSelectedText = (filterType) => {
+        const selected = filters[filterType] || [];
+        if (selected.length === 0) return 'Semua';
+        if (selected.length === 1) return selected[0];
+        return `${selected.length} dipilih`;
+    };
+
+    const renderDropdown = (filterType, label, options) => (
+        <div className="flex flex-col" key={filterType}>
+            <label className="mb-2 text-sm font-medium text-black">{label}</label>
+            <div
+                className="relative w-[200px]"
+                ref={el => dropdownRefs.current[filterType] = el}
+            >
+                <button
+                    type="button"
+                    onClick={() => setOpenDropdown(openDropdown === filterType ? null : filterType)}
+                    className="appearance-none w-full text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black pr-8 text-left bg-white"
+                >
+                    <span>{getSelectedText(filterType)}</span>
+                </button>
+                <svg
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+                {openDropdown === filterType && (
+                    <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-10 max-h-48 overflow-y-auto">
+                        {options && options.length > 0 ? (
+                            options.map((option, index) => (
+                                <label
+                                    key={index}
+                                    className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={filters[filterType]?.includes(option) || false}
+                                        onChange={() => handleFilterToggle(filterType, option)}
+                                        className="mr-2"
+                                    />
+                                    <span className="text-sm">{option}</span>
+                                </label>
+                            ))
+                        ) : (
+                            <div className="px-3 py-2 text-sm text-gray-500">Tidak ada opsi</div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    if (!show) return null;
+
+    return (
+        <div className="w-full mx-auto mb-5">
+            <div className="bg-gray-100 border rounded-xl p-5 shadow-sm mr-[15px]">
+                {/* Filter Controls */}
+                <div className="flex flex-wrap gap-5 items-end justify-between">
+                    <div className="flex flex-wrap gap-5">
+                        {renderDropdown('bidang_fokus', 'Bidang Fokus', filterOptions?.bidangFokus)}
+                        {renderDropdown('tema_prioritas', 'Tema Prioritas', filterOptions?.temaPrioritas)}
+                        {renderDropdown('kategori_pt', 'Kategori PT', filterOptions?.kategoriPT)}
+                        {renderDropdown('klaster', 'Klaster', filterOptions?.klaster)}
+                        {renderDropdown('provinsi', 'Provinsi', filterOptions?.provinsi)}
+                        {renderDropdown('tahun', 'Tahun', filterOptions?.tahun)}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

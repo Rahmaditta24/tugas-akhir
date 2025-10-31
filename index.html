@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peta Persebaran Penelitian BIMA Indonesia</title>
+    <link rel="icon" type="image/png" href="/assets/icon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/assets/icon/favicon.svg" />
+    <link rel="shortcut icon" href="/assets/icon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/icon/apple-touch-icon.png" />
+    <link rel="manifest" href="/assets/icon/site.webmanifest" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS for Excel reading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* Custom styles for autocomplete suggestions */
+        .suggestion-item {
+            transition: background-color 0.15s ease;
+        }
+        .suggestion-item:hover {
+            background-color: #f3f4f6;
+        }
+        .suggestion-item strong {
+            color: #1f2937;
+            font-weight: 600;
+        }
+        #search-suggestions {
+            border-top: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Smooth scrollbar for suggestions */
+        #search-suggestions::-webkit-scrollbar {
+            width: 6px;
+        }
+        #search-suggestions::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        #search-suggestions::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        #search-suggestions::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+    </style>
+    <!-- Updated Tailwind config with blue gradient theme -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tambahkan di bagian head setelah script tailwind -->
+    <style>
+    /* Styling untuk dropdown bidang fokus dengan kotak warna */
+    #bidang-filter option[data-color] {
+      background-image: linear-gradient(to right, var(--option-color) 0%, var(--option-color) 20px, transparent 20px);
+      padding-left: 25px;
+    }
+    
+    #bidang-filter option[data-color]:before {
+      content: '■';
+      color: var(--option-color);
+      margin-right: 8px;
+      font-size: 14px;
+    }
+    
+    /* Styling untuk selected option */
+    #bidang-filter {
+      background-image: none;
+    }
+    
+    #bidang-filter option:checked {
+      background-color: #f3f4f6;
+    }
+    </style>
+</head>
+
+<body class="bg-white font-sans antialiased">
+    <nav class="fixed top-0 left-0 w-full bg-white shadow-md z-50">
+        <div class="w-full flex flex-wrap items-center justify-between px-4 py-3 gap-4">
+
+            <!-- Logo kiri -->
+            <div class="flex items-center flex-shrink-0 lg:block hidden">
+                <a href="" class="flex items-center gap-2">
+                    <img src="/assets/images/logo/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png"
+                        alt="Kementerian Pendidikan Tinggi, Sains, dan Teknologi Republik Indonesia"
+                        class="size-12 sm:size-14">
+                    <p class="uppercase font-bold text-[9px] sm:text-[10px] leading-tight">
+                        Kementerian Pendidikan Tinggi,<br> Sains, dan Teknologi
+                        <br><span class="font-normal">Republik Indonesia</span>
+                    </p>
+                </a>
+            </div>
+
+            <!-- Judul tengah -->
+            <div class="w-full text-center md:w-auto">
+                <h2 class="text-base sm:text-lg md:text-xl font-bold text-slate-800">
+                    Dashboard Pemetaan Riset Berdampak di Seluruh Indonesia
+                </h2>
+            </div>
+
+            <!-- Logo kanan -->
+            <div class="lg:block hidden">
+                <div class="flex items-center justify-center md:justify-end gap-4 w-full md:w-auto">
+                    <img src="/assets/images/logo/Ditjen Risbang.png" alt="Hut RI 80" class="w-20 h-auto">
+                    <div class="border-l-[1px] border-gray-500/30 h-10"></div>
+                    <img src="/assets/images/logo/Primary_Horizontal-Logo-1-1024x302.png" alt="Logo Horizontal"
+                        class="w-28 sm:w-32">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="lg:pt-0 pt-24">
+        <div class="flex justify-center items-center flex-shrink-0 block lg:hidden">
+            <a href="" class="flex items-center gap-2">
+                <img src="/assets/images/logo/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png"
+                    alt="Kementerian Pendidikan Tinggi, Sains, dan Teknologi Republik Indonesia"
+                    class="size-12 sm:size-14">
+                <p class="uppercase font-bold text-[9px] sm:text-[10px] leading-tight">
+                    Kementerian Pendidikan Tinggi,<br> Sains, dan Teknologi
+                    <br><span class="font-normal">Republik Indonesia</span>
+                </p>
+            </a>
+        </div>
+        <div
+            class="flex items-center justify-center md:justify-end gap-3 w-full lg:mt-0 mt-5 md:w-auto block lg:hidden">
+            <img src="/assets/images/logo/Ditjen Risbang.png" alt="Hut RI 80" class="w-20 h-auto">
+            <img src="/assets/images/logo/Primary_Horizontal-Logo-1-1024x302.png" alt="Logo Horizontal"
+                class="w-28 sm:w-32">
+        </div>
+    </div>
+
+    <div class="min-h-screen lg:pt-24 pt-10 lg:px-0 px-4">
+
+        <div class="flex justify-center flex-wrap gap-3 mb-2">
+            <button onclick="window.location.href='index.html'"
+                class="flex-1 min-w-[140px] max-w-[150px] lg:text-sm text-xs bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold">
+                Penelitian
+            </button>
+            <button onclick="window.location.href='/peta/pengabdian.html'"
+                class="flex-1 min-w-[140px] max-w-[150px] lg:text-sm text-xs bg-[#3E7DCA] text-white px-4 py-2 rounded-lg hover:bg-blue-900 font-semibold">
+                Pengabdian
+            </button>
+            <button onclick="window.location.href='/peta/hilirisasi.html'"
+                class="flex-1 min-w-[140px] max-w-[150px] lg:text-sm text-xs bg-[#3E7DCA] text-white px-4 py-2 rounded-lg hover:bg-blue-900 font-semibold">
+                Hilirisasi
+            </button>
+            <button onclick="window.location.href='/peta/produk.html'"
+                class="flex-1 min-w-[140px] max-w-[150px] lg:text-sm text-xs bg-[#3E7DCA] text-white px-4 py-2 rounded-lg hover:bg-blue-900 font-semibold">
+                Produk
+            </button>
+            <button
+                class="flex-1 min-w-[140px] max-w-[150px] lg:text-sm text-xs bg-[#3E7DCA] text-white px-4 py-2 rounded-lg hover:bg-blue-900 font-semibold">
+                Fasilitas Lab
+            </button>
+            <button onclick="window.location.href='/peta/permasalahan.html'"
+                class="flex-1 min-w-[140px] max-w-[150px] lg:text-sm text-xs bg-[#3E7DCA] text-white px-4 py-2 rounded-lg hover:bg-blue-900 font-semibold">
+                Permasalahan
+            </button>
+        </div>
+
+        <!-- Map section with zoom controls -->
+        <section class="relative bg-white flex justify-center mb-2">
+            <div class="absolute z-20 top-5 left-1/2 -translate-x-1/2 lg:w-1/2 w-full">
+                <div class="relative w-full pl-12 pr-3">
+                    <svg class="absolute left-14 top-2 text-slate-400" xmlns="http://www.w3.org/2000/svg" width="24"
+                        height="24" viewBox="0 0 24 24">
+                        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="1.5"
+                            d="M19 11.5a7.5 7.5 0 1 1-15 0a7.5 7.5 0 0 1 15 0m-2.107 5.42l3.08 3.08" />
+                    </svg>
+                    <input type="text" id="search-top" placeholder="Cari penelitian, universitas, atau peneliti..."
+                        class="w-full pl-9 lg:w-full px-4 py-2 border border-slate-400 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+            
+            <div class="absolute z-20 bottom-5 left-1/2 -translate-x-1/2 lg:w-1/2 w-full px-3 lg:px-0">
+                <div id="advance-search" class="w-full mx-auto mb-5 hidden">
+                    <div class="bg-gray-100 border rounded-xl p-5 shadow-sm mr-[15px]">
+
+                        <!-- Filter Controls -->
+                        <div class="flex flex-wrap gap-5 items-end justify-between">
+                            <div class="flex flex-wrap gap-5">
+                                <!-- Bidang Fokus -->
+                                <div class="flex flex-col">
+                                    <label class="mb-2 text-sm font-medium text-black">Bidang Fokus</label>
+                                    <div class="relative w-[200px]">
+                                        <button type="button" id="bidang-dropdown-btn"
+                                            class="appearance-none w-full text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black pr-8 text-left bg-white">
+                                            <span id="bidang-selected-text">Semua</span>
+                                        </button>
+                                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <div id="bidang-dropdown-menu"
+                                            class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden z-10 max-h-48 overflow-y-auto">
+                                            <!-- Checkbox options will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tema Prioritas -->
+                                <div class="flex flex-col">
+                                    <label class="mb-2 text-sm font-medium text-black">Tema Prioritas</label>
+                                    <div class="relative w-[200px]">
+                                        <button type="button" id="tema-dropdown-btn"
+                                            class="appearance-none w-full text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black pr-8 text-left bg-white">
+                                            <span id="tema-selected-text">Semua</span>
+                                        </button>
+                                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <div id="tema-dropdown-menu"
+                                            class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden z-10 max-h-48 overflow-y-auto">
+                                            <!-- Checkbox options will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Kategori PT -->
+                                <div class="flex flex-col">
+                                    <label class="mb-2 text-sm font-medium text-black">Kategori PT</label>
+                                    <div class="relative w-[200px]">
+                                        <button type="button" id="kategori-dropdown-btn"
+                                            class="appearance-none w-full text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black pr-8 text-left bg-white">
+                                            <span id="kategori-selected-text">Semua</span>
+                                        </button>
+                                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <div id="kategori-dropdown-menu"
+                                            class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden z-10 max-h-48 overflow-y-auto">
+                                            <!-- Checkbox options will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Klaster -->
+                                <div class="flex flex-col">
+                                    <label class="mb-2 text-sm font-medium text-black">Klaster</label>
+                                    <div class="relative w-[200px]">
+                                        <button type="button" id="klaster-dropdown-btn"
+                                            class="appearance-none w-full text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black pr-8 text-left bg-white">
+                                            <span id="klaster-selected-text">Semua</span>
+                                        </button>
+                                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <div id="klaster-dropdown-menu"
+                                            class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden z-10 max-h-48 overflow-y-auto">
+                                            <!-- Checkbox options will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Provinsi -->
+                                <div class="flex flex-col">
+                                    <label class="mb-2 text-sm font-medium text-black">Provinsi</label>
+                                    <div class="relative w-[200px]">
+                                        <button type="button" id="provinsi-dropdown-btn"
+                                            class="appearance-none w-full text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black pr-8 text-left bg-white">
+                                            <span id="provinsi-selected-text">Semua</span>
+                                        </button>
+                                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <div id="provinsi-dropdown-menu"
+                                            class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden z-10 max-h-48 overflow-y-auto">
+                                            <!-- Checkbox options will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tahun -->
+                                <div class="flex flex-col">
+                                    <label class="mb-2 text-sm font-medium text-black">Tahun</label>
+                                    <div class="relative w-[200px]">
+                                        <button type="button" id="tahun-dropdown-btn"
+                                            class="appearance-none w-full text-sm px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black pr-8 text-left bg-white">
+                                            <span id="tahun-selected-text">Semua</span>
+                                        </button>
+                                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none"
+                                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <div id="tahun-dropdown-menu"
+                                            class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden z-10 max-h-48 overflow-y-auto">
+                                            <!-- Checkbox options will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center justify-center gap-1 lg:gap-3">
+                    <button id="btn-peneliti">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                            <path fill="currentColor" fill-rule="evenodd"
+                                d="M16.432 15C14.387 9.893 12 8.547 12 6V3h.5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5H8v3c0 2.547-2.387 3.893-4.432 9c-.651 1.625-2.323 4 6.432 4s7.083-2.375 6.432-4m-1.617 1.751c-.702.21-2.099.449-4.815.449s-4.113-.239-4.815-.449c-.249-.074-.346-.363-.258-.628c.22-.67.635-1.828 1.411-3.121c1.896-3.159 3.863.497 5.5.497s1.188-1.561 1.824-.497a15.4 15.4 0 0 1 1.411 3.121c.088.265-.009.553-.258.628"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Peneliti
+                    </button>
+                    <button id="btn-institusi">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="currentColor" fill-rule="evenodd"
+                                d="M11.612 3.302c.243-.07.5-.07.743 0c.518.147 1.04.283 1.564.42c2.461.641 4.96 1.293 7.184 3.104l1.024.834c.415.338.623.84.623 1.34v7a.75.75 0 0 1-1.5 0v-4.943l-.163.133a12 12 0 0 1-2.398 1.513q.06.137.061.297v4.294a2.75 2.75 0 0 1-1.751 2.562l-4 1.56a2.75 2.75 0 0 1-1.998 0l-4-1.56a2.75 2.75 0 0 1-1.751-2.562V13q.001-.163.064-.304c-.83-.399-1.64-.89-2.417-1.522l-1.024-.834c-.83-.677-.83-2.003 0-2.68l1.04-.85c2.207-1.8 4.689-2.449 7.132-3.087a74 74 0 0 0 1.567-.421m9.638 5.699c0-.09-.036-.15-.07-.178l-1.024-.834C18 6.5 16.078 5.843 13.64 5.202a91 91 0 0 1-1.656-.446c-.57.161-1.124.307-1.662.449c-2.42.636-4.529 1.191-6.46 2.768l-1.041.849c-.035.028-.071.087-.071.177s.036.15.07.178l1.025.834c1.948 1.587 4.076 2.146 6.515 2.787q.805.208 1.656.446c.57-.161 1.124-.307 1.662-.449c2.42-.636 4.529-1.191 6.46-2.767l1.041-.85c.035-.028.071-.087.071-.177m-7.294 5.276c1.1-.287 2.207-.577 3.294-.972v3.989c0 .515-.316.977-.796 1.165l-4 1.559a1.25 1.25 0 0 1-.908 0l-4-1.56a1.25 1.25 0 0 1-.796-1.164v-3.998c1.099.4 2.219.692 3.33.982c.525.137 1.047.273 1.565.42c.243.07.5.07.743 0c.519-.148 1.042-.284 1.568-.421"
+                                clip-rule="evenodd" />
+                        </svg>
+                        Institusi
+                    </button>
+
+                    <button id="button-advance"
+                        class="flex items-center justify-center gap-2 lg:text-sm text-xs bg-gray-100 text-black px-2 py-1 lg:px-4 lg:py-2 rounded-full font-semibold transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                            <path fill="currentColor"
+                                d="M15 19.88c.04.3-.06.62-.29.83a.996.996 0 0 1-1.41 0L9.29 16.7a.99.99 0 0 1-.29-.83v-5.12L4.21 4.62a1 1 0 0 1 .17-1.4c.19-.14.4-.22.62-.22h14c.22 0 .43.08.62.22a1 1 0 0 1 .17 1.4L15 10.75zM7.04 5L11 10.06v5.52l2 2v-7.53L16.96 5z" />
+                        </svg>
+                        Advanced Search
+                        <svg id="arrow" class="ml-1 rotate-180" xmlns="http://www.w3.org/2000/svg" width="20"
+                            height="20" viewBox="0 0 1024 1024">
+                            <path fill="currentColor"
+                                d="m488.832 344.32l-339.84 356.672a32 32 0 0 0 0 44.16l.384.384a29.44 29.44 0 0 0 42.688 0l320-335.872l319.872 335.872a29.44 29.44 0 0 0 42.688 0l.384-.384a32 32 0 0 0 0-44.16L535.168 344.32a32 32 0 0 0-46.336 0" />
+                        </svg>
+                    </button>
+                    <button id="reset-peta"
+                        class="flex items-center justify-center gap-2 lg:text-sm text-xs bg-gray-100 text-black p-2 lg:px-4 lg:py-2 rounded-full font-semibold transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 16 16"
+                            class="pointer-events-none">
+                            <path fill="currentColor" fill-rule="evenodd"
+                                d="M5.905.28A8 8 0 0 1 14.5 3.335V1.75a.75.75 0 0 1 1.5 0V6h-4.25a.75.75 0 0 1 0-1.5h1.727a6.5 6.5 0 1 0 .526 5.994a.75.75 0 1 1 1.385.575A8 8 0 1 1 5.905.279Z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button id="download-excel"
+                        class="flex items-center justify-center gap-2 lg:text-sm text-xs bg-green-600 text-white px-4 py-2 rounded-full font-semibold transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                            </path>
+                        </svg>
+                        Excel
+                    </button>
+                </div>
+            </div>
+
+            <div id="map" class="lg:w-[90%] w-full h-[65vh] border relative z-0 rounded-lg">
+                <!-- Loading indicator -->
+                <div id="loading-overlay"
+                    class="absolute inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                        <p class="text-slate-600">Memuat data penelitian...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="w-full lg:max-w-[90%] w-full mx-auto mb-5">
+
+            <!-- Statistics and Info -->
+            <section class="bg-white/80 backdrop-blur-sm">
+                <div class="container mx-auto sm:px-6 lg:px-0">
+                    <!-- Statistics Overview -->
+                    <div class="mb-12">
+                        <!-- <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-8 text-center">
+                            Statistik Penelitian
+                        </h2> -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div class="text-white rounded-lg shadow-lg h-24 bg-no-repeat bg-cover"
+                                style="background-image: url('assets/images/card/bg-total-penelitian.png');">
+                                <div class="flex h-full rounded-lg">
+                                    <div class="py-5 px-5 flex flex-col gap-1">
+                                        <p class="text-md font-medium">Total Penelitian</p>
+                                        <p class="text-3xl font-bold" id="total-research">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-white rounded-lg shadow-lg h-24 bg-no-repeat bg-cover"
+                                style="background-image: url('assets/images/card/bg-total-pt.png');">
+                                <div class="flex items-stretch justify-between h-full">
+                                    <div class="py-5 px-5 flex flex-col gap-1">
+                                        <p class="text-md font-medium">Total Perguruan Tinggi</p>
+                                        <p class="text-3xl font-bold" id="total-universities">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-white rounded-lg shadow-lg h-24 bg-no-repeat bg-cover"
+                                style="background-image: url('assets/images/card/bg-total-provinsi.png');">
+                                <div class="flex items-stretch justify-between h-full">
+                                    <div class="py-5 px-5 flex flex-col gap-1">
+                                        <p class="text-md font-medium">Total Provinsi</p>
+                                        <p class="text-3xl font-bold" id="total-provinces">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-white rounded-lg shadow-lg h-24 bg-no-repeat bg-cover"
+                                style="background-image: url('assets/images/card/bg-total-bidang-fokus.png');">
+                                <div class="flex items-stretch justify-between h-full">
+                                    <div class="py-5 px-5 flex flex-col gap-1">
+                                        <p class="text-md font-medium">Bidang Fokus</p>
+                                        <p class="text-3xl font-bold" id="total-fields">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Research List -->
+                    <div class="bg-white rounded-2xl shadow-lg p-6">
+                        <div class="flex lg:flex-row flex-col lg:gap-0 gap-2 justify-between items-center mb-6">
+                            <h3 class="text-xl font-semibold text-slate-800">Daftar Penelitian</h3>
+                        </div>
+
+                        <div class="mb-4 flex lg:items-center lg:gap-8 gap-4 justify-between">
+                            <div class="relative w-full">
+                                <input type="search" id="search-input"
+                                    placeholder="Cari penelitian, universitas, atau peneliti..."
+                                    class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    autocomplete="off">
+                                <!-- Autocomplete suggestions dropdown -->
+                                <div id="search-suggestions" class="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 hidden z-50 max-h-60 overflow-y-auto">
+                                    <!-- Suggestions will be populated by JavaScript -->
+                                </div>
+                            </div>
+                           <div class="relative inline-block">
+                            <select id="search-filter"
+                                class="px-4 pr-10 py-3 text-white lg:w-fit w-full border bg-[#3E7DCA] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                            >
+                                    <option value="all">Semua</option>
+                                    <option value="title">Judul Penelitian</option>
+                                    <option value="university">Universitas</option>
+                                    <option value="researcher">Peneliti</option>
+                                    <option value="field">Bidang Fokus</option>
+                                    <option value="priorityTheme">Tema Prioritas</option>
+                                    <option value="category">Kategori PT</option>
+                                    <option value="cluster">Klaster</option>
+                            </select>
+                            <!-- Panah custom -->
+                            <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white">
+                                <svg class="rotate-180" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 1024 1024"><path fill="currentColor" d="M104.704 685.248a64 64 0 0 0 90.496 0l316.8-316.8l316.8 316.8a64 64 0 0 0 90.496-90.496L557.248 232.704a64 64 0 0 0-90.496 0L104.704 594.752a64 64 0 0 0 0 90.496"/></svg>
+                            </span>
+                            </div>
+                        </div>
+
+                        <!-- Multiple Search Container -->
+                        <div id="multiple-search-container" class="mb-4 space-y-3">
+                            <!-- Additional search fields will be added here -->
+                        </div>
+
+                        <!-- Search Button and Add Search Field Button -->
+                        <div class="mb-4 flex gap-3">
+                            <button id="search-button" 
+                                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Search
+                            </button>
+                            <button id="add-search-field" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Add search field
+                            </button>
+                        </div>
+
+                        <div id="research-items" class="space-y-4 max-h-96 overflow-y-auto">
+                            <!-- Research items will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Modal popup for research details -->
+        <div id="research-modal"
+            class="fixed inset-0 bg-black bg-opacity-50 z-[1001] hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-96 md:max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 id="modal-title" class="text-xl sm:text-2xl font-bold text-slate-800"></h2>
+                        <button id="close-modal" class="text-slate-400 hover:text-slate-600 transition-colors">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="space-y-4" id="modal-content">
+                        <!-- Content will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script src="js/script.js"></script>
+        <script src="js/advance-search.js"></script>
+        <script>
+            function toggleDropdown(menuId) {
+                const menu = document.getElementById(menuId);
+                menu.classList.toggle('hidden');
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function (event) {
+                    const dropdown = document.getElementById('pengabdianDropdown');
+                    const menu = document.getElementById(menuId);
+
+                    if (!dropdown.contains(event.target) && !menu.contains(event.target)) {
+                        menu.classList.add('hidden');
+                    }
+                });
+            }
+        </script>
+</body>
+
+</html>

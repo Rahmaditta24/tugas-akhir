@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php:*)",
+      "Bash(dir /b /s C:laragonwwwpeta-bima-laravel*.html)",
+      "Bash(dir C:laragonwwwpeta-bima-laravelresourcesjsPages)",
+      "Bash(dir /A C:laragonwwwpeta-bima-laravelresources)",
+      "Bash(dir:*)",
+      "Bash(cat:*)",
+      "Bash(npm install)",
+      "Bash(composer:*)",
+      "Bash(npm run build:*)",
+      "Read(//c/laragon/www/peta-bima//**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
