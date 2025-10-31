@@ -42,10 +42,25 @@ class ProdukController extends Controller
         if ($request->has('provinsi')) {
             $query->byProvinsi($request->provinsi);
         }
+        $total = $query->count();
+
+        $byBidang = Produk::select('bidang')
+            ->when($request->has('provinsi'), function ($q) use ($request) {
+                $q->where('provinsi', $request->provinsi);
+            })
+            ->groupBy('bidang')
+            ->selectRaw('COUNT(*) as total')
+            ->pluck('total', 'bidang');
+
+        $byProvinsi = Produk::select('provinsi')
+            ->groupBy('provinsi')
+            ->selectRaw('COUNT(*) as total')
+            ->pluck('total', 'provinsi');
+
         $stats = [
-            'total' => $query->count(),
-            'by_bidang' => $query->get()->groupBy('bidang')->map->count(),
-            'by_provinsi' => $query->get()->groupBy('provinsi')->map->count(),
+            'total' => $total,
+            'by_bidang' => $byBidang,
+            'by_provinsi' => $byProvinsi,
         ];
         return response()->json(['success' => true, 'data' => $stats]);
     }

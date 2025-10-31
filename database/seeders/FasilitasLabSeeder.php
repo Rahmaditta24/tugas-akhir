@@ -57,7 +57,7 @@ class FasilitasLabSeeder extends Seeder
             $insertData = [];
 
             foreach ($chunk as $item) {
-                $namaLab = trim($item['Nama Labolatorium'] ?? '');
+                $namaLab = trim($item['Nama Labolatorium'] ?? $item['Nama Laboratorium'] ?? '');
                 $institusi = trim($item['Institusi'] ?? '');
 
                 if (empty($namaLab) || empty($institusi)) {
@@ -66,21 +66,31 @@ class FasilitasLabSeeder extends Seeder
                     continue;
                 }
 
-                // Combine deskripsi alat into deskripsi if available
-                $deskripsi = trim($item['Deskripsi Alat'] ?? '');
-
                 $insertData[] = [
-                    'nama_lab' => $namaLab,
                     'institusi' => $institusi,
                     'latitude' => isset($item['Latitude']) && is_numeric($item['Latitude']) ? (float)$item['Latitude'] : null,
                     'longitude' => isset($item['Longitude']) && is_numeric($item['Longitude']) ? (float)$item['Longitude'] : null,
                     'provinsi' => !empty($item['Provinsi']) ? trim($item['Provinsi']) : null,
-                    'kabupaten' => !empty($item['Kota']) ? trim($item['Kota']) : null,
-                    'jenis_lab' => !empty($item['Jenis Labolatorium']) ? trim($item['Jenis Labolatorium']) : null,
                     'status_akses' => !empty($item['Status Akses']) ? trim($item['Status Akses']) : null,
-                    'deskripsi' => !empty($deskripsi) ? $deskripsi : null,
-                    'bidang' => !empty($item['Fakultas']) ? trim($item['Fakultas']) : null,
-                    'tahun' => null, // Tidak ada field tahun di JSON
+                    // new structure mapping (best-effort from JSON)
+                    'kode_universitas' => !empty($item['Kode Universitas']) ? trim($item['Kode Universitas']) : null,
+                    'kategori_pt' => !empty($item['Kategori PT']) ? trim($item['Kategori PT']) : null,
+                    'fakultas' => !empty($item['Fakultas']) ? trim($item['Fakultas']) : null,
+                    'departemen' => !empty($item['Departemen']) ? trim($item['Departemen']) : null,
+                    'nama_laboratorium' => $namaLab ?: null,
+                    'jenis_laboratorium' => !empty($item['Jenis Labolatorium']) ? trim($item['Jenis Labolatorium']) : null,
+                    'standar_akreditasi' => !empty($item['Standar Akreditasi']) ? trim($item['Standar Akreditasi']) : null,
+                    'jam_mulai' => !empty($item['Jam Mulai']) ? trim($item['Jam Mulai']) : null,
+                    'jam_selesai' => !empty($item['Jam Selesai']) ? trim($item['Jam Selesai']) : null,
+                    'jumlah_akses' => isset($item['Jumlah Akses']) && is_numeric($item['Jumlah Akses']) ? (int)$item['Jumlah Akses'] : null,
+                    'kota' => !empty($item['Kota']) ? trim($item['Kota']) : null,
+                    'kecamatan' => !empty($item['Kecamatan']) ? trim($item['Kecamatan']) : null,
+                    'total_jumlah_alat' => isset($item['Total Jumlah Alat']) && is_numeric($item['Total Jumlah Alat']) ? (int)$item['Total Jumlah Alat'] : null,
+                    'nama_alat' => !empty($item['Nama Alat']) ? trim($item['Nama Alat']) : null,
+                    'deskripsi_alat' => !empty($item['Deskripsi Alat']) ? trim($item['Deskripsi Alat']) : null,
+                    'tautan_gambar' => !empty($item['Tautan Gambar']) ? trim($item['Tautan Gambar']) : null,
+                    'kontak' => !empty($item['Kontak']) ? trim($item['Kontak']) : null,
+                    'tautan' => !empty($item['Tautan']) ? trim($item['Tautan']) : null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

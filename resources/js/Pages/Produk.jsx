@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import MainLayout from '../Layouts/MainLayout';
+import { router } from '@inertiajs/react';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
@@ -15,7 +16,12 @@ export default function Produk({ mapData = [], researches = [], stats = {} }) {
             <div className="relative">
                 <MapContainer mapData={mapData} displayMode={displayMode} />
                 <MapControls
-                    onSearch={() => {}}
+                    onSearch={(value) => {
+                        router.get(route('produk.index'), { search: value }, {
+                            preserveState: true,
+                            preserveScroll: true,
+                        });
+                    }}
                     onDisplayModeChange={setDisplayMode}
                     onAdvancedSearchToggle={() => {}}
                     onReset={() => {}}

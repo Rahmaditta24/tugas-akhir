@@ -79,11 +79,34 @@ class PenelitianController extends Controller
             $query->byProvinsi($request->provinsi);
         }
 
+        $total = $query->count();
+
+        $byBidang = Penelitian::select('bidang_fokus')
+            ->when($request->has('provinsi'), function ($q) use ($request) {
+                $q->where('provinsi', $request->provinsi);
+            })
+            ->groupBy('bidang_fokus')
+            ->selectRaw('COUNT(*) as total')
+            ->pluck('total', 'bidang_fokus');
+
+        $byProvinsi = Penelitian::select('provinsi')
+            ->groupBy('provinsi')
+            ->selectRaw('COUNT(*) as total')
+            ->pluck('total', 'provinsi');
+
+        $byTahun = Penelitian::select('thn_pelaksanaan')
+            ->when($request->has('provinsi'), function ($q) use ($request) {
+                $q->where('provinsi', $request->provinsi);
+            })
+            ->groupBy('thn_pelaksanaan')
+            ->selectRaw('COUNT(*) as total')
+            ->pluck('total', 'thn_pelaksanaan');
+
         $stats = [
-            'total' => $query->count(),
-            'by_bidang_fokus' => $query->get()->groupBy('bidang_fokus')->map->count(),
-            'by_provinsi' => $query->get()->groupBy('provinsi')->map->count(),
-            'by_tahun' => $query->get()->groupBy('thn_pelaksanaan')->map->count(),
+            'total' => $total,
+            'by_bidang_fokus' => $byBidang,
+            'by_provinsi' => $byProvinsi,
+            'by_tahun' => $byTahun,
         ];
 
         return response()->json([

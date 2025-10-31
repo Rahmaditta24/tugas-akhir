@@ -5,43 +5,50 @@ namespace App\Http\Controllers;
 use App\Models\FasilitasLab;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class FasilitasLabPageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = FasilitasLab::query();
+        $baseQuery = FasilitasLab::query();
+        if ($request->filled('search')) {
+            $baseQuery->search($request->search);
+        }
 
+        $statsQ = clone $baseQuery;
         $stats = [
-            'totalResearch' => $query->count(),
-            'totalUniversities' => $query->distinct('institusi')->count('institusi'),
-            'totalProvinces' => $query->distinct('provinsi')->count('provinsi'),
-            'totalFields' => $query->distinct('jenis_lab')->count('jenis_lab'),
+            'totalResearch' => (clone $statsQ)->count(),
+            'totalUniversities' => (clone $statsQ)->distinct('institusi')->count('institusi'),
+            'totalProvinces' => (clone $statsQ)->distinct('provinsi')->count('provinsi'),
+            'totalFields' => (clone $statsQ)->distinct('jenis_laboratorium')->count('jenis_laboratorium'),
         ];
 
-        $mapData = $query->select(
+        $mapData = (clone $baseQuery)->select(
+            'id',
             'institusi',
             'latitude as pt_latitude',
             'longitude as pt_longitude',
             'provinsi',
-            'jenis_lab as bidang_fokus',
-            DB::raw('COUNT(*) as total')
+            'jenis_laboratorium as bidang_fokus'
         )
-        ->groupBy('institusi', 'latitude', 'longitude', 'provinsi', 'jenis_lab')
+        ->whereNotNull('latitude')
+        ->whereNotNull('longitude')
         ->get()
         ->map(function($item) {
             return [
+                'id' => $item->id,
                 'institusi' => $item->institusi,
-                'pt_latitude' => $item->pt_latitude,
-                'pt_longitude' => $item->pt_longitude,
+                'pt_latitude' => (float)$item->pt_latitude,
+                'pt_longitude' => (float)$item->pt_longitude,
                 'provinsi' => $item->provinsi,
                 'bidang_fokus' => $item->bidang_fokus,
-                'count' => $item->total,
+                'count' => 1,
             ];
         });
 
-        $items = $query->select('id', 'nama_lab as judul', 'institusi', 'provinsi', 'jenis_lab as skema', 'tahun')
-            ->latest('tahun')
+        $items = (clone $baseQuery)->select('id', 'nama_laboratorium as judul', 'institusi', 'provinsi', 'jenis_laboratorium as skema')
+            ->latest('id')
             ->limit(50)
             ->get();
 

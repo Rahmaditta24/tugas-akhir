@@ -49,111 +49,71 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
         markersRef.current.forEach(marker => marker.remove());
         markersRef.current = [];
 
-        // Data is already aggregated from backend, just display it
-        // Group by location if needed
-        const locationGroups = {};
+        console.log('MapContainer rendering markers:', source.length, 'items');
 
-        source.forEach(item => {
-            if (!item.pt_latitude || !item.pt_longitude) return;
+        // Group nearby points to emulate original clustered bubbles UI
+        // Support different field names across categories
+        const groups = {};
+        source.forEach((item, idx) => {
+            const latRaw = item.pt_latitude ?? item.latitude;
+            const lngRaw = item.pt_longitude ?? item.longitude;
+            const lat = parseFloat(latRaw);
+            const lng = parseFloat(lngRaw);
+            const count = parseInt(item.count || 1);
 
-            const key = displayMode === 'institusi'
-                ? item.institusi
-                : `${item.pt_latitude},${item.pt_longitude}`;
+            // Validate coordinates (Indonesia bounds)
+            if (isNaN(lat) || isNaN(lng) || lat < -11 || lat > 7 || lng < 94 || lng > 142) {
+                console.warn(`Invalid coords for item ${idx}:`, lat, lng);
+                return;
+            }
 
-            if (!locationGroups[key]) {
-                locationGroups[key] = {
-                    lat: parseFloat(item.pt_latitude),
-                    lng: parseFloat(item.pt_longitude),
-                    institusi: item.institusi,
+            const key = `${lat.toFixed(1)},${lng.toFixed(1)}`; // coarse grouping ~11km
+            if (!groups[key]) {
+                groups[key] = {
+                    lat,
+                    lng,
                     count: 0,
-                    fields: {}
+                    institusi: item.institusi ?? null,
+                    provinsi: item.provinsi ?? null,
+                    bidang_fokus: item.bidang_fokus ?? null,
                 };
             }
-
-            locationGroups[key].count += parseInt(item.count || 1);
-
-            // Count bidang fokus
-            const field = item.bidang_fokus || 'Other';
-            locationGroups[key].fields[field] = (locationGroups[key].fields[field] || 0) + parseInt(item.count || 1);
+            groups[key].count += count;
         });
 
-        // Create markers for each location group
-        Object.values(locationGroups).forEach(group => {
+        Object.values(groups).forEach(group => {
             const count = group.count;
-
-            // Use single blue color for all markers
             const color = MARKER_COLOR;
 
-            // Create bubble marker with size based on count
-            const radius = Math.min(50, Math.max(15, Math.sqrt(count) * 5));
+            const size = Math.min(64, Math.max(32, 18 + Math.log(count + 1) * 12));
+            const fontSize = count > 999 ? 12 : 14;
 
-            const circleMarker = L.circleMarker([group.lat, group.lng], {
-                radius: radius,
-                fillColor: color,
-                color: '#fff',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.8
+            const divIcon = L.divIcon({
+                html: `<div style="
+                    display:flex;align-items:center;justify-content:center;
+                    width:${size}px;height:${size}px;border-radius:50%;
+                    background:${color};color:#fff;border:4px solid #ffffffcc;
+                    box-shadow:0 2px 6px rgba(0,0,0,0.25);font-weight:700;
+                    font-size:${fontSize}px;line-height:1;">${count.toLocaleString('id-ID')}</div>`,
+                className: 'cluster-bubble',
+                iconSize: [size, size],
+                iconAnchor: [size / 2, size / 2],
             });
 
-            // Create popup content
-            const fieldsHtml = Object.entries(group.fields)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5)
-                .map(([field, count]) => `<li><strong>${field}:</strong> ${count}</li>`)
-                .join('');
-
+            const marker = L.marker([group.lat, group.lng], { icon: divIcon });
             const popupContent = `
                 <div class="p-2">
-                    <h3 class="font-bold text-lg mb-2">${group.institusi || 'Unknown'}</h3>
-                    <p class="mb-2"><strong>Total Penelitian:</strong> ${count}</p>
-                    <div class="mb-2">
-                        <strong>Top Bidang Fokus:</strong>
-                        <ul class="list-disc ml-4 mt-1">
-                            ${fieldsHtml}
-                        </ul>
-                    </div>
-                </div>
-            `;
-
-            circleMarker.bindPopup(popupContent, {
-                maxWidth: 300,
-                className: 'custom-popup'
-            });
-
-            circleMarker.addTo(mapInstanceRef.current);
-            markersRef.current.push(circleMarker);
-
-            // Add count label for larger clusters
-            if (count > 5) {
-                const divIcon = L.divIcon({
-                    html: `<div style="
-                        background: white;
-                        border: 2px solid ${color};
-                        border-radius: 50%;
-                        width: ${Math.min(40, Math.max(20, radius))}px;
-                        height: ${Math.min(40, Math.max(20, radius))}px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        font-weight: bold;
-                        font-size: ${count > 100 ? '10px' : '12px'};
-                        color: ${color};
-                    ">${count}</div>`,
-                    className: 'custom-div-icon',
-                    iconSize: [radius * 2, radius * 2],
-                    iconAnchor: [radius, radius]
-                });
-
-                const marker = L.marker([group.lat, group.lng], { icon: divIcon });
-                marker.bindPopup(popupContent, {
-                    maxWidth: 300,
-                    className: 'custom-popup'
-                });
-                marker.addTo(mapInstanceRef.current);
-                markersRef.current.push(marker);
-            }
+                    ${group.institusi ? `<h3 class=\"font-bold\">${group.institusi}</h3>` : ''}
+                    ${group.provinsi ? `<p><strong>Provinsi:</strong> ${group.provinsi}</p>` : ''}
+                    <p><strong>Total:</strong> ${count.toLocaleString('id-ID')}</p>
+                    ${group.bidang_fokus ? `<p><strong>Bidang Fokus:</strong> ${group.bidang_fokus}</p>` : ''}
+                </div>`;
+            marker.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
+            marker.addTo(mapInstanceRef.current);
+            markersRef.current.push(marker);
         });
+
+        console.log('Rendered', markersRef.current.length, 'markers');
 
     }, [mapData, displayMode]);
 

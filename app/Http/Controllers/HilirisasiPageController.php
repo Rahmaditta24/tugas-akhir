@@ -5,42 +5,49 @@ namespace App\Http\Controllers;
 use App\Models\Hilirisasi;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class HilirisasiPageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $query = Hilirisasi::query();
+        $baseQuery = Hilirisasi::query();
+        if ($request->filled('search')) {
+            $baseQuery->search($request->search);
+        }
 
+        $statsQ = clone $baseQuery;
         $stats = [
-            'totalResearch' => $query->count(),
-            'totalUniversities' => $query->distinct('perguruan_tinggi')->count('perguruan_tinggi'),
-            'totalProvinces' => $query->distinct('provinsi')->count('provinsi'),
-            'totalFields' => $query->distinct('skema')->count('skema'),
+            'totalResearch' => (clone $statsQ)->count(),
+            'totalUniversities' => (clone $statsQ)->distinct('perguruan_tinggi')->count('perguruan_tinggi'),
+            'totalProvinces' => (clone $statsQ)->distinct('provinsi')->count('provinsi'),
+            'totalFields' => (clone $statsQ)->distinct('skema')->count('skema'),
         ];
 
-        $mapData = $query->select(
+        $mapData = (clone $baseQuery)->select(
+            'id',
             'perguruan_tinggi as institusi',
             'pt_latitude',
             'pt_longitude',
             'provinsi',
-            'skema as bidang_fokus',
-            DB::raw('COUNT(*) as total')
+            'skema as bidang_fokus'
         )
-        ->groupBy('perguruan_tinggi', 'pt_latitude', 'pt_longitude', 'provinsi', 'skema')
+        ->whereNotNull('pt_latitude')
+        ->whereNotNull('pt_longitude')
         ->get()
         ->map(function($item) {
             return [
+                'id' => $item->id,
                 'institusi' => $item->institusi,
-                'pt_latitude' => $item->pt_latitude,
-                'pt_longitude' => $item->pt_longitude,
+                'pt_latitude' => (float)$item->pt_latitude,
+                'pt_longitude' => (float)$item->pt_longitude,
                 'provinsi' => $item->provinsi,
                 'bidang_fokus' => $item->bidang_fokus,
-                'count' => $item->total,
+                'count' => 1,
             ];
         });
 
-        $items = $query->select('id', 'judul', 'perguruan_tinggi as institusi', 'provinsi', 'skema', 'tahun')
+        $items = (clone $baseQuery)->select('id', 'judul', 'perguruan_tinggi as institusi', 'provinsi', 'skema', 'tahun')
             ->latest('tahun')
             ->limit(50)
             ->get();

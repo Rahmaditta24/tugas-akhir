@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import MainLayout from '../Layouts/MainLayout';
+import { router } from '@inertiajs/react';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
@@ -8,7 +9,12 @@ import StatisticsCards from '../Components/StatisticsCards';
 export default function Pengabdian({ mapData = [], researches = [], stats = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
 
-    const handleSearch = () => {};
+    const handleSearch = (value) => {
+        router.get(route('pengabdian.index'), { search: value }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
     const handleReset = () => {};
     const handleDownload = () => {};
 

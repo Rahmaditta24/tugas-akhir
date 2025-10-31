@@ -8,7 +8,7 @@ import AdvancedSearch from '../Components/AdvancedSearch';
 import StatisticsCards from '../Components/StatisticsCards';
 import ResearchList from '../Components/ResearchList';
 
-export default function Home({ researches = [], stats = {}, filterOptions = {} }) {
+export default function Home({ mapData = [], researches = [], stats = {}, filterOptions = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [filters, setFilters] = useState({});
@@ -44,6 +44,7 @@ export default function Home({ researches = [], stats = {}, filterOptions = {} }
 
             <div className="relative">
                 <MapContainer
+                    mapData={mapData}
                     data={researches}
                     displayMode={displayMode}
                 />

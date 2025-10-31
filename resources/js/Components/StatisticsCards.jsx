@@ -5,22 +5,38 @@ export default function StatisticsCards({ stats }) {
         {
             title: 'Total Penelitian',
             value: stats?.totalResearch || 0,
-            bgStyle: { background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)' },
+            bgStyle: {
+                backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('/assets/images/card/bg-total-penelitian.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            },
         },
         {
             title: 'Total Perguruan Tinggi',
             value: stats?.totalUniversities || 0,
-            bgStyle: { background: 'linear-gradient(135deg, #10b981 0%, #047857 100%)' },
+            bgStyle: {
+                backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('/assets/images/card/bg-total-pt.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            },
         },
         {
             title: 'Total Provinsi',
             value: stats?.totalProvinces || 0,
-            bgStyle: { background: 'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)' },
+            bgStyle: {
+                backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('/assets/images/card/bg-total-provinsi.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            },
         },
         {
             title: 'Bidang Fokus',
             value: stats?.totalFields || 0,
-            bgStyle: { background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' },
+            bgStyle: {
+                backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('/assets/images/card/bg-total-bidang-fokus.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            },
         },
     ];
 
@@ -35,7 +51,7 @@ export default function StatisticsCards({ stats }) {
                     <div className="flex h-full rounded-lg">
                         <div className="py-5 px-5 flex flex-col gap-1">
                             <p className="text-md font-medium">{card.title}</p>
-                            <p className="text-3xl font-bold">{card.value.toLocaleString()}</p>
+                            <p className="text-3xl font-bold drop-shadow-sm">{card.value.toLocaleString()}</p>
                         </div>
                     </div>
                 </div>

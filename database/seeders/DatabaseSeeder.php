@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             FasilitasLabSeeder::class,
             PermasalahanSeeder::class,
             ProdukSeeder::class,
+            AdminUserSeeder::class,
         ]);
     }
 }

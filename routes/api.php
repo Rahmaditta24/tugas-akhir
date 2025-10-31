@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\HilirisasiController;
 use App\Http\Controllers\Api\PengabdianController;
 use App\Http\Controllers\Api\PermasalahanController;
 use App\Http\Controllers\Api\ProdukController;
+use App\Http\Controllers\Api\FasilitasLabController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +46,12 @@ Route::prefix('produk')->group(function () {
     Route::get('/', [ProdukController::class, 'index']);
     Route::get('/statistics', [ProdukController::class, 'statistics']);
     Route::get('/{id}', [ProdukController::class, 'show']);
+});
+
+// Fasilitas Lab endpoints
+Route::prefix('fasilitas-lab')->group(function () {
+    Route::get('/', [FasilitasLabController::class, 'index']);
+    Route::get('/{id}', [FasilitasLabController::class, 'show']);
 });
 
 // Health check

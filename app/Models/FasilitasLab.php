@@ -12,23 +12,37 @@ class FasilitasLab extends Model
     protected $table = 'fasilitas_lab';
 
     protected $fillable = [
-        'nama_lab',
         'institusi',
         'latitude',
         'longitude',
         'provinsi',
-        'kabupaten',
-        'jenis_lab',
         'status_akses',
-        'deskripsi',
-        'bidang',
-        'tahun',
+        // updated structure
+        'kode_universitas',
+        'kategori_pt',
+        'fakultas',
+        'departemen',
+        'nama_laboratorium',
+        'jenis_laboratorium',
+        'standar_akreditasi',
+        'jam_mulai',
+        'jam_selesai',
+        'jumlah_akses',
+        'kota',
+        'kecamatan',
+        'total_jumlah_alat',
+        'nama_alat',
+        'deskripsi_alat',
+        'tautan_gambar',
+        'kontak',
+        'tautan',
     ];
 
     protected $casts = [
         'latitude' => 'float',
         'longitude' => 'float',
-        'tahun' => 'integer',
+        'jumlah_akses' => 'integer',
+        'total_jumlah_alat' => 'integer',
     ];
 
     // Scopes
@@ -39,7 +53,7 @@ class FasilitasLab extends Model
 
     public function scopeByJenisLab($query, $jenisLab)
     {
-        return $query->where('jenis_lab', $jenisLab);
+        return $query->where('jenis_laboratorium', $jenisLab);
     }
 
     public function scopeByStatusAkses($query, $statusAkses)
@@ -50,7 +64,7 @@ class FasilitasLab extends Model
     public function scopeSearch($query, $keyword)
     {
         return $query->where(function($q) use ($keyword) {
-            $q->where('nama_lab', 'like', "%{$keyword}%")
+            $q->where('nama_laboratorium', 'like', "%{$keyword}%")
               ->orWhere('institusi', 'like', "%{$keyword}%");
         });
     }

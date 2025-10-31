@@ -12,72 +12,75 @@ class PenelitianController extends Controller
 {
     public function index(Request $request)
     {
-        // Build query with filters
-        $query = Penelitian::query();
+        // Build base query with filters
+        $baseQuery = Penelitian::query();
 
         // Apply filters if provided
         if ($request->filled('bidang_fokus')) {
-            $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
+            $baseQuery->whereIn('bidang_fokus', (array) $request->bidang_fokus);
         }
 
         if ($request->filled('tema_prioritas')) {
-            $query->whereIn('tema_prioritas', (array) $request->tema_prioritas);
+            $baseQuery->whereIn('tema_prioritas', (array) $request->tema_prioritas);
         }
 
         if ($request->filled('kategori_pt')) {
-            $query->whereIn('kategori_pt', (array) $request->kategori_pt);
+            $baseQuery->whereIn('kategori_pt', (array) $request->kategori_pt);
         }
 
         if ($request->filled('klaster')) {
-            $query->whereIn('klaster', (array) $request->klaster);
+            $baseQuery->whereIn('klaster', (array) $request->klaster);
         }
 
         if ($request->filled('provinsi')) {
-            $query->whereIn('provinsi', (array) $request->provinsi);
+            $baseQuery->whereIn('provinsi', (array) $request->provinsi);
         }
 
         if ($request->filled('tahun')) {
-            $query->whereIn('thn_pelaksanaan', (array) $request->tahun);
+            $baseQuery->whereIn('thn_pelaksanaan', (array) $request->tahun);
         }
 
         // Apply search if provided
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $baseQuery->search($request->search);
         }
 
         // Get statistics without loading all data into memory
+        $statsQuery = clone $baseQuery;
         $totalStats = [
-            'totalResearch' => $query->count(),
-            'totalUniversities' => $query->distinct('institusi')->count('institusi'),
-            'totalProvinces' => $query->distinct('provinsi')->count('provinsi'),
-            'totalFields' => $query->distinct('bidang_fokus')->count('bidang_fokus'),
+            'totalResearch' => (clone $statsQuery)->count(),
+            'totalUniversities' => (clone $statsQuery)->distinct('institusi')->count('institusi'),
+            'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'),
+            'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
         ];
 
-        // For map: aggregate by location to reduce markers
-        // Group by institusi and coordinates, count total per location
-        $mapData = $query->select(
+        // For map: send individual data points (like original peta-bima)
+        // Only select needed fields for map markers to reduce payload
+        $mapData = (clone $baseQuery)->select(
+            'id',
             'institusi',
             'pt_latitude',
             'pt_longitude',
             'provinsi',
-            'bidang_fokus',
-            DB::raw('COUNT(*) as total')
+            'bidang_fokus'
         )
-        ->groupBy('institusi', 'pt_latitude', 'pt_longitude', 'provinsi', 'bidang_fokus')
+        ->whereNotNull('pt_latitude')
+        ->whereNotNull('pt_longitude')
         ->get()
         ->map(function($item) {
             return [
+                'id' => $item->id,
                 'institusi' => $item->institusi,
-                'pt_latitude' => $item->pt_latitude,
-                'pt_longitude' => $item->pt_longitude,
+                'pt_latitude' => (float)$item->pt_latitude,
+                'pt_longitude' => (float)$item->pt_longitude,
                 'provinsi' => $item->provinsi,
                 'bidang_fokus' => $item->bidang_fokus,
-                'count' => $item->total,
+                'count' => 1,  // Individual marker
             ];
         });
 
         // For list: paginate and only load what's needed
-        $researches = $query->select(
+        $researches = (clone $baseQuery)->select(
             'id',
             'nama',
             'institusi',
