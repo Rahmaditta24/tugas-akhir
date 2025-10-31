@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminTable from '../../../Components/AdminTable';
+import PageHeader from '../../../Components/PageHeader';
+import Badge from '../../../Components/Badge';
 
 export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [search, setSearch] = useState(filters.search || '');
+    const [perPage, setPerPage] = useState(filters.perPage || 20);
+    const sort = filters.sort || 'id';
+    const direction = filters.direction || 'desc';
 
     const handleDelete = (item) => {
         setItemToDelete(item);
@@ -24,28 +30,46 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get(route('admin.fasilitas-lab.index'), { search }, {
+        router.get(route('admin.fasilitas-lab.index'), { search, sort, direction, perPage }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handlePerPageChange = (e) => {
+        const next = Number(e.target.value);
+        setPerPage(next);
+        router.get(route('admin.fasilitas-lab.index'), { search, sort, direction, perPage: next }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleSort = (field) => {
+        const nextDirection = sort === field && direction === 'asc' ? 'desc' : 'asc';
+        router.get(route('admin.fasilitas-lab.index'), { search, sort: field, direction: nextDirection, perPage }, {
             preserveState: true,
             replace: true,
         });
     };
 
     return (
-        <AdminLayout title="Fasilitas Lab">
+        <AdminLayout title="">
             <div className="space-y-6 max-w-full">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-800">Data Fasilitas Lab</h1>
-                        <p className="text-slate-600 mt-1">Kelola data fasilitas laboratorium</p>
-                    </div>
-                    <Link
-                        href={route('admin.fasilitas-lab.create')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        + Tambah Data
-                    </Link>
-                </div>
+                <PageHeader
+                    title="Data Fasilitas Lab"
+                    subtitle="Kelola data fasilitas laboratorium"
+                    icon={<span className="text-xl">🧪</span>}
+                    actions={(
+                        <Link
+                            href={route('admin.fasilitas-lab.create')}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                            + Tambah Data
+                        </Link>
+                    )}
+                />
 
                 {/* Statistics Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -97,7 +121,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                 <div className="bg-white rounded-lg shadow-sm max-w-full">
                     {/* Search Bar */}
                     <div className="p-6 border-b">
-                        <form onSubmit={handleSearch} className="flex gap-3">
+                        <form onSubmit={handleSearch} className="flex gap-3 items-center flex-wrap">
                             <input
                                 type="text"
                                 value={search}
@@ -109,53 +133,47 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                             {filters.search && (
                                 <Link href={route('admin.fasilitas-lab.index')} className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors">Reset</Link>
                             )}
+                            <div className="ml-auto flex items-center gap-2">
+                                <span className="text-sm text-slate-600">Per halaman</span>
+                                <select value={perPage} onChange={handlePerPageChange} className="px-3 py-2 border border-slate-300 rounded-lg">
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+                            </div>
                         </form>
                     </div>
 
-                    {/* Table */}
-                    <div className="w-full overflow-x-auto">
-                        <table className="min-w-full table-fixed">
-                            <thead className="bg-slate-50 border-b">
-                                <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-12">No</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-2/5">Nama Lab</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/5">Institusi</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/6">Provinsi</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-1/6">Jenis</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider w-28">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-slate-200">
-                                {fasilitasLab.data?.length > 0 ? (
-                                    fasilitasLab.data.map((item, index) => (
-                                        <tr key={item.id} className="hover:bg-slate-50">
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-900">{fasilitasLab.from + index}</td>
-                                            <td className="px-4 py-3 text-sm text-slate-900 break-words">
-                                                <div className="truncate">{item.nama_laboratorium || '-'}</div>
-                                            </td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-900">{item.institusi || '-'}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-900">{item.provinsi || '-'}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-900">{item.jenis_laboratorium || '-'}</td>
-                                            <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex gap-2 items-center">
-                                                    <Link href={route('admin.fasilitas-lab.edit', item.id)} className="text-blue-600 hover:text-blue-900">Edit</Link>
-                                                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-900">Hapus</button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="6" className="px-4 py-8 text-center text-slate-500">Tidak ada data</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                {/* Table */}
+                <AdminTable
+                    striped
+                    localFilterEnabled
+                    columnFilterEnabled
+                    columns={[
+                        { key: 'no', title: 'No', className: 'w-12' },
+                        { key: 'nama_laboratorium', title: 'Nama Lab', className: 'w-2/5', sortable: true, render: (v) => <div className="truncate">{v || '-'}</div> },
+                        { key: 'institusi', title: 'Institusi', className: 'w-1/5', sortable: true },
+                        { key: 'provinsi', title: 'Provinsi', className: 'w-1/6', sortable: true, render: (v) => <Badge color="blue">{v || '-'}</Badge> },
+                        { key: 'jenis_laboratorium', title: 'Jenis', className: 'w-1/6', sortable: true, render: (v) => <Badge color="purple">{v || '-'}</Badge> },
+                        { key: 'aksi', title: 'Aksi', className: 'w-28' },
+                    ]}
+                    data={(fasilitasLab.data || []).map((item, index) => ({
+                        ...item,
+                        no: fasilitasLab.from + index,
+                        aksi: (
+                            <div className="flex gap-2 items-center">
+                                <Link href={route('admin.fasilitas-lab.edit', item.id)} className="text-blue-600 hover:text-blue-900">Edit</Link>
+                                <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-900">Hapus</button>
+                            </div>
+                        ),
+                    }))}
+                    sort={{ key: sort, direction }}
+                    onSort={({ key, direction }) => handleSort(key)}
+                />
 
                     {/* Pagination */}
                     {fasilitasLab.last_page > 1 && (
-                        <div className="px-6 py-4 border-t">
+                        <div className="px-6 py-4 border-t border-slate-200/60">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-slate-600">Menampilkan {fasilitasLab.from} - {fasilitasLab.to} dari {fasilitasLab.total} data</div>
                                 <div className="flex gap-2">

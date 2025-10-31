@@ -13,6 +13,14 @@ class FasilitasLabController extends Controller
     {
         $query = FasilitasLab::query();
 
+        // Whitelisted sorting and pagination
+        $allowedSorts = ['id', 'nama_laboratorium', 'institusi', 'provinsi', 'jenis_laboratorium'];
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
+        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
+        $perPage = (int) $request->get('perPage', 20);
+        if ($perPage < 10) { $perPage = 10; }
+        if ($perPage > 100) { $perPage = 100; }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -21,7 +29,13 @@ class FasilitasLabController extends Controller
             });
         }
 
-        $fasilitasLab = $query->orderByDesc('id')->paginate(20)->withQueryString();
+        // Select only fields used in table to shrink payload
+        $query->select(['id', 'nama_laboratorium', 'institusi', 'provinsi', 'jenis_laboratorium']);
+
+        $fasilitasLab = $query
+            ->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
 
         $stats = [
             'total' => FasilitasLab::count(),
@@ -32,7 +46,12 @@ class FasilitasLabController extends Controller
         return Inertia::render('Admin/FasilitasLab/Index', [
             'fasilitasLab' => $fasilitasLab,
             'stats' => $stats,
-            'filters' => ['search' => $request->search],
+            'filters' => [
+                'search' => $request->get('search'),
+                'sort' => $sort,
+                'direction' => $direction,
+                'perPage' => $perPage,
+            ],
         ]);
     }
 

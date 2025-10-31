@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminTable from '../../../Components/AdminTable';
+import PageHeader from '../../../Components/PageHeader';
 
 export default function Index({ hilirisasi, stats, filters }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [search, setSearch] = useState(filters.search || '');
+    const [perPage, setPerPage] = useState(filters.perPage || 20);
+    const sort = filters.sort || 'id';
+    const direction = filters.direction || 'desc';
 
     const handleDelete = (item) => {
         setItemToDelete(item);
@@ -25,28 +30,41 @@ export default function Index({ hilirisasi, stats, filters }) {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get(route('admin.hilirisasi.index'), { search }, {
+        router.get(route('admin.hilirisasi.index'), { search, sort, direction, perPage }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handlePerPageChange = (e) => {
+        const next = Number(e.target.value);
+        setPerPage(next);
+        router.get(route('admin.hilirisasi.index'), { search, sort, direction, perPage: next }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handleSort = (field) => {
+        const nextDirection = sort === field && direction === 'asc' ? 'desc' : 'asc';
+        router.get(route('admin.hilirisasi.index'), { search, sort: field, direction: nextDirection, perPage }, {
             preserveState: true,
             replace: true,
         });
     };
 
     return (
-        <AdminLayout title="Kelola Data Hilirisasi">
+        <AdminLayout title="">
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-800">Data Hilirisasi</h1>
-                        <p className="text-slate-600 mt-1">Kelola data hilirisasi riset</p>
-                    </div>
-                    <Link
-                        href={route('admin.hilirisasi.create')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        + Tambah Data
-                    </Link>
-                </div>
+                <PageHeader
+                    title="Data Hilirisasi"
+                    subtitle="Kelola data hilirisasi riset"
+                    icon={<span className="text-xl">🏭</span>}
+                    actions={(
+                        <Link href={route('admin.hilirisasi.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">+ Tambah Data</Link>
+                    )}
+                />
 
                 {/* Statistics Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -98,7 +116,7 @@ export default function Index({ hilirisasi, stats, filters }) {
                 <div className="bg-white rounded-lg shadow-sm">
                     {/* Search Bar */}
                     <div className="p-6 border-b">
-                        <form onSubmit={handleSearch} className="flex gap-3">
+                        <form onSubmit={handleSearch} className="flex gap-3 items-center flex-wrap">
                             <input
                                 type="text"
                                 value={search}
@@ -120,73 +138,47 @@ export default function Index({ hilirisasi, stats, filters }) {
                                     Reset
                                 </Link>
                             )}
+                            <div className="ml-auto flex items-center gap-2">
+                                <span className="text-sm text-slate-600">Per halaman</span>
+                                <select value={perPage} onChange={handlePerPageChange} className="px-3 py-2 border border-slate-300 rounded-lg">
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+                            </div>
                         </form>
                     </div>
 
                     {/* Table */}
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-slate-50 border-b">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Judul</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama Pengusul</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Perguruan Tinggi</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tahun</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-slate-200">
-                                {hilirisasi.data.length > 0 ? (
-                                    hilirisasi.data.map((item, index) => (
-                                        <tr key={item.id} className="hover:bg-slate-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                {hilirisasi.from + index}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-slate-900">
-                                                <div className="max-w-md truncate">{item.judul}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                {item.nama_pengusul || '-'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-slate-900">
-                                                <div className="max-w-xs truncate">{item.perguruan_tinggi}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                {item.tahun || '-'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex gap-2">
-                                                    <Link
-                                                        href={route('admin.hilirisasi.edit', item.id)}
-                                                        className="text-blue-600 hover:text-blue-900"
-                                                    >
-                                                        Edit
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(item)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        Hapus
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
-                                            Tidak ada data
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <AdminTable
+                        striped
+                        localFilterEnabled
+                        columnFilterEnabled
+                        columns={[
+                            { key: 'no', title: 'No', className: 'w-12' },
+                            { key: 'judul', title: 'Judul', sortable: true, render: (v) => <div className="max-w-md truncate">{v}</div> },
+                            { key: 'nama_pengusul', title: 'Nama Pengusul', sortable: true },
+                            { key: 'perguruan_tinggi', title: 'Perguruan Tinggi', sortable: true, render: (v) => <div className="max-w-xs truncate">{v}</div> },
+                            { key: 'tahun', title: 'Tahun', sortable: true },
+                            { key: 'aksi', title: 'Aksi', className: 'w-28' },
+                        ]}
+                        data={(hilirisasi.data || []).map((item, index) => ({
+                            ...item,
+                            no: hilirisasi.from + index,
+                            aksi: (
+                                <div className="flex gap-2">
+                                    <Link href={route('admin.hilirisasi.edit', item.id)} className="text-blue-600 hover:text-blue-900">Edit</Link>
+                                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-900">Hapus</button>
+                                </div>
+                            ),
+                        }))}
+                        sort={{ key: sort, direction }}
+                        onSort={({ key, direction }) => handleSort(key)}
+                    />
 
                     {/* Pagination */}
                     {hilirisasi.last_page > 1 && (
-                        <div className="px-6 py-4 border-t">
+                        <div className="px-6 py-4 border-t border-slate-200/60">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-slate-600">
                                     Menampilkan {hilirisasi.from} - {hilirisasi.to} dari {hilirisasi.total} data

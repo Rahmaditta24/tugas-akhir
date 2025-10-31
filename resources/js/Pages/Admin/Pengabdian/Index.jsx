@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminTable from '../../../Components/AdminTable';
+import PageHeader from '../../../Components/PageHeader';
+import Badge from '../../../Components/Badge';
 
 export default function Index({ pengabdian, stats, filters }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -32,21 +35,17 @@ export default function Index({ pengabdian, stats, filters }) {
     };
 
     return (
-        <AdminLayout title="Kelola Data Pengabdian">
+        <AdminLayout title="">
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-800">Data Pengabdian</h1>
-                        <p className="text-slate-600 mt-1">Kelola data pengabdian masyarakat</p>
-                    </div>
-                    <Link
-                        href={route('admin.pengabdian.create')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        + Tambah Data
-                    </Link>
-                </div>
+                <PageHeader
+                    title="Data Pengabdian"
+                    subtitle="Kelola data pengabdian masyarakat"
+                    icon={<span className="text-xl">🤝</span>}
+                    actions={(
+                        <Link href={route('admin.pengabdian.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">+ Tambah Data</Link>
+                    )}
+                />
 
                 {/* Statistics Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -124,69 +123,31 @@ export default function Index({ pengabdian, stats, filters }) {
                     </div>
 
                     {/* Table */}
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-slate-50 border-b">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Judul</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Institusi</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tahun</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-slate-200">
-                                {pengabdian.data.length > 0 ? (
-                                    pengabdian.data.map((item, index) => (
-                                        <tr key={item.id} className="hover:bg-slate-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                {pengabdian.from + index}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-slate-900">
-                                                <div className="max-w-md truncate">{item.judul}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                {item.nama || '-'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-slate-900">
-                                                <div className="max-w-xs truncate">{item.institusi}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                {item.thn_pelaksanaan || '-'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex gap-2">
-                                                    <Link
-                                                        href={route('admin.pengabdian.edit', item.id)}
-                                                        className="text-blue-600 hover:text-blue-900"
-                                                    >
-                                                        Edit
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(item)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        Hapus
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
-                                            Tidak ada data
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <AdminTable
+                        striped
+                        columns={[
+                            { key: 'no', title: 'No', className: 'w-12' },
+                            { key: 'judul', title: 'Judul', render: (v) => <div className="max-w-md truncate">{v}</div> },
+                            { key: 'nama', title: 'Nama' },
+                            { key: 'institusi', title: 'Institusi', render: (v) => <div className="max-w-xs truncate">{v}</div> },
+                            { key: 'thn_pelaksanaan', title: 'Tahun', render: (v) => <Badge color="blue">{v || '-'}</Badge> },
+                            { key: 'aksi', title: 'Aksi', className: 'w-28' },
+                        ]}
+                        data={(pengabdian.data || []).map((item, index) => ({
+                            ...item,
+                            no: pengabdian.from + index,
+                            aksi: (
+                                <div className="flex gap-2">
+                                    <Link href={route('admin.pengabdian.edit', item.id)} className="text-blue-600 hover:text-blue-900">Edit</Link>
+                                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-900">Hapus</button>
+                                </div>
+                            ),
+                        }))}
+                    />
 
                     {/* Pagination */}
                     {pengabdian.last_page > 1 && (
-                        <div className="px-6 py-4 border-t">
+                        <div className="px-6 py-4 border-t border-slate-200/60">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-slate-600">
                                     Menampilkan {pengabdian.from} - {pengabdian.to} dari {pengabdian.total} data

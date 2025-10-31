@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminTable from '../../../Components/AdminTable';
+import PageHeader from '../../../Components/PageHeader';
+import Badge from '../../../Components/Badge';
 
 export default function Index({ produk, stats, filters }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -32,21 +35,17 @@ export default function Index({ produk, stats, filters }) {
     };
 
     return (
-        <AdminLayout title="Kelola Data Produk">
+        <AdminLayout title="">
             <div className="space-y-6">
                 {/* Header */}
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-800">Data Produk</h1>
-                        <p className="text-slate-600 mt-1">Kelola data produk dan paten</p>
-                    </div>
-                    <Link
-                        href={route('admin.produk.create')}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        + Tambah Data
-                    </Link>
-                </div>
+                <PageHeader
+                    title="Data Produk"
+                    subtitle="Kelola data produk dan paten"
+                    icon={<span className="text-xl">📦</span>}
+                    actions={(
+                        <Link href={route('admin.produk.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">+ Tambah Data</Link>
+                    )}
+                />
 
                 {/* Statistics Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -110,69 +109,31 @@ export default function Index({ produk, stats, filters }) {
                     </div>
 
                     {/* Table */}
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-slate-50 border-b">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nama Produk</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Institusi</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Bidang</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">TKT</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-slate-200">
-                                {produk.data.length > 0 ? (
-                                    produk.data.map((item, index) => (
-                                        <tr key={item.id} className="hover:bg-slate-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                {produk.from + index}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-slate-900">
-                                                <div className="max-w-md truncate">{item.nama_produk}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-slate-900">
-                                                <div className="max-w-xs truncate">{item.institusi}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                {item.bidang || '-'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                                {item.tkt || '-'}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div className="flex gap-2">
-                                                    <Link
-                                                        href={route('admin.produk.edit', item.id)}
-                                                        className="text-blue-600 hover:text-blue-900"
-                                                    >
-                                                        Edit
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDelete(item)}
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        Hapus
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
-                                            Tidak ada data
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                    <AdminTable
+                        striped
+                        columns={[
+                            { key: 'no', title: 'No', className: 'w-12' },
+                            { key: 'nama_produk', title: 'Nama Produk', render: (v) => <div className="max-w-md truncate">{v}</div> },
+                            { key: 'institusi', title: 'Institusi', render: (v) => <div className="max-w-xs truncate">{v}</div> },
+                            { key: 'bidang', title: 'Bidang', render: (v) => <Badge color="purple">{v || '-'}</Badge> },
+                            { key: 'tkt', title: 'TKT', render: (v) => <Badge color="yellow">{v || '-'}</Badge> },
+                            { key: 'aksi', title: 'Aksi', className: 'w-28' },
+                        ]}
+                        data={(produk.data || []).map((item, index) => ({
+                            ...item,
+                            no: produk.from + index,
+                            aksi: (
+                                <div className="flex gap-2">
+                                    <Link href={route('admin.produk.edit', item.id)} className="text-blue-600 hover:text-blue-900">Edit</Link>
+                                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-900">Hapus</button>
+                                </div>
+                            ),
+                        }))}
+                    />
 
                     {/* Pagination */}
                     {produk.last_page > 1 && (
-                        <div className="px-6 py-4 border-t">
+                        <div className="px-6 py-4 border-t border-slate-200/60">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-slate-600">
                                     Menampilkan {produk.from} - {produk.to} dari {produk.total} data

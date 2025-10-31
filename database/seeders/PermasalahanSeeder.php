@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 class PermasalahanSeeder extends Seeder
 {
     private array $kabupatenToProv = [];
+    private int $tahun = 0;
 
     /**
      * Run the database seeds.
@@ -18,6 +19,9 @@ class PermasalahanSeeder extends Seeder
 
         DB::table('permasalahan_provinsi')->truncate();
         DB::table('permasalahan_kabupaten')->truncate();
+
+        // Tahun data, default ke tahun berjalan
+        $this->tahun = (int) date('Y');
 
         $this->loadKabupatenProvinsiLookup();
 
@@ -86,7 +90,7 @@ class PermasalahanSeeder extends Seeder
                     'jenis_permasalahan' => 'sampah',
                     'nilai' => $item['Timbulan Sampah Tahunan(ton)'] ?? null,
                     'satuan' => 'ton/tahun',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -106,7 +110,7 @@ class PermasalahanSeeder extends Seeder
                     'jenis_permasalahan' => 'sampah',
                     'nilai' => $item['Timbulan Sampah Tahunan(ton)'] ?? null,
                     'satuan' => 'ton/tahun',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -135,7 +139,7 @@ class PermasalahanSeeder extends Seeder
                     'jenis_permasalahan' => 'stunting',
                     'nilai' => $item['Persentase'] ?? null,
                     'satuan' => '%',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -155,7 +159,7 @@ class PermasalahanSeeder extends Seeder
                     'jenis_permasalahan' => 'stunting',
                     'nilai' => $item['Persentase'] ?? null,
                     'satuan' => '%',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -184,7 +188,7 @@ class PermasalahanSeeder extends Seeder
                     'jenis_permasalahan' => 'gizi_buruk',
                     'nilai' => $item['Persentase'] ?? null,
                     'satuan' => '%',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -204,7 +208,7 @@ class PermasalahanSeeder extends Seeder
                     'jenis_permasalahan' => 'gizi_buruk',
                     'nilai' => $item['Persentase'] ?? null,
                     'satuan' => '%',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -235,7 +239,7 @@ class PermasalahanSeeder extends Seeder
                     'metrik' => 'saidi',
                     'nilai' => $item['SAIDI (Jam/Pelanggan)'] ?? null,
                     'satuan' => 'Jam/Pelanggan',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -247,7 +251,7 @@ class PermasalahanSeeder extends Seeder
                     'metrik' => 'saifi',
                     'nilai' => $item['SAIFI (Kali/Pelanggan)'] ?? null,
                     'satuan' => 'Kali/Pelanggan',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -276,7 +280,7 @@ class PermasalahanSeeder extends Seeder
                     'jenis_permasalahan' => 'ketahanan_pangan',
                     'nilai' => $item['IKP'] ?? null,
                     'satuan' => 'IKP',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -296,7 +300,7 @@ class PermasalahanSeeder extends Seeder
                     'jenis_permasalahan' => 'ketahanan_pangan',
                     'nilai' => $item['IKP'] ?? null,
                     'satuan' => 'IKP',
-                    'tahun' => 2024,
+                    'tahun' => $this->tahun,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

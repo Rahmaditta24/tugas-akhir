@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminTable from '../../../Components/AdminTable';
+import PageHeader from '../../../Components/PageHeader';
+import Badge from '../../../Components/Badge';
 
 export default function Index({ penelitian, stats, filters }) {
     const [search, setSearch] = useState(filters.search || '');
@@ -32,7 +35,15 @@ export default function Index({ penelitian, stats, filters }) {
     };
 
     return (
-        <AdminLayout title="Kelola Data Penelitian">
+        <AdminLayout title="">
+            <PageHeader
+                title="Data Penelitian"
+                subtitle="Kelola data penelitian"
+                icon={<span className="text-xl">🔬</span>}
+                actions={(
+                    <Link href={route('admin.penelitian.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Tambah Data</Link>
+                )}
+            />
             {/* Statistics Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="bg-white rounded-lg shadow-sm p-6">
@@ -107,80 +118,35 @@ export default function Index({ penelitian, stats, filters }) {
             {/* Table */}
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-slate-50 border-b">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">No</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Peneliti</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Institusi</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Judul</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Tahun</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">Bidang Fokus</th>
-                                <th className="px-6 py-3 text-center text-xs font-medium text-slate-700 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                            {penelitian.data.length > 0 ? (
-                                penelitian.data.map((item, index) => (
-                                    <tr key={item.id} className="hover:bg-slate-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                            {penelitian.from + index}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-900">
-                                            {item.nama || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-900">
-                                            {item.institusi}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-900">
-                                            <div className="max-w-xs truncate" title={item.judul}>
-                                                {item.judul}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                                            {item.thn_pelaksanaan || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-900">
-                                            {item.bidang_fokus || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Link
-                                                    href={route('admin.penelitian.edit', item.id)}
-                                                    className="text-blue-600 hover:text-blue-800"
-                                                    title="Edit"
-                                                >
-                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDelete(item)}
-                                                    className="text-red-600 hover:text-red-800"
-                                                    title="Hapus"
-                                                >
-                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="7" className="px-6 py-8 text-center text-slate-500">
-                                        Tidak ada data penelitian
-                                    </td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+                    <AdminTable
+                        striped
+                        localFilterEnabled
+                        columnFilterEnabled
+                        columns={[
+                            { key: 'no', title: 'No', className: 'w-12' },
+                            { key: 'nama', title: 'Peneliti' },
+                            { key: 'institusi', title: 'Institusi', render: (v) => <div className="max-w-xs truncate">{v}</div> },
+                            { key: 'judul', title: 'Judul', render: (v, row) => <div className="max-w-xs truncate" title={v}>{v}</div> },
+                            { key: 'thn_pelaksanaan', title: 'Tahun', render: (v) => <Badge color="blue">{v || '-'}</Badge> },
+                            { key: 'bidang_fokus', title: 'Bidang Fokus', render: (v) => <Badge color="purple">{v || '-'}</Badge> },
+                            { key: 'aksi', title: 'Aksi', className: 'w-24' },
+                        ]}
+                        data={(penelitian.data || []).map((item, index) => ({
+                            ...item,
+                            no: penelitian.from + index,
+                            aksi: (
+                                <div className="flex items-center justify-center gap-2">
+                                    <Link href={route('admin.penelitian.edit', item.id)} className="text-blue-600 hover:text-blue-800" title="Edit">Edit</Link>
+                                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-800" title="Hapus">Hapus</button>
+                                </div>
+                            ),
+                        }))}
+                    />
                 </div>
 
                 {/* Pagination */}
                 {penelitian.last_page > 1 && (
-                    <div className="px-6 py-4 border-t flex items-center justify-between">
+                    <div className="px-6 py-4 border-t border-slate-200/60 flex items-center justify-between">
                         <p className="text-sm text-slate-600">
                             Menampilkan {penelitian.from} - {penelitian.to} dari {penelitian.total} data
                         </p>

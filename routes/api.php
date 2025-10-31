@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\PengabdianController;
 use App\Http\Controllers\Api\PermasalahanController;
 use App\Http\Controllers\Api\ProdukController;
 use App\Http\Controllers\Api\FasilitasLabController;
+use App\Http\Controllers\Api\AdminStatsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,3 +62,7 @@ Route::get('/health', function () {
         'timestamp' => now()->toISOString()
     ]);
 });
+
+// Admin realtime stats (no worker)
+Route::get('/admin/stats', [AdminStatsController::class, 'index']);
+Route::get('/admin/permasalahan-breakdown', [AdminStatsController::class, 'permasalahanBreakdown']);

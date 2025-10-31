@@ -16,7 +16,14 @@ export default function Login({ errors }) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
             <div className="w-full max-w-md">
-                {/* Logo/Header */}
+                {/* Logos */}
+                <div className="flex flex-wrap items-center justify-center gap-4 mb-6 opacity-90">
+                    <img src="/assets/images/logo/Ditjen%20Risbang.png" alt="Ditjen Risbang" className="h-8 object-contain max-w-[160px]" />
+                    <img src="/assets/images/logo/HUTRI80_FA_Logogram_Red.png" alt="HUT RI 80" className="h-8 object-contain max-w-[160px]" />
+                    <img src="/assets/images/logo/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png" alt="Kemendikbud" className="h-8 object-contain max-w-[200px]" />
+                    <img src="/assets/images/logo/Primary_Horizontal-Logo-1-1024x302.png" alt="Primary Horizontal" className="h-8 object-contain max-w-[220px]" />
+                </div>
+                {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-slate-800 mb-2">Dashboard Admin</h1>
                     <p className="text-slate-600">Pemetaan Riset Berdampak Indonesia</p>

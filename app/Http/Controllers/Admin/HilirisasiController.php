@@ -13,6 +13,14 @@ class HilirisasiController extends Controller
     {
         $query = Hilirisasi::query();
 
+        // Whitelisted sorting and pagination
+        $allowedSorts = ['id', 'judul', 'nama_pengusul', 'perguruan_tinggi', 'tahun'];
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
+        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
+        $perPage = (int) $request->get('perPage', 20);
+        if ($perPage < 10) { $perPage = 10; }
+        if ($perPage > 100) { $perPage = 100; }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -23,18 +31,30 @@ class HilirisasiController extends Controller
             });
         }
 
-        $hilirisasi = $query->orderByDesc('id')->paginate(20)->withQueryString();
+        // Select only fields used in table to shrink payload
+        $query->select(['id', 'judul', 'nama_pengusul', 'perguruan_tinggi', 'tahun']);
+
+        $hilirisasi = $query
+            ->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
 
         $stats = [
             'total' => Hilirisasi::count(),
-            'thisYear' => Hilirisasi::whereYear('created_at', date('Y'))->count(),
+            // Use the actual data year column instead of created_at
+            'thisYear' => Hilirisasi::where('tahun', (int) date('Y'))->count(),
             'withCoordinates' => Hilirisasi::whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count(),
         ];
 
         return Inertia::render('Admin/Hilirisasi/Index', [
             'hilirisasi' => $hilirisasi,
             'stats' => $stats,
-            'filters' => ['search' => $request->search],
+            'filters' => [
+                'search' => $request->get('search'),
+                'sort' => $sort,
+                'direction' => $direction,
+                'perPage' => $perPage,
+            ],
         ]);
     }
 
