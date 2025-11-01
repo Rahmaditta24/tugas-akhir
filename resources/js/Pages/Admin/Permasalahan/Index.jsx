@@ -17,6 +17,17 @@ export default function Index({ permasalahanProvinsi = {}, permasalahanKabupaten
         router.get(route('admin.permasalahan.index'), { search, perPage, sort, direction }, { preserveState: true, replace: true });
     };
 
+    const handleDelete = (id, type) => {
+        if (!confirm('Yakin ingin menghapus data ini?')) return;
+        router.delete(route('admin.permasalahan.destroy', id), {
+            data: { type },
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['permasalahanProvinsi', 'permasalahanKabupaten', 'stats'] });
+            }
+        });
+    };
+
     return (
         <AdminLayout title="">
             <div className="space-y-6">
@@ -99,6 +110,16 @@ export default function Index({ permasalahanProvinsi = {}, permasalahanKabupaten
                                         { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{v}</Badge> },
                                         { key: 'nilai', title: 'Nilai' },
                                         { key: 'tahun', title: 'Tahun' },
+                                        {
+                                            key: 'actions',
+                                            title: 'Aksi',
+                                            render: (_, row) => (
+                                                <div className="flex gap-2">
+                                                    <Link href={route('admin.permasalahan.edit', row.id) + '?type=provinsi'} className="px-3 py-1 text-sm bg-blue-50 text-blue-700 rounded hover:bg-blue-100">Edit</Link>
+                                                    <button onClick={() => handleDelete(row.id, 'provinsi')} className="px-3 py-1 text-sm bg-red-50 text-red-700 rounded hover:bg-red-100">Hapus</button>
+                                                </div>
+                                            )
+                                        },
                                     ]}
                                     data={permasalahanProvinsi.data || []}
                                 />
@@ -124,6 +145,16 @@ export default function Index({ permasalahanProvinsi = {}, permasalahanKabupaten
                                         { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{v}</Badge> },
                                         { key: 'nilai', title: 'Nilai' },
                                         { key: 'tahun', title: 'Tahun' },
+                                        {
+                                            key: 'actions',
+                                            title: 'Aksi',
+                                            render: (_, row) => (
+                                                <div className="flex gap-2">
+                                                    <Link href={route('admin.permasalahan.edit', row.id) + '?type=kabupaten'} className="px-3 py-1 text-sm bg-blue-50 text-blue-700 rounded hover:bg-blue-100">Edit</Link>
+                                                    <button onClick={() => handleDelete(row.id, 'kabupaten')} className="px-3 py-1 text-sm bg-red-50 text-red-700 rounded hover:bg-red-100">Hapus</button>
+                                                </div>
+                                            )
+                                        },
                                     ]}
                                     data={permasalahanKabupaten.data || []}
                                 />

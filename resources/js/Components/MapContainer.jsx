@@ -61,117 +61,150 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
         const source = (mapData && mapData.length) ? mapData : data;
         if (!mapInstanceRef.current || !source.length) return;
 
-        // Remove existing cluster group
+        // Clear existing markers
         if (clusterGroupRef.current) {
             mapInstanceRef.current.removeLayer(clusterGroupRef.current);
             clusterGroupRef.current = null;
         }
 
-        console.log('MapContainer rendering markers:', source.length, 'items, displayMode:', displayMode);
-
-        // Create marker cluster group exactly like peta-bima
-        const clusterGroup = L.markerClusterGroup({
-            maxClusterRadius: 50,
-            iconCreateFunction: function (cluster) {
-                const childCount = cluster.getChildCount();
-                let color = '#D5A6BD'; // Default color
-                
-                // Get the most common color from child markers
-                const childMarkers = cluster.getAllChildMarkers();
-                const colorCounts = {};
-                childMarkers.forEach(marker => {
-                    const markerColor = marker.options.fillColor || '#D5A6BD';
-                    colorCounts[markerColor] = (colorCounts[markerColor] || 0) + 1;
-                });
-                
-                const mostCommonColor = Object.keys(colorCounts).reduce((a, b) => 
-                    colorCounts[a] > colorCounts[b] ? a : b, null
-                );
-                if (mostCommonColor) {
-                    color = mostCommonColor;
-                }
-
-                // Cluster icon exactly like peta-bima: 40px, white border, no multiple rings
-                return L.divIcon({
-                    html: `<div style="background-color: ${color}; width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">${childCount}</div>`,
-                    className: 'custom-cluster-icon',
-                    iconSize: L.point(40, 40, true)
-                });
-            },
-            spiderfyOnMaxZoom: true,
-            showCoverageOnHover: true,
-            zoomToBoundsOnClick: true
+        // Clear any direct markers
+        mapInstanceRef.current.eachLayer((layer) => {
+            if (layer instanceof L.Marker || layer instanceof L.CircleMarker) {
+                mapInstanceRef.current.removeLayer(layer);
+            }
         });
+
+        // Detect if this is permasalahan data
+        const isPermasalahan = source.length > 0 && source[0].jenis_permasalahan !== undefined;
+
+        console.log('MapContainer rendering markers:', source.length, 'items, isPermasalahan:', isPermasalahan);
 
         const indonesiaBounds = L.latLngBounds([-11, 94], [6, 141]);
         let addedCount = 0;
         let skippedCount = 0;
 
-        // Add individual circle markers to cluster group
-        source.forEach((item, index) => {
-            const latRaw = item.pt_latitude ?? item.latitude;
-            const lngRaw = item.pt_longitude ?? item.longitude;
-            const lat = parseFloat(latRaw);
-            const lng = parseFloat(lngRaw);
+        if (isPermasalahan) {
+            // For permasalahan: use clustering like peta-bima script-permasalahan.js
+            const clusterGroup = L.markerClusterGroup({
+                maxClusterRadius: 50,
+                disableClusteringAtZoom: 17, // Disable clustering at high zoom, markers will separate
+                iconCreateFunction: function (cluster) {
+                    const childCount = cluster.getChildCount();
+                    let color = '#D5A6BD';
+                    
+                    const childMarkers = cluster.getAllChildMarkers();
+                    const colorCounts = {};
+                    childMarkers.forEach(marker => {
+                        const markerColor = marker.options.fillColor || '#D5A6BD';
+                        colorCounts[markerColor] = (colorCounts[markerColor] || 0) + 1;
+                    });
+                    
+                    const mostCommonColor = Object.keys(colorCounts).reduce((a, b) => 
+                        colorCounts[a] > colorCounts[b] ? a : b, null
+                    );
+                    if (mostCommonColor) {
+                        color = mostCommonColor;
+                    }
 
-            // Validate coordinates
-            if (isNaN(lat) || isNaN(lng) || lat === null || lng === null || !indonesiaBounds.contains([lat, lng])) {
-                console.warn(`Skipping item ${index}: Invalid coords`);
-                skippedCount++;
-                return;
-            }
-
-            // Create circle marker exactly like peta-bima
-            const bubbleColor = getBubbleColor(item);
-            const bubble = L.circleMarker([lat, lng], {
-                radius: 8,
-                fillColor: bubbleColor,
-                color: '#000',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.1
+                    return L.divIcon({
+                        html: `<div style="background-color: ${color}; width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">${childCount}</div>`,
+                        className: 'custom-cluster-icon',
+                        iconSize: L.point(40, 40, true)
+                    });
+                },
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: true,
+                zoomToBoundsOnClick: true
             });
 
-            // Store fillColor for cluster icon color detection
-            bubble.options.fillColor = bubbleColor;
+            source.forEach((item, index) => {
+                const latRaw = item.pt_latitude ?? item.latitude;
+                const lngRaw = item.pt_longitude ?? item.longitude;
+                const lat = parseFloat(latRaw);
+                const lng = parseFloat(lngRaw);
 
-            // Create popup content
-            const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
-            
-            let popupContent = '<div class="p-3">';
-            
-            if (item.jenis_permasalahan) {
-                // Permasalahan popup
+                if (isNaN(lat) || isNaN(lng) || lat === null || lng === null || !indonesiaBounds.contains([lat, lng])) {
+                    skippedCount++;
+                    return;
+                }
+
+                const bubbleColor = getBubbleColor(item);
+                const bubble = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    fillColor: bubbleColor,
+                    color: '#000',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.1
+                });
+
+                bubble.options.fillColor = bubbleColor;
+
+                const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
+                let popupContent = '<div class="p-3">';
                 popupContent += `<h3 class="font-bold text-[#3E7DCA] mb-2">${safeValue(item.jenis_permasalahan)}</h3>`;
                 if (item.provinsi) popupContent += `<p class="text-sm"><strong>Provinsi:</strong> ${safeValue(item.provinsi)}</p>`;
-                if (item.kabupaten) popupContent += `<p class="text-sm"><strong>Kabupaten:</strong> ${safeValue(item.kabupaten)}</p>`;
+                if (item.kabupaten_kota) popupContent += `<p class="text-sm"><strong>Kabupaten:</strong> ${safeValue(item.kabupaten_kota)}</p>`;
                 if (item.tahun) popupContent += `<p class="text-sm"><strong>Tahun:</strong> ${safeValue(item.tahun)}</p>`;
-            } else {
-                // Penelitian/Hilirisasi/Pengabdian popup
+                if (item.nilai !== null && item.nilai !== undefined) popupContent += `<p class="text-sm"><strong>Nilai:</strong> ${safeValue(item.nilai)} ${safeValue(item.satuan)}</p>`;
+                popupContent += '</div>';
+                
+                bubble.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
+                bubble.on('click', function (e) {
+                    L.DomEvent.stopPropagation(e);
+                });
+
+                clusterGroup.addLayer(bubble);
+                addedCount++;
+            });
+
+            if (addedCount > 0) {
+                clusterGroup.addTo(mapInstanceRef.current);
+                clusterGroupRef.current = clusterGroup;
+            }
+        } else {
+            // For penelitian/hilirisasi/pengabdian: NO clustering, render all markers directly
+            // This matches peta-bima behavior - they use manual grouping based on zoom
+            source.forEach((item, index) => {
+                const latRaw = item.pt_latitude ?? item.latitude;
+                const lngRaw = item.pt_longitude ?? item.longitude;
+                const lat = parseFloat(latRaw);
+                const lng = parseFloat(lngRaw);
+
+                if (isNaN(lat) || isNaN(lng) || lat === null || lng === null || !indonesiaBounds.contains([lat, lng])) {
+                    skippedCount++;
+                    return;
+                }
+
+                const bubbleColor = getBubbleColor(item);
+                const bubble = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    fillColor: bubbleColor,
+                    color: '#000',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.1
+                });
+
+                const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
+                let popupContent = '<div class="p-3">';
                 if (item.institusi) popupContent += `<h3 class="font-bold text-[#3E7DCA] mb-2">${safeValue(item.institusi)}</h3>`;
                 if (item.provinsi) popupContent += `<p class="text-sm"><strong>Provinsi:</strong> ${safeValue(item.provinsi)}</p>`;
                 if (item.bidang_fokus) popupContent += `<p class="text-sm"><strong>Bidang Fokus:</strong> ${safeValue(item.bidang_fokus)}</p>`;
                 if (item.judul) popupContent += `<p class="text-sm"><strong>Judul:</strong> ${safeValue(item.judul)}</p>`;
-            }
-            
-            popupContent += '</div>';
-            
-            bubble.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
-            bubble.on('click', function (e) {
-                L.DomEvent.stopPropagation(e);
-                // You can add modal/detail view here if needed
+                popupContent += '</div>';
+                
+                bubble.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
+                bubble.on('click', function (e) {
+                    L.DomEvent.stopPropagation(e);
+                });
+
+                bubble.addTo(mapInstanceRef.current);
+                addedCount++;
             });
-
-            clusterGroup.addLayer(bubble);
-            addedCount++;
-        });
-
-        if (addedCount > 0) {
-            clusterGroup.addTo(mapInstanceRef.current);
-            clusterGroupRef.current = clusterGroup;
         }
 
-        console.log(`Rendered ${addedCount} markers (skipped ${skippedCount})`);
+        console.log(`Rendered ${addedCount} markers (skipped ${skippedCount}), clustering: ${isPermasalahan}`);
 
     }, [mapData, data, displayMode]);
 

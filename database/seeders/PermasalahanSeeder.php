@@ -51,18 +51,61 @@ class PermasalahanSeeder extends Seeder
             return;
         }
         $raw = json_decode(file_get_contents($kabPath), true);
-        if (!is_array($raw)) {
+        
+        // Handle GeoJSON format (FeatureCollection)
+        if (isset($raw['type']) && $raw['type'] === 'FeatureCollection' && isset($raw['features'])) {
+            foreach ($raw['features'] as $feature) {
+                if (isset($feature['properties'])) {
+                    $props = $feature['properties'];
+                    // GeoJSON menggunakan WADMKK untuk kabupaten dan WADMPR untuk provinsi
+                    $kab = $this->normalize($props['WADMKK'] ?? '');
+                    $prov = $props['WADMPR'] ?? null;
+                    if ($kab && $prov) {
+                        $this->kabupatenToProv[$kab] = $prov;
+                    }
+                }
+            }
+        } 
+        // Handle simple array format (fallback)
+        else if (is_array($raw)) {
+            foreach ($raw as $row) {
+                $kab = $this->normalize($row['kabupaten_kota'] ?? $row['WADMKK'] ?? '');
+                $prov = $row['provinsi'] ?? $row['WADMPR'] ?? null;
+                if ($kab && $prov) {
+                    $this->kabupatenToProv[$kab] = $prov;
+                }
+            }
+        } else {
             $this->command->warn('Format kabupaten lookup tidak valid');
             return;
         }
-        foreach ($raw as $row) {
-            $kab = $this->normalize($row['kabupaten_kota'] ?? '');
-            $prov = $row['provinsi'] ?? null;
-            if ($kab && $prov) {
-                $this->kabupatenToProv[$kab] = $prov;
-            }
+        
+        // Tambahkan mapping manual untuk kabupaten yang tidak ada di lookup
+        $manualMapping = [
+            'kota palangkaraya' => 'Kalimantan Tengah',
+            'kep. siau tagulandang biaro' => 'Sulawesi Utara',
+            'siau tagulandang biaro' => 'Sulawesi Utara',
+            'pangkajene dan kepulauan' => 'Sulawesi Selatan',
+            'kota parepare' => 'Sulawesi Selatan',
+            'sibolga' => 'Sumatera Utara',
+            'kota tanjungbalai' => 'Sumatera Utara',
+            'kota pematang siantar' => 'Sumatera Utara',
+            'kota padangsidimpuan' => 'Sumatera Utara',
+            'kota padang sidimpuan' => 'Sumatera Utara',
+            'kepulauan seribu' => 'DKI Jakarta',
+            'kota baubau' => 'Sulawesi Tenggara',
+            'kota lubuklinggau' => 'Sumatera Selatan',
+            'kota pangkalpinang' => 'Kepulauan Bangka Belitung',
+            'kota tanjungpinang' => 'Kepulauan Riau',
+            'mamuju utara' => 'Sulawesi Barat',
+            'maluku tenggara barat' => 'Maluku',
+        ];
+        
+        foreach ($manualMapping as $kab => $prov) {
+            $this->kabupatenToProv[$this->normalize($kab)] = $prov;
         }
-        $this->command->info('Lookup kabupaten->provinsi dimuat: ' . count($this->kabupatenToProv) . ' entri');
+        
+        $this->command->info('Lookup kabupaten->provinsi dimuat: ' . count($this->kabupatenToProv) . ' entri (termasuk ' . count($manualMapping) . ' manual mapping)');
     }
 
     private function normalize(?string $text): string
@@ -101,8 +144,9 @@ class PermasalahanSeeder extends Seeder
         if (isset($data['Kabupaten'])) {
             foreach ($data['Kabupaten'] as $item) {
                 $kab = $item['Kabupaten/Kota'] ?? null;
-                $prov = $item['Provinsi'] ?? ($this->kabupatenToProv[$this->normalize($kab)] ?? null);
-                if (!$prov) { continue; }
+                // Prioritaskan Provinsi dari JSON, lalu coba lookup
+                $prov = $item['Provinsi'] ?? $this->kabupatenToProv[$this->normalize($kab)] ?? null;
+                if (!$prov || !$kab) { continue; }
 
                 DB::table('permasalahan_kabupaten')->insert([
                     'kabupaten_kota' => $kab,
@@ -150,8 +194,9 @@ class PermasalahanSeeder extends Seeder
         if (isset($data['Kabupaten'])) {
             foreach ($data['Kabupaten'] as $item) {
                 $kab = $item['Kabupaten/Kota'] ?? null;
-                $prov = $item['Provinsi'] ?? ($this->kabupatenToProv[$this->normalize($kab)] ?? null);
-                if (!$prov) { continue; }
+                // Prioritaskan Provinsi dari JSON, lalu coba lookup
+                $prov = $item['Provinsi'] ?? $this->kabupatenToProv[$this->normalize($kab)] ?? null;
+                if (!$prov || !$kab) { continue; }
 
                 DB::table('permasalahan_kabupaten')->insert([
                     'kabupaten_kota' => $kab,
@@ -199,8 +244,9 @@ class PermasalahanSeeder extends Seeder
         if (isset($data['Kabupaten'])) {
             foreach ($data['Kabupaten'] as $item) {
                 $kab = $item['Kabupaten/Kota'] ?? null;
-                $prov = $item['Provinsi'] ?? ($this->kabupatenToProv[$this->normalize($kab)] ?? null);
-                if (!$prov) { continue; }
+                // Prioritaskan Provinsi dari JSON, lalu coba lookup
+                $prov = $item['Provinsi'] ?? $this->kabupatenToProv[$this->normalize($kab)] ?? null;
+                if (!$prov || !$kab) { continue; }
 
                 DB::table('permasalahan_kabupaten')->insert([
                     'kabupaten_kota' => $kab,
@@ -291,8 +337,9 @@ class PermasalahanSeeder extends Seeder
         if (isset($data['Kabupaten'])) {
             foreach ($data['Kabupaten'] as $item) {
                 $kab = $item['Kabupaten/Kota'] ?? null;
-                $prov = $item['Provinsi'] ?? ($this->kabupatenToProv[$this->normalize($kab)] ?? null);
-                if (!$prov) { continue; }
+                // Prioritaskan Provinsi dari JSON, lalu coba lookup
+                $prov = $item['Provinsi'] ?? $this->kabupatenToProv[$this->normalize($kab)] ?? null;
+                if (!$prov || !$kab) { continue; }
 
                 DB::table('permasalahan_kabupaten')->insert([
                     'kabupaten_kota' => $kab,

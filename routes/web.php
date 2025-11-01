@@ -60,6 +60,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('permasalahan', [\App\Http\Controllers\Admin\PermasalahanController::class, 'index'])->name('permasalahan.index');
     Route::get('permasalahan/create', [\App\Http\Controllers\Admin\PermasalahanController::class, 'create'])->name('permasalahan.create');
     Route::post('permasalahan', [\App\Http\Controllers\Admin\PermasalahanController::class, 'store'])->name('permasalahan.store');
+    Route::get('permasalahan/{id}/edit', [\App\Http\Controllers\Admin\PermasalahanController::class, 'edit'])->name('permasalahan.edit');
+    Route::put('permasalahan/{id}', [\App\Http\Controllers\Admin\PermasalahanController::class, 'update'])->name('permasalahan.update');
+    Route::delete('permasalahan/{id}', [\App\Http\Controllers\Admin\PermasalahanController::class, 'destroy'])->name('permasalahan.destroy');
     // Import JSON -> DB (temporary endpoint, auth-protected)
     Route::post('permasalahan/import', [\App\Http\Controllers\Admin\PermasalahanController::class, 'importFromFiles'])->name('permasalahan.import');
 });

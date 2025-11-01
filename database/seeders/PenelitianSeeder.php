@@ -54,10 +54,14 @@ class PenelitianSeeder extends Seeder
             $insertData = [];
 
             foreach ($chunk as $item) {
-                // Skip if no institusi or judul (minimal required)
-                $institusi = trim($item['institusi'] ?? '');
-                $judul = trim($item['judul'] ?? '');
-                if (empty($institusi) || empty($judul)) {
+                // Sama seperti peta-bima: ambil semua data tanpa filter
+                // (peta-bima/js/script.js line 606: "Tidak filter lagi, ambil semua data")
+                $institusi = isset($item['institusi']) ? trim($item['institusi']) : '';
+                $judul = isset($item['judul']) ? trim($item['judul']) : '';
+                
+                // Hanya skip jika KEDUA field benar-benar kosong (null/empty setelah trim)
+                // Ini lebih longgar daripada sebelumnya yang skip jika SALAH SATU kosong
+                if (empty($institusi) && empty($judul)) {
                     $skipped++;
                     $bar->advance();
                     continue;

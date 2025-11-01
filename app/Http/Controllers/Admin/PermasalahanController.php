@@ -105,6 +105,78 @@ class PermasalahanController extends Controller
         return redirect()->route('admin.permasalahan.index')->with('success', 'Data permasalahan berhasil ditambahkan');
     }
 
+    public function edit(Request $request, $id)
+    {
+        $type = $request->get('type', 'provinsi');
+        $permasalahan = null;
+
+        if ($type === 'provinsi') {
+            $permasalahan = PermasalahanProvinsi::findOrFail($id);
+            $permasalahan->type = 'provinsi';
+        } else {
+            $permasalahan = PermasalahanKabupaten::findOrFail($id);
+            $permasalahan->type = 'kabupaten';
+        }
+
+        return Inertia::render('Admin/Permasalahan/Edit', [
+            'permasalahan' => $permasalahan,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'type' => ['required', 'in:provinsi,kabupaten'],
+            'provinsi' => ['nullable', 'string', 'max:255'],
+            'kabupaten_kota' => ['nullable', 'string', 'max:255'],
+            'jenis_permasalahan' => ['required', 'string', 'max:255'],
+            'nilai' => ['nullable', 'numeric'],
+            'satuan' => ['nullable', 'string', 'max:50'],
+            'metrik' => ['nullable', 'string', 'max:255'],
+            'tahun' => ['nullable', 'integer'],
+        ]);
+
+        if ($validated['type'] === 'provinsi') {
+            $permasalahan = PermasalahanProvinsi::findOrFail($id);
+            $permasalahan->update([
+                'provinsi' => $validated['provinsi'] ?? null,
+                'jenis_permasalahan' => $validated['jenis_permasalahan'],
+                'nilai' => $validated['nilai'] ?? null,
+                'satuan' => $validated['satuan'] ?? null,
+                'metrik' => $validated['metrik'] ?? null,
+                'tahun' => $validated['tahun'] ?? null,
+            ]);
+        } else {
+            $permasalahan = PermasalahanKabupaten::findOrFail($id);
+            $permasalahan->update([
+                'kabupaten_kota' => $validated['kabupaten_kota'] ?? null,
+                'provinsi' => $validated['provinsi'] ?? null,
+                'jenis_permasalahan' => $validated['jenis_permasalahan'],
+                'nilai' => $validated['nilai'] ?? null,
+                'satuan' => $validated['satuan'] ?? null,
+                'metrik' => $validated['metrik'] ?? null,
+                'tahun' => $validated['tahun'] ?? null,
+            ]);
+        }
+
+        return redirect()->route('admin.permasalahan.index')->with('success', 'Data permasalahan berhasil diperbarui');
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $type = $request->get('type', 'provinsi');
+
+        if ($type === 'provinsi') {
+            $permasalahan = PermasalahanProvinsi::findOrFail($id);
+        } else {
+            $permasalahan = PermasalahanKabupaten::findOrFail($id);
+        }
+
+        $permasalahan->delete();
+
+        return back()->with('success', 'Data permasalahan berhasil dihapus');
+    }
+
     public function importFromFiles(Request $request)
     {
         $tahun = (int) ($request->get('tahun') ?? date('Y'));
