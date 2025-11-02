@@ -77,7 +77,7 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
         // Detect if this is permasalahan data
         const isPermasalahan = source.length > 0 && source[0].jenis_permasalahan !== undefined;
 
-        console.log('MapContainer rendering markers:', source.length, 'items, isPermasalahan:', isPermasalahan);
+        // Removed console.log for production performance
 
         const indonesiaBounds = L.latLngBounds([-11, 94], [6, 141]);
         let addedCount = 0;
@@ -258,7 +258,8 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
             }
         }
 
-        console.log(`Rendered ${addedCount} markers (skipped ${skippedCount}), clustering: ${isPermasalahan}`);
+        // Removed console.log for production performance
+        // Markers rendered successfully
 
     }, [mapData, data, displayMode]);
 

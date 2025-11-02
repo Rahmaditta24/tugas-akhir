@@ -27,6 +27,9 @@ class ProdukPageController extends Controller
 
         $cacheKey = 'map_data_produk_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
+            $mapDataArray = [];
+            
+            // OPTIMIZED: Use cursor() for memory-efficient iteration
             $query = (clone $baseQuery)->select(
                 'id',
                 'institusi',
@@ -34,27 +37,24 @@ class ProdukPageController extends Controller
                 'longitude as pt_longitude',
                 'provinsi',
                 'bidang as bidang_fokus',
-                'nama_produk as judul'
+                DB::raw('SUBSTRING(nama_produk, 1, 150) as judul_short')
             )
             ->whereNotNull('latitude')
             ->whereNotNull('longitude');
             
-            // Process in chunks to avoid memory issues
-            $mapDataArray = [];
-            $query->chunk(5000, function($chunk) use (&$mapDataArray) {
-                foreach ($chunk as $item) {
-                    $mapDataArray[] = [
-                        'id' => $item->id,
-                        'institusi' => $item->institusi,
-                        'pt_latitude' => (float)$item->pt_latitude,
-                        'pt_longitude' => (float)$item->pt_longitude,
-                        'provinsi' => $item->provinsi,
-                        'bidang_fokus' => $item->bidang_fokus,
-                        'judul' => $item->judul ? substr($item->judul, 0, 150) : null,
-                        'count' => 1,
-                    ];
-                }
-            });
+            // Cursor loads one record at a time - minimal memory
+            foreach ($query->cursor() as $item) {
+                $mapDataArray[] = [
+                    'id' => $item->id,
+                    'institusi' => $item->institusi,
+                    'pt_latitude' => (float)$item->pt_latitude,
+                    'pt_longitude' => (float)$item->pt_longitude,
+                    'provinsi' => $item->provinsi,
+                    'bidang_fokus' => $item->bidang_fokus,
+                    'judul' => $item->judul_short,
+                    'count' => 1,
+                ];
+            }
             
             return $mapDataArray;
         });
