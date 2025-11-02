@@ -64,10 +64,12 @@ export default function Edit({ permasalahan }) {
                         <label className="block text-sm text-slate-600 mb-1">Satuan</label>
                         <input name="satuan" value={values.satuan} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
                     </div>
-                    <div>
-                        <label className="block text-sm text-slate-600 mb-1">Metrik</label>
-                        <input name="metrik" value={values.metrik} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                    </div>
+                    {values.type === 'provinsi' && (
+                        <div>
+                            <label className="block text-sm text-slate-600 mb-1">Metrik</label>
+                            <input name="metrik" value={values.metrik} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="opsional (mis. saidi/saifi)" />
+                        </div>
+                    )}
                     <div>
                         <label className="block text-sm text-slate-600 mb-1">Tahun</label>
                         <input name="tahun" value={values.tahun} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md" />

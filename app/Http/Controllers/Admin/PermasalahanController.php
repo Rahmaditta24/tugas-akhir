@@ -42,7 +42,7 @@ class PermasalahanController extends Controller
             ->withQueryString();
 
         $permasalahanKabupaten = $kabupatenQuery
-            ->select(['id','kabupaten_kota','provinsi','jenis_permasalahan','metrik','nilai','satuan','tahun'])
+            ->select(['id','kabupaten_kota','provinsi','jenis_permasalahan','nilai','satuan','tahun'])
             ->orderBy($sort, $direction)
             ->paginate($perPage, ['*'], 'kabPage')
             ->withQueryString();
@@ -80,6 +80,7 @@ class PermasalahanController extends Controller
             'jenis_permasalahan' => ['required', 'string', 'max:255'],
             'nilai' => ['nullable', 'numeric'],
             'satuan' => ['nullable', 'string', 'max:50'],
+            'metrik' => ['nullable', 'string', 'max:255'],
             'tahun' => ['nullable', 'integer'],
         ]);
 
@@ -89,6 +90,7 @@ class PermasalahanController extends Controller
                 'jenis_permasalahan' => $validated['jenis_permasalahan'],
                 'nilai' => $validated['nilai'] ?? null,
                 'satuan' => $validated['satuan'] ?? null,
+                'metrik' => $validated['metrik'] ?? null,
                 'tahun' => $validated['tahun'] ?? null,
             ]);
         } else {
@@ -154,7 +156,6 @@ class PermasalahanController extends Controller
                 'jenis_permasalahan' => $validated['jenis_permasalahan'],
                 'nilai' => $validated['nilai'] ?? null,
                 'satuan' => $validated['satuan'] ?? null,
-                'metrik' => $validated['metrik'] ?? null,
                 'tahun' => $validated['tahun'] ?? null,
             ]);
         }

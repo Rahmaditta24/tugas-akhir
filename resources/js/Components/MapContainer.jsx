@@ -163,45 +163,99 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
                 clusterGroupRef.current = clusterGroup;
             }
         } else {
-            // For penelitian/hilirisasi/pengabdian: NO clustering, render all markers directly
-            // This matches peta-bima behavior - they use manual grouping based on zoom
-            source.forEach((item, index) => {
-                const latRaw = item.pt_latitude ?? item.latitude;
-                const lngRaw = item.pt_longitude ?? item.longitude;
-                const lat = parseFloat(latRaw);
-                const lng = parseFloat(lngRaw);
-
-                if (isNaN(lat) || isNaN(lng) || lat === null || lng === null || !indonesiaBounds.contains([lat, lng])) {
-                    skippedCount++;
-                    return;
-                }
-
-                const bubbleColor = getBubbleColor(item);
-                const bubble = L.circleMarker([lat, lng], {
-                    radius: 8,
-                    fillColor: bubbleColor,
-                    color: '#000',
-                    weight: 2,
-                    opacity: 1,
-                    fillOpacity: 0.1
-                });
-
-                const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
-                let popupContent = '<div class="p-3">';
-                if (item.institusi) popupContent += `<h3 class="font-bold text-[#3E7DCA] mb-2">${safeValue(item.institusi)}</h3>`;
-                if (item.provinsi) popupContent += `<p class="text-sm"><strong>Provinsi:</strong> ${safeValue(item.provinsi)}</p>`;
-                if (item.bidang_fokus) popupContent += `<p class="text-sm"><strong>Bidang Fokus:</strong> ${safeValue(item.bidang_fokus)}</p>`;
-                if (item.judul) popupContent += `<p class="text-sm"><strong>Judul:</strong> ${safeValue(item.judul)}</p>`;
-                popupContent += '</div>';
-                
-                bubble.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
-                bubble.on('click', function (e) {
-                    L.DomEvent.stopPropagation(e);
-                });
-
-                bubble.addTo(mapInstanceRef.current);
-                addedCount++;
+            // For penelitian/hilirisasi/pengabdian: USE CLUSTERING for performance
+            // Clustering is essential for large datasets (66k+ markers)
+            const clusterGroup = L.markerClusterGroup({
+                maxClusterRadius: 80,
+                disableClusteringAtZoom: 15, // Show individual markers at zoom 15+
+                chunkedLoading: true, // Load markers in chunks
+                chunkDelay: 50, // Delay between chunks (ms)
+                chunkProgress: function() {
+                    // Optional: show loading progress
+                },
+                iconCreateFunction: function (cluster) {
+                    const childCount = cluster.getChildCount();
+                    let size = 'small';
+                    if (childCount > 100) size = 'large';
+                    else if (childCount > 50) size = 'medium';
+                    
+                    const sizes = {
+                        small: { width: 40, fontSize: 12 },
+                        medium: { width: 50, fontSize: 13 },
+                        large: { width: 60, fontSize: 14 }
+                    };
+                    
+                    return L.divIcon({
+                        html: `<div style="background-color: rgba(39, 127, 245, 0.8); width: ${sizes[size].width}px; height: ${sizes[size].width}px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${sizes[size].fontSize}px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${childCount}</div>`,
+                        className: 'custom-cluster-icon',
+                        iconSize: L.point(sizes[size].width, sizes[size].width, true)
+                    });
+                },
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                removeOutsideVisibleBounds: true // Remove markers outside viewport
             });
+
+            // Process markers in batches to avoid blocking
+            const BATCH_SIZE = 1000;
+            const batches = [];
+            for (let i = 0; i < source.length; i += BATCH_SIZE) {
+                batches.push(source.slice(i, i + BATCH_SIZE));
+            }
+
+            // Process first batch immediately, then queue others
+            const processBatch = (batch, batchIndex) => {
+                setTimeout(() => {
+                    batch.forEach((item) => {
+                        const latRaw = item.pt_latitude ?? item.latitude;
+                        const lngRaw = item.pt_longitude ?? item.longitude;
+                        const lat = parseFloat(latRaw);
+                        const lng = parseFloat(lngRaw);
+
+                        if (isNaN(lat) || isNaN(lng) || lat === null || lng === null || !indonesiaBounds.contains([lat, lng])) {
+                            skippedCount++;
+                            return;
+                        }
+
+                        const bubbleColor = getBubbleColor(item);
+                        const bubble = L.circleMarker([lat, lng], {
+                            radius: 6,
+                            fillColor: bubbleColor,
+                            color: '#fff',
+                            weight: 1.5,
+                            opacity: 0.8,
+                            fillOpacity: 0.6
+                        });
+
+                        const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
+                        let popupContent = '<div class="p-3" style="max-width: 300px;">';
+                        if (item.institusi) popupContent += `<h3 class="font-bold text-[#3E7DCA] mb-2 text-sm">${safeValue(item.institusi)}</h3>`;
+                        if (item.provinsi) popupContent += `<p class="text-xs"><strong>Provinsi:</strong> ${safeValue(item.provinsi)}</p>`;
+                        if (item.bidang_fokus) popupContent += `<p class="text-xs"><strong>Bidang:</strong> ${safeValue(item.bidang_fokus)}</p>`;
+                        if (item.judul) popupContent += `<p class="text-xs mt-1"><strong>Judul:</strong> ${safeValue(item.judul).substring(0, 100)}${item.judul && item.judul.length > 100 ? '...' : ''}</p>`;
+                        popupContent += '</div>';
+                        
+                        bubble.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
+                        bubble.on('click', function (e) {
+                            L.DomEvent.stopPropagation(e);
+                        });
+
+                        clusterGroup.addLayer(bubble);
+                        addedCount++;
+                    });
+                }, batchIndex * 10); // Stagger batches by 10ms
+            };
+
+            batches.forEach(processBatch);
+
+            if (batches.length > 0) {
+                // Add cluster group to map after first batch starts
+                setTimeout(() => {
+                    clusterGroup.addTo(mapInstanceRef.current);
+                    clusterGroupRef.current = clusterGroup;
+                }, 50);
+            }
         }
 
         console.log(`Rendered ${addedCount} markers (skipped ${skippedCount}), clustering: ${isPermasalahan}`);

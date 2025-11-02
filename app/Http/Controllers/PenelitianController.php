@@ -45,38 +45,54 @@ class PenelitianController extends Controller
             $baseQuery->search($request->search);
         }
 
-        // Get statistics without loading all data into memory
-        $statsQuery = clone $baseQuery;
-        $totalStats = [
-            'totalResearch' => (clone $statsQuery)->count(),
-            'totalUniversities' => (clone $statsQuery)->distinct('institusi')->count('institusi'),
-            'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'),
-            'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
-        ];
-
-        // For map: send individual data points (like original peta-bima)
-        // Only select needed fields for map markers to reduce payload
-        $mapData = (clone $baseQuery)->select(
-            'id',
-            'institusi',
-            'pt_latitude',
-            'pt_longitude',
-            'provinsi',
-            'bidang_fokus'
-        )
-        ->whereNotNull('pt_latitude')
-        ->whereNotNull('pt_longitude')
-        ->get()
-        ->map(function($item) {
+        // Get statistics without loading all data into memory (cached for performance)
+        $statsCacheKey = 'stats_penelitian_' . md5(json_encode($request->all()));
+        $totalStats = Cache::remember($statsCacheKey, 3600, function() use ($baseQuery) {
+            $statsQuery = clone $baseQuery;
             return [
-                'id' => $item->id,
-                'institusi' => $item->institusi,
-                'pt_latitude' => (float)$item->pt_latitude,
-                'pt_longitude' => (float)$item->pt_longitude,
-                'provinsi' => $item->provinsi,
-                'bidang_fokus' => $item->bidang_fokus,
-                'count' => 1,  // Individual marker
+                'totalResearch' => (clone $statsQuery)->count(),
+                'totalUniversities' => (clone $statsQuery)->distinct('institusi')->count('institusi'),
+                'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'),
+                'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
             ];
+        });
+
+        // For map: send individual data points (cached for performance)
+        // Only select needed fields for map markers to reduce payload
+        // OPTIMIZED: Use cursor() for memory-efficient iteration
+        $cacheKey = 'map_data_penelitian_' . md5(json_encode($request->all()));
+        $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
+            $mapDataArray = [];
+
+            // Use cursor() instead of chunk() - more memory efficient
+            // Only iterate through needed fields
+            $query = (clone $baseQuery)->select(
+                'id',
+                'institusi',
+                'pt_latitude',
+                'pt_longitude',
+                'provinsi',
+                'bidang_fokus',
+                DB::raw('SUBSTRING(judul, 1, 150) as judul_short')
+            )
+            ->whereNotNull('pt_latitude')
+            ->whereNotNull('pt_longitude');
+
+            // Cursor loads one record at a time - minimal memory
+            foreach ($query->cursor() as $item) {
+                $mapDataArray[] = [
+                    'id' => $item->id,
+                    'institusi' => $item->institusi,
+                    'pt_latitude' => (float)$item->pt_latitude,
+                    'pt_longitude' => (float)$item->pt_longitude,
+                    'provinsi' => $item->provinsi,
+                    'bidang_fokus' => $item->bidang_fokus,
+                    'judul' => $item->judul_short,
+                    'count' => 1,
+                ];
+            }
+
+            return $mapDataArray;
         });
 
         // For list: paginate and only load what's needed
@@ -94,25 +110,67 @@ class PenelitianController extends Controller
         ->limit(50) // Only load first 50 for initial render
         ->get();
 
-        // Get filter options (cache these in production)
+        // Get filter options (cached - using raw DB queries for efficiency)
         $filterOptions = [
-            'bidangFokus' => Cache::remember('filter_bidang_fokus', 3600, function() {
-                return Penelitian::distinct()->pluck('bidang_fokus')->filter()->sort()->values();
+            'bidangFokus' => Cache::remember('filter_bidang_fokus', 7200, function() {
+                return DB::table('penelitian')
+                    ->select('bidang_fokus')
+                    ->whereNotNull('bidang_fokus')
+                    ->distinct()
+                    ->orderBy('bidang_fokus')
+                    ->pluck('bidang_fokus')
+                    ->filter()
+                    ->values();
             }),
-            'temaPrioritas' => Cache::remember('filter_tema_prioritas', 3600, function() {
-                return Penelitian::distinct()->pluck('tema_prioritas')->filter()->sort()->values();
+            'temaPrioritas' => Cache::remember('filter_tema_prioritas', 7200, function() {
+                return DB::table('penelitian')
+                    ->select('tema_prioritas')
+                    ->whereNotNull('tema_prioritas')
+                    ->distinct()
+                    ->orderBy('tema_prioritas')
+                    ->pluck('tema_prioritas')
+                    ->filter()
+                    ->values();
             }),
-            'kategoriPT' => Cache::remember('filter_kategori_pt', 3600, function() {
-                return Penelitian::distinct()->pluck('kategori_pt')->filter()->sort()->values();
+            'kategoriPT' => Cache::remember('filter_kategori_pt', 7200, function() {
+                return DB::table('penelitian')
+                    ->select('kategori_pt')
+                    ->whereNotNull('kategori_pt')
+                    ->distinct()
+                    ->orderBy('kategori_pt')
+                    ->pluck('kategori_pt')
+                    ->filter()
+                    ->values();
             }),
-            'klaster' => Cache::remember('filter_klaster', 3600, function() {
-                return Penelitian::distinct()->pluck('klaster')->filter()->sort()->values();
+            'klaster' => Cache::remember('filter_klaster', 7200, function() {
+                return DB::table('penelitian')
+                    ->select('klaster')
+                    ->whereNotNull('klaster')
+                    ->distinct()
+                    ->orderBy('klaster')
+                    ->pluck('klaster')
+                    ->filter()
+                    ->values();
             }),
-            'provinsi' => Cache::remember('filter_provinsi', 3600, function() {
-                return Penelitian::distinct()->pluck('provinsi')->filter()->sort()->values();
+            'provinsi' => Cache::remember('filter_provinsi', 7200, function() {
+                return DB::table('penelitian')
+                    ->select('provinsi')
+                    ->whereNotNull('provinsi')
+                    ->distinct()
+                    ->orderBy('provinsi')
+                    ->pluck('provinsi')
+                    ->filter()
+                    ->values();
             }),
-            'tahun' => Cache::remember('filter_tahun', 3600, function() {
-                return Penelitian::distinct()->orderBy('thn_pelaksanaan', 'desc')->pluck('thn_pelaksanaan')->filter()->values();
+            'tahun' => Cache::remember('filter_tahun', 7200, function() {
+                return DB::table('penelitian')
+                    ->select('thn_pelaksanaan')
+                    ->whereNotNull('thn_pelaksanaan')
+                    ->distinct()
+                    ->orderBy('thn_pelaksanaan', 'desc')
+                    ->pluck('thn_pelaksanaan')
+                    ->filter()
+                    ->values();
             }),
         ];
 
@@ -126,6 +184,7 @@ class PenelitianController extends Controller
 
     /**
      * Export all filtered data for Excel download
+     * OPTIMIZED: Use chunked response to avoid memory exhaustion
      */
     public function export(Request $request)
     {
@@ -162,26 +221,48 @@ class PenelitianController extends Controller
             $query->search($request->search);
         }
 
-        // Get ALL filtered data for export
-        $data = $query->select(
-            'nama',
-            'nidn',
-            'institusi',
-            'jenis_pt',
-            'kategori_pt',
-            'klaster',
-            'provinsi',
-            'kota',
-            'judul',
-            'skema',
-            'thn_pelaksanaan',
-            'bidang_fokus',
-            'tema_prioritas'
-        )
-        ->orderBy('thn_pelaksanaan', 'desc')
-        ->orderBy('institusi')
-        ->get();
+        // OPTIMIZED: Use streaming response to avoid loading all data into memory
+        return response()->stream(function () use ($query) {
+            echo '[';
+            $first = true;
 
-        return response()->json($data);
+            // Use cursor for memory-efficient iteration
+            $query->select(
+                'nama',
+                'nidn',
+                'institusi',
+                'jenis_pt',
+                'kategori_pt',
+                'klaster',
+                'provinsi',
+                'kota',
+                'judul',
+                'skema',
+                'thn_pelaksanaan',
+                'bidang_fokus',
+                'tema_prioritas'
+            )
+            ->orderBy('thn_pelaksanaan', 'desc')
+            ->orderBy('institusi')
+            ->cursor()
+            ->each(function ($item) use (&$first) {
+                if (!$first) {
+                    echo ',';
+                }
+                echo json_encode($item);
+                $first = false;
+
+                // Flush output buffer to prevent memory buildup
+                if (ob_get_level() > 0) {
+                    ob_flush();
+                    flush();
+                }
+            });
+
+            echo ']';
+        }, 200, [
+            'Content-Type' => 'application/json',
+            'Cache-Control' => 'no-cache',
+        ]);
     }
 }

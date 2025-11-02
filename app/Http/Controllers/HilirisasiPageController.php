@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Hilirisasi;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 
 class HilirisasiPageController extends Controller
@@ -24,27 +25,38 @@ class HilirisasiPageController extends Controller
             'totalFields' => (clone $statsQ)->distinct('skema')->count('skema'),
         ];
 
-        $mapData = (clone $baseQuery)->select(
-            'id',
-            'perguruan_tinggi as institusi',
-            'pt_latitude',
-            'pt_longitude',
-            'provinsi',
-            'skema as bidang_fokus'
-        )
-        ->whereNotNull('pt_latitude')
-        ->whereNotNull('pt_longitude')
-        ->get()
-        ->map(function($item) {
-            return [
-                'id' => $item->id,
-                'institusi' => $item->institusi,
-                'pt_latitude' => (float)$item->pt_latitude,
-                'pt_longitude' => (float)$item->pt_longitude,
-                'provinsi' => $item->provinsi,
-                'bidang_fokus' => $item->bidang_fokus,
-                'count' => 1,
-            ];
+        $cacheKey = 'map_data_hilirisasi_' . md5(json_encode($request->all()));
+        $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
+            $mapDataArray = [];
+
+            // OPTIMIZED: Use cursor() for memory-efficient iteration
+            $query = (clone $baseQuery)->select(
+                'id',
+                'perguruan_tinggi as institusi',
+                'pt_latitude',
+                'pt_longitude',
+                'provinsi',
+                'skema as bidang_fokus',
+                DB::raw('SUBSTRING(judul, 1, 150) as judul_short')
+            )
+            ->whereNotNull('pt_latitude')
+            ->whereNotNull('pt_longitude');
+
+            // Cursor loads one record at a time - minimal memory
+            foreach ($query->cursor() as $item) {
+                $mapDataArray[] = [
+                    'id' => $item->id,
+                    'institusi' => $item->institusi,
+                    'pt_latitude' => (float)$item->pt_latitude,
+                    'pt_longitude' => (float)$item->pt_longitude,
+                    'provinsi' => $item->provinsi,
+                    'bidang_fokus' => $item->bidang_fokus,
+                    'judul' => $item->judul_short,
+                    'count' => 1,
+                ];
+            }
+
+            return $mapDataArray;
         });
 
         $items = (clone $baseQuery)->select('id', 'judul', 'perguruan_tinggi as institusi', 'provinsi', 'skema', 'tahun')
