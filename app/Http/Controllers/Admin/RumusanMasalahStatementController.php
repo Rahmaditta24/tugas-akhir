@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\RumusanMasalahCategory;
 use App\Models\RumusanMasalahStatement;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class RumusanMasalahStatementController extends Controller
 {
@@ -30,10 +31,15 @@ class RumusanMasalahStatementController extends Controller
                     'full_number' => $statement->full_number,
                     'title' => $statement->title,
                     'description' => $statement->description,
+                    'created_at' => $statement->created_at ? $statement->created_at->diffForHumans() : '-',
+                    'updated_at' => $statement->updated_at ? $statement->updated_at->diffForHumans() : '-',
                 ];
             });
 
-        return view('admin.problem-statement.statement.index', compact('category', 'statements'));
+        return Inertia::render('Admin/RumusanMasalahCategory/StatementIndex', [
+            'category' => $category,
+            'statements' => $statements
+        ]);
     }
 
     /**
@@ -81,7 +87,7 @@ class RumusanMasalahStatementController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.problem-statement.category.statements.index', $category->slug)
+            ->route('admin.rumusan-masalah.category.statements.index', $category->slug)
             ->with('success', 'Statement berhasil ditambahkan.');
     }
 
@@ -136,7 +142,7 @@ class RumusanMasalahStatementController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.problem-statement.category.statements.index', $category->slug)
+            ->route('admin.rumusan-masalah.category.statements.index', $category->slug)
             ->with('success', 'Statement berhasil diperbarui.');
     }
 
@@ -153,7 +159,7 @@ class RumusanMasalahStatementController extends Controller
         $statement->delete();
 
         return redirect()
-            ->route('admin.problem-statement.category.statements.index', $category->slug)
+            ->route('admin.rumusan-masalah.category.statements.index', $category->slug)
             ->with('success', 'Statement berhasil dihapus.');
     }
 }

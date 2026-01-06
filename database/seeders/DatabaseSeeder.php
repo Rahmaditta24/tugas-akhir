@@ -21,8 +21,8 @@ class DatabaseSeeder extends Seeder
             PermasalahanSeeder::class,
             ProdukSeeder::class,
             AdminUserSeeder::class,
-            CategorySeeder::class,
-            StatementSeeder::class,
+            RumusanMasalahCategorySeeder::class,
+            RumusanMasalahStatementSeeder::class,
            
         ]);
     }

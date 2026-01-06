@@ -70,20 +70,32 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Rumusan Masalah Management
     Route::prefix('rumusan-masalah')->name('rumusan-masalah.')->group(function () {
         
-        // Category index
-        Route::get('/category', [RumusanMasalahCategoryController::class, 'index'])->name('category.index');
+        // Redirect /admin/rumusan-masalah to /admin/rumusan-masalah/categories
+        Route::get('/', function() {
+            return redirect()->route('admin.rumusan-masalah.categories.index');
+        });
+
+        // Categories Routes
+        Route::get('/categories', [RumusanMasalahCategoryController::class, 'index'])->name('categories.index'); // Changed to match resource standard
+        Route::get('/categories/create', [RumusanMasalahCategoryController::class, 'create'])->name('categories.create');
+        Route::post('/categories', [RumusanMasalahCategoryController::class, 'store'])->name('categories.store');
+        Route::get('/categories/{category}/edit', [RumusanMasalahCategoryController::class, 'edit'])->name('categories.edit');
+        Route::put('/categories/{category}', [RumusanMasalahCategoryController::class, 'update'])->name('categories.update');
+        Route::delete('/categories/{category}', [RumusanMasalahCategoryController::class, 'destroy'])->name('categories.destroy');
         
-        // Category resource (except index)
-        Route::resource('categories', RumusanMasalahCategoryController::class)
-            ->except(['index']);
-        
-        // Statement index by category slug
-        Route::get('/category/{category:slug}', [RumusanMasalahStatementController::class, 'index'])
+        // Statements Routes (Nested Index)
+        // Access via: admin/rumusan-masalah/categories/{slug}/statements
+        Route::get('/categories/{category:slug}/statements', [RumusanMasalahStatementController::class, 'index'])
             ->name('category.statements.index');
         
-        // Statement resource (nested & shallow)
-        Route::resource('categories.statements', RumusanMasalahStatementController::class)
-            ->shallow()
-            ->except(['index']);
+        // Statements Actions
+        Route::post('/categories/{category:slug}/statements', [RumusanMasalahStatementController::class, 'store'])
+            ->name('category.statements.store');
+            
+        Route::put('/categories/{slug}/statements/{id}', [RumusanMasalahStatementController::class, 'update'])
+            ->name('category.statements.update');
+            
+        Route::delete('/categories/{slug}/statements/{id}', [RumusanMasalahStatementController::class, 'destroy'])
+            ->name('category.statements.destroy');
     });
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import * as XLSX from 'xlsx';
 import MainLayout from '../Layouts/MainLayout';
@@ -9,21 +9,42 @@ import AdvancedSearch from '../Components/AdvancedSearch';
 import StatisticsCards from '../Components/StatisticsCards';
 import ResearchList from '../Components/ResearchList';
 
-export default function Home({ mapData = [], researches = [], stats = {}, filterOptions = {} }) {
+export default function Home({ mapData = [], researches = [], stats = {}, filterOptions = {}, filters: initialFilters = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
-    const [filters, setFilters] = useState({});
+    const [filters, setFilters] = useState(initialFilters);
+    const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSearch = (searchTerm) => {
-        router.get(route('penelitian.index'), { search: searchTerm }, {
+    // Sync state with props when they change (e.g. navigation)
+    useEffect(() => {
+        setFilters(initialFilters);
+        setSearchTerm(initialFilters.search || '');
+    }, [initialFilters]);
+
+    const handleSearch = (term) => {
+        setSearchTerm(term);
+        const params = { ...filters, search: term };
+        // Remove empty filters
+        Object.keys(params).forEach(key => {
+            if (params[key] === '' || params[key] === null) delete params[key];
+        });
+
+        router.get(route('penelitian.index'), params, {
             preserveState: true,
             preserveScroll: true,
+            replace: true, // Use replace to avoid cluttered history for typing
         });
     };
 
     const handleFilterChange = (newFilters) => {
         setFilters(newFilters);
-        router.get(route('penelitian.index'), newFilters, {
+        const params = { ...newFilters, search: searchTerm };
+        // Remove empty filters
+        Object.keys(params).forEach(key => {
+            if (params[key] === '' || params[key] === null) delete params[key];
+        });
+
+        router.get(route('penelitian.index'), params, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -31,6 +52,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
     const handleReset = () => {
         setFilters({});
+        setSearchTerm('');
         router.get(route('penelitian.index'));
     };
 
@@ -122,6 +144,10 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                     onReset={handleReset}
                     onDownload={handleDownload}
                     displayMode={displayMode}
+                    filters={filters}
+                    filterOptions={filterOptions}
+                    onFilterChange={handleFilterChange}
+                    searchTerm={searchTerm}
                 />
             </div>
 

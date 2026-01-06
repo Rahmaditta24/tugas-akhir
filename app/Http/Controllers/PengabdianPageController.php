@@ -33,7 +33,7 @@ class PengabdianPageController extends Controller
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
             $mapDataArray = [];
 
-            // OPTIMIZED: Use cursor() for memory-efficient iteration
+            // OPTIMIZATION: Limit to 5000 records for performance
             $query = (clone $baseQuery)->select(
                 'id',
                 'nama_institusi as institusi',
@@ -41,12 +41,13 @@ class PengabdianPageController extends Controller
                 'pt_longitude',
                 'prov_pt as provinsi',
                 'bidang_fokus',
-                DB::raw('SUBSTRING(judul, 1, 150) as judul_short')
+                DB::raw('SUBSTRING(judul, 1, 100) as judul_short')
             )
             ->whereNotNull('pt_latitude')
-            ->whereNotNull('pt_longitude');
+            ->whereNotNull('pt_longitude')
+            ->latest('thn_pelaksanaan_kegiatan')
+            ->limit(2000);
 
-            // Cursor loads one record at a time - minimal memory
             foreach ($query->cursor() as $item) {
                 $mapDataArray[] = [
                     'id' => $item->id,
@@ -56,7 +57,6 @@ class PengabdianPageController extends Controller
                     'provinsi' => $item->provinsi,
                     'bidang_fokus' => $item->bidang_fokus,
                     'judul' => $item->judul_short,
-                    'count' => 1,
                 ];
             }
 

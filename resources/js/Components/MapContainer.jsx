@@ -77,29 +77,27 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
         // Detect if this is permasalahan data
         const isPermasalahan = source.length > 0 && source[0].jenis_permasalahan !== undefined;
 
-        // Removed console.log for production performance
-
         const indonesiaBounds = L.latLngBounds([-11, 94], [6, 141]);
         let addedCount = 0;
         let skippedCount = 0;
 
         if (isPermasalahan) {
-            // For permasalahan: use clustering like peta-bima script-permasalahan.js
+            // For permasalahan: use clustering
             const clusterGroup = L.markerClusterGroup({
                 maxClusterRadius: 50,
-                disableClusteringAtZoom: 17, // Disable clustering at high zoom, markers will separate
+                disableClusteringAtZoom: 17,
                 iconCreateFunction: function (cluster) {
                     const childCount = cluster.getChildCount();
                     let color = '#D5A6BD';
-                    
+
                     const childMarkers = cluster.getAllChildMarkers();
                     const colorCounts = {};
                     childMarkers.forEach(marker => {
                         const markerColor = marker.options.fillColor || '#D5A6BD';
                         colorCounts[markerColor] = (colorCounts[markerColor] || 0) + 1;
                     });
-                    
-                    const mostCommonColor = Object.keys(colorCounts).reduce((a, b) => 
+
+                    const mostCommonColor = Object.keys(colorCounts).reduce((a, b) =>
                         colorCounts[a] > colorCounts[b] ? a : b, null
                     );
                     if (mostCommonColor) {
@@ -117,7 +115,7 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
                 zoomToBoundsOnClick: true
             });
 
-            source.forEach((item, index) => {
+            source.forEach((item) => {
                 const latRaw = item.pt_latitude ?? item.latitude;
                 const lngRaw = item.pt_longitude ?? item.longitude;
                 const lat = parseFloat(latRaw);
@@ -148,7 +146,7 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
                 if (item.tahun) popupContent += `<p class="text-sm"><strong>Tahun:</strong> ${safeValue(item.tahun)}</p>`;
                 if (item.nilai !== null && item.nilai !== undefined) popupContent += `<p class="text-sm"><strong>Nilai:</strong> ${safeValue(item.nilai)} ${safeValue(item.satuan)}</p>`;
                 popupContent += '</div>';
-                
+
                 bubble.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
                 bubble.on('click', function (e) {
                     L.DomEvent.stopPropagation(e);
@@ -163,28 +161,24 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
                 clusterGroupRef.current = clusterGroup;
             }
         } else {
-            // For penelitian/hilirisasi/pengabdian: USE CLUSTERING for performance
-            // Clustering is essential for large datasets (66k+ markers)
+            // For penelitian/hilirisasi/pengabdian: ULTRA-OPTIMIZED with requestAnimationFrame
             const clusterGroup = L.markerClusterGroup({
                 maxClusterRadius: 80,
-                disableClusteringAtZoom: 15, // Show individual markers at zoom 15+
-                chunkedLoading: true, // Load markers in chunks
-                chunkDelay: 50, // Delay between chunks (ms)
-                chunkProgress: function() {
-                    // Optional: show loading progress
-                },
+                disableClusteringAtZoom: 15,
+                chunkedLoading: true,
+                chunkDelay: 10, // Minimal delay
                 iconCreateFunction: function (cluster) {
                     const childCount = cluster.getChildCount();
                     let size = 'small';
                     if (childCount > 100) size = 'large';
                     else if (childCount > 50) size = 'medium';
-                    
+
                     const sizes = {
                         small: { width: 40, fontSize: 12 },
                         medium: { width: 50, fontSize: 13 },
                         large: { width: 60, fontSize: 14 }
                     };
-                    
+
                     return L.divIcon({
                         html: `<div style="background-color: rgba(39, 127, 245, 0.8); width: ${sizes[size].width}px; height: ${sizes[size].width}px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${sizes[size].fontSize}px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">${childCount}</div>`,
                         className: 'custom-cluster-icon',
@@ -194,74 +188,71 @@ export default function MapContainer({ mapData = [], data = [], displayMode = 'p
                 spiderfyOnMaxZoom: true,
                 showCoverageOnHover: false,
                 zoomToBoundsOnClick: true,
-                removeOutsideVisibleBounds: true // Remove markers outside viewport
+                removeOutsideVisibleBounds: true
             });
 
-            // Process markers in batches to avoid blocking
-            const BATCH_SIZE = 1000;
-            const batches = [];
-            for (let i = 0; i < source.length; i += BATCH_SIZE) {
-                batches.push(source.slice(i, i + BATCH_SIZE));
-            }
+            // CRITICAL OPTIMIZATION: Use requestAnimationFrame instead of setTimeout
+            // This syncs with browser's repaint cycle for smoother performance
+            const BATCH_SIZE = 200; // Smaller batches for smoother UI
+            let currentIndex = 0;
 
-            // Process first batch immediately, then queue others
-            const processBatch = (batch, batchIndex) => {
-                setTimeout(() => {
-                    batch.forEach((item) => {
-                        const latRaw = item.pt_latitude ?? item.latitude;
-                        const lngRaw = item.pt_longitude ?? item.longitude;
-                        const lat = parseFloat(latRaw);
-                        const lng = parseFloat(lngRaw);
+            const processNextBatch = () => {
+                const endIndex = Math.min(currentIndex + BATCH_SIZE, source.length);
 
-                        if (isNaN(lat) || isNaN(lng) || lat === null || lng === null || !indonesiaBounds.contains([lat, lng])) {
-                            skippedCount++;
-                            return;
-                        }
+                for (let i = currentIndex; i < endIndex; i++) {
+                    const item = source[i];
+                    const latRaw = item.pt_latitude ?? item.latitude;
+                    const lngRaw = item.pt_longitude ?? item.longitude;
+                    const lat = parseFloat(latRaw);
+                    const lng = parseFloat(lngRaw);
 
-                        const bubbleColor = getBubbleColor(item);
-                        const bubble = L.circleMarker([lat, lng], {
-                            radius: 6,
-                            fillColor: bubbleColor,
-                            color: '#fff',
-                            weight: 1.5,
-                            opacity: 0.8,
-                            fillOpacity: 0.6
-                        });
+                    if (isNaN(lat) || isNaN(lng) || lat === null || lng === null || !indonesiaBounds.contains([lat, lng])) {
+                        continue;
+                    }
 
-                        const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
-                        let popupContent = '<div class="p-3" style="max-width: 300px;">';
-                        if (item.institusi) popupContent += `<h3 class="font-bold text-[#3E7DCA] mb-2 text-sm">${safeValue(item.institusi)}</h3>`;
-                        if (item.provinsi) popupContent += `<p class="text-xs"><strong>Provinsi:</strong> ${safeValue(item.provinsi)}</p>`;
-                        if (item.bidang_fokus) popupContent += `<p class="text-xs"><strong>Bidang:</strong> ${safeValue(item.bidang_fokus)}</p>`;
-                        if (item.judul) popupContent += `<p class="text-xs mt-1"><strong>Judul:</strong> ${safeValue(item.judul).substring(0, 100)}${item.judul && item.judul.length > 100 ? '...' : ''}</p>`;
-                        popupContent += '</div>';
-                        
-                        bubble.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
-                        bubble.on('click', function (e) {
-                            L.DomEvent.stopPropagation(e);
-                        });
-
-                        clusterGroup.addLayer(bubble);
-                        addedCount++;
+                    const bubbleColor = getBubbleColor(item);
+                    const bubble = L.circleMarker([lat, lng], {
+                        radius: 6,
+                        fillColor: bubbleColor,
+                        color: '#fff',
+                        weight: 1.5,
+                        opacity: 0.8,
+                        fillOpacity: 0.6
                     });
-                }, batchIndex * 10); // Stagger batches by 10ms
+
+                    const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
+                    let popupContent = '<div class="p-3" style="max-width: 300px;">';
+                    if (item.institusi) popupContent += `<h3 class="font-bold text-[#3E7DCA] mb-2 text-sm">${safeValue(item.institusi)}</h3>`;
+                    if (item.provinsi) popupContent += `<p class="text-xs"><strong>Provinsi:</strong> ${safeValue(item.provinsi)}</p>`;
+                    if (item.bidang_fokus) popupContent += `<p class="text-xs"><strong>Bidang:</strong> ${safeValue(item.bidang_fokus)}</p>`;
+                    if (item.judul) popupContent += `<p class="text-xs mt-1"><strong>Judul:</strong> ${safeValue(item.judul).substring(0, 80)}${item.judul && item.judul.length > 80 ? '...' : ''}</p>`;
+                    popupContent += '</div>';
+
+                    bubble.bindPopup(popupContent, { maxWidth: 320, className: 'custom-popup' });
+                    bubble.on('click', function (e) {
+                        L.DomEvent.stopPropagation(e);
+                    });
+
+                    clusterGroup.addLayer(bubble);
+                }
+
+                currentIndex = endIndex;
+
+                // Continue processing if there are more items
+                if (currentIndex < source.length) {
+                    requestAnimationFrame(processNextBatch);
+                }
             };
 
-            batches.forEach(processBatch);
+            // Add cluster group immediately and start processing
+            clusterGroup.addTo(mapInstanceRef.current);
+            clusterGroupRef.current = clusterGroup;
 
-            if (batches.length > 0) {
-                // Add cluster group to map after first batch starts
-                setTimeout(() => {
-                    clusterGroup.addTo(mapInstanceRef.current);
-                    clusterGroupRef.current = clusterGroup;
-                }, 50);
-            }
+            // Start processing with requestAnimationFrame
+            requestAnimationFrame(processNextBatch);
         }
 
-        // Removed console.log for production performance
-        // Markers rendered successfully
-
-    }, [mapData, data, displayMode]);
+    }, [mapData, data]);
 
     return (
         <section className="relative bg-white flex justify-center mb-2">

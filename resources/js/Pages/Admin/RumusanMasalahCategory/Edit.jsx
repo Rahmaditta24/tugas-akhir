@@ -1,152 +1,134 @@
 import React, { useState } from 'react';
-import { router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
-import PageHeader from '../../../Components/PageHeader';
+import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function Edit({ category }) {
-    const [form, setForm] = useState({
-        name: category.name,
-        order_number: category.order_number,
+export default function RumusanMasalahCategoryEdit({ category }) {
+    const { data, setData, post, processing, errors } = useForm({
+        _method: 'PUT',
+        name: category.name || '',
+        order_number: category.order_number || '',
         image: null,
     });
-    const [errors, setErrors] = useState({});
-    const [imagePreview, setImagePreview] = useState(null);
+
+    const [imagePreview, setImagePreview] = useState(
+        category.image ? `/storage/${category.image}` : null
+    );
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setForm({ ...form, image: file });
+            setData('image', file);
             setImagePreview(URL.createObjectURL(file));
         }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
-        const formData = new FormData();
-        formData.append('name', form.name);
-        formData.append('order_number', form.order_number);
-        if (form.image) {
-            formData.append('image', form.image);
-        }
-        formData.append('_method', 'PUT');
-
-        router.post(route('admin.rumusan-masalah.category.update', category.id), formData, {
-            onError: (errors) => setErrors(errors),
-        });
+        post(route('admin.rumusan-masalah.categories.update', category.id));
     };
 
     return (
-        <AdminLayout title="Edit Kategori">
-            <PageHeader
-                title="Edit Kategori"
-                subtitle={`Edit kategori: ${category.name}`}
-                icon={<span className="text-xl">✏️</span>}
-            />
+        <AdminLayout>
+            <Head title="Edit Kategori Rumusan Masalah" />
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Order Number */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Nomor Urutan *
-                        </label>
-                        <input
-                            type="number"
-                            value={form.order_number}
-                            onChange={(e) => setForm({ ...form, order_number: e.target.value })}
-                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Contoh: 1, 2, 3"
-                            min="1"
-                            required
-                        />
-                        {errors.order_number && (
-                            <p className="text-red-600 text-sm mt-1">{errors.order_number}</p>
-                        )}
-                    </div>
-
-                    {/* Name */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Nama Kategori *
-                        </label>
-                        <input
-                            type="text"
-                            value={form.name}
-                            onChange={(e) => setForm({ ...form, name: e.target.value })}
-                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Contoh: Pangan, Kesehatan, Energi"
-                            required
-                        />
-                        {errors.name && (
-                            <p className="text-red-600 text-sm mt-1">{errors.name}</p>
-                        )}
-                        <p className="text-xs text-slate-500 mt-1">
-                            Slug akan diperbarui otomatis jika nama diubah
-                        </p>
-                    </div>
-
-                    {/* Current Image & Upload */}
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">
-                            Icon/Gambar
-                        </label>
-                        
-                        {/* Current Image */}
-                        {category.image_url && !imagePreview && (
-                            <div className="mb-3">
-                                <p className="text-xs text-slate-600 mb-2">Gambar saat ini:</p>
-                                <img 
-                                    src={category.image_url} 
-                                    alt={category.name}
-                                    className="w-32 h-32 object-contain border border-slate-200 rounded-lg p-2 bg-slate-50"
-                                />
+            <div className="py-12">
+                <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="p-6 bg-white border-b border-gray-200">
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-xl font-bold text-gray-800">Edit Kategori</h2>
+                                <Link
+                                    href={route('admin.rumusan-masalah.category.index')}
+                                    className="text-indigo-600 hover:text-indigo-900 font-medium"
+                                >
+                                    &larr; Kembali
+                                </Link>
                             </div>
-                        )}
 
-                        {/* New Image Preview */}
-                        {imagePreview && (
-                            <div className="mb-3">
-                                <p className="text-xs text-slate-600 mb-2">Preview gambar baru:</p>
-                                <img 
-                                    src={imagePreview} 
-                                    alt="Preview" 
-                                    className="w-32 h-32 object-contain border border-slate-200 rounded-lg p-2 bg-slate-50"
-                                />
-                            </div>
-                        )}
+                            <form onSubmit={handleSubmit} className="max-w-xl">
+                                {/* Order Number */}
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="order_number">
+                                        Nomor Urut
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id="order_number"
+                                        value={data.order_number}
+                                        onChange={(e) => setData('order_number', e.target.value)}
+                                        className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.order_number ? 'border-red-500' : ''
+                                            }`}
+                                        placeholder="Contoh: 1"
+                                    />
+                                    {errors.order_number && (
+                                        <p className="text-red-500 text-xs italic mt-1">{errors.order_number}</p>
+                                    )}
+                                </div>
 
-                        <input
-                            type="file"
-                            accept="image/png,image/jpg,image/jpeg,image/webp"
-                            onChange={handleImageChange}
-                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <p className="text-xs text-slate-500 mt-1">
-                            Format: PNG, JPG, JPEG, WEBP. Maksimal 2MB. Biarkan kosong jika tidak ingin mengubah gambar.
-                        </p>
-                        {errors.image && (
-                            <p className="text-red-600 text-sm mt-1">{errors.image}</p>
-                        )}
+                                {/* Name */}
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+                                        Nama Kategori
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) => setData('name', e.target.value)}
+                                        className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.name ? 'border-red-500' : ''
+                                            }`}
+                                        placeholder="Contoh: Pangan"
+                                    />
+                                    {errors.name && (
+                                        <p className="text-red-500 text-xs italic mt-1">{errors.name}</p>
+                                    )}
+                                </div>
+
+                                {/* Image */}
+                                <div className="mb-6">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="image">
+                                        Icon / Gambar
+                                    </label>
+                                    <input
+                                        type="file"
+                                        id="image"
+                                        onChange={handleImageChange}
+                                        accept="image/*"
+                                        className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.image ? 'border-red-500' : ''
+                                            }`}
+                                    />
+                                    <p className="text-gray-500 text-xs mt-1">Format: png, jpg, webp. Max: 2MB. Biarkan kosong jika tidak ingin mengubah.</p>
+                                    {errors.image && (
+                                        <p className="text-red-500 text-xs italic mt-1">{errors.image}</p>
+                                    )}
+
+                                    {/* Preview */}
+                                    {imagePreview && (
+                                        <div className="mt-4">
+                                            <p className="text-sm text-gray-600 mb-1">Preview Saat Ini/Baru:</p>
+                                            <img
+                                                src={imagePreview}
+                                                alt="Preview"
+                                                className="h-20 w-20 object-contain border border-gray-300 rounded p-1"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center justify-end">
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className={`bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${processing ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                    >
+                                        {processing ? 'Menyimpan...' : 'Perbarui Kategori'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-
-                    {/* Submit Buttons */}
-                    <div className="flex justify-end gap-3 pt-6 border-t border-slate-200">
-                        <button
-                            type="button"
-                            onClick={() => router.get(route('admin.rumusan-masalah.category.index'))}
-                            className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
-                        >
-                            Batal
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            Update
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
         </AdminLayout>
     );

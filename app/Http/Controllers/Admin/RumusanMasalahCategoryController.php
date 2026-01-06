@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\RumusanMasalahCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 
 class RumusanMasalahCategoryController extends Controller
 {
@@ -15,7 +16,14 @@ class RumusanMasalahCategoryController extends Controller
             ->orderBy('order_number')
             ->get();
 
-        return view('admin.problem-statement.category.index', compact('categories'));
+        return Inertia::render('Admin/RumusanMasalahCategory/Index', [
+            'categories' => $categories
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Admin/RumusanMasalahCategory/Create');
     }
 
     public function store(Request $request)
@@ -44,8 +52,16 @@ class RumusanMasalahCategoryController extends Controller
 
         RumusanMasalahCategory::create($validated);
 
-        return redirect()->route('admin.problem-statement.category.index')
+        return redirect()->route('admin.rumusan-masalah.categories.index')
             ->with('success', 'Kategori berhasil ditambahkan.');
+    }
+
+    public function edit($id)
+    {
+        $category = RumusanMasalahCategory::findOrFail($id);
+        return Inertia::render('Admin/RumusanMasalahCategory/Edit', [
+            'category' => $category
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -79,7 +95,7 @@ class RumusanMasalahCategoryController extends Controller
 
         $category->update($validated);
 
-        return redirect()->route('admin.problem-statement.category.index')
+        return redirect()->route('admin.rumusan-masalah.categories.index')
             ->with('success', 'Kategori berhasil diperbarui.');
     }
 

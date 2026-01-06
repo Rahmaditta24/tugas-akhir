@@ -13,7 +13,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
         { name: 'Produk', href: '/admin/produk', icon: '📦' },
         { name: 'Fasilitas Lab', href: '/admin/fasilitas-lab', icon: '🧪' },
         { name: 'Permasalahan', href: '/admin/permasalahan', icon: '⚠️' },
-        { name: 'Rumusan Masalah', href: '/admin/rumusan-masalah', icon: '📋' },
+        { name: 'Rumusan Masalah', href: '/admin/rumusan-masalah/categories', icon: '📋' },
     ];
 
     const handleLogout = (e) => {
@@ -58,8 +58,8 @@ export default function AdminLayout({ title = 'Admin', children }) {
                         <div className="flex items-center gap-3">
                             <span className="hidden sm:flex items-center gap-2 text-xs sm:text-sm text-slate-600">
                                 <svg className="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="12" cy="7" r="4"/>
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
                                 </svg>
                                 Administrator
                             </span>
@@ -76,9 +76,8 @@ export default function AdminLayout({ title = 'Admin', children }) {
 
             <div className="flex">
                 {/* Sidebar */}
-                <aside className={`${
-                    isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                } lg:translate-x-0 fixed left-0 top-16 bottom-0 z-30 w-64 bg-white/95 backdrop-blur border-r border-slate-200/60 transform transition-transform duration-300 ease-in-out`}>
+                <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                    } lg:translate-x-0 fixed left-0 top-16 bottom-0 z-30 w-64 bg-white/95 backdrop-blur border-r border-slate-200/60 transform transition-transform duration-300 ease-in-out`}>
                     <div className="h-full flex flex-col pt-4 pb-4 overflow-y-auto">
                         <nav className="flex-1 px-3 space-y-1">
                             {navigation.map((item) => {
@@ -87,11 +86,10 @@ export default function AdminLayout({ title = 'Admin', children }) {
                                     <Link
                                         key={item.name}
                                         href={item.href}
-                                        className={`flex items-center gap-3 px-3 py-2 text-[13px] font-medium rounded-md transition-colors border ${
-                                            active
+                                        className={`flex items-center gap-3 px-3 py-2 text-[13px] font-medium rounded-md transition-colors border ${active
                                                 ? 'bg-blue-50 text-blue-700 border-blue-200'
                                                 : 'text-slate-700 border-transparent hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-200'
-                                        }`}
+                                            }`}
                                     >
                                         <span className="text-xl">{item.icon}</span>
                                         <span>{item.name}</span>

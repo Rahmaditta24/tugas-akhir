@@ -57,15 +57,15 @@ class PenelitianController extends Controller
             ];
         });
 
-        // For map: send individual data points (cached for performance)
-        // Only select needed fields for map markers to reduce payload
-        // OPTIMIZED: Use cursor() for memory-efficient iteration
+        // For map: CRITICAL OPTIMIZATION - Only send aggregated/sampled data
+        // Sending 66k+ markers causes massive performance issues
+        // Strategy: Send only top 5000 most relevant records initially
         $cacheKey = 'map_data_penelitian_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
             $mapDataArray = [];
 
-            // Use cursor() instead of chunk() - more memory efficient
-            // Only iterate through needed fields
+            // OPTIMIZATION: Limit to 5000 records for initial map load
+            // This dramatically improves frontend rendering performance
             $query = (clone $baseQuery)->select(
                 'id',
                 'institusi',
@@ -73,12 +73,13 @@ class PenelitianController extends Controller
                 'pt_longitude',
                 'provinsi',
                 'bidang_fokus',
-                DB::raw('SUBSTRING(judul, 1, 150) as judul_short')
+                DB::raw('SUBSTRING(judul, 1, 100) as judul_short')
             )
             ->whereNotNull('pt_latitude')
-            ->whereNotNull('pt_longitude');
+            ->whereNotNull('pt_longitude')
+            ->latest('thn_pelaksanaan') // Prioritize recent research
+            ->limit(2000); // CRITICAL: Reduced to 2000 for better performance
 
-            // Cursor loads one record at a time - minimal memory
             foreach ($query->cursor() as $item) {
                 $mapDataArray[] = [
                     'id' => $item->id,
@@ -88,7 +89,6 @@ class PenelitianController extends Controller
                     'provinsi' => $item->provinsi,
                     'bidang_fokus' => $item->bidang_fokus,
                     'judul' => $item->judul_short,
-                    'count' => 1,
                 ];
             }
 
@@ -179,6 +179,7 @@ class PenelitianController extends Controller
             'researches' => $researches,
             'stats' => $totalStats,
             'filterOptions' => $filterOptions,
+            'filters' => $request->all(),
         ]);
     }
 
