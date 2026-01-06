@@ -53,6 +53,7 @@ export default function Dashboard({ stats = {} }) {
         { name: 'Hilirisasi', value: liveStats.hilirisasi || 0 },
         { name: 'Produk', value: liveStats.produk || 0 },
         { name: 'Fasilitas', value: liveStats.fasilitas || 0 },
+        { name: 'Rumusan Masalah', value: liveStats.rumusan_masalah || 0 }
     ]), [liveStats]);
 
     const permasalahanData = useMemo(() => ([
@@ -112,6 +113,20 @@ export default function Dashboard({ stats = {} }) {
             color: 'yellow',
             href: '/admin/permasalahan'
         },
+        { 
+            title: 'Rumusan Masalah',
+            value: liveStats.rumusan_masalah || 0,
+            icon: '📋',
+            color: 'teal',
+            href: '/admin/RumusanMasalahCategory'
+        },
+        { 
+            title: 'Rumusan Masalah',
+            value: liveStats.rumusan_masalah || 0,
+            icon: '📋',
+            color: 'teal',
+            href: '/admin/RumusanMasalahStatement'
+        }
     ];
 
     const colorClasses = {

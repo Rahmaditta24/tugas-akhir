@@ -13,6 +13,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
         { name: 'Produk', href: '/admin/produk', icon: '📦' },
         { name: 'Fasilitas Lab', href: '/admin/fasilitas-lab', icon: '🧪' },
         { name: 'Permasalahan', href: '/admin/permasalahan', icon: '⚠️' },
+        { name: 'Rumusan Masalah', href: '/admin/rumusan-masalah', icon: '📋' },
     ];
 
     const handleLogout = (e) => {

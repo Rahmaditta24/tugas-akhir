@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Produk;
+use Illuminate\Support\Facades\DB;
 
 class ProdukSeeder extends Seeder
 {
@@ -41,6 +42,19 @@ class ProdukSeeder extends Seeder
             $this->command?->warn('Invalid Produk JSON structure.');
             return;
         }
+        $normalize = function ($value) {
+            if ($value === null) return null;
+            if (is_string($value)) {
+                $v = trim($value);
+                if ($v === '' || $v === '-' || $v === '—' || $v === '?' || strcasecmp($v, 'na') === 0 || strcasecmp($v, 'n/a') === 0) {
+                    return null;
+                }
+                return $v;
+            }
+            return $value;
+        };
+
+        DB::table('produk')->truncate();
         $batch = [];
         $now = now();
 
@@ -50,8 +64,8 @@ class ProdukSeeder extends Seeder
 
         foreach ($rows as $row) {
             // Minimal required: institusi and nama produk
-            $institusi = (string)($row['Institusi'] ?? '');
-            $namaProduk = (string)($row['Nama Produk Siap Investasi'] ?? '');
+            $institusi = $normalize($row['Institusi'] ?? null) ?? '';
+            $namaProduk = $normalize($row['Nama Produk Siap Investasi'] ?? null) ?? '';
             if ($institusi === '' || $namaProduk === '') {
                 $skipped++;
                 continue;
@@ -61,15 +75,15 @@ class ProdukSeeder extends Seeder
                 'institusi' => $institusi,
                 'latitude' => isset($row['Latitude']) ? (float)$row['Latitude'] : null,
                 'longitude' => isset($row['Longitude']) ? (float)$row['Longitude'] : null,
-                'provinsi' => (string)($row['Provinsi'] ?? null),
+                'provinsi' => $normalize($row['Provinsi'] ?? null),
                 'nama_produk' => $namaProduk,
-                'deskripsi_produk' => isset($row['Deskripsi Produk']) ? (string)$row['Deskripsi Produk'] : null,
+                'deskripsi_produk' => $normalize($row['Deskripsi Produk'] ?? null),
                 'tkt' => isset($row['TIngkat Kesiapterapan Teknologi (TKT)']) ? (int)$row['TIngkat Kesiapterapan Teknologi (TKT)'] : null,
-                'bidang' => (string)($row['Bidang'] ?? null),
-                'nama_inventor' => (string)($row['Nama Inventor (Tanpa Gelar)'] ?? null),
-                'email_inventor' => (string)($row['Email Inventor'] ?? null),
+                'bidang' => $normalize($row['Bidang'] ?? null),
+                'nama_inventor' => $normalize($row['Nama Inventor (Tanpa Gelar)'] ?? null),
+                'email_inventor' => $normalize($row['Email Inventor'] ?? null),
                 'nomor_paten' => isset($row['Nomor dan Deskripsi Paten']) && $row['Nomor dan Deskripsi Paten'] !== 'NaN'
-                    ? (string)$row['Nomor dan Deskripsi Paten']
+                    ? $normalize($row['Nomor dan Deskripsi Paten'])
                     : null,
                 'created_at' => $now,
                 'updated_at' => $now,

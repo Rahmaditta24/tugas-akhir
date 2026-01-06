@@ -11,6 +11,17 @@ class FasilitasLabSeeder extends Seeder
     public function run(): void
     {
         $jsonPath = base_path('../peta-bima/data/data-fasilitas-lab.json');
+        $normalize = function ($value) {
+            if ($value === null) return null;
+            if (is_string($value)) {
+                $v = trim($value);
+                if ($v === '' || $v === '-' || $v === '—' || $v === '?' || strcasecmp($v, 'na') === 0 || strcasecmp($v, 'n/a') === 0) {
+                    return null;
+                }
+                return $v;
+            }
+            return $value;
+        };
 
         if (!file_exists($jsonPath)) {
             $this->command->error("File tidak ditemukan: {$jsonPath}");
@@ -57,8 +68,8 @@ class FasilitasLabSeeder extends Seeder
             $insertData = [];
 
             foreach ($chunk as $item) {
-                $namaLab = trim($item['Nama Labolatorium'] ?? $item['Nama Laboratorium'] ?? '');
-                $institusi = trim($item['Institusi'] ?? '');
+                $namaLab = $normalize($item['Nama Labolatorium'] ?? $item['Nama Laboratorium'] ?? null) ?? '';
+                $institusi = $normalize($item['Institusi'] ?? null) ?? '';
 
                 if (empty($namaLab) || empty($institusi)) {
                     $skipped++;
@@ -70,27 +81,27 @@ class FasilitasLabSeeder extends Seeder
                     'institusi' => $institusi,
                     'latitude' => isset($item['Latitude']) && is_numeric($item['Latitude']) ? (float)$item['Latitude'] : null,
                     'longitude' => isset($item['Longitude']) && is_numeric($item['Longitude']) ? (float)$item['Longitude'] : null,
-                    'provinsi' => !empty($item['Provinsi']) ? trim($item['Provinsi']) : null,
-                    'status_akses' => !empty($item['Status Akses']) ? trim($item['Status Akses']) : null,
+                    'provinsi' => $normalize($item['Provinsi'] ?? null),
+                    'status_akses' => $normalize($item['Status Akses'] ?? null),
                     // new structure mapping (best-effort from JSON)
-                    'kode_universitas' => !empty($item['Kode Universitas']) ? trim($item['Kode Universitas']) : null,
-                    'kategori_pt' => !empty($item['Kategori PT']) ? trim($item['Kategori PT']) : null,
-                    'fakultas' => !empty($item['Fakultas']) ? trim($item['Fakultas']) : null,
-                    'departemen' => !empty($item['Departemen']) ? trim($item['Departemen']) : null,
+                    'kode_universitas' => $normalize($item['Kode Universitas'] ?? null),
+                    'kategori_pt' => $normalize($item['Kategori PT'] ?? null),
+                    'fakultas' => $normalize($item['Fakultas'] ?? null),
+                    'departemen' => $normalize($item['Departemen'] ?? null),
                     'nama_laboratorium' => $namaLab ?: null,
-                    'jenis_laboratorium' => !empty($item['Jenis Labolatorium']) ? trim($item['Jenis Labolatorium']) : null,
-                    'standar_akreditasi' => !empty($item['Standar Akreditasi / Sertifikasi']) ? trim($item['Standar Akreditasi / Sertifikasi']) : null,
-                    'jam_mulai' => !empty($item['Jam Mulai Operasional']) ? trim($item['Jam Mulai Operasional']) : null,
-                    'jam_selesai' => !empty($item['Jam Selesai Operasional']) ? trim($item['Jam Selesai Operasional']) : null,
+                    'jenis_laboratorium' => $normalize($item['Jenis Labolatorium'] ?? null),
+                    'standar_akreditasi' => $normalize($item['Standar Akreditasi / Sertifikasi'] ?? null),
+                    'jam_mulai' => $normalize($item['Jam Mulai Operasional'] ?? null),
+                    'jam_selesai' => $normalize($item['Jam Selesai Operasional'] ?? null),
                     'jumlah_akses' => isset($item['Jumlah Akses']) && is_numeric($item['Jumlah Akses']) ? (int)$item['Jumlah Akses'] : null,
-                    'kota' => !empty($item['Kota']) ? trim($item['Kota']) : null,
-                    'kecamatan' => !empty($item['Kecamatan']) ? trim($item['Kecamatan']) : null,
+                    'kota' => $normalize($item['Kota'] ?? null),
+                    'kecamatan' => $normalize($item['Kecamatan'] ?? null),
                     'total_jumlah_alat' => isset($item['Total Jumlah Alat']) && is_numeric($item['Total Jumlah Alat']) ? (int)$item['Total Jumlah Alat'] : null,
-                    'nama_alat' => !empty($item['Nama Alat']) ? trim($item['Nama Alat']) : null,
-                    'deskripsi_alat' => !empty($item['Deskripsi Alat']) ? trim($item['Deskripsi Alat']) : null,
-                    'tautan_gambar' => !empty($item['Tautan Gambar']) ? trim($item['Tautan Gambar']) : null,
-                    'kontak' => !empty($item['Kontak']) ? trim($item['Kontak']) : null,
-                    'tautan' => !empty($item['Tautan']) ? trim($item['Tautan']) : null,
+                    'nama_alat' => $normalize($item['Nama Alat'] ?? null),
+                    'deskripsi_alat' => $normalize($item['Deskripsi Alat'] ?? null),
+                    'tautan_gambar' => $normalize($item['Tautan Gambar'] ?? null),
+                    'kontak' => $normalize($item['Kontak'] ?? null),
+                    'tautan' => $normalize($item['Tautan'] ?? null),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

@@ -11,6 +11,17 @@ class PengabdianSeeder extends Seeder
     public function run(): void
     {
         $jsonPath = base_path('../peta-bima/data/data-pengabdian.json');
+        $normalize = function ($value) {
+            if ($value === null) return null;
+            if (is_string($value)) {
+                $v = trim($value);
+                if ($v === '' || $v === '-' || $v === '—' || $v === '?' || strcasecmp($v, 'na') === 0 || strcasecmp($v, 'n/a') === 0) {
+                    return null;
+                }
+                return $v;
+            }
+            return $value;
+        };
 
         if (!file_exists($jsonPath)) {
             $this->command->error("File tidak ditemukan: {$jsonPath}");
@@ -76,8 +87,8 @@ class PengabdianSeeder extends Seeder
             $insertData = [];
 
             foreach ($chunk as $item) {
-                $judul = trim($item['judul'] ?? '');
-                $namaInstitusi = trim($item['nama_institusi'] ?? $item['nama_institusi_pelaksana'] ?? '');
+                $judul = $normalize($item['judul'] ?? null) ?? '';
+                $namaInstitusi = $normalize($item['nama_institusi'] ?? $item['nama_institusi_pelaksana'] ?? null) ?? '';
 
                 if (empty($judul) || empty($namaInstitusi)) {
                     $skipped++;
@@ -86,26 +97,26 @@ class PengabdianSeeder extends Seeder
                 }
 
                 $insertData[] = [
-                    'batch_type' => $item['batch_type'] ?? null,
-                    'nama' => !empty(($item['nama'] ?? $item['nama_ketua'] ?? $item['nama_pelaksana'] ?? null)) ? trim($item['nama'] ?? $item['nama_ketua'] ?? $item['nama_pelaksana']) : null,
-                    'nidn' => !empty(($item['nidn'] ?? $item['nidn_ketua'] ?? $item['nidn_pelaksana'] ?? null)) ? trim($item['nidn'] ?? $item['nidn_ketua'] ?? $item['nidn_pelaksana']) : null,
+                    'batch_type' => $normalize($item['batch_type'] ?? null),
+                    'nama' => $normalize(($item['nama'] ?? $item['nama_ketua'] ?? $item['nama_pelaksana'] ?? null)),
+                    'nidn' => $normalize(($item['nidn'] ?? $item['nidn_ketua'] ?? $item['nidn_pelaksana'] ?? null)),
                     'nama_institusi' => $namaInstitusi,
                     'pt_latitude' => isset($item['pt_latitude']) && is_numeric($item['pt_latitude']) ? (float)$item['pt_latitude'] : null,
                     'pt_longitude' => isset($item['pt_longitude']) && is_numeric($item['pt_longitude']) ? (float)$item['pt_longitude'] : null,
-                    'kd_perguruan_tinggi' => !empty($item['kd_perguruan_tinggi']) ? trim($item['kd_perguruan_tinggi']) : null,
-                    'wilayah_lldikti' => !empty($item['wilayah_lldikti']) ? trim($item['wilayah_lldikti']) : null,
-                    'ptn_pts' => !empty($item['ptn/pts']) ? trim($item['ptn/pts']) : null,
-                    'kab_pt' => !empty($item['Kab PT']) ? trim($item['Kab PT']) : null,
-                    'prov_pt' => !empty(($item['Prov PT'] ?? $item['provinsi_mitra'] ?? null)) ? trim($item['Prov PT'] ?? $item['provinsi_mitra']) : null,
-                    'klaster' => !empty($item['klaster']) ? trim($item['klaster']) : null,
+                    'kd_perguruan_tinggi' => $normalize($item['kd_perguruan_tinggi'] ?? null),
+                    'wilayah_lldikti' => $normalize($item['wilayah_lldikti'] ?? null),
+                    'ptn_pts' => $normalize($item['ptn/pts'] ?? null),
+                    'kab_pt' => $normalize($item['Kab PT'] ?? null),
+                    'prov_pt' => $normalize(($item['Prov PT'] ?? $item['provinsi_mitra'] ?? null)),
+                    'klaster' => $normalize($item['klaster'] ?? null),
                     'judul' => $judul,
-                    'nama_singkat_skema' => !empty($item['nama_singkat_skema']) ? trim($item['nama_singkat_skema']) : null,
+                    'nama_singkat_skema' => $normalize($item['nama_singkat_skema'] ?? null),
                     'thn_pelaksanaan_kegiatan' => (($thn = ($item['thn_pelaksanaan_kegiatan'] ?? $item['thn_pelaksanaan'] ?? null)) && is_numeric($thn)) ? (int)$thn : null,
                     'urutan_thn_kegitan' => isset($item['urutan_thn_kegitan']) && is_numeric($item['urutan_thn_kegitan']) ? (int)$item['urutan_thn_kegitan'] : null,
-                    'nama_skema' => !empty($item['nama_skema']) ? trim($item['nama_skema']) : null,
-                    'bidang_fokus' => !empty($item['bidang_fokus']) ? trim($item['bidang_fokus']) : null,
-                    'prov_mitra' => !empty(($item['prov_mitra'] ?? $item['provinsi_mitra'] ?? null)) ? trim($item['prov_mitra'] ?? $item['provinsi_mitra']) : null,
-                    'kab_mitra' => !empty(($item['kab_mitra'] ?? $item['lokus'] ?? null)) ? trim($item['kab_mitra'] ?? $item['lokus']) : null,
+                    'nama_skema' => $normalize($item['nama_skema'] ?? null),
+                    'bidang_fokus' => $normalize($item['bidang_fokus'] ?? null),
+                    'prov_mitra' => $normalize(($item['prov_mitra'] ?? $item['provinsi_mitra'] ?? null)),
+                    'kab_mitra' => $normalize(($item['kab_mitra'] ?? $item['lokus'] ?? null)),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

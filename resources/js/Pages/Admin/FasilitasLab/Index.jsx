@@ -154,7 +154,6 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                         { key: 'nama_laboratorium', title: 'Nama Lab', className: 'w-2/5', sortable: true, render: (v) => <div className="truncate">{v || '-'}</div> },
                         { key: 'institusi', title: 'Institusi', className: 'w-1/5', sortable: true },
                         { key: 'provinsi', title: 'Provinsi', className: 'w-1/6', sortable: true, render: (v) => <Badge color="blue">{v || '-'}</Badge> },
-                        { key: 'jenis_laboratorium', title: 'Jenis', className: 'w-1/6', sortable: true, render: (v) => <Badge color="purple">{v || '-'}</Badge> },
                         { key: 'aksi', title: 'Aksi', className: 'w-28' },
                     ]}
                     data={(fasilitasLab.data || []).map((item, index) => ({

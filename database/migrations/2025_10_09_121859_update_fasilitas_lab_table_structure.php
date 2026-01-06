@@ -11,29 +11,78 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('fasilitas_lab', function (Blueprint $table) {
-            // Drop old columns
-            $table->dropColumn(['nama_lab', 'kabupaten', 'jenis_lab', 'deskripsi', 'bidang', 'tahun']);
+        if (!Schema::hasTable('fasilitas_lab')) {
+            Schema::create('fasilitas_lab', function (Blueprint $table) {
+                $table->id();
+                $table->string('institusi')->nullable();
+                $table->decimal('latitude', 10, 7)->nullable();
+                $table->decimal('longitude', 10, 7)->nullable();
+                $table->string('provinsi')->nullable();
+                $table->string('kota')->nullable();
+                $table->string('kecamatan')->nullable();
+                $table->string('kode_universitas')->nullable();
+                $table->string('kategori_pt')->nullable();
+                $table->string('fakultas')->nullable();
+                $table->string('departemen')->nullable();
+                $table->string('nama_laboratorium')->nullable();
+                $table->string('jenis_laboratorium')->nullable();
+                $table->string('standar_akreditasi')->nullable();
+                $table->time('jam_mulai')->nullable();
+                $table->time('jam_selesai')->nullable();
+                $table->integer('jumlah_akses')->nullable();
+                $table->integer('total_jumlah_alat')->nullable();
+                $table->text('nama_alat')->nullable();
+                $table->text('deskripsi_alat')->nullable();
+                $table->string('tautan_gambar')->nullable();
+                $table->string('kontak')->nullable();
+                $table->string('tautan')->nullable();
+                $table->string('status_akses')->nullable();
+                $table->timestamps();
+                $table->index('provinsi');
+                $table->index('kota');
+                $table->index('institusi');
+                $table->index('jenis_laboratorium');
+                $table->index('status_akses');
+                $table->index(['latitude', 'longitude']);
+            });
+            return;
+        }
 
-            // Add new columns to match JSON structure
-            $table->string('kode_universitas')->nullable()->after('id');
-            $table->string('kategori_pt')->nullable()->after('institusi');
-            $table->string('fakultas')->nullable()->after('kategori_pt');
-            $table->string('departemen')->nullable()->after('fakultas');
-            $table->string('nama_laboratorium')->nullable()->after('departemen');
-            $table->string('jenis_laboratorium')->nullable()->after('nama_laboratorium');
-            $table->string('standar_akreditasi')->nullable()->after('jenis_laboratorium');
-            $table->time('jam_mulai')->nullable()->after('status_akses');
-            $table->time('jam_selesai')->nullable()->after('jam_mulai');
-            $table->integer('jumlah_akses')->nullable()->after('jam_selesai');
-            $table->string('kota')->nullable()->after('provinsi');
-            $table->string('kecamatan')->nullable()->after('kota');
-            $table->integer('total_jumlah_alat')->nullable()->after('longitude');
-            $table->text('nama_alat')->nullable()->after('total_jumlah_alat');
-            $table->text('deskripsi_alat')->nullable()->after('nama_alat');
-            $table->string('tautan_gambar')->nullable()->after('deskripsi_alat');
-            $table->string('kontak')->nullable()->after('tautan_gambar');
-            $table->string('tautan')->nullable()->after('kontak');
+        $oldColumns = ['nama_lab', 'kabupaten', 'jenis_lab', 'deskripsi', 'bidang', 'tahun'];
+        $existingOld = array_filter($oldColumns, fn ($c) => Schema::hasColumn('fasilitas_lab', $c));
+        if (!empty($existingOld)) {
+            Schema::table('fasilitas_lab', function (Blueprint $table) use ($existingOld) {
+                $table->dropColumn($existingOld);
+            });
+        }
+
+        // status_akses tetap dipertahankan karena dipakai di data/fitur
+
+        Schema::table('fasilitas_lab', function (Blueprint $table) {
+            if (!Schema::hasColumn('fasilitas_lab', 'kode_universitas')) {
+                $table->string('kode_universitas')->nullable()->after('id');
+            }
+            if (!Schema::hasColumn('fasilitas_lab', 'kategori_pt')) {
+                $table->string('kategori_pt')->nullable()->after('institusi');
+            }
+            if (!Schema::hasColumn('fasilitas_lab', 'nama_laboratorium')) {
+                $table->string('nama_laboratorium')->nullable()->after('kategori_pt');
+            }
+            if (!Schema::hasColumn('fasilitas_lab', 'kota')) {
+                $table->string('kota')->nullable()->after('nama_laboratorium');
+            }
+            if (!Schema::hasColumn('fasilitas_lab', 'total_jumlah_alat')) {
+                $table->integer('total_jumlah_alat')->nullable()->after('longitude');
+            }
+            if (!Schema::hasColumn('fasilitas_lab', 'nama_alat')) {
+                $table->text('nama_alat')->nullable()->after('total_jumlah_alat');
+            }
+            if (!Schema::hasColumn('fasilitas_lab', 'deskripsi_alat')) {
+                $table->text('deskripsi_alat')->nullable()->after('nama_alat');
+            }
+            if (!Schema::hasColumn('fasilitas_lab', 'kontak')) {
+                $table->string('kontak')->nullable()->after('deskripsi_alat');
+            }
         });
     }
 
@@ -42,23 +91,26 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (!Schema::hasTable('fasilitas_lab')) {
+            return;
+        }
+
         Schema::table('fasilitas_lab', function (Blueprint $table) {
-            // Restore old columns
             $table->string('nama_lab')->nullable();
             $table->string('kabupaten')->nullable();
             $table->string('jenis_lab')->nullable();
             $table->text('deskripsi')->nullable();
             $table->string('bidang')->nullable();
             $table->integer('tahun')->nullable();
-
-            // Drop new columns
-            $table->dropColumn([
-                'kode_universitas', 'kategori_pt', 'fakultas', 'departemen',
-                'nama_laboratorium', 'jenis_laboratorium', 'standar_akreditasi',
-                'jam_mulai', 'jam_selesai', 'jumlah_akses', 'kota', 'kecamatan',
-                'total_jumlah_alat', 'nama_alat', 'deskripsi_alat',
-                'tautan_gambar', 'kontak', 'tautan'
-            ]);
+            $table->string('status_akses')->nullable();
         });
+
+        $newColumns = ['kode_universitas','kategori_pt','nama_laboratorium','kota','total_jumlah_alat','nama_alat','deskripsi_alat','kontak'];
+        $existingNew = array_filter($newColumns, fn ($c) => Schema::hasColumn('fasilitas_lab', $c));
+        if (!empty($existingNew)) {
+            Schema::table('fasilitas_lab', function (Blueprint $table) use ($existingNew) {
+                $table->dropColumn($existingNew);
+            });
+        }
     }
 };

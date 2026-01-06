@@ -11,6 +11,17 @@ class HilirisasiSeeder extends Seeder
     public function run(): void
     {
         $jsonPath = base_path('../peta-bima/data/data-hilirisasi.json');
+        $normalize = function ($value) {
+            if ($value === null) return null;
+            if (is_string($value)) {
+                $v = trim($value);
+                if ($v === '' || $v === '-' || $v === '—' || $v === '?' || strcasecmp($v, 'na') === 0 || strcasecmp($v, 'n/a') === 0) {
+                    return null;
+                }
+                return $v;
+            }
+            return $value;
+        };
 
         if (!file_exists($jsonPath)) {
             $this->command->error("File tidak ditemukan: {$jsonPath}");
@@ -51,8 +62,8 @@ class HilirisasiSeeder extends Seeder
             $insertData = [];
 
             foreach ($chunk as $item) {
-                $judul = trim($item['Judul'] ?? '');
-                $perguruanTinggi = trim($item['Perguruan Tinggi'] ?? '');
+                $judul = $normalize($item['Judul'] ?? null) ?? '';
+                $perguruanTinggi = $normalize($item['Perguruan Tinggi'] ?? null) ?? '';
                 
                 if (empty($judul) || empty($perguruanTinggi)) {
                     $skipped++;
@@ -64,15 +75,15 @@ class HilirisasiSeeder extends Seeder
                     'tahun' => isset($item['Tahun']) && is_numeric($item['Tahun']) ? (int)$item['Tahun'] : null,
                     'id_proposal' => isset($item['ID Proposal']) && is_numeric($item['ID Proposal']) ? (int)$item['ID Proposal'] : null,
                     'judul' => $judul,
-                    'nama_pengusul' => !empty($item['Nama Pengusul']) ? trim($item['Nama Pengusul']) : null,
-                    'direktorat' => !empty($item['Direktorat']) ? trim($item['Direktorat']) : null,
+                    'nama_pengusul' => $normalize($item['Nama Pengusul'] ?? null),
+                    'direktorat' => $normalize($item['Direktorat'] ?? null),
                     'perguruan_tinggi' => $perguruanTinggi,
                     'pt_latitude' => isset($item['pt_latitude']) && is_numeric($item['pt_latitude']) ? (float)$item['pt_latitude'] : null,
                     'pt_longitude' => isset($item['pt_longitude']) && is_numeric($item['pt_longitude']) ? (float)$item['pt_longitude'] : null,
-                    'provinsi' => !empty($item['provinsi']) ? trim($item['provinsi']) : null,
-                    'mitra' => !empty($item['Mitra']) ? trim($item['Mitra']) : null,
-                    'skema' => !empty($item['Skema']) ? trim($item['Skema']) : null,
-                    'luaran' => !empty($item['Luaran']) ? trim($item['Luaran']) : null,
+                    'provinsi' => $normalize($item['provinsi'] ?? null),
+                    'mitra' => $normalize($item['Mitra'] ?? null),
+                    'skema' => $normalize($item['Skema'] ?? null),
+                    'luaran' => $normalize($item['Luaran'] ?? null),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

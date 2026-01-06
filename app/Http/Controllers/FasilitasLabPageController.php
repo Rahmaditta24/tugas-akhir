@@ -33,7 +33,6 @@ class FasilitasLabPageController extends Controller
                 'latitude as pt_latitude',
                 'longitude as pt_longitude',
                 'provinsi',
-                'jenis_laboratorium as bidang_fokus',
                 'nama_laboratorium as judul'
             )
             ->whereNotNull('latitude')

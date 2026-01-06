@@ -9,6 +9,7 @@ export default function NavigationTabs({ activePage = 'penelitian' }) {
         { name: 'Produk', url: '/produk', key: 'produk' },
         { name: 'Fasilitas Lab', url: '/fasilitas-lab', key: 'fasilitas-lab' },
         { name: 'Permasalahan', url: '/permasalahan', key: 'permasalahan' },
+        { name: 'Rumusan Masalah', url: '/rumusan-masalah', key: 'rumusan-masalah' },
     ];
 
     return (

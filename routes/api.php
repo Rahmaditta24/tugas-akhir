@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\PermasalahanController;
 use App\Http\Controllers\Api\ProdukController;
 use App\Http\Controllers\Api\FasilitasLabController;
 use App\Http\Controllers\Api\AdminStatsController;
+use App\Http\Controllers\Api\RumusanMasalahApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,3 +67,6 @@ Route::get('/health', function () {
 // Admin realtime stats (no worker)
 Route::get('/admin/stats', [AdminStatsController::class, 'index']);
 Route::get('/admin/permasalahan-breakdown', [AdminStatsController::class, 'permasalahanBreakdown']);
+
+// Rumusan Masalah API (single endpoint)
+Route::get('/rumusan-masalah', [RumusanMasalahApiController::class, 'index']);

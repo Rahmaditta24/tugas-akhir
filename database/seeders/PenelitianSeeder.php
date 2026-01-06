@@ -50,14 +50,26 @@ class PenelitianSeeder extends Seeder
         $bar = $this->command->getOutput()->createProgressBar($total);
         $bar->start();
 
+        $normalize = function ($value) {
+            if ($value === null) return null;
+            if (is_string($value)) {
+                $v = trim($value);
+                if ($v === '' || $v === '-' || $v === '—' || $v === '?' || strcasecmp($v, 'na') === 0 || strcasecmp($v, 'n/a') === 0) {
+                    return null;
+                }
+                return $v;
+            }
+            return $value;
+        };
+
         foreach (array_chunk($penelitianData, $chunkSize) as $chunk) {
             $insertData = [];
 
             foreach ($chunk as $item) {
                 // Sama seperti peta-bima: ambil semua data tanpa filter
                 // (peta-bima/js/script.js line 606: "Tidak filter lagi, ambil semua data")
-                $institusi = isset($item['institusi']) ? trim($item['institusi']) : '';
-                $judul = isset($item['judul']) ? trim($item['judul']) : '';
+                $institusi = $normalize($item['institusi'] ?? null) ?? '';
+                $judul = $normalize($item['judul'] ?? null) ?? '';
                 
                 // Hanya skip jika KEDUA field benar-benar kosong (null/empty setelah trim)
                 // Ini lebih longgar daripada sebelumnya yang skip jika SALAH SATU kosong
@@ -68,24 +80,24 @@ class PenelitianSeeder extends Seeder
                 }
 
                 $insertData[] = [
-                    'nama' => !empty($item['nama']) ? trim($item['nama']) : null,
+                    'nama' => $normalize($item['nama'] ?? null),
                     'nidn' => isset($item['nidn']) && is_numeric($item['nidn']) ? (int)$item['nidn'] : null,
-                    'nuptk' => !empty($item['nuptk']) ? trim($item['nuptk']) : null,
+                    'nuptk' => $normalize($item['nuptk'] ?? null),
                     'institusi' => $institusi,
                     'pt_latitude' => isset($item['pt_latitude']) && is_numeric($item['pt_latitude']) ? (float)$item['pt_latitude'] : null,
                     'pt_longitude' => isset($item['pt_longitude']) && is_numeric($item['pt_longitude']) ? (float)$item['pt_longitude'] : null,
-                    'kode_pt' => !empty($item['kode_pt']) ? trim($item['kode_pt']) : null,
-                    'jenis_pt' => !empty($item['jenis_pt']) ? trim($item['jenis_pt']) : null,
-                    'kategori_pt' => !empty($item['kategori_pt']) ? trim($item['kategori_pt']) : null,
-                    'institusi_pilihan' => !empty($item['institusi_pilihan']) ? trim($item['institusi_pilihan']) : null,
-                    'klaster' => !empty($item['klaster']) ? trim($item['klaster']) : null,
-                    'provinsi' => !empty($item['provinsi']) ? trim($item['provinsi']) : null,
-                    'kota' => !empty($item['kota']) ? trim($item['kota']) : null,
+                    'kode_pt' => $normalize($item['kode_pt'] ?? null),
+                    'jenis_pt' => $normalize($item['jenis_pt'] ?? null),
+                    'kategori_pt' => $normalize($item['kategori_pt'] ?? null),
+                    'institusi_pilihan' => $normalize($item['institusi_pilihan'] ?? null),
+                    'klaster' => $normalize($item['klaster'] ?? null),
+                    'provinsi' => $normalize($item['provinsi'] ?? null),
+                    'kota' => $normalize($item['kota'] ?? null),
                     'judul' => $judul,
-                    'skema' => !empty($item['skema']) ? trim($item['skema']) : null,
+                    'skema' => $normalize($item['skema'] ?? null),
                     'thn_pelaksanaan' => isset($item['thn_pelaksanaan']) && is_numeric($item['thn_pelaksanaan']) ? (int)$item['thn_pelaksanaan'] : null,
-                    'bidang_fokus' => !empty($item['bidang_fokus']) ? trim($item['bidang_fokus']) : null,
-                    'tema_prioritas' => !empty($item['tema_prioritas']) ? trim($item['tema_prioritas']) : null,
+                    'bidang_fokus' => $normalize($item['bidang_fokus'] ?? null),
+                    'tema_prioritas' => $normalize($item['tema_prioritas'] ?? null),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
