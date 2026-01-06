@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import * as XLSX from 'xlsx';
+import toast, { Toaster } from 'react-hot-toast';
 import MainLayout from '../Layouts/MainLayout';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapContainer from '../Components/MapContainer';
@@ -47,6 +48,8 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         router.get(route('penelitian.index'), params, {
             preserveState: true,
             preserveScroll: true,
+            replace: true, // Don't add to history for faster navigation
+            only: ['mapData', 'researches', 'stats'], // Only fetch data, not layout
         });
     };
 
@@ -61,15 +64,34 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         setIsLoading(true);
 
         try {
-            // Fetch ALL filtered data from server for export
-            const queryParams = new URLSearchParams(filters).toString();
-            const response = await fetch(`/api/penelitian/export?${queryParams}`);
+            // Build query string that supports arrays
+            const queryParts = [];
+            Object.keys(filters).forEach(key => {
+                const value = filters[key];
+                if (Array.isArray(value)) {
+                    // For arrays, add each value with the same key
+                    value.forEach(v => queryParts.push(`${key}[]=${encodeURIComponent(v)}`));
+                } else if (value) {
+                    queryParts.push(`${key}=${encodeURIComponent(value)}`);
+                }
+            });
+            const queryString = queryParts.join('&');
+
+            const response = await fetch(`/api/penelitian/export?${queryString}`);
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Export error:', errorText);
                 throw new Error('Failed to fetch data');
             }
 
             const allData = await response.json();
+
+            if (!allData || allData.length === 0) {
+                toast.error('Tidak ada data untuk diexport.');
+                setIsLoading(false);
+                return;
+            }
 
             // Prepare data for Excel export
             const exportData = allData.map(research => ({
@@ -118,9 +140,27 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
             // Download file
             XLSX.writeFile(wb, filename);
+
+            // Show success toast
+            toast.success(`Berhasil export ${exportData.length} data penelitian!`, {
+                duration: 4000,
+                position: 'top-right',
+                style: {
+                    background: '#16a34a',
+                    color: '#fff',
+                    fontWeight: '500',
+                },
+                iconTheme: {
+                    primary: '#fff',
+                    secondary: '#16a34a',
+                },
+            });
         } catch (error) {
             console.error('Error exporting data:', error);
-            alert('Gagal mengexport data. Silakan coba lagi.');
+            toast.error('Gagal mengexport data. Silakan coba lagi.', {
+                duration: 4000,
+                position: 'top-right',
+            });
         } finally {
             setIsLoading(false);
         }
@@ -128,6 +168,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
     return (
         <MainLayout title="Dashboard Pemetaan Riset - Penelitian">
+            <Toaster />
 
             <NavigationTabs activePage="penelitian" />
 

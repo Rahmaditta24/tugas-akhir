@@ -15,23 +15,38 @@ class PermasalahanPageController extends Controller
         
         // Get all permasalahan data with coordinates
         $provinsiData = PermasalahanProvinsi::all()->map(function ($item) use ($provinceCoords) {
-            $coords = $provinceCoords[strtolower($item->provinsi)] ?? null;
+            // Normalize province name: lowercase, trim, remove extra spaces
+            $cleanProv = strtolower(trim(preg_replace('/\s+/', ' ', $item->provinsi)));
+            $coords = $provinceCoords[$cleanProv] ?? null;
+            
+            // Debug fallback for Kalimantan Barat if still missing
+            if (!$coords && str_contains($cleanProv, 'kalimantan') && str_contains($cleanProv, 'barat')) {
+                 $coords = [0.0, 109.32]; // Force coords for Kalbar
+            }
+
             return [
                 'id' => $item->id,
                 'provinsi' => $item->provinsi,
                 'jenis_permasalahan' => $item->jenis_permasalahan,
-                'nilai' => $item->nilai,
+                'nilai' => $item->nilai, // Raw value
                 'satuan' => $item->satuan,
                 'metrik' => $item->metrik,
                 'tahun' => $item->tahun,
                 'pt_latitude' => $coords ? $coords[0] : null,
                 'pt_longitude' => $coords ? $coords[1] : null,
             ];
-        })->filter(fn($item) => $item['pt_latitude'] && $item['pt_longitude']);
+        })->filter(fn($item) => !is_null($item['pt_latitude']) && !is_null($item['pt_longitude']));
 
         $kabupatenData = PermasalahanKabupaten::all()->map(function ($item) use ($provinceCoords) {
             // For kabupaten, use provinsi coordinates as fallback
-            $coords = $provinceCoords[strtolower($item->provinsi)] ?? null;
+            $cleanProv = strtolower(trim(preg_replace('/\s+/', ' ', $item->provinsi)));
+            $coords = $provinceCoords[$cleanProv] ?? null;
+
+            // Debug fallback
+            if (!$coords && str_contains($cleanProv, 'kalimantan') && str_contains($cleanProv, 'barat')) {
+                 $coords = [0.0, 109.32];
+            }
+            
             return [
                 'id' => $item->id,
                 'kabupaten_kota' => $item->kabupaten_kota,
@@ -43,17 +58,20 @@ class PermasalahanPageController extends Controller
                 'pt_latitude' => $coords ? $coords[0] : null,
                 'pt_longitude' => $coords ? $coords[1] : null,
             ];
-        })->filter(fn($item) => $item['pt_latitude'] && $item['pt_longitude']);
+        })->filter(fn($item) => !is_null($item['pt_latitude']) && !is_null($item['pt_longitude']));
 
         // Combine both datasets
         $mapData = $provinsiData->merge($kabupatenData)->values()->all();
 
         return Inertia::render('Permasalahan', [
             'mapData' => $mapData,
+
             'stats' => [
-                'totalProvinsi' => PermasalahanProvinsi::distinct('provinsi')->count(),
-                'totalKabupaten' => PermasalahanKabupaten::distinct('kabupaten_kota')->count(),
-                'totalRecords' => PermasalahanProvinsi::count() + PermasalahanKabupaten::count(),
+                'totalResearch' => PermasalahanProvinsi::count() + PermasalahanKabupaten::count(),
+                'totalUniversities' => 0, // Not applicable for Permasalahan
+                'totalProvinces' => PermasalahanProvinsi::distinct('provinsi')->count('provinsi'),
+                'totalFields' => PermasalahanProvinsi::distinct('jenis_permasalahan')->count('jenis_permasalahan') + 
+                                 PermasalahanKabupaten::distinct('jenis_permasalahan')->count('jenis_permasalahan'),
             ],
         ]);
     }
@@ -85,11 +103,19 @@ class PermasalahanPageController extends Controller
             'kalimantan selatan' => [-3.319, 114.592],
             'kalimantan timur' => [-0.502, 117.153],
             'kalimantan utara' => [3.0, 116.0],
+            // Kalimantan Aliases
+            'prov. kalimantan barat' => [0.0, 109.32],
+            'kalbar' => [0.0, 109.32],
+            'kaltim' => [-0.502, 117.153],
+            'kalsel' => [-3.319, 114.592],
+            'kalteng' => [-2.21, 113.92],
+            'kalut' => [3.0, 116.0],
             'sulawesi utara' => [1.48, 124.84],
             'gorontalo' => [0.54, 123.06],
             'sulawesi tengah' => [-0.9, 119.87],
             'sulawesi barat' => [-2.67, 118.86],
             'sulawesi selatan' => [-5.14, 119.41],
+            'sulawesi tenggara' => [-4.0, 122.0], // Added missing province
             'maluku' => [-3.7, 128.18],
             'maluku utara' => [0.79, 127.38],
             'papua' => [-2.53, 140.71],
@@ -98,6 +124,13 @@ class PermasalahanPageController extends Controller
             'papua selatan' => [-6.0, 140.0],
             'papua tengah' => [-3.47, 138.08],
             'papua pegunungan' => [-4.0, 138.0],
+            // Aliases for robustness
+            'daerah istimewa yogyakarta' => [-7.795, 110.369],
+            'yogyakarta' => [-7.795, 110.369],
+            'diy' => [-7.795, 110.369],
+            'dki jakarta' => [-6.2, 106.816],
+            'jakarta' => [-6.2, 106.816],
+            'jakarta raya' => [-6.2, 106.816],
         ];
     }
 }

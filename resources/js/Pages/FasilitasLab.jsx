@@ -8,6 +8,35 @@ import StatisticsCards from '../Components/StatisticsCards';
 
 export default function FasilitasLab({ mapData = [], researches = [], stats = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
+    const [filters, setFilters] = useState({});
+
+    // Mock options for Fasilitas Lab
+    const filterOptions = {
+        kampus_ptnbh: ['UI', 'ITB', 'UGM', 'IPB', 'ITS', 'UNAIR', 'UNHAS', 'USU', 'UNDIP', 'UNPAD'],
+        provinsi: ['Jawa Barat', 'Jawa Timur', 'DKI Jakarta'],
+    };
+
+    const filterFields = [
+        { label: 'Kampus PTNBH', requestKey: 'kampus_ptnbh', optionKey: 'kampus_ptnbh' },
+        { label: 'Provinsi', requestKey: 'provinsi', optionKey: 'provinsi' },
+    ];
+
+    const handleSearch = (value) => {
+        router.get(route('fasilitas.index'), { search: value }, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    };
+
+    const handleFilterChange = (newFilters) => {
+        setFilters(newFilters);
+    };
+
+    const handleReset = () => {
+        setFilters({});
+    };
+
+    const handleDownload = () => { };
 
     return (
         <MainLayout title="Dashboard Pemetaan Riset - Fasilitas Lab">
@@ -16,18 +45,16 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
             <div className="relative">
                 <MapContainer mapData={mapData} displayMode={displayMode} />
                 <MapControls
-                    onSearch={(value) => {
-                        router.get(route('fasilitas.index'), { search: value }, {
-                            preserveState: true,
-                            preserveScroll: true,
-                        });
-                    }}
+                    onSearch={handleSearch}
                     onDisplayModeChange={setDisplayMode}
-                    onAdvancedSearchToggle={() => {}}
-                    onReset={() => {}}
-                    onDownload={() => {}}
+                    onAdvancedSearchToggle={() => { }}
+                    onReset={handleReset}
+                    onDownload={handleDownload}
                     displayMode={displayMode}
-                    showAdvancedSearch={false}
+                    filters={filters}
+                    filterOptions={filterOptions}
+                    onFilterChange={handleFilterChange}
+                    filterFields={filterFields}
                 />
             </div>
 

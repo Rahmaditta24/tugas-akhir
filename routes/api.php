@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\RumusanMasalahApiController;
 // Penelitian endpoints
 Route::prefix('penelitian')->group(function () {
     Route::get('/', [PenelitianController::class, 'index']);
+    Route::get('/export', [PenelitianController::class, 'export']);
     Route::get('/statistics', [PenelitianController::class, 'statistics']);
     Route::get('/{id}', [PenelitianController::class, 'show']);
 });

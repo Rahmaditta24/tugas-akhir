@@ -45,54 +45,55 @@ class PenelitianController extends Controller
             $baseQuery->search($request->search);
         }
 
-        // Get statistics without loading all data into memory (cached for performance)
-        $statsCacheKey = 'stats_penelitian_' . md5(json_encode($request->all()));
-        $totalStats = Cache::remember($statsCacheKey, 3600, function() use ($baseQuery) {
-            $statsQuery = clone $baseQuery;
-            return [
-                'totalResearch' => (clone $statsQuery)->count(),
-                'totalUniversities' => (clone $statsQuery)->distinct('institusi')->count('institusi'),
-                'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'),
-                'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
-            ];
-        });
+        // Get statistics without loading all data into memory
+        // NO CACHE - we need real-time stats based on current filters
+        $statsQuery = clone $baseQuery;
+        $totalStats = [
+            'totalResearch' => (clone $statsQuery)->count(),
+            'totalUniversities' => (clone $statsQuery)->distinct('institusi')->count('institusi'),
+            'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'),
+            'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
+        ];
 
-        // For map: CRITICAL OPTIMIZATION - Only send aggregated/sampled data
-        // Sending 66k+ markers causes massive performance issues
-        // Strategy: Send only top 5000 most relevant records initially
-        $cacheKey = 'map_data_penelitian_' . md5(json_encode($request->all()));
-        $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
-            $mapDataArray = [];
+        // For map: MEMORY-EFFICIENT GEOGRAPHIC CLUSTERING
+        // Group by rounded coordinates to create geographic clusters (similar to reference site)
+        // ROUND to 2 decimals ≈ 1.1km precision, perfect for city-level clustering
+        $cacheKey = 'map_data_penelitian_v5_' . md5(json_encode($request->all()));
+        $mapData = Cache::remember($cacheKey, 300, function() use ($baseQuery) { // 5 minutes cache for faster filter updates
+            // Aggregate by geographic location (rounded coordinates)
+            $aggregatedData = (clone $baseQuery)
+                ->select(
+                    DB::raw('ROUND(pt_latitude, 2) as lat_rounded'),
+                    DB::raw('ROUND(pt_longitude, 2) as lng_rounded'),
+                    DB::raw('AVG(pt_latitude) as pt_latitude'),
+                    DB::raw('AVG(pt_longitude) as pt_longitude'),
+                    DB::raw('COUNT(*) as total_penelitian'),
+                    DB::raw('GROUP_CONCAT(DISTINCT institusi SEPARATOR " | ") as institusi_list'),
+                    DB::raw('GROUP_CONCAT(DISTINCT provinsi) as provinsi'),
+                    DB::raw('GROUP_CONCAT(DISTINCT bidang_fokus SEPARATOR ", ") as bidang_fokus_list')
+                )
+                ->whereNotNull('pt_latitude')
+                ->whereNotNull('pt_longitude')
+                ->groupBy('lat_rounded', 'lng_rounded')
+                ->having('total_penelitian', '>', 0)
+                ->get();
 
-            // OPTIMIZATION: Limit to 5000 records for initial map load
-            // This dramatically improves frontend rendering performance
-            $query = (clone $baseQuery)->select(
-                'id',
-                'institusi',
-                'pt_latitude',
-                'pt_longitude',
-                'provinsi',
-                'bidang_fokus',
-                DB::raw('SUBSTRING(judul, 1, 100) as judul_short')
-            )
-            ->whereNotNull('pt_latitude')
-            ->whereNotNull('pt_longitude')
-            ->latest('thn_pelaksanaan') // Prioritize recent research
-            ->limit(2000); // CRITICAL: Reduced to 2000 for better performance
-
-            foreach ($query->cursor() as $item) {
-                $mapDataArray[] = [
-                    'id' => $item->id,
-                    'institusi' => $item->institusi,
+            $result = $aggregatedData->map(function($item) {
+                return [
                     'pt_latitude' => (float)$item->pt_latitude,
                     'pt_longitude' => (float)$item->pt_longitude,
+                    'total_penelitian' => (int)$item->total_penelitian,
+                    'institusi' => $item->institusi_list,
                     'provinsi' => $item->provinsi,
-                    'bidang_fokus' => $item->bidang_fokus,
-                    'judul' => $item->judul_short,
+                    'bidang_fokus' => $item->bidang_fokus_list,
                 ];
-            }
+            })->toArray();
 
-            return $mapDataArray;
+            // Verify data integrity
+            $totalInClusters = array_sum(array_column($result, 'total_penelitian'));
+            \Log::info("Map data aggregation: {$aggregatedData->count()} clusters, total penelitian: {$totalInClusters}");
+
+            return $result;
         });
 
         // For list: paginate and only load what's needed
@@ -222,13 +223,14 @@ class PenelitianController extends Controller
             $query->search($request->search);
         }
 
-        // OPTIMIZED: Use streaming response to avoid loading all data into memory
-        return response()->stream(function () use ($query) {
-            echo '[';
-            $first = true;
+        try {
+            // OPTIMIZED: Use streaming response to avoid loading all data into memory
+            return response()->stream(function () use ($query) {
+                echo '[';
+                $first = true;
 
-            // Use cursor for memory-efficient iteration
-            $query->select(
+                // Use cursor for memory-efficient iteration
+                $query->select(
                 'nama',
                 'nidn',
                 'institusi',
@@ -265,5 +267,9 @@ class PenelitianController extends Controller
             'Content-Type' => 'application/json',
             'Cache-Control' => 'no-cache',
         ]);
+        } catch (\Exception $e) {
+            \Log::error('Export error: ' . $e->getMessage());
+            return response()->json(['error' => 'Export failed: ' . $e->getMessage()], 500);
+        }
     }
 }
