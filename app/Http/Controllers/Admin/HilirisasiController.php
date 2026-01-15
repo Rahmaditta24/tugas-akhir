@@ -14,8 +14,8 @@ class HilirisasiController extends Controller
         $query = Hilirisasi::query();
 
         // Whitelisted sorting and pagination
-        $allowedSorts = ['id', 'judul', 'nama_pengusul', 'perguruan_tinggi', 'tahun'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
+        $allowedSorts = ['id', 'judul', 'nama_pengusul', 'perguruan_tinggi', 'tahun', 'direktorat', 'provinsi', 'skema'];
+        $sort = in_array($request->get('sort'), $allowedSorts, true)? $request->get('sort'): 'tahun';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
         $perPage = (int) $request->get('perPage', 20);
         if ($perPage < 10) { $perPage = 10; }
@@ -27,12 +27,30 @@ class HilirisasiController extends Controller
                 $q->where('nama_pengusul', 'like', "%{$search}%")
                   ->orWhere('perguruan_tinggi', 'like', "%{$search}%")
                   ->orWhere('judul', 'like', "%{$search}%")
-                  ->orWhere('provinsi', 'like', "%{$search}%");
+                  ->orWhere('provinsi', 'like', "%{$search}%")
+                  ->orWhere('skema', 'like', "%{$search}%")
+                  ->orWhere('direktorat', 'like', "%{$search}%");
             });
         }
 
-        // Select only fields used in table to shrink payload
-        $query->select(['id', 'judul', 'nama_pengusul', 'perguruan_tinggi', 'tahun']);
+        // Column filters
+        if ($request->filled('filters')) {
+            $filters = $request->filters;
+            foreach ($filters as $key => $value) {
+                if (!empty($value)) {
+                    // Whitelisted columns for filtering
+                    if (in_array($key, [
+                        'judul', 'nama_pengusul', 'perguruan_tinggi', 
+                        'tahun', 'direktorat', 'provinsi', 'skema'
+                    ])) {
+                        $query->where($key, 'like', "%{$value}%");
+                    }
+                }
+            }
+        }
+
+        // Select statement removed to ensure all required fields are available
+        // $query->select([...]);
 
         $hilirisasi = $query
             ->orderBy($sort, $direction)
@@ -41,7 +59,6 @@ class HilirisasiController extends Controller
 
         $stats = [
             'total' => Hilirisasi::count(),
-            // Use the actual data year column instead of created_at
             'thisYear' => Hilirisasi::where('tahun', (int) date('Y'))->count(),
             'withCoordinates' => Hilirisasi::whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count(),
         ];
@@ -51,6 +68,7 @@ class HilirisasiController extends Controller
             'stats' => $stats,
             'filters' => [
                 'search' => $request->get('search'),
+                'columns' => $request->get('filters', []), // Pass column filters back
                 'sort' => $sort,
                 'direction' => $direction,
                 'perPage' => $perPage,

@@ -13,24 +13,40 @@ class FasilitasLabController extends Controller
     {
         $query = FasilitasLab::query();
 
+        // Global search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama_laboratorium', 'like', "%{$search}%")
+                  ->orWhere('institusi', 'like', "%{$search}%")
+                  ->orWhere('provinsi', 'like', "%{$search}%")
+                  ->orWhere('kota', 'like', "%{$search}%")
+                  ->orWhere('kontak', 'like', "%{$search}%");
+            });
+        }
+
+        // Column filters
+        if ($request->filled('filters')) {
+            $columnFilters = $request->filters;
+            foreach ($columnFilters as $key => $value) {
+                if (!empty($value)) {
+                    if (in_array($key, [
+                        'nama_laboratorium', 'institusi', 'total_jumlah_alat', 
+                        'kontak', 'provinsi', 'kota', 'kode_universitas', 'kategori_pt'
+                    ])) {
+                        $query->where($key, 'like', "%{$value}%");
+                    }
+                }
+            }
+        }
+
         // Whitelisted sorting and pagination
-        $allowedSorts = ['id', 'nama_laboratorium', 'institusi', 'provinsi', 'jenis_laboratorium'];
+        $allowedSorts = ['id', 'nama_laboratorium', 'institusi', 'provinsi', 'total_jumlah_alat'];
         $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
         $perPage = (int) $request->get('perPage', 20);
         if ($perPage < 10) { $perPage = 10; }
         if ($perPage > 100) { $perPage = 100; }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('nama_laboratorium', 'like', "%{$search}%")
-                  ->orWhere('institusi', 'like', "%{$search}%");
-            });
-        }
-
-        // Select only fields used in table to shrink payload
-        $query->select(['id', 'nama_laboratorium', 'institusi', 'provinsi', 'jenis_laboratorium']);
 
         $fasilitasLab = $query
             ->orderBy($sort, $direction)
@@ -48,6 +64,7 @@ class FasilitasLabController extends Controller
             'stats' => $stats,
             'filters' => [
                 'search' => $request->get('search'),
+                'columns' => $request->get('filters') ?? [],
                 'sort' => $sort,
                 'direction' => $direction,
                 'perPage' => $perPage,
@@ -63,11 +80,18 @@ class FasilitasLabController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_laboratorium' => ['required', 'string', 'max:255'],
+            'kode_universitas' => ['nullable', 'string', 'max:50'],
             'institusi' => ['required', 'string', 'max:255'],
-            'deskripsi_alat' => ['nullable', 'string'],
+            'kategori_pt' => ['nullable', 'string', 'max:50'],
+            'nama_laboratorium' => ['required', 'string', 'max:255'],
+            'provinsi' => ['nullable', 'string', 'max:100'],
+            'kota' => ['nullable', 'string', 'max:100'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'total_jumlah_alat' => ['nullable', 'numeric'],
+            'nama_alat' => ['nullable', 'string'],
+            'deskripsi_alat' => ['nullable', 'string'],
+            'kontak' => ['nullable', 'string', 'max:50'],
         ]);
 
         FasilitasLab::create($validated);
@@ -82,11 +106,18 @@ class FasilitasLabController extends Controller
     public function update(Request $request, FasilitasLab $fasilitasLab)
     {
         $validated = $request->validate([
-            'nama_laboratorium' => ['required', 'string', 'max:255'],
+            'kode_universitas' => ['nullable', 'string', 'max:50'],
             'institusi' => ['required', 'string', 'max:255'],
-            'deskripsi_alat' => ['nullable', 'string'],
+            'kategori_pt' => ['nullable', 'string', 'max:50'],
+            'nama_laboratorium' => ['required', 'string', 'max:255'],
+            'provinsi' => ['nullable', 'string', 'max:100'],
+            'kota' => ['nullable', 'string', 'max:100'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'total_jumlah_alat' => ['nullable', 'numeric'],
+            'nama_alat' => ['nullable', 'string'],
+            'deskripsi_alat' => ['nullable', 'string'],
+            'kontak' => ['nullable', 'string', 'max:50'],
         ]);
 
         $fasilitasLab->update($validated);

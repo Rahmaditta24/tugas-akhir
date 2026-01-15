@@ -6,6 +6,7 @@ import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
 
 export default function Index({ produk, stats, filters }) {
+    const [perPage, setPerPage] = useState(filters.perPage || 20);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [search, setSearch] = useState(filters.search || '');
@@ -28,7 +29,22 @@ export default function Index({ produk, stats, filters }) {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        router.get(route('admin.produk.index'), { search }, {
+        router.get(route('admin.produk.index'), {
+            search,
+            perPage
+        }, {
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const handlePerPageChange = (e) => {
+        const next = Number(e.target.value);
+        setPerPage(next);
+        router.get(route('admin.produk.index'), {
+            search,
+            perPage: next
+        }, {
             preserveState: true,
             replace: true,
         });
@@ -105,6 +121,18 @@ export default function Index({ produk, stats, filters }) {
                                     Reset
                                 </Link>
                             )}
+                            <div className="ml-auto flex items-center gap-2">
+                                <span className="text-sm text-slate-600">Per halaman</span>
+                                <select
+                                    value={perPage}
+                                    onChange={handlePerPageChange}
+                                    className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                    <option value={20}>20</option>
+                                    <option value={50}>50</option>
+                                    <option value={100}>100</option>
+                                </select>
+                            </div>
                         </form>
                     </div>
 
@@ -143,13 +171,12 @@ export default function Index({ produk, stats, filters }) {
                                         <Link
                                             key={index}
                                             href={link.url || '#'}
-                                            className={`px-3 py-1 rounded ${
-                                                link.active
+                                            className={`px-3 py-1 rounded ${link.active
                                                     ? 'bg-blue-600 text-white'
                                                     : link.url
-                                                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                            }`}
+                                                        ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                }`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />
                                     ))}

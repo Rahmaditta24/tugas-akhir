@@ -62,6 +62,37 @@ class PenelitianSeeder extends Seeder
             return $value;
         };
 
+        // Step 1: Build Reference Map for Institution Data
+        $referenceMap = [];
+        $this->command->info("Building reference map for incomplete data...");
+        
+        // Scan full data once to build map
+        foreach ($penelitianData as $item) {
+            if (empty($item['institusi'])) continue;
+            
+            $name = trim($item['institusi']);
+            // Initialize if not exists
+            if (!isset($referenceMap[$name])) {
+                $referenceMap[$name] = [
+                    'kota' => null,
+                    'kategori_pt' => null,
+                    'jenis_pt' => null,
+                    'klaster' => null,
+                    'provinsi' => null,
+                    'kode_pt' => null,
+                ];
+            }
+
+            // Update reference if current item has data and reference is null
+            foreach (['kota', 'kategori_pt', 'jenis_pt', 'klaster', 'provinsi', 'kode_pt'] as $field) {
+                $val = $item[$field] ?? null;
+                // Check if raw value is valid (not null and not 'NaN')
+                if ($val !== null && $val !== 'NaN' && $referenceMap[$name][$field] === null) {
+                    $referenceMap[$name][$field] = $val;
+                }
+            }
+        }
+
         foreach (array_chunk($penelitianData, $chunkSize) as $chunk) {
             $insertData = [];
 
@@ -79,6 +110,16 @@ class PenelitianSeeder extends Seeder
                     continue;
                 }
 
+                // Try to fill missing data from reference map
+                $ref = $referenceMap[$institusi] ?? [];
+
+                $kategori_pt = $normalize($item['kategori_pt'] ?? null) ?? $normalize($ref['kategori_pt'] ?? null);
+                $jenis_pt = $normalize($item['jenis_pt'] ?? null) ?? $normalize($ref['jenis_pt'] ?? null);
+                $klaster = $normalize($item['klaster'] ?? null) ?? $normalize($ref['klaster'] ?? null);
+                $provinsi = $normalize($item['provinsi'] ?? null) ?? $normalize($ref['provinsi'] ?? null);
+                $kota = $normalize($item['kota'] ?? null) ?? $normalize($ref['kota'] ?? null);
+                $kode_pt = $normalize($item['kode_pt'] ?? null) ?? $normalize($ref['kode_pt'] ?? null);
+
                 $insertData[] = [
                     'nama' => $normalize($item['nama'] ?? null),
                     'nidn' => isset($item['nidn']) && is_numeric($item['nidn']) ? (int)$item['nidn'] : null,
@@ -86,13 +127,13 @@ class PenelitianSeeder extends Seeder
                     'institusi' => $institusi,
                     'pt_latitude' => isset($item['pt_latitude']) && is_numeric($item['pt_latitude']) ? (float)$item['pt_latitude'] : null,
                     'pt_longitude' => isset($item['pt_longitude']) && is_numeric($item['pt_longitude']) ? (float)$item['pt_longitude'] : null,
-                    'kode_pt' => $normalize($item['kode_pt'] ?? null),
-                    'jenis_pt' => $normalize($item['jenis_pt'] ?? null),
-                    'kategori_pt' => $normalize($item['kategori_pt'] ?? null),
+                    'kode_pt' => $kode_pt,
+                    'jenis_pt' => $jenis_pt,
+                    'kategori_pt' => $kategori_pt,
                     'institusi_pilihan' => $normalize($item['institusi_pilihan'] ?? null),
-                    'klaster' => $normalize($item['klaster'] ?? null),
-                    'provinsi' => $normalize($item['provinsi'] ?? null),
-                    'kota' => $normalize($item['kota'] ?? null),
+                    'klaster' => $klaster,
+                    'provinsi' => $provinsi,
+                    'kota' => $kota,
                     'judul' => $judul,
                     'skema' => $normalize($item['skema'] ?? null),
                     'thn_pelaksanaan' => isset($item['thn_pelaksanaan']) && is_numeric($item['thn_pelaksanaan']) ? (int)$item['thn_pelaksanaan'] : null,

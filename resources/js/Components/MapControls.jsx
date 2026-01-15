@@ -251,8 +251,8 @@ export default function MapControls({
                             <button
                                 onClick={onToggleBubbles}
                                 className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${!showBubbles
-                                        ? 'bg-purple-600 text-white ring-2 ring-white'
-                                        : 'bg-purple-500 text-white hover:bg-purple-600'
+                                    ? 'bg-purple-600 text-white ring-2 ring-white'
+                                    : 'bg-purple-500 text-white hover:bg-purple-600'
                                     }`}
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
@@ -265,8 +265,8 @@ export default function MapControls({
                             <button
                                 onClick={() => onViewModeChange('provinsi')}
                                 className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${viewMode === 'provinsi'
-                                        ? 'bg-[#FFD700] text-black ring-2 ring-white'
-                                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                                    ? 'bg-[#FFD700] text-black ring-2 ring-white'
+                                    : 'bg-white text-gray-700 hover:bg-gray-100'
                                     }`}
                             >
                                 Mode Provinsi
@@ -276,8 +276,8 @@ export default function MapControls({
                             <button
                                 onClick={() => onViewModeChange('kabupaten')}
                                 className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${viewMode === 'kabupaten'
-                                        ? 'bg-[#3E7DCA] text-white ring-2 ring-white'
-                                        : 'bg-[#3E7DCA] text-white hover:brightness-110'
+                                    ? 'bg-[#3E7DCA] text-white ring-2 ring-white'
+                                    : 'bg-[#3E7DCA] text-white hover:brightness-110'
                                     }`}
                             >
                                 Mode Kabupaten

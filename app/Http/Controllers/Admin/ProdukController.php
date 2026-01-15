@@ -21,7 +21,8 @@ class ProdukController extends Controller
             });
         }
 
-        $produk = $query->orderByDesc('id')->paginate(20)->withQueryString();
+        $perPage = $request->input('perPage', 20);
+        $produk = $query->orderByDesc('id')->paginate($perPage)->withQueryString();
 
         $stats = [
             'total' => Produk::count(),
@@ -46,7 +47,13 @@ class ProdukController extends Controller
         $validated = $request->validate([
             'nama_produk' => ['required', 'string', 'max:255'],
             'institusi' => ['required', 'string', 'max:255'],
-            'deskripsi' => ['nullable', 'string'],
+            'deskripsi_produk' => ['nullable', 'string'],
+            'bidang' => ['nullable', 'string', 'max:255'],
+            'tkt' => ['nullable', 'numeric'],
+            'provinsi' => ['nullable', 'string', 'max:255'],
+            'nama_inventor' => ['nullable', 'string', 'max:255'],
+            'email_inventor' => ['nullable', 'email', 'max:255'],
+            'nomor_paten' => ['nullable', 'string', 'max:255'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
@@ -65,7 +72,13 @@ class ProdukController extends Controller
         $validated = $request->validate([
             'nama_produk' => ['required', 'string', 'max:255'],
             'institusi' => ['required', 'string', 'max:255'],
-            'deskripsi' => ['nullable', 'string'],
+            'deskripsi_produk' => ['nullable', 'string'],
+            'bidang' => ['nullable', 'string', 'max:255'],
+            'tkt' => ['nullable', 'numeric'],
+            'provinsi' => ['nullable', 'string', 'max:255'],
+            'nama_inventor' => ['nullable', 'string', 'max:255'],
+            'email_inventor' => ['nullable', 'email', 'max:255'],
+            'nomor_paten' => ['nullable', 'string', 'max:255'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);

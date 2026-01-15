@@ -20,7 +20,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
         e.preventDefault();
         router.post('/admin/logout', {}, {
             onSuccess: () => {
-                window.location.href = '/';
+                window.location.href = '/admin';
             }
         });
     };
@@ -87,8 +87,8 @@ export default function AdminLayout({ title = 'Admin', children }) {
                                         key={item.name}
                                         href={item.href}
                                         className={`flex items-center gap-3 px-3 py-2 text-[13px] font-medium rounded-md transition-colors border ${active
-                                                ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                                : 'text-slate-700 border-transparent hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-200'
+                                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                            : 'text-slate-700 border-transparent hover:bg-yellow-50 hover:text-yellow-700 hover:border-yellow-200'
                                             }`}
                                     >
                                         <span className="text-xl">{item.icon}</span>

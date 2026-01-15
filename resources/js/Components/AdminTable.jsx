@@ -14,9 +14,24 @@ export default function AdminTable({
     filterPlaceholder = 'Cari di tabel ini...',
     filterKeys = [], // keys to search; defaults to all visible columns
     columnFilterEnabled = false,
+    filters = null, // External filter state
+    onFilterChange = null, // External change handler
 }) {
     const [query, setQuery] = useState('');
-    const [filterValues, setFilterValues] = useState({});
+    const [internalFilterValues, setFilterValues] = useState({});
+
+    // Determine if we are in controlled mode
+    const isControlled = !!onFilterChange;
+    const filterValues = isControlled ? (filters || {}) : internalFilterValues;
+
+    // Handle filter change
+    const handleFilterChange = (key, value) => {
+        if (isControlled) {
+            onFilterChange(key, value);
+        } else {
+            setFilterValues((fv) => ({ ...fv, [key]: value }));
+        }
+    };
     const handleSort = (col) => {
         if (!onSort || !col.sortable) return;
         const nextDir = sort?.key === col.key && sort?.direction === 'asc' ? 'desc' : 'asc';
@@ -39,6 +54,9 @@ export default function AdminTable({
     }, [data, query, localFilterEnabled, effectiveKeys]);
 
     const columnFilteredData = useMemo(() => {
+        // If controlled (server-side), we don't filter client-side
+        if (isControlled) return filteredData;
+
         const keys = Object.keys(filterValues || {}).filter((k) => (filterValues[k] ?? '') !== '');
         if (!columnFilterEnabled || keys.length === 0) return filteredData;
         return (filteredData || []).filter((row) =>
@@ -92,7 +110,7 @@ export default function AdminTable({
                                         <input
                                             type="text"
                                             value={filterValues[col.key] ?? ''}
-                                            onChange={(e) => setFilterValues((fv) => ({ ...fv, [col.key]: e.target.value }))}
+                                            onChange={(e) => handleFilterChange(col.key, e.target.value)}
                                             placeholder={`Filter ${col.title}`}
                                             className="w-full px-2 py-1 border border-slate-300 rounded-md text-xs"
                                         />

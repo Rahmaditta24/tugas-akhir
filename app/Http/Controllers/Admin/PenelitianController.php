@@ -19,11 +19,42 @@ class PenelitianController extends Controller
                 $q->where('nama', 'like', "%{$search}%")
                   ->orWhere('institusi', 'like', "%{$search}%")
                   ->orWhere('judul', 'like', "%{$search}%")
-                  ->orWhere('provinsi', 'like', "%{$search}%");
+                  ->orWhere('provinsi', 'like', "%{$search}%")
+                  ->orWhere('skema', 'like', "%{$search}%")
+                  ->orWhere('bidang_fokus', 'like', "%{$search}%")
+                  ->orWhere('tema_prioritas', 'like', "%{$search}%")
+                  ->orWhere('thn_pelaksanaan', 'like', "%{$search}%");
             });
         }
 
-        $penelitian = $query->orderByDesc('id')->paginate(20)->withQueryString();
+        // Column filters
+        if ($request->filled('filters')) {
+            $filters = $request->filters;
+            foreach ($filters as $key => $value) {
+                if (!empty($value)) {
+                    // Check if column exists in table to avoid errors, or whitelist
+                    if (in_array($key, [
+                        'nama', 'institusi', 'judul', 'skema', 'thn_pelaksanaan',
+                        'bidang_fokus', 'tema_prioritas', 'provinsi', 'kota', 
+                        'jenis_pt', 'kategori_pt'
+                    ])) {
+                        $query->where($key, 'like', "%{$value}%");
+                    }
+                }
+            }
+        }
+
+        // Per page
+        $perPage = (int) $request->get('perPage', 20);
+        if ($perPage < 10) { $perPage = 10; }
+        if ($perPage > 100) { $perPage = 100; }
+
+        // Order by year (2025 first), then by ID descending
+        $penelitian = $query
+            ->orderByDesc('thn_pelaksanaan')
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->withQueryString();
 
         // Statistics
         $stats = [
@@ -37,6 +68,8 @@ class PenelitianController extends Controller
             'stats' => $stats,
             'filters' => [
                 'search' => $request->search,
+                'columns' => $request->filters ?? [], // Pass column filters back
+                'perPage' => $perPage,
             ],
         ]);
     }
