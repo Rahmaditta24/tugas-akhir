@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
+import { fmt, display, titleCase } from '../../../Utils/format';
 
 export default function Index({ hilirisasi, stats, filters }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -17,48 +18,40 @@ export default function Index({ hilirisasi, stats, filters }) {
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
 
-    // Debounce helper
-    const debounce = (func, wait) => {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), wait);
-        };
-    };
-
-    // Debounced filter update to avoid too many requests
-    const updateFilters = useCallback(
-        debounce((newFilters, newSearch) => {
-            router.get(route('admin.hilirisasi.index'), {
-                search: newSearch,
-                filters: newFilters,
-                sort,
-                direction,
-                perPage
-            }, {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            });
-        }, 500),
-        [sort, direction, perPage]
-    );
-
     const handleSearch = (e) => {
-        e.preventDefault();
-        updateFilters(columnFilters, search);
+        if (e) e.preventDefault();
+        router.get(route('admin.hilirisasi.index'), {
+            search,
+            filters: columnFilters,
+            sort,
+            direction,
+            perPage
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
     const handleSearchChange = (e) => {
-        const value = e.target.value;
-        setSearch(value);
-        updateFilters(columnFilters, value);
+        setSearch(e.target.value);
     };
 
     const handleColumnFilterChange = (key, value) => {
         const newFilters = { ...columnFilters, [key]: value };
         setColumnFilters(newFilters);
-        updateFilters(newFilters, search);
+
+        router.get(route('admin.hilirisasi.index'), {
+            search,
+            filters: newFilters,
+            sort,
+            direction,
+            perPage
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
     const handlePerPageChange = (e) => {
@@ -72,6 +65,7 @@ export default function Index({ hilirisasi, stats, filters }) {
             perPage: next
         }, {
             preserveState: true,
+            preserveScroll: true,
             replace: true,
         });
     };
@@ -86,6 +80,7 @@ export default function Index({ hilirisasi, stats, filters }) {
             perPage
         }, {
             preserveState: true,
+            preserveScroll: true,
             replace: true,
         });
     };
@@ -106,11 +101,39 @@ export default function Index({ hilirisasi, stats, filters }) {
         }
     };
 
-    const fmt = (v) => {
-        if (v === null || v === undefined) return '';
-        const s = String(v).trim();
-        if (s === '' || s === '-' || s === '—' || s === '?') return '';
-        return s;
+    const normalizeDegrees = (str) => {
+        let s = String(str || '').trim();
+        s = s.replace(/\s+/g, ' ').replace(/\.+/g, '.'); // rapikan spasi dan titik beruntun
+        const key = s.replace(/[^a-z]/gi, '').toLowerCase(); // hilangkan tanda baca untuk kunci
+        const map = {
+            drs: 'Drs.',
+            dr: 'Dr.',
+            st: 'S.T.',
+            mt: 'M.T.',
+            stp: 'S.TP.',
+            mtp: 'M.TP.',
+            skom: 'S.Kom.',
+            mkom: 'M.Kom.',
+            se: 'S.E.',
+            mm: 'M.M.',
+            spd: 'S.Pd.',
+            mpd: 'M.Pd.',
+            ssi: 'S.Si.',
+            msi: 'M.Si.',
+            skes: 'S.Kes.',
+            mkes: 'M.Kes.',
+            deng: 'D.Eng.',
+        };
+        return map[key] || s;
+    };
+
+    const normalizeNameWithDegrees = (v) => {
+        const s = fmt(v);
+        if (!s) return '';
+        const parts = s.split(/\s*,\s*/);
+        const name = titleCase(parts[0]);
+        const degrees = parts.slice(1).map(p => normalizeDegrees(p)).filter(Boolean);
+        return [name, ...degrees].join(', ');
     };
 
     return (
@@ -137,7 +160,7 @@ export default function Index({ hilirisasi, stats, filters }) {
                             </div>
                             <div>
                                 <p className="text-sm text-slate-600">Total Hilirisasi</p>
-                                <p className="text-2xl font-bold text-slate-800">{stats.total}</p>
+                                <p className="text-2xl font-bold text-slate-800">{(stats?.total ?? 0).toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
@@ -152,7 +175,7 @@ export default function Index({ hilirisasi, stats, filters }) {
                             </div>
                             <div>
                                 <p className="text-sm text-slate-600">Dengan Koordinat</p>
-                                <p className="text-2xl font-bold text-slate-800">{stats.withCoordinates}</p>
+                                <p className="text-2xl font-bold text-slate-800">{(stats?.withCoordinates ?? 0).toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
@@ -167,12 +190,15 @@ export default function Index({ hilirisasi, stats, filters }) {
                                 type="text"
                                 value={search}
                                 onChange={handleSearchChange}
-                                placeholder="Cari berdasarkan judul, nama pengusul, atau perguruan tinggi..."
+                                placeholder="Cari judul, peneliti / pengusul, nama institusi..."
                                 className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
-                            <div className="hidden">
-                                <button type="submit">Cari</button>
-                            </div>
+                            <button
+                                type="submit"
+                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Cari
+                            </button>
                             {(search || Object.values(columnFilters).some(v => v)) && (
                                 <Link
                                     href={route('admin.hilirisasi.index')}
@@ -201,28 +227,58 @@ export default function Index({ hilirisasi, stats, filters }) {
                         onFilterChange={handleColumnFilterChange}
                         columns={[
                             { key: 'no', title: 'No', className: 'w-12 text-center' },
-                            { key: 'judul', title: 'Judul', sortable: true, render: (v) => <div className="max-w-md truncate" title={v}>{v}</div> },
-                            { key: 'nama_pengusul', title: 'Nama Pengusul', sortable: true },
+                            { key: 'judul', title: 'Judul', className: 'min-w-[320px]', render: (v) => (<div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            { key: 'nama_pengusul', title: 'Nama Pengusul', sortable: true, render: (v) => normalizeNameWithDegrees(v) },
                             {
                                 key: 'direktorat',
                                 title: 'Direktorat',
                                 sortable: true,
                                 render: (v) => (
-                                    fmt(v) ? <Badge color="purple">{fmt(v)}</Badge> : ''
+                                    <Badge color="purple">{display(v)}</Badge>
                                 )
                             },
-                            { key: 'perguruan_tinggi', title: 'Perguruan Tinggi', sortable: true, render: (v) => <div className="max-w-xs truncate" title={v}>{v}</div> },
-                            { key: 'tahun', title: 'Tahun', sortable: true, className: 'w-24 text-center' },
-                            /*{ key: 'provinsi', title: 'Provinsi', sortable: true },*/
+                            { key: 'skema', title: 'Skema', className: 'min-w-[280px]', render: (v) => (<div className="max-w-md line-clamp-3 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            { key: 'perguruan_tinggi', title: 'Perguruan Tinggi', className: 'min-w-[200px]', render: (v) => (<div className="max-w-md line-clamp-2 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            {
+                                key: 'tahun',
+                                title: 'Tahun',
+                                className: 'w-24 text-center',
+                                render: (v) => <Badge color="blue">{display(v)}</Badge>
+                            },
+                            { key: 'mitra', title: 'Mitra', sclassName: 'min-w-[320px]', render: (v) => <div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={titleCase(v)}>{display(titleCase(v))}</div> },
                             { key: 'aksi', title: 'Aksi', className: 'w-28' },
                         ]}
                         data={(hilirisasi.data || []).map((item, index) => ({
                             ...item,
                             no: (hilirisasi.from || 1) + index,
                             aksi: (
-                                <div className="flex gap-2">
-                                    <Link href={route('admin.hilirisasi.edit', item.id)} className="text-blue-600 hover:text-blue-900">Edit</Link>
-                                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-900">Hapus</button>
+                                <div className="flex gap-2 justify-center">
+                                    <Link
+                                        href={route('admin.hilirisasi.edit', item.id)}
+                                        data={{
+                                            page: hilirisasi.current_page,
+                                            search,
+                                            filters: columnFilters,
+                                            perPage,
+                                            sort,
+                                            direction
+                                        }}
+                                        className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                        title="Edit"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </Link>
+                                    <button
+                                        onClick={() => handleDelete(item)}
+                                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                        title="Hapus"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
                                 </div>
                             ),
                         }))}
@@ -235,17 +291,17 @@ export default function Index({ hilirisasi, stats, filters }) {
                         <div className="px-6 py-4 border-t border-slate-200/60">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-slate-600">
-                                    Menampilkan {hilirisasi.from} - {hilirisasi.to} dari {hilirisasi.total} data
+                                    Menampilkan {hilirisasi.from?.toLocaleString('id-ID')} - {hilirisasi.to?.toLocaleString('id-ID')} dari {hilirisasi.total?.toLocaleString('id-ID')} data
                                 </div>
                                 <div className="flex gap-2">
                                     {hilirisasi.links.map((link, index) => (
                                         <Link
                                             key={index}
                                             href={link.url || '#'}
-                                            className={`px-3 py-1 rounded ${link.active
-                                                ? 'bg-blue-600 text-white'
+                                            className={`px-3 py-1 rounded text-sm ${link.active
+                                                ? 'bg-blue-600 text-white font-semibold'
                                                 : link.url
-                                                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                    ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                                                     : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                 }`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}

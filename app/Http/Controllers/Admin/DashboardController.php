@@ -27,7 +27,7 @@ class DashboardController extends Controller
             'permasalahan_prov' => PermasalahanProvinsi::count(),
             'permasalahan_kab' => PermasalahanKabupaten::count(),
             'rumusan_masalah_category' => RumusanMasalahCategory::count(),
-            'rumusan_masalah_statements' => RumusanMasalahStatement::count(),
+            'rumusan_masalah_statement' => RumusanMasalahStatement::count(),
         ];
 
         return Inertia::render('Admin/Dashboard', [

@@ -10,11 +10,17 @@ import AdvancedSearch from '../Components/AdvancedSearch';
 import StatisticsCards from '../Components/StatisticsCards';
 import ResearchList from '../Components/ResearchList';
 
-export default function Home({ mapData = [], researches = [], stats = {}, filterOptions = {}, filters: initialFilters = {} }) {
+export default function Home({ mapData = [], researches = [], stats = {}, filterOptions = {}, filters: initialFilters = {}, isFiltered = false }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
     const [filters, setFilters] = useState(initialFilters);
     const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
     const [isLoading, setIsLoading] = useState(false);
+    const [currentStats, setCurrentStats] = useState(stats);
+
+    // Update currentStats when global stats from props change
+    useEffect(() => {
+        setCurrentStats(stats);
+    }, [stats]);
 
     // Sync state with props when they change (e.g. navigation)
     useEffect(() => {
@@ -166,8 +172,30 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         }
     };
 
+    const handleAdvancedSearch = (queries) => {
+        const params = { ...filters, queries: JSON.stringify(queries) };
+        // Remove empty queries to keep URL clean
+        if (queries.every(q => !q.term)) {
+            delete params.queries;
+        }
+
+        router.get(route('penelitian.index'), params, {
+            preserveState: true,
+            preserveScroll: true,
+            only: ['researches', 'stats', 'mapData'],
+        });
+    };
+
+    const handleStatsChange = (newStats) => {
+        if (!newStats) {
+            setCurrentStats(stats); // Reset to global stats
+        } else {
+            setCurrentStats(newStats);
+        }
+    };
+
     return (
-        <MainLayout title="Dashboard Pemetaan Riset - Penelitian">
+        <MainLayout title="Peta Persebaran Penelitian BIMA Indonesia - Penelitian">
             <Toaster />
 
             <NavigationTabs activePage="penelitian" />
@@ -177,6 +205,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                     mapData={mapData}
                     data={researches}
                     displayMode={displayMode}
+                    onStatsChange={handleStatsChange}
                 />
 
                 <MapControls
@@ -195,8 +224,12 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             <div className="w-full lg:max-w-[90%] w-full mx-auto mb-5">
                 <section className="bg-white/80 backdrop-blur-sm">
                     <div className="container mx-auto sm:px-6 lg:px-0">
-                        <StatisticsCards stats={stats} />
-                        <ResearchList researches={researches} />
+                        <StatisticsCards stats={currentStats} labels={{ totalResearch: 'Total Penelitian' }} />
+                        <ResearchList
+                            researches={researches}
+                            onAdvancedSearch={handleAdvancedSearch}
+                            isFiltered={isFiltered}
+                        />
                     </div>
                 </section>
             </div>

@@ -1,6 +1,5 @@
-import React from 'react';
-
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { display } from '../Utils/format';
 
 export default function AdminTable({
     columns = [], // [{ key, title, className, sortable }]
@@ -81,7 +80,7 @@ export default function AdminTable({
                 </div>
             )}
             <table className={`min-w-full text-sm ${striped ? 'striped' : ''}`}>
-                <thead>
+                <thead className="bg-slate-50/80 border-b border-slate-200">
                     <tr>
                         {columns.map((col) => {
                             const isSorted = sort?.key === col.key;
@@ -103,17 +102,26 @@ export default function AdminTable({
                         })}
                     </tr>
                     {columnFilterEnabled && (
-                        <tr>
+                        <tr className="border-b border-slate-200/60">
                             {columns.map((col) => (
-                                <th key={`filter-${col.key}`} className={`px-4 py-2 ${col.className || ''}`}>
-                                    {col.key === 'aksi' ? null : (
-                                        <input
-                                            type="text"
-                                            value={filterValues[col.key] ?? ''}
-                                            onChange={(e) => handleFilterChange(col.key, e.target.value)}
-                                            placeholder={`Filter ${col.title}`}
-                                            className="w-full px-2 py-1 border border-slate-300 rounded-md text-xs"
-                                        />
+                                <th key={`filter-${col.key}`} className={`px-4 pt-1 pb-4 leading-none ${col.className || ''}`}>
+                                    {col.key === 'aksi' || col.key === 'no' || col.filterable === false ? (
+                                        <div className="h-8" /> // Maintain height even if empty
+                                    ) : (
+                                        <div className="relative group">
+                                            <input
+                                                type="text"
+                                                value={filterValues[col.key] ?? ''}
+                                                onChange={(e) => handleFilterChange(col.key, e.target.value)}
+                                                placeholder={`Filter ${col.title}`}
+                                                className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400"
+                                            />
+                                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none transition-colors group-focus-within:text-blue-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                                </svg>
+                                            </span>
+                                        </div>
                                     )}
                                 </th>
                             ))}
@@ -130,11 +138,16 @@ export default function AdminTable({
                     )}
                     {columnFilteredData.map((row, idx) => (
                         <tr key={row.id ?? idx} className="align-top">
-                            {columns.map((col) => (
-                                <td key={col.key} className="px-4 py-3 text-slate-700">
-                                    {typeof col.render === 'function' ? col.render(row[col.key], row) : row[col.key]}
-                                </td>
-                            ))}
+                            {columns.map((col) => {
+                                const val = row[col.key];
+                                return (
+                                    <td key={col.key} className={`px-4 py-3 text-slate-700 ${col.className || ''}`}>
+                                        {typeof col.render === 'function'
+                                            ? col.render(val, row)
+                                            : (React.isValidElement(val) ? val : display(val))}
+                                    </td>
+                                );
+                            })}
                         </tr>
                     ))}
                 </tbody>
@@ -143,5 +156,3 @@ export default function AdminTable({
         </div>
     );
 }
-
-

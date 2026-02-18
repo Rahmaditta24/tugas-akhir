@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import PageHeader from '../../../Components/PageHeader';
+import LocationSelect from '../../../Components/LocationSelect';
 
 export default function Create() {
     const [values, setValues] = useState({
@@ -42,23 +43,27 @@ export default function Create() {
                             <option value="kabupaten">Kabupaten/Kota</option>
                         </select>
                     </div>
-                    <div>
-                        <label className="block text-sm text-slate-600 mb-1">Provinsi</label>
-                        <input name="provinsi" value={values.provinsi} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
+                    <div className="sm:col-span-2">
+                        <LocationSelect
+                            selectedProvince={values.provinsi}
+                            selectedRegency={values.kabupaten_kota}
+                            onProvinceChange={val => setValues(v => ({ ...v, provinsi: val }))}
+                            onRegencyChange={val => setValues(v => ({ ...v, kabupaten_kota: val }))}
+                        />
                     </div>
-                    {values.type === 'kabupaten' && (
-                        <div className="sm:col-span-2">
-                            <label className="block text-sm text-slate-600 mb-1">Kabupaten/Kota</label>
-                            <input name="kabupaten_kota" value={values.kabupaten_kota} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
-                        </div>
-                    )}
                     <div>
                         <label className="block text-sm text-slate-600 mb-1">Jenis Permasalahan</label>
                         <input name="jenis_permasalahan" value={values.jenis_permasalahan} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md" placeholder="sampah/stunting/gizi_buruk/..." />
                     </div>
                     <div>
                         <label className="block text-sm text-slate-600 mb-1">Nilai</label>
-                        <input name="nilai" value={values.nilai} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
+                        <input
+                            name="nilai"
+                            inputMode="decimal"
+                            value={values.nilai}
+                            onChange={e => setValues(v => ({ ...v, nilai: e.target.value.replace(/[^0-9.]/g, '') }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                        />
                     </div>
                     <div>
                         <label className="block text-sm text-slate-600 mb-1">Satuan</label>
@@ -72,7 +77,13 @@ export default function Create() {
                     )}
                     <div>
                         <label className="block text-sm text-slate-600 mb-1">Tahun</label>
-                        <input name="tahun" value={values.tahun} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md" />
+                        <input
+                            name="tahun"
+                            inputMode="numeric"
+                            value={values.tahun}
+                            onChange={e => setValues(v => ({ ...v, tahun: e.target.value.replace(/\D/g, '').substring(0, 4) }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                        />
                     </div>
                 </div>
                 <div className="mt-6 flex gap-3">

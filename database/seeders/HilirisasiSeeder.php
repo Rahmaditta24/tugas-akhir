@@ -10,7 +10,7 @@ class HilirisasiSeeder extends Seeder
 {
     public function run(): void
     {
-        $jsonPath = base_path('../peta-bima/data/data-hilirisasi.json');
+        $jsonPath = base_path('../peta-bima/data/data-hilirisasi_clean.json');
         $normalize = function ($value) {
             if ($value === null) return null;
             if (is_string($value)) {
@@ -21,6 +21,28 @@ class HilirisasiSeeder extends Seeder
                 return $v;
             }
             return $value;
+        };
+        
+        $normalizeArray = function ($value) {
+            if ($value === null) return null;
+            if (is_array($value)) {
+                $filtered = array_filter(array_map(function($v) {
+                    return is_string($v) ? trim($v) : $v;
+                }, $value), function($v) {
+                    if (!is_string($v)) return true;
+                    $v = trim($v);
+                    return !($v === '' || $v === '-' || $v === '—' || $v === '?' || strcasecmp($v, 'na') === 0 || strcasecmp($v, 'n/a') === 0);
+                });
+                return !empty($filtered) ? json_encode($filtered, JSON_UNESCAPED_UNICODE) : null;
+            }
+            if (is_string($value)) {
+                $v = trim($value);
+                if ($v === '' || $v === '-' || $v === '—' || $v === '?' || strcasecmp($v, 'na') === 0 || strcasecmp($v, 'n/a') === 0) {
+                    return null;
+                }
+                return json_encode([$v], JSON_UNESCAPED_UNICODE);
+            }
+            return null;
         };
 
         if (!file_exists($jsonPath)) {
@@ -83,7 +105,7 @@ class HilirisasiSeeder extends Seeder
                     'provinsi' => $normalize($item['provinsi'] ?? null),
                     'mitra' => $normalize($item['Mitra'] ?? null),
                     'skema' => $normalize($item['Skema'] ?? null),
-                    'luaran' => $normalize($item['Luaran'] ?? null),
+                    'luaran' => $normalizeArray($item['Luaran'] ?? null),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

@@ -5,6 +5,7 @@ import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
+import { fmt, display, sentenceCase } from '../../../Utils/format';
 
 export default function Index({ penelitian, stats, filters }) {
     // DEBUG: Tambahkan ini untuk cek data
@@ -18,45 +19,36 @@ export default function Index({ penelitian, stats, filters }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
 
-    // Debounce function
-    const debounce = (func, wait) => {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func(...args), wait);
-        };
+    const handleSearch = (e) => {
+        if (e) e.preventDefault();
+        router.get(route('admin.penelitian.index'), {
+            search,
+            filters: columnFilters,
+            perPage
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
-    const updateFilters = React.useCallback(
-        debounce((newFilters, newSearch) => {
-            router.get(route('admin.penelitian.index'), {
-                search: newSearch,
-                filters: newFilters,
-                perPage
-            }, {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            });
-        }, 500),
-        [perPage]
-    );
+    const handleSearchChange = (e) => {
+        setSearch(e.target.value);
+    };
 
     const handleColumnFilterChange = (key, value) => {
         const newFilters = { ...columnFilters, [key]: value };
         setColumnFilters(newFilters);
-        updateFilters(newFilters, search);
-    };
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        updateFilters(columnFilters, search);
-    };
-
-    const handleSearchChange = (e) => {
-        const value = e.target.value;
-        setSearch(value);
-        updateFilters(columnFilters, value);
+        router.get(route('admin.penelitian.index'), {
+            search,
+            filters: newFilters,
+            perPage
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
     };
 
     const handlePerPageChange = (e) => {
@@ -68,6 +60,7 @@ export default function Index({ penelitian, stats, filters }) {
             perPage: next
         }, {
             preserveState: true,
+            preserveScroll: true,
             replace: true,
         });
     };
@@ -88,11 +81,15 @@ export default function Index({ penelitian, stats, filters }) {
         }
     };
 
-    const fmt = (v) => {
-        if (v === null || v === undefined) return '';
-        const s = String(v).trim();
-        if (s === '' || s === '-' || s === '—' || s === '?') return '';
-        return s;
+    const normalizeSkema = (v) => {
+        const s = fmt(v);
+        if (!s) return 'null';
+        return sentenceCase(s);
+    };
+    const normalizeTema = (v) => {
+        const s = fmt(v);
+        if (!s) return 'Tidak Memilih';
+        return sentenceCase(s);
     };
 
     // PERBAIKAN: Pastikan data ada dan valid
@@ -106,9 +103,31 @@ export default function Index({ penelitian, stats, filters }) {
             ...item,
             no: (penelitian.from || 0) + index,
             aksi: (
-                <div className="flex gap-2">
-                    <Link href={route('admin.penelitian.edit', item.id)} className="text-blue-600 hover:text-blue-900">Edit</Link>
-                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-900">Hapus</button>
+                <div className="flex gap-2 justify-center">
+                    <Link
+                        href={route('admin.penelitian.edit', item.id)}
+                        data={{
+                            page: penelitian.current_page,
+                            search,
+                            filters: columnFilters,
+                            perPage
+                        }}
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="Edit"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </Link>
+                    <button
+                        onClick={() => handleDelete(item)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="Hapus"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
                 </div>
             ),
         }));
@@ -117,7 +136,7 @@ export default function Index({ penelitian, stats, filters }) {
     console.log('✅ Table data processed:', tableData);
 
     return (
-        <AdminLayout title="Data Penelitian">
+        <AdminLayout title="">
             <PageHeader
                 title="Data Penelitian"
                 subtitle="Kelola data penelitian"
@@ -127,7 +146,7 @@ export default function Index({ penelitian, stats, filters }) {
                         href={route('admin.penelitian.create')}
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                     >
-                        Tambah Data
+                        + Tambah Data
                     </Link>
                 )}
             />
@@ -148,20 +167,20 @@ export default function Index({ penelitian, stats, filters }) {
                     </div>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-600">Dengan Koordinat</p>
-                                <p className="text-2xl font-bold text-slate-800">{stats.withCoordinates}</p>
-                            </div>
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p className="text-sm text-slate-600">Dengan Koordinat</p>
+                            <p className="text-2xl font-bold text-slate-800">{stats?.withCoordinates?.toLocaleString('id-ID') || 0}</p>
                         </div>
                     </div>
                 </div>
+            </div>
 
             {/* Search & Table */}
             <div className="bg-white rounded-lg shadow-sm">
@@ -171,12 +190,15 @@ export default function Index({ penelitian, stats, filters }) {
                             type="text"
                             value={search}
                             onChange={handleSearchChange}
-                            placeholder="Cari peneliti, institusi, judul, provinsi..."
+                            placeholder="Cari judul, peneliti / pengusul, nama institusi..."
                             className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        <div className="hidden">
-                            <button type="submit">Cari</button>
-                        </div>
+                        <button
+                            type="submit"
+                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            Cari
+                        </button>
 
                         {(search || Object.values(columnFilters).some(v => v)) && (
                             <Link
@@ -218,78 +240,64 @@ export default function Index({ penelitian, stats, filters }) {
                                 key: 'nama',
                                 title: 'Peneliti',
                                 className: 'min-w-[180px]',
-                                render: (v) => v || '-'
+                                render: (v) => display(v)
                             },
                             {
                                 key: 'judul',
                                 title: 'Judul',
-                                className: 'min-w-[280px]',
+                                className: 'min-w-[420px]',
                                 render: (v) => (
-                                    <div className="max-w-md truncate" title={fmt(v)}>
-                                        {fmt(v) || ''}
+                                    <div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={fmt(v)}>
+                                        {display(v)}
                                     </div>
                                 )
                             },
                             {
                                 key: 'institusi',
                                 title: 'Institusi',
-                                className: 'min-w-[220px]',
+                                className: 'min-w-[240px]',
                                 render: (v) => (
-                                    <div className="max-w-xs truncate" title={fmt(v)}>
-                                        {fmt(v) || ''}
+                                    <div className="max-w-md line-clamp-2 whitespace-normal leading-snug" title={fmt(v)}>
+                                        {display(v)}
                                     </div>
                                 )
                             },
                             {
-                                key: 'kategori_pt',
-                                title: 'Kategori PT',
-                                className: 'min-w-[130px]',
-                                render: (v) => fmt(v) || ''
-                            },
-                            {
-                                key: 'jenis_pt',
-                                title: 'Jenis PT',
-                                className: 'min-w-[120px]',
-                                render: (v) => fmt(v) || ''
-                            },
-                            /*{
                                 key: 'provinsi',
                                 title: 'Provinsi',
                                 className: 'min-w-[140px]',
                                 render: (v) => (
-                                    fmt(v) ? <Badge color="slate">{fmt(v)}</Badge> : ''
+                                    <Badge color="slate">{display(v)}</Badge>
                                 )
-                            },*/
+                            },
                             {
                                 key: 'skema',
                                 title: 'Skema',
                                 className: 'min-w-[200px]',
-                                /*render: (v) => (
-                                    fmt(v) ? <Badge color="indigo">{fmt(v)}</Badge> : ''
-                                )*/
-                            },
-                            {
-                                key: 'tema_prioritas',
-                                title: 'Tema Prioritas',
-                                className: 'min-w-[180px]',
                                 render: (v) => (
-                                    fmt(v) ? <Badge color="emerald">{fmt(v)}</Badge> : ''
+                                    <Badge color="indigo">{normalizeSkema(v)}</Badge>
                                 )
                             },
                             {
                                 key: 'thn_pelaksanaan',
                                 title: 'Tahun',
                                 className: 'min-w-[90px] text-center',
-                                /*render: (v) => (
-                                    fmt(v) ? <Badge color="blue">{fmt(v)}</Badge> : ''
-                                )*/
+                                render: (v) => <Badge color="blue">{display(v)}</Badge>
                             },
                             {
                                 key: 'bidang_fokus',
                                 title: 'Bidang Fokus',
                                 className: 'min-w-[160px]',
                                 render: (v) => (
-                                    fmt(v) ? <Badge color="purple">{fmt(v)}</Badge> : ''
+                                    <Badge color="purple">{display(v, 'Umum')}</Badge>
+                                )
+                            },
+                            {
+                                key: 'tema_prioritas',
+                                title: 'Tema Prioritas',
+                                className: 'min-w-[180px]',
+                                render: (v) => (
+                                    <Badge color="emerald">{normalizeTema(v)}</Badge>
                                 )
                             },
                             {
@@ -307,24 +315,26 @@ export default function Index({ penelitian, stats, filters }) {
 
                 {/* Pagination */}
                 {penelitian?.last_page > 1 && (
-                    <div className="px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <p className="text-sm text-slate-600">
-                            Menampilkan {penelitian.from} - {penelitian.to} dari {penelitian.total} data
-                        </p>
-                        <div className="flex flex-wrap gap-2 justify-center">
-                            {penelitian.links.map((link, index) => (
-                                <Link
-                                    key={index}
-                                    href={link.url || '#'}
-                                    className={`px-3 py-1 rounded text-sm ${link.active
-                                        ? 'bg-blue-600 text-white font-semibold'
-                                        : link.url
-                                            ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                        }`}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
-                            ))}
+                    <div className="px-6 py-4 border-t border-slate-200">
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-slate-600">
+                                Menampilkan {penelitian.from?.toLocaleString('id-ID')} - {penelitian.to?.toLocaleString('id-ID')} dari {penelitian.total?.toLocaleString('id-ID')} data
+                            </p>
+                            <div className="flex gap-2">
+                                {penelitian.links.map((link, index) => (
+                                    <Link
+                                        key={index}
+                                        href={link.url || '#'}
+                                        className={`px-3 py-1 rounded text-sm ${link.active
+                                            ? 'bg-blue-600 text-white font-semibold'
+                                            : link.url
+                                                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                            }`}
+                                        dangerouslySetInnerHTML={{ __html: link.label }}
+                                    />
+                                ))}
+                            </div>
                         </div>
                     </div>
                 )}
@@ -338,8 +348,7 @@ export default function Index({ penelitian, stats, filters }) {
                             Konfirmasi Hapus
                         </h3>
                         <p className="text-slate-600 mb-6">
-                            Apakah Anda yakin ingin menghapus data penelitian "{itemToDelete?.nama || itemToDelete?.judul}"?
-                            Tindakan ini tidak dapat dibatalkan.
+                            Apakah Anda yakin ingin menghapus data penelitian ini?
                         </p>
                         <div className="flex justify-end gap-3">
                             <button

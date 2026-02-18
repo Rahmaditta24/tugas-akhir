@@ -4,12 +4,14 @@ import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
+import { fmt, display } from '../../../Utils/format';
 
 export default function Index({ produk, stats, filters }) {
     const [perPage, setPerPage] = useState(filters.perPage || 20);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [search, setSearch] = useState(filters.search || '');
+    const [columnFilters, setColumnFilters] = useState(filters.columns || {});
 
     const handleDelete = (item) => {
         setItemToDelete(item);
@@ -31,9 +33,26 @@ export default function Index({ produk, stats, filters }) {
         e.preventDefault();
         router.get(route('admin.produk.index'), {
             search,
+            filters: columnFilters,
             perPage
         }, {
             preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
+    const handleColumnFilterChange = (key, value) => {
+        const newFilters = { ...columnFilters, [key]: value };
+        setColumnFilters(newFilters);
+
+        router.get(route('admin.produk.index'), {
+            search,
+            filters: newFilters,
+            perPage
+        }, {
+            preserveState: true,
+            preserveScroll: true,
             replace: true,
         });
     };
@@ -43,9 +62,11 @@ export default function Index({ produk, stats, filters }) {
         setPerPage(next);
         router.get(route('admin.produk.index'), {
             search,
+            filters: columnFilters,
             perPage: next
         }, {
             preserveState: true,
+            preserveScroll: true,
             replace: true,
         });
     };
@@ -74,7 +95,7 @@ export default function Index({ produk, stats, filters }) {
                             </div>
                             <div>
                                 <p className="text-sm text-slate-600">Total Produk</p>
-                                <p className="text-2xl font-bold text-slate-800">{stats.total}</p>
+                                <p className="text-2xl font-bold text-slate-800">{(stats.total || 0).toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
@@ -89,7 +110,7 @@ export default function Index({ produk, stats, filters }) {
                             </div>
                             <div>
                                 <p className="text-sm text-slate-600">Dengan Koordinat</p>
-                                <p className="text-2xl font-bold text-slate-800">{stats.withCoordinates}</p>
+                                <p className="text-2xl font-bold text-slate-800">{(stats.withCoordinates || 0).toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
@@ -113,7 +134,7 @@ export default function Index({ produk, stats, filters }) {
                             >
                                 Cari
                             </button>
-                            {filters.search && (
+                            {(search || Object.values(columnFilters).some(v => v)) && (
                                 <Link
                                     href={route('admin.produk.index')}
                                     className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
@@ -139,24 +160,43 @@ export default function Index({ produk, stats, filters }) {
                     {/* Table */}
                     <AdminTable
                         striped
+                        columnFilterEnabled
                         columns={[
                             { key: 'no', title: 'No', className: 'w-12' },
-                            { key: 'nama_produk', title: 'Nama Produk', render: (v) => <div className="max-w-md truncate">{v}</div> },
-                            { key: 'institusi', title: 'Institusi', render: (v) => <div className="max-w-xs truncate">{v}</div> },
-                            { key: 'bidang', title: 'Bidang', render: (v) => <Badge color="purple">{v || '-'}</Badge> },
-                            { key: 'tkt', title: 'TKT', render: (v) => <Badge color="yellow">{v || '-'}</Badge> },
+                            { key: 'nama_produk', title: 'Nama Produk', render: (v) => <div className="max-w-md truncate" title={fmt(v)}>{display(v)}</div> },
+                            { key: 'institusi', title: 'Institusi', render: (v) => <div className="max-w-xs truncate" title={fmt(v)}>{display(v)}</div> },
+                            { key: 'bidang', title: 'Bidang', render: (v) => <Badge color="purple">{display(v)}</Badge> },
+                            { key: 'tkt', title: 'TKT', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                             { key: 'aksi', title: 'Aksi', className: 'w-28' },
                         ]}
                         data={(produk.data || []).map((item, index) => ({
                             ...item,
                             no: produk.from + index,
                             aksi: (
-                                <div className="flex gap-2">
-                                    <Link href={route('admin.produk.edit', item.id)} className="text-blue-600 hover:text-blue-900">Edit</Link>
-                                    <button onClick={() => handleDelete(item)} className="text-red-600 hover:text-red-900">Hapus</button>
+                                <div className="flex gap-2 justify-center">
+                                    <Link
+                                        href={route('admin.produk.edit', item.id)}
+                                        className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                        title="Edit"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </Link>
+                                    <button
+                                        onClick={() => handleDelete(item)}
+                                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                        title="Hapus"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
                                 </div>
                             ),
                         }))}
+                        filters={columnFilters}
+                        onFilterChange={handleColumnFilterChange}
                     />
 
                     {/* Pagination */}
@@ -164,7 +204,7 @@ export default function Index({ produk, stats, filters }) {
                         <div className="px-6 py-4 border-t border-slate-200/60">
                             <div className="flex items-center justify-between">
                                 <div className="text-sm text-slate-600">
-                                    Menampilkan {produk.from} - {produk.to} dari {produk.total} data
+                                    Menampilkan {produk.from?.toLocaleString('id-ID')} - {produk.to?.toLocaleString('id-ID')} dari {produk.total?.toLocaleString('id-ID')} data
                                 </div>
                                 <div className="flex gap-2">
                                     {produk.links.map((link, index) => (
@@ -172,10 +212,10 @@ export default function Index({ produk, stats, filters }) {
                                             key={index}
                                             href={link.url || '#'}
                                             className={`px-3 py-1 rounded ${link.active
-                                                    ? 'bg-blue-600 text-white'
-                                                    : link.url
-                                                        ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                                                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                ? 'bg-blue-600 text-white'
+                                                : link.url
+                                                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                 }`}
                                             dangerouslySetInnerHTML={{ __html: link.label }}
                                         />
@@ -198,13 +238,13 @@ export default function Index({ produk, stats, filters }) {
                         <div className="flex gap-3 justify-end">
                             <button
                                 onClick={() => setShowDeleteModal(false)}
-                                className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                                className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={confirmDelete}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                             >
                                 Hapus
                             </button>

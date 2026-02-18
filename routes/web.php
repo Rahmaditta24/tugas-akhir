@@ -19,6 +19,8 @@ Route::get('/', [PenelitianController::class, 'index'])->name('penelitian.index'
 
 // API routes for export
 Route::get('/api/penelitian/export', [PenelitianController::class, 'export'])->name('penelitian.export');
+Route::get('/api/research/{type}/{id}', [PenelitianController::class, 'getDetail'])->name('research.detail');
+
 
 Route::get('/pengabdian', [PengabdianPageController::class, 'index'])->name('pengabdian.index');
 Route::get('/hilirisasi', [HilirisasiPageController::class, 'index'])->name('hilirisasi.index');
@@ -36,7 +38,7 @@ Route::post('/admin/logout', [LoginController::class, 'logout'])->name('logout')
 Route::get('/admin', function () {
     return Auth::check()
         ? app(DashboardController::class)->index()
-        : app(LoginController::class)->showLogin();
+        : redirect()->route('login');
 })->name('admin.dashboard');
 
 // Admin authenticated routes
@@ -98,4 +100,11 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('/categories/{slug}/statements/{id}', [RumusanMasalahStatementController::class, 'destroy'])
             ->name('category.statements.destroy');
     });
+
+    // Profile Management
+    Route::get('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'showProfile'])->name('profile.show');
+    Route::put('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('profile.update');
+    
+    // Password Change
+    Route::put('/change-password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('change-password.update');
 });

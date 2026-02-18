@@ -30,7 +30,7 @@ export default function Dashboard({ stats = {} }) {
                         return next.slice(-12); // keep last 12 points
                     });
                 }
-            } catch (_) {}
+            } catch (_) { }
         }
         async function fetchBreakdown() {
             try {
@@ -38,7 +38,7 @@ export default function Dashboard({ stats = {} }) {
                 if (!res.ok) return;
                 const data = await res.json();
                 if (isMounted) setBreakdown(data.data || {});
-            } catch (_) {}
+            } catch (_) { }
         }
         fetchStats();
         fetchBreakdown();
@@ -53,7 +53,6 @@ export default function Dashboard({ stats = {} }) {
         { name: 'Hilirisasi', value: liveStats.hilirisasi || 0 },
         { name: 'Produk', value: liveStats.produk || 0 },
         { name: 'Fasilitas', value: liveStats.fasilitas || 0 },
-        { name: 'Rumusan Masalah', value: liveStats.rumusan_masalah || 0 }
     ]), [liveStats]);
 
     const permasalahanData = useMemo(() => ([
@@ -104,29 +103,24 @@ export default function Dashboard({ stats = {} }) {
             value: liveStats.permasalahan_prov || 0,
             icon: '⚠️',
             color: 'red',
-            href: '/admin/permasalahan'
+            href: '/admin/permasalahan',
+            subtitle: 'Jumlah record permasalahan'
         },
         {
             title: 'Permasalahan (Kab)',
             value: liveStats.permasalahan_kab || 0,
             icon: '⚠️',
             color: 'yellow',
-            href: '/admin/permasalahan'
+            href: '/admin/permasalahan',
+            subtitle: 'Jumlah record permasalahan'
         },
-        { 
-            title: 'Rumusan Masalah',
-            value: liveStats.rumusan_masalah || 0,
-            icon: '📋',
-            color: 'teal',
-            href: '/admin/RumusanMasalahCategory'
+        {
+            title: 'Rumusan Masalah Kategori',
+            value: liveStats.rumusan_masalah_category || 0,
+            icon: '🗂️',
+            color: 'blue',
+            href: '/admin/rumusan-masalah/categories'
         },
-        { 
-            title: 'Rumusan Masalah',
-            value: liveStats.rumusan_masalah || 0,
-            icon: '📋',
-            color: 'teal',
-            href: '/admin/RumusanMasalahStatement'
-        }
     ];
 
     const colorClasses = {
@@ -147,12 +141,12 @@ export default function Dashboard({ stats = {} }) {
                 icon={<span className="text-xl">📊</span>}
             />
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                {statsCards.map((card, index) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {statsCards.slice(0, 4).map((card, index) => (
                     <Link
                         key={index}
                         href={card.href}
-                        className="glass-card rounded-xl hover:shadow-lg transition-all p-6 block"
+                        className="glass-card rounded-xl hover:shadow-lg transition-all p-6 block group"
                     >
                         <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -162,16 +156,47 @@ export default function Dashboard({ stats = {} }) {
                                 {loading ? (
                                     <div className="h-8 w-32 rounded bg-slate-200 animate-pulse" />
                                 ) : (
-                                    <p className="text-3xl font-bold text-slate-900">
+                                    <p className="text-3xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
                                         {card.value.toLocaleString('id-ID')}
                                     </p>
                                 )}
-                                <div className="mt-2">
-                                    <Sparkline points={trend} width={120} height={24} color="#3b82f6" />
-                                </div>
                             </div>
-                            <div className={`p-3 rounded-lg ${colorClasses[card.color]}`}>
+                            <div className={`p-3 rounded-lg ${colorClasses[card.color]} group-hover:scale-110 transition-transform`}>
                                 <span className="text-2xl">{card.icon}</span>
+                            </div>
+                        </div>
+                    </Link>
+                ))}
+            </div>
+
+            {/* Secondary Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {statsCards.slice(4).map((card, index) => (
+                    <Link
+                        key={index}
+                        href={card.href}
+                        className="glass-card rounded-xl hover:shadow-lg transition-all p-5 block group"
+                    >
+                        <div className="flex items-center gap-4">
+                            <div className={`p-2.5 rounded-lg ${colorClasses[card.color]} group-hover:scale-110 transition-transform shrink-0`}>
+                                <span className="text-xl">{card.icon}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-slate-600 mb-1 truncate">
+                                    {card.title}
+                                </p>
+                                {card.subtitle && (
+                                    <p className="text-[10px] text-slate-400 mb-1 truncate">
+                                        {card.subtitle}
+                                    </p>
+                                )}
+                                {loading ? (
+                                    <div className="h-6 w-20 rounded bg-slate-200 animate-pulse" />
+                                ) : (
+                                    <p className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                        {card.value.toLocaleString('id-ID')}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </Link>
@@ -258,52 +283,60 @@ export default function Dashboard({ stats = {} }) {
                 </div>
             </div>
 
-            {/* Quick Links removed as requested */}
-
             {/* Info Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-slate-800 mb-4">Ringkasan Data</h3>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                        <span className="text-blue-600">📊</span> Ringkasan Data
+                    </h3>
                     <div className="space-y-3">
-                        <div className="flex justify-between items-center py-2">
+                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
                             <span className="text-sm text-slate-600">Total semua data riset</span>
                             <span className="font-semibold text-slate-900">
                                 {((liveStats.penelitian || 0) + (liveStats.pengabdian || 0) + (liveStats.hilirisasi || 0)).toLocaleString('id-ID')}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center py-2">
+                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
                             <span className="text-sm text-slate-600">Total produk & fasilitas</span>
                             <span className="font-semibold text-slate-900">
                                 {((liveStats.produk || 0) + (liveStats.fasilitas || 0)).toLocaleString('id-ID')}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center py-2">
+                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
                             <span className="text-sm text-slate-600">Total permasalahan</span>
                             <span className="font-semibold text-slate-900">
                                 {((liveStats.permasalahan_prov || 0) + (liveStats.permasalahan_kab || 0)).toLocaleString('id-ID')}
+                            </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2">
+                            <span className="text-sm text-slate-600">Kategori rumusan masalah</span>
+                            <span className="font-semibold text-slate-900">
+                                {(liveStats.rumusan_masalah_category || 0).toLocaleString('id-ID')}
                             </span>
                         </div>
                     </div>
                 </div>
 
                 <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-slate-800 mb-4">Panduan</h3>
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                        <span className="text-purple-600">💡</span> Panduan
+                    </h3>
                     <ul className="space-y-3 text-sm text-slate-600">
                         <li className="flex items-start gap-2">
                             <span className="text-blue-600 mt-0.5">•</span>
-                            <span>Gunakan menu sidebar untuk mengakses CRUD data setiap kategori</span>
+                            <span>Klik kartu statistik untuk langsung menuju halaman data</span>
                         </li>
                         <li className="flex items-start gap-2">
                             <span className="text-blue-600 mt-0.5">•</span>
-                            <span>Klik pada kartu statistik untuk langsung menuju halaman management data</span>
+                            <span>Gunakan menu sidebar untuk navigasi lengkap</span>
                         </li>
                         <li className="flex items-start gap-2">
                             <span className="text-blue-600 mt-0.5">•</span>
-                            <span>Setiap perubahan data akan langsung terlihat di peta interaktif</span>
+                            <span>Pastikan data memiliki koordinat untuk visualisasi peta</span>
                         </li>
                         <li className="flex items-start gap-2">
                             <span className="text-blue-600 mt-0.5">•</span>
-                            <span>Pastikan data memiliki koordinat (latitude/longitude) yang valid</span>
+                            <span>Data diperbarui otomatis setiap 30 detik</span>
                         </li>
                     </ul>
                 </div>

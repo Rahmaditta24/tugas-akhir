@@ -163,10 +163,10 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                 <div className="mb-4 w-24 h-24 flex items-center justify-center">
                                     {category.image ? (
                                         <img
+                                            key={category.image}
                                             src={`/storage/${category.image}`}
                                             alt={category.name}
                                             className="max-w-full max-h-full object-contain drop-shadow-sm"
-                                            onError={(e) => { e.target.style.display = 'none'; }}
                                         />
                                     ) : (
                                         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
@@ -183,7 +183,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                         {category.order_number}. {category.name}
                                     </h3>
                                     <p className="text-sm text-gray-500 mb-4 font-medium">
-                                        {category.statements_count} Statements
+                                        {category.statements_count?.toLocaleString('id-ID')} Statements
                                     </p>
 
                                     <Link

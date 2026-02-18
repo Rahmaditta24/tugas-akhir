@@ -13,8 +13,70 @@ class ProdukPageController extends Controller
     public function index(Request $request)
     {
         $baseQuery = Produk::query();
+        
+        // Apply simple search
         if ($request->filled('search')) {
             $baseQuery->search($request->search);
+        }
+
+        // Apply advanced multi-row queries
+        if ($request->filled('queries')) {
+            $queries = json_decode($request->queries, true);
+            if (is_array($queries)) {
+                $baseQuery->where(function ($q) use ($queries) {
+                    foreach ($queries as $index => $row) {
+                        $term = trim($row['term'] ?? '');
+                        if (empty($term)) continue;
+
+                        $field = $row['field'] ?? 'all';
+                        $operator = strtoupper($row['operator'] ?? 'AND');
+
+                        $applyCondition = function($query) use ($term, $field) {
+                            if ($field === 'all') {
+                                $query->where(function($sub) use ($term) {
+                                    $sub->where('nama_produk', 'like', "%$term%")
+                                        ->orWhere('nama_inventor', 'like', "%$term%")
+                                        ->orWhere('institusi', 'like', "%$term%")
+                                        ->orWhere('bidang', 'like', "%$term%");
+                                });
+                            } else {
+                                $dbField = match($field) {
+                                    'title' => 'nama_produk',
+                                    'university' => 'institusi',
+                                    'researcher' => 'nama_inventor',
+                                    'field' => 'bidang',
+                                    default => 'nama_produk'
+                                };
+                                $query->where($dbField, 'like', "%$term%");
+                            }
+                        };
+
+                        if ($index === 0) {
+                            $applyCondition($q);
+                        } else {
+                            if ($operator === 'OR') {
+                                $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                            } elseif ($operator === 'AND NOT') {
+                                $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                            } else { 
+                                $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        if ($request->filled('bidang')) {
+            $baseQuery->where('bidang', $request->bidang);
+        }
+
+        if ($request->filled('tkt')) {
+            $baseQuery->where('tkt', $request->tkt);
+        }
+
+        if ($request->filled('provinsi')) {
+            $baseQuery->where('provinsi', $request->provinsi);
         }
 
         $statsQ = clone $baseQuery;
@@ -25,11 +87,9 @@ class ProdukPageController extends Controller
             'totalFields' => (clone $statsQ)->distinct('bidang')->count('bidang'),
         ];
 
-        $cacheKey = 'map_data_produk_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_produk_v5_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
             $mapDataArray = [];
-            
-            // OPTIMIZED: Use cursor() for memory-efficient iteration
             $query = (clone $baseQuery)->select(
                 'id',
                 'institusi',
@@ -42,7 +102,6 @@ class ProdukPageController extends Controller
             ->whereNotNull('latitude')
             ->whereNotNull('longitude');
             
-            // Cursor loads one record at a time - minimal memory
             foreach ($query->cursor() as $item) {
                 $mapDataArray[] = [
                     'id' => $item->id,
@@ -55,19 +114,66 @@ class ProdukPageController extends Controller
                     'count' => 1,
                 ];
             }
-            
-            return $mapDataArray;
+            return collect($mapDataArray)->values()->all();
         });
 
-        $items = (clone $baseQuery)->select('id', 'nama_produk as judul', 'institusi', 'provinsi', 'bidang as skema', 'tkt as tahun')
-            ->latest('id')
-            ->limit(50)
-            ->get();
+        // Only load list if filtered/searched
+        $isFiltered = $request->filled('search') 
+            || $request->filled('queries')
+            || $request->filled('bidang')
+            || $request->filled('tkt')
+            || $request->filled('provinsi');
+
+        $items = $isFiltered
+            ? (clone $baseQuery)->select('id', 'nama_produk as judul', 'nama_inventor as nama', 'institusi', 'provinsi', 'bidang as bidang_fokus', 'tkt')
+                ->latest('id')
+                ->limit(50)
+                ->get()
+                ->values()
+            : collect()->values();
+
+        // Get filter options (cached)
+        $filterOptions = [
+            'bidang' => Cache::remember('filter_produk_bidang', 7200, function() {
+                return DB::table('produk')
+                    ->select('bidang')
+                    ->whereNotNull('bidang')
+                    ->distinct()
+                    ->orderBy('bidang')
+                    ->pluck('bidang')
+                    ->filter()
+                    ->values();
+            }),
+            'tkt' => Cache::remember('filter_produk_tkt', 7200, function() {
+                return DB::table('produk')
+                    ->select('tkt')
+                    ->whereNotNull('tkt')
+                    ->distinct()
+                    ->orderBy('tkt')
+                    ->pluck('tkt')
+                    ->filter()
+                    ->values();
+            }),
+            'provinsi' => Cache::remember('filter_produk_provinsi', 7200, function() {
+                return DB::table('produk')
+                    ->select('provinsi')
+                    ->whereNotNull('provinsi')
+                    ->distinct()
+                    ->orderBy('provinsi')
+                    ->pluck('provinsi')
+                    ->filter()
+                    ->values();
+            }),
+        ];
 
         return Inertia::render('Produk', [
             'mapData' => $mapData,
             'researches' => $items,
             'stats' => $stats,
+            'filters' => $request->all(),
+            'filterOptions' => $filterOptions,
+            'isFiltered' => $isFiltered,
+            'title' => 'Peta Persebaran Penelitian BIMA Indonesia - Produk'
         ]);
     }
 }

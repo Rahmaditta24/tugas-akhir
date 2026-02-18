@@ -10,12 +10,19 @@ use App\Http\Controllers\Api\ProdukController;
 use App\Http\Controllers\Api\FasilitasLabController;
 use App\Http\Controllers\Api\AdminStatsController;
 use App\Http\Controllers\Api\RumusanMasalahApiController;
+use App\Http\Controllers\Api\RegionController;
+use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
 
 /*
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
 */
+
+// Regional & Campus proxies
+Route::get('/provinces', [RegionController::class, 'provinces']);
+Route::get('/regencies/{provinceId}', [RegionController::class, 'regencies']);
+Route::get('/campuses/search', [RegionController::class, 'searchCampus']);
 
 // Penelitian endpoints
 Route::prefix('penelitian')->group(function () {
@@ -49,6 +56,11 @@ Route::prefix('produk')->group(function () {
     Route::get('/', [ProdukController::class, 'index']);
     Route::get('/statistics', [ProdukController::class, 'statistics']);
     Route::get('/{id}', [ProdukController::class, 'show']);
+});
+
+// Admin Produk endpoints
+Route::prefix('admin/produk')->group(function () {
+    Route::get('/provinces', [AdminProdukController::class, 'getProvinces']);
 });
 
 // Fasilitas Lab endpoints

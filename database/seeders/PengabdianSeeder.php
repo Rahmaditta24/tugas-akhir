@@ -10,7 +10,7 @@ class PengabdianSeeder extends Seeder
 {
     public function run(): void
     {
-        $jsonPath = base_path('../peta-bima/data/data-pengabdian.json');
+        $jsonPath = base_path('../peta-bima/data/data-pengabdian_clean.json');
         $normalize = function ($value) {
             if ($value === null) return null;
             if (is_string($value)) {

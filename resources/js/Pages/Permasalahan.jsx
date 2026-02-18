@@ -9,6 +9,7 @@ import PermasalahanLegend from '../Components/PermasalahanLegend';
 
 export default function Permasalahan({ mapData = [], stats = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
+
     const [showBubbles, setShowBubbles] = useState(true);
     const [viewMode, setViewMode] = useState('provinsi');
     const [filters, setFilters] = useState({

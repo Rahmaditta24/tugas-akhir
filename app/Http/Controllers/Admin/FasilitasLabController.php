@@ -21,6 +21,7 @@ class FasilitasLabController extends Controller
                   ->orWhere('institusi', 'like', "%{$search}%")
                   ->orWhere('provinsi', 'like', "%{$search}%")
                   ->orWhere('kota', 'like', "%{$search}%")
+                  ->orWhere('nama_alat', 'like', "%{$search}%")
                   ->orWhere('kontak', 'like', "%{$search}%");
             });
         }
@@ -98,9 +99,12 @@ class FasilitasLabController extends Controller
         return redirect()->route('admin.fasilitas-lab.index')->with('success', 'Data fasilitas lab berhasil ditambahkan');
     }
 
-    public function edit(FasilitasLab $fasilitasLab)
+    public function edit(Request $request, FasilitasLab $fasilitasLab)
     {
-        return Inertia::render('Admin/FasilitasLab/Edit', ['item' => $fasilitasLab]);
+        return Inertia::render('Admin/FasilitasLab/Edit', [
+            'item' => $fasilitasLab,
+            'filters' => $request->only(['page', 'search', 'perPage', 'filters', 'sort', 'direction'])
+        ]);
     }
 
     public function update(Request $request, FasilitasLab $fasilitasLab)
@@ -121,7 +125,8 @@ class FasilitasLabController extends Controller
         ]);
 
         $fasilitasLab->update($validated);
-        return redirect()->route('admin.fasilitas-lab.index')->with('success', 'Data fasilitas lab berhasil diperbarui');
+        return redirect()->route('admin.fasilitas-lab.index', $request->only(['page', 'search', 'perPage', 'filters', 'sort', 'direction']))
+            ->with('success', 'Data fasilitas lab berhasil diperbarui');
     }
 
     public function destroy(FasilitasLab $fasilitasLab)

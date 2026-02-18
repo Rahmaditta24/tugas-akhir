@@ -1,84 +1,154 @@
 import React, { useState } from 'react';
 
-export default function ResearchList({ researches = [] }) {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchFilter, setSearchFilter] = useState('all');
+export default function ResearchList({ researches = [], onAdvancedSearch, title = "Daftar Penelitian", isFiltered = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
+    const [searchRows, setSearchRows] = useState([
+        { id: Date.now(), term: '', field: 'all', operator: 'AND' }
+    ]);
 
-    const filteredResearches = researches.filter((research) => {
-        if (!searchTerm) return true;
+    const addRow = () => {
+        setSearchRows([...searchRows, { id: Date.now(), term: '', field: 'all', operator: 'AND' }]);
+    };
 
-        const term = searchTerm.toLowerCase();
-        switch (searchFilter) {
-            case 'title':
-                return research.judul?.toLowerCase().includes(term);
-            case 'university':
-                return research.institusi?.toLowerCase().includes(term);
-            case 'researcher':
-                return research.nama?.toLowerCase().includes(term);
-            case 'field':
-                return research.bidang_fokus?.toLowerCase().includes(term);
-            case 'priorityTheme':
-                return research.tema_prioritas?.toLowerCase().includes(term);
-            case 'category':
-                return research.kategori_pt?.toLowerCase().includes(term);
-            case 'cluster':
-                return research.klaster?.toLowerCase().includes(term);
-            case 'all':
-            default:
-                return (
-                    research.judul?.toLowerCase().includes(term) ||
-                    research.institusi?.toLowerCase().includes(term) ||
-                    research.nama?.toLowerCase().includes(term) ||
-                    research.bidang_fokus?.toLowerCase().includes(term)
-                );
+    const removeRow = (id) => {
+        if (searchRows.length > 1) {
+            setSearchRows(searchRows.filter(row => row.id !== id));
         }
-    });
+    };
+
+    const updateRow = (id, updates) => {
+        setSearchRows(searchRows.map(row => row.id === id ? { ...row, ...updates } : row));
+    };
+
+    const handleSearchTrigger = () => {
+        if (onAdvancedSearch) {
+            onAdvancedSearch(searchRows);
+        }
+    };
+
+    const defaultFieldOptions = [
+        { value: 'all', label: 'Semua' },
+        { value: 'title', label: 'Judul Penelitian' },
+        { value: 'university', label: 'Universitas' },
+        { value: 'researcher', label: 'Peneliti' },
+        { value: 'field', label: 'Bidang Fokus' },
+        { value: 'priorityTheme', label: 'Tema Prioritas' },
+        { value: 'category', label: 'Kategori PT' },
+        { value: 'cluster', label: 'Klaster' },
+    ];
+
+    const fieldOptions = customFieldOptions.length > 0 ? customFieldOptions : defaultFieldOptions;
+
+    const getPlaceholder = (fieldValue) => {
+        if (fieldValue === 'all') {
+            return placeholderAll;
+        }
+
+        const option = fieldOptions.find(opt => opt.value === fieldValue);
+        if (option) {
+            return `Cari ${option.label.toLowerCase()}...`;
+        }
+
+        return "Cari...";
+    };
 
     return (
         <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex lg:flex-row flex-col lg:gap-0 gap-2 justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-slate-800">Daftar Penelitian</h3>
+                <h3 className="text-xl font-semibold text-slate-800">{title}</h3>
             </div>
 
-            <div className="mb-4 flex lg:items-center lg:gap-8 gap-4 justify-between">
-                <div className="relative w-full">
-                    <input
-                        type="search"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Cari penelitian, universitas, atau peneliti..."
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        autoComplete="off"
-                    />
-                </div>
-                <div className="relative inline-block">
-                    <select
-                        value={searchFilter}
-                        onChange={(e) => setSearchFilter(e.target.value)}
-                        className="px-4 pr-10 py-3 text-white lg:w-fit w-full border bg-[#3E7DCA] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+            <div className="space-y-4 mb-6">
+                {searchRows.map((row, index) => (
+                    <div key={row.id} className="space-y-3">
+                        {index > 0 && (
+                            <div className="flex items-center gap-2">
+                                <select
+                                    value={row.operator}
+                                    onChange={(e) => updateRow(row.id, { operator: e.target.value })}
+                                    className="px-3 py-1.5 text-xs font-semibold bg-slate-100 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                                >
+                                    <option value="AND">AND</option>
+                                    <option value="OR">OR</option>
+                                    <option value="AND NOT">AND NOT</option>
+                                </select>
+                            </div>
+                        )}
+                        <div className="flex items-center gap-3">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    value={row.term}
+                                    onChange={(e) => updateRow(row.id, { term: e.target.value })}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSearchTrigger()}
+                                    placeholder={getPlaceholder(row.field)}
+                                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-600"
+                                    autoComplete="off"
+                                />
+                            </div>
+                            <div className="relative shrink-0">
+                                <select
+                                    value={row.field}
+                                    onChange={(e) => updateRow(row.id, { field: e.target.value })}
+                                    className="px-4 pr-10 py-2.5 text-sm font-medium text-white bg-[#4479C4] rounded-lg focus:ring-2 focus:ring-blue-500 appearance-none min-w-[140px] cursor-pointer"
+                                >
+                                    {fieldOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value} className="bg-white text-slate-800">{opt.label}</option>
+                                    ))}
+                                </select>
+                                <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </span>
+                            </div>
+                            {index > 0 && (
+                                <button
+                                    onClick={() => removeRow(row.id)}
+                                    className="p-2.5 text-white bg-[#EF4444] rounded-lg hover:bg-red-600 transition-colors shadow-sm shrink-0"
+                                    title="Hapus baris"
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                ))}
+
+                <div className="flex items-center gap-3 pt-2">
+                    <button
+                        onClick={handleSearchTrigger}
+                        className="flex items-center gap-2 px-6 py-2 bg-[#22C55E] text-white rounded-lg font-medium hover:bg-green-600 transition-all shadow-sm active:scale-95 h-[42px]"
                     >
-                        <option value="all">Semua</option>
-                        <option value="title">Judul Penelitian</option>
-                        <option value="university">Universitas</option>
-                        <option value="researcher">Peneliti</option>
-                        <option value="field">Bidang Fokus</option>
-                        <option value="priorityTheme">Tema Prioritas</option>
-                        <option value="category">Kategori PT</option>
-                        <option value="cluster">Klaster</option>
-                    </select>
-                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white">
-                        <svg className="rotate-180" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 1024 1024">
-                            <path fill="currentColor" d="M104.704 685.248a64 64 0 0 0 90.496 0l316.8-316.8l316.8 316.8a64 64 0 0 0 90.496-90.496L557.248 232.704a64 64 0 0 0-90.496 0L104.704 594.752a64 64 0 0 0 0 90.496"/>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                    </span>
+                        Search
+                    </button>
+                    <button
+                        onClick={addRow}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#3B82F6] text-white rounded-lg font-medium hover:bg-blue-600 transition-all shadow-sm active:scale-95 text-sm h-[42px]"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add search field
+                    </button>
                 </div>
             </div>
 
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-                {filteredResearches.length === 0 ? (
-                    <p className="text-center text-slate-500 py-8">Tidak ada data penelitian ditemukan</p>
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pt-4 border-t border-slate-100">
+                {(!Array.isArray(researches) || researches.length === 0) ? (
+                    <div className="text-center py-12">
+                        <p className="text-slate-500 font-medium">
+                            {isFiltered
+                                ? "Tidak ada data yang sesuai dengan filter"
+                                : `Masukkan kata kunci untuk mencari ${title.toLowerCase().replace('daftar ', '')}`}
+                        </p>
+                    </div>
                 ) : (
-                    filteredResearches.map((research, index) => (
+                    researches.map((research, index) => (
                         <div
                             key={index}
                             className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow"

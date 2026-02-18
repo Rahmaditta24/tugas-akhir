@@ -10,7 +10,7 @@ class FasilitasLabSeeder extends Seeder
 {
     public function run(): void
     {
-        $jsonPath = base_path('../peta-bima/data/data-fasilitas-lab.json');
+        $jsonPath = base_path('../peta-bima/data/data-fasilitas-lab_clean.json');
         $normalize = function ($value) {
             if ($value === null) return null;
             if (is_string($value)) {

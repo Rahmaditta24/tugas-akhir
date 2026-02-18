@@ -16,13 +16,15 @@ class AdminStatsController extends Controller
     public function index()
     {
         return response()->json([
-            'penelitian' => Penelitian::count(),
-            'pengabdian' => Pengabdian::count(),
-            'hilirisasi' => Hilirisasi::count(),
-            'produk' => Produk::count(),
-            'fasilitas' => FasilitasLab::count(),
-            'permasalahan_prov' => PermasalahanProvinsi::count(),
-            'permasalahan_kab' => PermasalahanKabupaten::count(),
+            'penelitian' => \App\Models\Penelitian::count(),
+            'pengabdian' => \App\Models\Pengabdian::count(),
+            'hilirisasi' => \App\Models\Hilirisasi::count(),
+            'produk' => \App\Models\Produk::count(),
+            'fasilitas' => \App\Models\FasilitasLab::count(),
+            'permasalahan_prov' => \App\Models\PermasalahanProvinsi::count(),
+            'permasalahan_kab' => \App\Models\PermasalahanKabupaten::count(),
+            'rumusan_masalah_category' => \App\Models\RumusanMasalahCategory::count(),
+            'rumusan_masalah_statement' => \App\Models\RumusanMasalahStatement::count(),
             'timestamp' => now()->toISOString(),
         ]);
     }

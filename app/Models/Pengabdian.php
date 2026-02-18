@@ -32,6 +32,13 @@ class Pengabdian extends Model
         'bidang_fokus',
         'prov_mitra',
         'kab_mitra',
+        'nama_pendamping',
+        'nidn_pendamping',
+        'kd_perguruan_tinggi_pendamping',
+        'institusi_pendamping',
+        'lldikti_wilayah_pendamping',
+        'jenis_wilayah_provinsi_mitra',
+        'bidang_teknologi_inovasi',
     ];
 
     protected $casts = [

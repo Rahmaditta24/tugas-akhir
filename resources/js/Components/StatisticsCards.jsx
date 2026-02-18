@@ -33,10 +33,20 @@ function AnimatedCounter({ value, duration = 300 }) {
     return <span>{displayValue.toLocaleString('id-ID')}</span>;
 }
 
-export default function StatisticsCards({ stats }) {
-    const cards = [
+export default function StatisticsCards({ stats, labels = {} }) {
+    const defaultLabels = {
+        totalResearch: 'Total Penelitian',
+        totalUniversities: 'Total Perguruan Tinggi',
+        totalProvinces: 'Total Provinsi',
+        totalFields: 'Bidang Fokus',
+    };
+
+    const finalLabels = { ...defaultLabels, ...labels };
+
+    const cardConfigs = [
         {
-            title: 'Total Penelitian',
+            key: 'totalResearch',
+            title: finalLabels.totalResearch,
             value: stats?.totalResearch || 0,
             bgStyle: {
                 backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('/assets/images/card/bg-total-penelitian.png')",
@@ -45,7 +55,8 @@ export default function StatisticsCards({ stats }) {
             },
         },
         {
-            title: 'Total Perguruan Tinggi',
+            key: 'totalUniversities',
+            title: finalLabels.totalUniversities,
             value: stats?.totalUniversities || 0,
             bgStyle: {
                 backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('/assets/images/card/bg-total-pt.png')",
@@ -54,7 +65,8 @@ export default function StatisticsCards({ stats }) {
             },
         },
         {
-            title: 'Total Provinsi',
+            key: 'totalProvinces',
+            title: finalLabels.totalProvinces,
             value: stats?.totalProvinces || 0,
             bgStyle: {
                 backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('/assets/images/card/bg-total-provinsi.png')",
@@ -63,7 +75,8 @@ export default function StatisticsCards({ stats }) {
             },
         },
         {
-            title: 'Bidang Fokus',
+            key: 'totalFields',
+            title: finalLabels.totalFields,
             value: stats?.totalFields || 0,
             bgStyle: {
                 backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('/assets/images/card/bg-total-bidang-fokus.png')",
@@ -73,9 +86,14 @@ export default function StatisticsCards({ stats }) {
         },
     ];
 
+    // Filter out cards that have been explicitly disabled (set to null or false in labels)
+    const activeCards = cardConfigs.filter(card => labels[card.key] !== null && labels[card.key] !== false);
+
+    const gridCols = activeCards.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4';
+
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {cards.map((card, index) => (
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${gridCols} gap-6 mb-12`}>
+            {activeCards.map((card, index) => (
                 <div
                     key={index}
                     className="text-white rounded-lg shadow-lg h-24 bg-no-repeat bg-cover"

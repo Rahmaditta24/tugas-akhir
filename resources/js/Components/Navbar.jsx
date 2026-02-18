@@ -24,7 +24,7 @@ export default function Navbar() {
                     {/* Judul tengah */}
                     <div className="w-full text-center md:w-auto">
                         <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-800">
-                            Dashboard Pemetaan Riset Berdampak di Seluruh Indonesia
+                            Dashboard Pemetaan Riset Berdampak di Seluruh Indonesia <span className="font-normal">(Beta)</span>
                         </h2>
                     </div>
 

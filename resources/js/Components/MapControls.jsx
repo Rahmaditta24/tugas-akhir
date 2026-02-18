@@ -1,5 +1,20 @@
 import React, { useState, useEffect } from 'react';
 
+const FIELD_COLORS = {
+    "Energi": "#FF5716",
+    "Kebencanaan": "#ECCEAA",
+    "Kemaritiman": "#00D0FF",
+    "Kesehatan": "#FF2A64",
+    "Material Maju": "#FFCC00",
+    "Pangan": "#10B374",
+    "Pertahanan dan Keamanan": "#1C4570",
+    "Produk rekayasa keteknikan": "#FE272F",
+    "Sosial Humaniora": "#A72184",
+    "Teknologi Informasi dan Komunikasi": "#B39B77",
+    "Transportasi": "#A578AE",
+    "Riset Dasar Teoritis": "#96CEB4"
+};
+
 export default function MapControls({
     onSearch,
     onDisplayModeChange,
@@ -12,11 +27,14 @@ export default function MapControls({
     searchTerm = '',
     filterFields: customFilterFields = [],
     hideDisplayMode = false, // Hide Peneliti/Institusi buttons
+    hideDownload = false, // Hide Excel download button
     showPermasalahanControls = false, // Show Hide Bubbles & Mode buttons
     showBubbles = true,
     onToggleBubbles = () => { },
     viewMode = 'provinsi',
-    onViewModeChange = () => { }
+    onViewModeChange = () => { },
+    gridClass = "grid-cols-1 md:grid-cols-2",
+    widthClass = "w-[95%] lg:w-[40%]"
 }) {
     const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(false);
 
@@ -99,9 +117,9 @@ export default function MapControls({
         <>
             {/* Search Box - Positioned over map */}
             <div className="absolute z-20 top-5 left-1/2 -translate-x-1/2 lg:w-1/2 w-full">
-                <div className="relative w-full pl-12 pr-3">
+                <div className="relative w-full px-3">
                     <svg
-                        className="absolute left-14 top-2 text-slate-400"
+                        className="absolute left-6 top-2 text-slate-400"
                         xmlns="http://www.w3.org/2000/svg"
                         width="24"
                         height="24"
@@ -121,15 +139,15 @@ export default function MapControls({
                         value={searchTerm}
                         onChange={handleSearchChange}
                         placeholder="Cari penelitian, universitas, atau peneliti..."
-                        className="w-full pl-9 lg:w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full pl-10 lg:w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                 </div>
             </div>
 
             {/* Advanced Search Panel */}
             {isAdvancedSearchOpen && (
-                <div className="absolute z-30 bottom-20 left-1/2 -translate-x-1/2 w-[95%] lg:w-2/3 bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-6 animate-fade-in-up border border-gray-100">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className={`absolute z-30 bottom-20 left-1/2 -translate-x-1/2 ${widthClass} bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-6 animate-fade-in-up border border-gray-100`}>
+                    <div className={`grid ${gridClass} gap-4`}>
                         {filterFields.map((field) => {
                             const isSingle = field.type === 'single';
                             const selectedCount = getSelectedCount(field.requestKey, field.type);
@@ -145,7 +163,7 @@ export default function MapControls({
                                         <button
                                             type="button"
                                             onClick={() => setOpenDropdown(openDropdown === field.requestKey ? null : field.requestKey)}
-                                            className="w-full p-2.5 bg-white border-2 border-gray-300 rounded-lg text-sm text-left focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:bg-gray-50 transition-colors flex items-center justify-between"
+                                            className="w-full p-2 bg-white border border-gray-300 rounded-lg text-sm text-left focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:bg-gray-50 transition-colors flex items-center justify-between"
                                         >
                                             <span className="text-gray-700 truncate mr-2">
                                                 {buttonText}
@@ -162,20 +180,40 @@ export default function MapControls({
 
                                         {openDropdown === field.requestKey && (
                                             <div className="absolute top-full left-0 w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
-                                                {filterOptions[field.optionKey] && filterOptions[field.optionKey].map((option, idx) => (
-                                                    <label
-                                                        key={idx}
-                                                        className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
-                                                    >
-                                                        <input
-                                                            type={isSingle ? 'radio' : 'checkbox'}
-                                                            checked={isSelected(field.requestKey, option)}
-                                                            onChange={(e) => handleFilterSelect(field.requestKey, option, e.target.checked, field.type)}
-                                                            className={`w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 ${isSingle ? 'rounded-full' : 'rounded'}`}
-                                                        />
-                                                        <span className="ml-2 text-sm text-gray-700">{option}</span>
-                                                    </label>
-                                                ))}
+                                                {filterOptions[field.optionKey] && filterOptions[field.optionKey].map((option, idx) => {
+                                                    // Determine color for Bidang Fokus or Skema
+                                                    let optionColor = null;
+                                                    if (field.requestKey === 'bidang_fokus' || field.requestKey === 'skema') {
+                                                        // Check if any FIELD_COLORS key is present in the option string
+                                                        for (const [key, color] of Object.entries(FIELD_COLORS)) {
+                                                            if (option && option.includes(key)) {
+                                                                optionColor = color;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    return (
+                                                        <label
+                                                            key={idx}
+                                                            className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                        >
+                                                            <input
+                                                                type={isSingle ? 'radio' : 'checkbox'}
+                                                                checked={isSelected(field.requestKey, option)}
+                                                                onChange={(e) => handleFilterSelect(field.requestKey, option, e.target.checked, field.type)}
+                                                                className={`w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 ${isSingle ? 'rounded-full' : 'rounded'}`}
+                                                            />
+                                                            <span
+                                                                className="ml-2 text-sm text-gray-700 font-medium"
+                                                                style={optionColor ? { color: optionColor } : {}}
+                                                            >
+                                                                {optionColor && <span className="mr-1">■</span>}
+                                                                {option}
+                                                            </span>
+                                                        </label>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
@@ -188,7 +226,7 @@ export default function MapControls({
 
             {/* Control Buttons - Positioned at bottom of map */}
             <div className="absolute z-20 bottom-5 left-1/2 -translate-x-1/2 lg:w-auto w-full px-3 lg:px-0 whitespace-nowrap overflow-x-auto max-w-full">
-                <div className="flex items-center gap-2 lg:gap-3 px-2">
+                <div className="flex items-center justify-center gap-2 lg:gap-3 px-2">
                     {/* Peneliti & Institusi Buttons - Hidden for Permasalahan */}
                     {!hideDisplayMode && (
                         <>
@@ -196,12 +234,12 @@ export default function MapControls({
                             <button
                                 onClick={() => onDisplayModeChange('peneliti')}
                                 className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${displayMode === 'peneliti'
-                                    ? 'bg-[#FFD700] text-black ring-2 ring-white'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                                    ? 'bg-[#FFD700] text-black'
+                                    : 'bg-[#3E7DCA] text-white hover:brightness-110'
                                     }`}
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M12 11c-1.1 0-2 .9-2 2s.9 2 2 2s2-.9 2-2s-.9-2-2-2zm6 2c0-3.31-2.69-6-6-6s-6 2.69-6 6c0 2.22 1.21 4.15 3 5.19l1-1.74c-1.19-.7-2-1.97-2-3.45c0-2.21 1.79-4 4-4s4 1.79 4 4c0 1.48-.81 2.75-2 3.45l1 1.74c1.79-1.04 3-2.97 3-5.19zM12 3C6.48 3 2 7.48 2 13c0 3.7 2.01 6.92 4.99 8.65l1-1.73C5.61 18.53 4 15.96 4 13c0-4.42 3.58-8 8-8s8 3.58 8 8c0 2.96-1.61 5.53-4 6.92l1 1.73c2.99-1.73 5-4.95 5-8.65c0-5.52-4.48-10-8-10z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
+                                    <path fill="currentColor" d="M18.5 19l-4.7-7.5V5h1v-2h-5.6v2h1v6.5L5.5 19c-.6.9-.1 2.1 1 2.1h11c1.1 0 1.6-1.2 1-2.1zM9.8 8.6V5h4.4v3.6c0 .1 0 .1-.1.2l-1.2 1.9h-1.8l-1.2-1.9c-.1-.1-.1-.1-.1-.2z" />
                                 </svg>
                                 Peneliti
                             </button>
@@ -210,13 +248,13 @@ export default function MapControls({
                             <button
                                 onClick={() => onDisplayModeChange('institusi')}
                                 className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${displayMode === 'institusi'
-                                    ? 'bg-[#3E7DCA] text-white ring-2 ring-white'
+                                    ? 'bg-[#FFD700] text-black'
                                     : 'bg-[#3E7DCA] text-white hover:brightness-110'
                                     }`}
                                 title="Tampilkan Data Institusi"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2.48-1.35L12 3zm6 9.64l-3 1.64v-3.72l3-1.63v3.71zm-9 1.64l-3-1.64v-3.71l3 1.63v3.72zm0-5.36l-3-1.63l3-1.64l3 1.64l-3 1.63zM12 5.09l3 1.64l-3 1.63l-3-1.63l3-1.64z" />
+                                    <path fill="currentColor" d="M12 3L1 9l11 6l9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
                                 </svg>
                                 Institusi
                             </button>
@@ -230,7 +268,7 @@ export default function MapControls({
                             }`}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" />
+                            <path fill="currentColor" d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04c-.83 0-1.3.95-.79 1.61z" />
                         </svg>
                         Advanced Search
                         <svg
@@ -297,17 +335,19 @@ export default function MapControls({
                     </button>
 
                     {/* Download Excel Button */}
-                    <button
-                        onClick={onDownload}
-                        className="flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold bg-[#16a34a] text-white hover:bg-[#15803d] transition-all shadow-sm"
-                    >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                            </path>
-                        </svg>
-                        Excel
-                    </button>
+                    {!hideDownload && (
+                        <button
+                            onClick={onDownload}
+                            className="flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold bg-[#16a34a] text-white hover:bg-[#15803d] transition-all shadow-sm"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
+                            </svg>
+                            Excel
+                        </button>
+                    )}
                 </div>
             </div>
         </>

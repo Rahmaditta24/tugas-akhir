@@ -39,14 +39,68 @@ class PenelitianController extends Controller
         if ($request->filled('tahun')) {
             $baseQuery->whereIn('thn_pelaksanaan', (array) $request->tahun);
         }
+        
+        if ($request->filled('skema')) {
+            $baseQuery->whereIn('skema', (array) $request->skema);
+        }
 
-        // Apply search if provided
+        // Apply simple search if provided
         if ($request->filled('search')) {
             $baseQuery->search($request->search);
         }
 
-        // Get statistics without loading all data into memory
-        // NO CACHE - we need real-time stats based on current filters
+        // Apply advanced multi-row queries
+        if ($request->filled('queries')) {
+            $queries = json_decode($request->queries, true);
+            if (is_array($queries)) {
+                $baseQuery->where(function ($q) use ($queries) {
+                    foreach ($queries as $index => $row) {
+                        $term = trim($row['term'] ?? '');
+                        if (empty($term)) continue;
+
+                        $field = $row['field'] ?? 'all';
+                        $operator = strtoupper($row['operator'] ?? 'AND');
+
+                        // Define closure for applying field conditions
+                        $applyCondition = function($query) use ($term, $field) {
+                            if ($field === 'all') {
+                                $query->where(function($sub) use ($term) {
+                                    $sub->where('judul', 'like', "%$term%")
+                                        ->orWhere('nama', 'like', "%$term%")
+                                        ->orWhere('institusi', 'like', "%$term%")
+                                        ->orWhere('bidang_fokus', 'like', "%$term%");
+                                });
+                            } else {
+                                $dbField = match($field) {
+                                    'title' => 'judul',
+                                    'university' => 'institusi',
+                                    'researcher' => 'nama',
+                                    'field' => 'bidang_fokus',
+                                    'priorityTheme' => 'tema_prioritas',
+                                    'category' => 'kategori_pt',
+                                    'cluster' => 'klaster',
+                                    default => 'judul'
+                                };
+                                $query->where($dbField, 'like', "%$term%");
+                            }
+                        };
+
+                        if ($index === 0) {
+                            $applyCondition($q);
+                        } else {
+                            if ($operator === 'OR') {
+                                $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                            } elseif ($operator === 'AND NOT') {
+                                $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                            } else { // AND
+                                $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
         $statsQuery = clone $baseQuery;
         $totalStats = [
             'totalResearch' => (clone $statsQuery)->count(),
@@ -56,11 +110,12 @@ class PenelitianController extends Controller
         ];
 
         // For map: MEMORY-EFFICIENT GEOGRAPHIC CLUSTERING
-        // Group by rounded coordinates to create geographic clusters (similar to reference site)
-        // ROUND to 2 decimals ≈ 1.1km precision, perfect for city-level clustering
-        $cacheKey = 'map_data_penelitian_v5_' . md5(json_encode($request->all()));
-        $mapData = Cache::remember($cacheKey, 300, function() use ($baseQuery) { // 5 minutes cache for faster filter updates
+        $cacheKey = 'map_data_cache_v4_' . md5(json_encode($request->all()));
+        $mapData = Cache::remember($cacheKey, 300, function() use ($baseQuery) {
+            DB::statement('SET SESSION group_concat_max_len = 1000000');
             // Aggregate by geographic location (rounded coordinates)
+
+
             $aggregatedData = (clone $baseQuery)
                 ->select(
                     DB::raw('ROUND(pt_latitude, 2) as lat_rounded'),
@@ -70,7 +125,14 @@ class PenelitianController extends Controller
                     DB::raw('COUNT(*) as total_penelitian'),
                     DB::raw('GROUP_CONCAT(DISTINCT institusi SEPARATOR " | ") as institusi_list'),
                     DB::raw('GROUP_CONCAT(DISTINCT provinsi) as provinsi'),
-                    DB::raw('GROUP_CONCAT(DISTINCT bidang_fokus SEPARATOR ", ") as bidang_fokus_list')
+                    DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, "-") SEPARATOR "|") as all_fields'),
+                    DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as all_ids'),
+                    DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
+                    DB::raw('GROUP_CONCAT(COALESCE(skema, "-") SEPARATOR "|") as all_skema'),
+                    DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan AS CHAR) SEPARATOR "|") as all_years'),
+                    DB::raw('GROUP_CONCAT(COALESCE(tema_prioritas, "-") SEPARATOR "|") as all_themes'),
+                    DB::raw('GROUP_CONCAT(COALESCE(jenis_pt, "-") SEPARATOR "|") as all_pt_types')
+
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -85,31 +147,46 @@ class PenelitianController extends Controller
                     'total_penelitian' => (int)$item->total_penelitian,
                     'institusi' => $item->institusi_list,
                     'provinsi' => $item->provinsi,
-                    'bidang_fokus' => $item->bidang_fokus_list,
+                    'bidang_fokus' => $item->all_fields,
+                    'ids' => $item->all_ids,
+                    'titles' => $item->all_titles,
+                    'skema_list' => $item->all_skema,
+                    'tahun_list' => $item->all_years,
+                    'tema_list' => $item->all_themes,
+                    'jenis_pt_list' => $item->all_pt_types,
                 ];
+
             })->toArray();
 
-            // Verify data integrity
-            $totalInClusters = array_sum(array_column($result, 'total_penelitian'));
-            \Log::info("Map data aggregation: {$aggregatedData->count()} clusters, total penelitian: {$totalInClusters}");
-
-            return $result;
+            return collect($result)->values()->all();
         });
 
-        // For list: paginate and only load what's needed
-        $researches = (clone $baseQuery)->select(
-            'id',
-            'nama',
-            'institusi',
-            'judul',
-            'bidang_fokus',
-            'tema_prioritas',
-            'thn_pelaksanaan',
-            'skema'
-        )
-        ->latest()
-        ->limit(50) // Only load first 50 for initial render
-        ->get();
+        // For list: only load if there are active filters or search
+        $isFiltered = $request->filled('bidang_fokus') || 
+                      $request->filled('tema_prioritas') || 
+                      $request->filled('kategori_pt') || 
+                      $request->filled('klaster') || 
+                      $request->filled('provinsi') || 
+                      $request->filled('tahun') || 
+                      $request->filled('skema') || 
+                      $request->filled('search') ||
+                      $request->filled('queries');
+
+        $researches = $isFiltered 
+            ? (clone $baseQuery)->select(
+                'id',
+                'nama',
+                'institusi',
+                'judul',
+                'bidang_fokus',
+                'tema_prioritas',
+                'thn_pelaksanaan',
+                'skema'
+            )
+            ->limit(50) // Only load first 50 for performance
+            ->get()
+            ->values()
+            : collect()->values(); // Empty collection if no search/filter active
 
         // Get filter options (cached - using raw DB queries for efficiency)
         $filterOptions = [
@@ -173,6 +250,16 @@ class PenelitianController extends Controller
                     ->filter()
                     ->values();
             }),
+            'skema' => Cache::remember('filter_skema', 7200, function() {
+                return DB::table('penelitian')
+                    ->select('skema')
+                    ->whereNotNull('skema')
+                    ->distinct()
+                    ->orderBy('skema')
+                    ->pluck('skema')
+                    ->filter()
+                    ->values();
+            }),
         ];
 
         return Inertia::render('Home', [
@@ -181,6 +268,8 @@ class PenelitianController extends Controller
             'stats' => $totalStats,
             'filterOptions' => $filterOptions,
             'filters' => $request->all(),
+            'isFiltered' => $isFiltered,
+            'title' => 'Peta Persebaran Penelitian BIMA Indonesia - Penelitian'
         ]);
     }
 
@@ -216,6 +305,10 @@ class PenelitianController extends Controller
 
         if ($request->filled('tahun')) {
             $query->whereIn('thn_pelaksanaan', (array) $request->tahun);
+        }
+
+        if ($request->filled('skema')) {
+            $query->whereIn('skema', (array) $request->skema);
         }
 
         // Apply search if provided
@@ -271,5 +364,21 @@ class PenelitianController extends Controller
             \Log::error('Export error: ' . $e->getMessage());
             return response()->json(['error' => 'Export failed: ' . $e->getMessage()], 500);
         }
+    }
+
+    public function getDetail($type, $id)
+    {
+        $data = match($type) {
+            'penelitian' => \App\Models\Penelitian::find($id),
+            'hilirisasi' => \App\Models\Hilirisasi::find($id),
+            'pengabdian' => \App\Models\Pengabdian::find($id),
+            default => null
+        };
+
+        if (!$data) {
+            return response()->json(['error' => 'Data not found'], 404);
+        }
+
+        return response()->json($data);
     }
 }

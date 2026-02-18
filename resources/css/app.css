@@ -49,9 +49,26 @@
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-    20%, 40%, 60%, 80% { transform: translateX(5px); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-5px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(5px);
+    }
 }
 
 /* Leaflet marker fix */
@@ -64,19 +81,28 @@
     border-collapse: separate;
     border-spacing: 0;
 }
+
 .admin-ui thead th {
-    border-bottom: 1px solid rgba(148, 163, 184, 0.45); /* slate-400 @ ~45% */
-    color: #334155; /* slate-700 */
+    border-bottom: 1px solid rgba(148, 163, 184, 0.45);
+    /* slate-400 @ ~45% */
+    color: #334155;
+    /* slate-700 */
     font-weight: 600;
 }
-.admin-ui tbody tr + tr td {
-    border-top: 1px solid rgba(148, 163, 184, 0.25); /* subtle row separators */
+
+.admin-ui tbody tr+tr td {
+    border-top: 1px solid rgba(148, 163, 184, 0.25);
+    /* subtle row separators */
 }
-.admin-ui td, .admin-ui th {
+
+.admin-ui td,
+.admin-ui th {
     border-color: rgba(148, 163, 184, 0.25);
 }
+
 .admin-ui table.striped tbody tr:nth-child(odd) td {
-    background-color: rgba(241, 245, 249, 0.35); /* slate-100 tint */
+    background-color: rgba(241, 245, 249, 0.35);
+    /* slate-100 tint */
 }
 
 /* Glassmorphism helpers */
@@ -87,12 +113,14 @@
     border: 1px solid rgba(255, 255, 255, 0.25);
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
+
 .glass-header {
-    background: linear-gradient(180deg, rgba(255,255,255,0.60), rgba(255,255,255,0.30));
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.60), rgba(255, 255, 255, 0.30));
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
+
 .glass-border {
     border-color: rgba(255, 255, 255, 0.25) !important;
 }

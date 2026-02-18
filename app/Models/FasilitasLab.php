@@ -28,4 +28,13 @@ class FasilitasLab extends Model
         'longitude' => 'decimal:7',
         'total_jumlah_alat' => 'integer',
     ];
+
+    public function scopeSearch($query, $keyword)
+    {
+        return $query->where(function($q) use ($keyword) {
+            $q->where('nama_laboratorium', 'like', "%{$keyword}%")
+              ->orWhere('institusi', 'like', "%{$keyword}%")
+              ->orWhere('nama_alat', 'like', "%{$keyword}%");
+        });
+    }
 }

@@ -8,12 +8,24 @@ export default function StatementIndex({ category, statements }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create'); // 'create' | 'edit'
     const [editingStatement, setEditingStatement] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState(null);
 
     // --- Actions ---
     const { delete: destroy } = useForm();
     const handleDelete = (id) => {
-        if (confirm('Apakah Anda yakin ingin menghapus statement ini?')) {
-            destroy(route('admin.rumusan-masalah.category.statements.destroy', [category.slug, id]));
+        setItemToDelete(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = () => {
+        if (itemToDelete) {
+            destroy(route('admin.rumusan-masalah.category.statements.destroy', [category.slug, itemToDelete]), {
+                onSuccess: () => {
+                    setShowDeleteModal(false);
+                    setItemToDelete(null);
+                }
+            });
         }
     };
 
@@ -127,16 +139,22 @@ export default function StatementIndex({ category, statements }) {
                                                 <td className="px-6 py-4 text-center">
                                                     <div className="flex items-center justify-center space-x-2">
                                                         <button
-                                                            className="text-amber-500 bg-amber-50 hover:bg-amber-100 px-3 py-1 rounded text-xs font-semibold"
+                                                            className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
                                                             onClick={() => openEditModal(statement)}
+                                                            title="Edit"
                                                         >
-                                                            Edit
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
                                                         </button>
                                                         <button
                                                             onClick={() => handleDelete(statement.id)}
-                                                            className="text-red-500 bg-red-50 hover:bg-red-100 px-3 py-1 rounded text-xs font-semibold"
+                                                            className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                            title="Hapus"
                                                         >
-                                                            Hapus
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
                                                         </button>
                                                     </div>
                                                 </td>
@@ -156,6 +174,37 @@ export default function StatementIndex({ category, statements }) {
                     </div>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl transform transition-all">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">
+                            Konfirmasi Hapus
+                        </h3>
+                        <p className="text-gray-600 mb-6">
+                            Apakah Anda yakin ingin menghapus statement ini? Tindakan ini tidak dapat dibatalkan.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowDeleteModal(false);
+                                    setItemToDelete(null);
+                                }}
+                                className="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors focus:ring-4 focus:ring-gray-100"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors focus:ring-4 focus:ring-red-300 shadow-lg shadow-red-500/30"
+                            >
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* --- MODAL Form --- */}
             {isModalOpen && (
