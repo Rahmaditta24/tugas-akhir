@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 export default function PermasalahanLegend({
     activeData = 'Sampah',
     source = 'Kementerian Lingkungan Hidup 2024',
-    minValue = '26.823,56',
-    maxValue = '6.333.185,65',
-    unit = 'ton/tahun'
+    minValue = 0,
+    maxValue = 0,
+    unit = '',
+    minPct = 0,
+    maxPct = 100,
+    onMinPctChange,
+    onMaxPctChange,
 }) {
-    const [minRange, setMinRange] = useState(0);
-    const [maxRange, setMaxRange] = useState(100);
+    const fmtNum = (n) => (n !== null && n !== undefined && !isNaN(n)) ? Number(n).toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '-';
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
@@ -28,7 +31,7 @@ export default function PermasalahanLegend({
             {/* Legend Content */}
             <div className="p-6">
                 <h3 className="font-bold text-gray-800 mb-4 text-sm">
-                    Timbulan {activeData} ({unit})
+                    {activeData} {unit ? `(${unit})` : ''}
                 </h3>
 
                 {/* Gradient Bar */}
@@ -47,12 +50,8 @@ export default function PermasalahanLegend({
 
                 {/* Min/Max Values Display */}
                 <div className="flex justify-between text-xs text-gray-500 mb-6">
-                    <div>
-                        <div>Min: {minValue}</div>
-                    </div>
-                    <div>
-                        <div>Maksimum: {maxValue}</div>
-                    </div>
+                    <div><div>Min: {fmtNum(minValue)}</div></div>
+                    <div><div>Maks: {fmtNum(maxValue)}</div></div>
                 </div>
 
                 {/* Sliders Area */}
@@ -61,14 +60,14 @@ export default function PermasalahanLegend({
                     <div>
                         <div className="flex justify-between text-xs mb-1">
                             <label className="font-medium text-gray-700">Atur skala minimum</label>
-                            <span className="text-gray-500">Minimum: {parseFloat(minValue.replace(/\./g, '').replace(',', '.')).toLocaleString('id-ID')}</span>
+                            <span className="text-gray-500">Minimum: {minPct}%</span>
                         </div>
                         <input
                             type="range"
                             min="0"
-                            max="100"
-                            value={minRange}
-                            onChange={(e) => setMinRange(e.target.value)}
+                            max="99"
+                            value={minPct}
+                            onChange={(e) => onMinPctChange && onMinPctChange(Number(e.target.value))}
                             className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                         />
                         <div className="text-xs text-gray-400 mt-1">0%</div>
@@ -78,19 +77,18 @@ export default function PermasalahanLegend({
                     <div>
                         <div className="flex justify-between text-xs mb-1">
                             <label className="font-medium text-gray-700">Atur skala maksimum</label>
-                            <span className="text-gray-500">Maksimum: {parseFloat(maxValue.replace(/\./g, '').replace(',', '.')).toLocaleString('id-ID')}</span>
+                            <span className="text-gray-500">Maksimum: {maxPct}%</span>
                         </div>
                         <input
                             type="range"
-                            min="0"
+                            min="1"
                             max="100"
-                            value={maxRange}
-                            onChange={(e) => setMaxRange(e.target.value)}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                            style={{ height: '4px' }}
+                            value={maxPct}
+                            onChange={(e) => onMaxPctChange && onMaxPctChange(Number(e.target.value))}
+                            className="w-full h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                         />
                         <div className="flex justify-between text-xs text-gray-400 mt-1">
-                            <span>10%</span>
+                            <span>1%</span>
                             <span>100%</span>
                         </div>
                     </div>
@@ -100,13 +98,13 @@ export default function PermasalahanLegend({
                 <div className="mt-6 flex gap-3 text-xs">
                     <button
                         className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
-                        onClick={() => setMinRange(0)}
+                        onClick={() => onMinPctChange && onMinPctChange(0)}
                     >
                         Reset minimum
                     </button>
                     <button
                         className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition-colors"
-                        onClick={() => setMaxRange(100)}
+                        onClick={() => onMaxPctChange && onMaxPctChange(100)}
                     >
                         Reset maksimum
                     </button>

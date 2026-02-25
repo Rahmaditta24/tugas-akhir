@@ -1,25 +1,32 @@
 import React, { useState } from 'react';
 import MainLayout from '../Layouts/MainLayout';
-import { router } from '@inertiajs/react';
 import NavigationTabs from '../Components/NavigationTabs';
-import MapContainer from '../Components/MapContainer';
+import PermasalahanMap from '../Components/PermasalahanMap';
 import MapControls from '../Components/MapControls';
 import StatisticsCards from '../Components/StatisticsCards';
 import PermasalahanLegend from '../Components/PermasalahanLegend';
+import ResearchList from '../Components/ResearchList';
+import PermasalahanDataTable from '../Components/PermasalahanDataTable';
 
-export default function Permasalahan({ mapData = [], stats = {} }) {
-    const [displayMode, setDisplayMode] = useState('peneliti');
-
+export default function Permasalahan({
+    mapData = [],
+    permasalahanStats = {},
+    jenisPermasalahan = [],
+    researches = [],
+    stats = {},
+}) {
     const [showBubbles, setShowBubbles] = useState(true);
     const [viewMode, setViewMode] = useState('provinsi');
     const [filters, setFilters] = useState({
-        dataType: 'Sampah',
-        bubbleType: 'Penelitian'
+        dataType: jenisPermasalahan[0] || 'Sampah',
+        bubbleType: 'Penelitian',
     });
+    const [minPct, setMinPct] = useState(0);
+    const [maxPct, setMaxPct] = useState(100);
+    const [legendData, setLegendData] = useState({ min: 0, max: 1, satuan: '', activeDataType: filters.dataType });
 
-    // Mock filter options for Permasalahan page
     const filterOptions = {
-        dataType: ['Sampah', 'Air', 'Udara', 'Tanah'],
+        dataType: jenisPermasalahan.length ? jenisPermasalahan : ['Sampah', 'Air', 'Udara', 'Tanah'],
         bubbleType: ['Penelitian', 'Pengabdian'],
         bidangFokus: ['Energi', 'Kesehatan', 'Pangan', 'Sosial Humaniora'],
         temaPrioritas: ['Tema A', 'Tema B'],
@@ -72,19 +79,22 @@ export default function Permasalahan({ mapData = [], stats = {} }) {
             <NavigationTabs activePage="permasalahan" />
 
             <div className="relative">
-                <MapContainer
+                <PermasalahanMap
                     mapData={mapData}
-                    displayMode={displayMode}
+                    permasalahanStats={permasalahanStats}
+                    activeDataType={filters.dataType}
                     showBubbles={showBubbles}
                     viewMode={viewMode}
+                    minPct={minPct}
+                    maxPct={maxPct}
+                    onLegendDataChange={setLegendData}
                 />
                 <MapControls
                     onSearch={handleSearch}
-                    onDisplayModeChange={setDisplayMode}
-                    onAdvancedSearchToggle={() => { }}
+                    onDisplayModeChange={() => {}}
                     onReset={handleReset}
                     onDownload={handleDownload}
-                    displayMode={displayMode}
+                    displayMode="peneliti"
                     filters={filters}
                     filterOptions={filterOptions}
                     onFilterChange={handleFilterChange}
@@ -98,9 +108,16 @@ export default function Permasalahan({ mapData = [], stats = {} }) {
                 />
             </div>
 
-            <div className="w-full lg:max-w-[90%] w-full mx-auto mb-5 mt-6">
+            <div className="w-full lg:max-w-[90%] mx-auto mb-5 mt-6">
                 <PermasalahanLegend
                     activeData={filters.dataType || 'Sampah'}
+                    minValue={legendData.min}
+                    maxValue={legendData.max}
+                    unit={legendData.satuan}
+                    minPct={minPct}
+                    maxPct={maxPct}
+                    onMinPctChange={setMinPct}
+                    onMaxPctChange={setMaxPct}
                 />
 
                 <section className="bg-white/80 backdrop-blur-sm mt-6">
@@ -108,6 +125,26 @@ export default function Permasalahan({ mapData = [], stats = {} }) {
                         <StatisticsCards stats={stats} />
                     </div>
                 </section>
+
+                {/* Research list */}
+                <div className="mt-6">
+                    <ResearchList
+                        researches={researches}
+                        isFiltered={researches.length > 0}
+                    />
+                </div>
+
+                {/* Data table: province & kabupaten */}
+                <div className="mt-6">
+                    <PermasalahanDataTable
+                        rows={permasalahanStats[filters.dataType] || []}
+                        kabupatenRows={mapData.filter(
+                            (r) => r.kabupaten_kota && r.jenis_permasalahan === filters.dataType
+                        )}
+                        activeDataType={filters.dataType || 'Sampah'}
+                        satuan={legendData.satuan}
+                    />
+                </div>
             </div>
         </MainLayout>
     );

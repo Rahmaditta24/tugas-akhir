@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getFieldColor } from '../utils/fieldColors';
 
 export default function ResearchList({ researches = [], onAdvancedSearch, title = "Daftar Penelitian", isFiltered = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
     const [searchRows, setSearchRows] = useState([
@@ -157,9 +158,18 @@ export default function ResearchList({ researches = [], onAdvancedSearch, title 
                             <div className="text-sm text-slate-600 space-y-1">
                                 <p><strong>Universitas:</strong> {research.institusi}</p>
                                 <p><strong>Peneliti:</strong> {research.nama}</p>
-                                <p><strong>Bidang Fokus:</strong> {research.bidang_fokus}</p>
                                 {research.tema_prioritas && (
                                     <p><strong>Tema Prioritas:</strong> {research.tema_prioritas}</p>
+                                )}
+                                {research.bidang_fokus && (
+                                    <div className="pt-1">
+                                        <span
+                                            className="inline-block px-3 py-0.5 rounded-full text-white text-xs font-semibold"
+                                            style={{ backgroundColor: getFieldColor(research.bidang_fokus) }}
+                                        >
+                                            {research.bidang_fokus}
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                         </div>

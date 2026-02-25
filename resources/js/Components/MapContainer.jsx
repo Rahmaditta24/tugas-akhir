@@ -5,6 +5,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import ResearchModal from './ResearchModal';
+import { FIELD_COLORS, getFieldColor } from '../utils/fieldColors';
 
 const CONFIG = {
     DEFAULT_CENTER: [-2.5, 118],
@@ -19,24 +20,6 @@ const CONFIG = {
         province: { min: 8, max: 11 },
         city: { min: 11, max: 18 }
     }
-};
-
-const FIELD_COLORS = {
-    "Energi": "#FF5716",
-    "Kebencanaan": "#ECCEAA",
-    "Kemaritiman": "#00D0FF",
-    "Kesehatan": "#FF2A64",
-    "Material Maju": "#FFCC00",
-    "Pangan": "#10B374",
-    "Pertahanan dan Keamanan": "#1C4570",
-    "Produk rekayasa keteknikan": "#FE272F",
-    "Sosial Humaniora": "#A72184",
-    "Teknologi Informasi dan Komunikasi": "#B39B77",
-    "Transportasi": "#A578AE",
-    "Riset Dasar Teoritis": "#96CEB4",
-    "Hilirisasi": "#8B5CF6",
-    "Terapan": "#EC4899",
-    "Pengembangan": "#F59E0B"
 };
 
 export default function MapContainer({
@@ -54,13 +37,20 @@ export default function MapContainer({
     const [selectedResearch, setSelectedResearch] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const getCurrentDataType = React.useCallback(() => {
+        const path = window.location.pathname.toLowerCase();
+        if (path.includes('hilirisasi')) return 'hilirisasi';
+        if (path.includes('pengabdian')) return 'pengabdian';
+        if (path.includes('produk')) return 'produk';
+        if (path.includes('fasilitas')) return 'fasilitas-lab';
+        if (path.includes('permasalahan')) return 'permasalahan';
+        return 'penelitian';
+    }, []);
+
     const fetchDetail = React.useCallback(async (id, field) => {
         if (!id || id === 'undefined' || id === '-') return;
         try {
-            const path = window.location.pathname;
-            let type = 'penelitian';
-            if (path.includes('hilirisasi')) type = 'hilirisasi';
-            else if (path.includes('pengabdian')) type = 'pengabdian';
+            const type = getCurrentDataType();
 
             const response = await fetch(`/api/research/${type}/${id}`);
             if (response.ok) {
@@ -85,7 +75,7 @@ export default function MapContainer({
         } catch (error) {
             console.error('Error fetching research detail:', error);
         }
-    }, [setSelectedResearch, setIsModalOpen]);
+    }, [getCurrentDataType, setSelectedResearch, setIsModalOpen]);
 
     useEffect(() => {
         window.openResearchDetail = (id, field) => {
@@ -120,12 +110,26 @@ export default function MapContainer({
             zoomControl: true,
             preferCanvas: true,
             maxBounds: CONFIG.INDONESIA_BOUNDS,
-            maxBoundsViscosity: 0.8
+            maxBoundsViscosity: 0.8,
+            // ── Smooth zoom & pan ──────────────────────────────────────
+            zoomAnimation: true,
+            zoomAnimationThreshold: 4,
+            markerZoomAnimation: true,
+            fadeAnimation: true,
+            inertia: true,
+            inertiaDeceleration: 2500,
+            inertiaMaxSpeed: 1200,
+            easeLinearity: 0.15,
+            wheelPxPerZoomLevel: 80,
+            zoomSnap: 1,
+            zoomDelta: 1,
         });
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
             maxZoom: 19,
+            keepBuffer: 6,
+            updateWhenIdle: false,
         }).addTo(map);
 
         map.on('click', (e) => {
@@ -326,8 +330,13 @@ export default function MapContainer({
 
             // One-click bloom logic like vanilla
             clusterGroup.on('clusterclick', function (a) {
-                const targetZoom = Math.max(mapInstanceRef.current.getZoom() + 3, 11);
-                mapInstanceRef.current.setView(a.latlng, targetZoom);
+                const currentZoom = mapInstanceRef.current.getZoom();
+                const targetZoom = Math.min(currentZoom + 3, 14);
+                mapInstanceRef.current.flyTo(a.latlng, targetZoom, {
+                    animate: true,
+                    duration: 0.55,
+                    easeLinearity: 0.15,
+                });
 
                 // Calculate stats for this cluster
                 calculateStatsFromMarkers(a.layer.getAllChildMarkers());
@@ -380,11 +389,21 @@ export default function MapContainer({
                     markersToAdd.push(marker);
                 }
                 else if (displayMode === 'peneliti' && !isPermasalahan) {
-                    const hasDetails = !!item.ids;
-                    const fields = hasDetails && item.bidang_fokus ? item.bidang_fokus.split('|') : [];
-                    const ids = hasDetails ? item.ids.split('|') : [];
-                    const titles = hasDetails && item.titles ? item.titles.split('|') : [];
-                    const years = hasDetails && item.tahun_list ? item.tahun_list.split('|') : [];
+                    const hasGroupedDetails = !!item.ids;
+                    const hasSingleDetail = !!item.id;
+                    const hasDetails = hasGroupedDetails || hasSingleDetail;
+                    const fields = hasGroupedDetails
+                        ? (item.bidang_fokus ? item.bidang_fokus.split('|') : [])
+                        : [item.bidang_fokus || item.skema || '-'];
+                    const ids = hasGroupedDetails
+                        ? item.ids.split('|')
+                        : [String(item.id)];
+                    const titles = hasGroupedDetails
+                        ? (item.titles ? item.titles.split('|') : [])
+                        : [item.judul || item.title || 'Detail'];
+                    const years = hasGroupedDetails
+                        ? (item.tahun_list ? item.tahun_list.split('|') : [])
+                        : [item.tahun || '-'];
                     const count = hasDetails ? ids.length : (item.total_penelitian || 1);
 
                     if (!hasDetails && count > 30) {
@@ -459,6 +478,9 @@ export default function MapContainer({
 
                             marker.on('click', () => {
                                 calculateStatsFromMarkers([marker]);
+                                if (ids[idx] && ids[idx] !== 'undefined' && ids[idx] !== '-') {
+                                    fetchDetail(ids[idx], fields[idx]);
+                                }
                             });
 
                             markersToAdd.push(marker);
@@ -496,7 +518,7 @@ export default function MapContainer({
         return () => {
             if (processingRef.current) cancelAnimationFrame(processingRef.current);
         };
-    }, [mapData, data, showBubbles, displayMode, viewMode]);
+    }, [mapData, data, showBubbles, displayMode, viewMode, fetchDetail]);
 
     return (
         <>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PermasalahanProvinsi;
 use App\Models\PermasalahanKabupaten;
+use App\Models\Penelitian;
 use Inertia\Inertia;
 
 class PermasalahanPageController extends Controller
@@ -63,9 +64,37 @@ class PermasalahanPageController extends Controller
         // Combine both datasets
         $mapData = $provinsiData->merge($kabupatenData)->values()->all();
 
-        return Inertia::render('Permasalahan', [
-            'mapData' => $mapData,
+        // Choropleth data: group by jenis_permasalahan → [{provinsi, nilai, satuan, metrik, tahun}]
+        $permasalahanStats = PermasalahanProvinsi::all()
+            ->groupBy('jenis_permasalahan')
+            ->map(fn($items) => $items->map(fn($item) => [
+                'provinsi' => $item->provinsi,
+                'nilai'    => $item->nilai,
+                'satuan'   => $item->satuan,
+                'metrik'   => $item->metrik,
+                'tahun'    => $item->tahun,
+            ])->values()->toArray())
+            ->toArray();
 
+        $jenisPermasalahan = array_keys($permasalahanStats);
+
+        // General penelitian list (first 50, ordered latest)
+        $researches = Penelitian::select(
+                'id', 'judul', 'nidn', 'nuptk', 'nama', 'institusi',
+                'provinsi', 'skema', 'thn_pelaksanaan as tahun',
+                'kategori_pt', 'klaster'
+            )
+            ->whereNotNull('judul')
+            ->orderByDesc('thn_pelaksanaan')
+            ->limit(50)
+            ->get()
+            ->values();
+
+        return Inertia::render('Permasalahan', [
+            'mapData'            => $mapData,
+            'permasalahanStats'  => $permasalahanStats,
+            'jenisPermasalahan'  => $jenisPermasalahan,
+            'researches'         => $researches,
             'stats' => [
                 'totalResearch' => PermasalahanProvinsi::count() + PermasalahanKabupaten::count(),
                 'totalUniversities' => 0, // Not applicable for Permasalahan
@@ -128,7 +157,6 @@ class PermasalahanPageController extends Controller
             'daerah istimewa yogyakarta' => [-7.795, 110.369],
             'yogyakarta' => [-7.795, 110.369],
             'diy' => [-7.795, 110.369],
-            'dki jakarta' => [-6.2, 106.816],
             'jakarta' => [-6.2, 106.816],
             'jakarta raya' => [-6.2, 106.816],
         ];

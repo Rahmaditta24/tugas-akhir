@@ -6,6 +6,7 @@ use App\Models\Pengabdian;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Http\Request;
 
 class PengabdianPageController extends Controller
@@ -118,8 +119,12 @@ class PengabdianPageController extends Controller
             ];
         });
 
-        $cacheKey = 'map_data_pengabdian_v4_' . md5(json_encode($request->all()));
-        $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
+        $themeSql = Schema::hasColumn('pengabdian', 'bidang_teknologi_inovasi')
+            ? 'GROUP_CONCAT(COALESCE(bidang_teknologi_inovasi, bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_themes'
+            : 'GROUP_CONCAT(COALESCE(bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_themes';
+
+        $cacheKey = 'map_data_pengabdian_v5_' . md5(json_encode($request->all()));
+        $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery, $themeSql) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
 
@@ -134,7 +139,7 @@ class PengabdianPageController extends Controller
                     DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
                     DB::raw('GROUP_CONCAT(COALESCE(nama_skema, "-") SEPARATOR "|") as all_skema'),
                     DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan_kegiatan AS CHAR) SEPARATOR "|") as all_years'),
-                    DB::raw('GROUP_CONCAT(COALESCE(bidang_teknologi_inovasi, "-") SEPARATOR "|") as all_themes'),
+                    DB::raw($themeSql),
                     DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types')
                 )
                 ->whereNotNull('pt_latitude')

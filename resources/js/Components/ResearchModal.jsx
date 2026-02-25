@@ -1,4 +1,5 @@
 import React from 'react';
+import { getFieldColor } from '../utils/fieldColors';
 
 export default function ResearchModal({ isOpen, onClose, data }) {
     if (!isOpen || !data) return null;
@@ -25,32 +26,6 @@ export default function ResearchModal({ isOpen, onClose, data }) {
     const tahunBrief = getSummary(data.tahun_list || '');
     const bidangBrief = getSummary(data.bidang_fokus || '', isInstitusi ? 'counts' : 'list');
     const temaBrief = getSummary(data.tema_list || '', isInstitusi ? 'counts' : 'list');
-
-    // Field Colors for the pill at the bottom
-    const FIELD_COLORS = {
-        'Pangan': '#EF4444',
-        'Energi': '#F59E0B',
-        'Kesehatan': '#3B82F6',
-        'Transportasi': '#10B981',
-        'Rekayasa Keteknikan': '#8B5CF6',
-        'Pertahanan': '#475569',
-        'Kemaritiman': '#06B6D4',
-        'Sosial Humaniora': '#BE185D',
-        'Seni Budaya': '#D946EF',
-        'Pendidikan': '#0EA5E9',
-        'Kebencanaan': '#F97316',
-        'Kehutanan': '#059669',
-        'Lingkungan': '#84CC16'
-    };
-
-
-    const getFieldColor = (focus) => {
-        if (!focus) return '#64748b';
-        for (const [key, color] of Object.entries(FIELD_COLORS)) {
-            if (focus.toLowerCase().includes(key.toLowerCase())) return color;
-        }
-        return '#64748b';
-    };
 
     // Shared Jenis PT logic
     const ptType = safeValue(data.ptn_pts || data.jenis_pt || data.kategori_pt || (data.jenis_pt_list ? getSummary(data.jenis_pt_list)[0] : '-'));
