@@ -56,17 +56,46 @@ export default function MapContainer({
             if (response.ok) {
                 const detailData = await response.json();
                 if (detailData) {
+                    const isProduk = type === 'produk';
+                    const isHilirisasi = type === 'hilirisasi';
+                    const isPengabdian = type === 'pengabdian';
                     // Create normalized data structure for the modal
                     const normalized = {
                         ...detailData,
                         isInstitusi: false,
                         // Ensure common field names are available
-                        nama: detailData.nama || detailData.nama_ketua || detailData.nama_pengusul || '-',
+                        judul: detailData.judul || detailData.judul_kegiatan || detailData.nama_produk || '-',
+                        nama: detailData.nama || detailData.nama_ketua || detailData.nama_pengusul || detailData.nama_inventor || '-',
                         institusi: detailData.institusi || detailData.nama_institusi || detailData.perguruan_tinggi || '-',
                         provinsi: detailData.provinsi || detailData.prov_pt || detailData.prov_mitra || '-',
                         skema: detailData.skema || detailData.nama_skema || '-',
                         tahun: detailData.tahun || detailData.thn_pelaksanaan || detailData.thn_pelaksanaan_kegiatan || '-',
-                        bidang_fokus: field || detailData.bidang_fokus || detailData.skema || detailData.nama_skema || '-'
+                        bidang_fokus: field || detailData.bidang_fokus || detailData.bidang || detailData.skema || detailData.nama_skema || '-',
+                        // Produk-specific aliases for modal rendering
+                        isProduk,
+                        isHilirisasi,
+                        nama_produk: detailData.nama_produk || '-',
+                        deskripsi_produk: detailData.deskripsi_produk || '-',
+                        tkt: detailData.tkt ?? '-',
+                        bidang: detailData.bidang || detailData.bidang_fokus || '-',
+                        nama_inventor: detailData.nama_inventor || detailData.nama || '-',
+                        email_inventor: detailData.email_inventor || '-',
+                        nomor_paten: detailData.nomor_paten || '-',
+                        // Hilirisasi-specific aliases for modal rendering
+                        nama_peneliti: detailData.nama || detailData.nama_ketua || detailData.nama_pengusul || '-',
+                        skema_hilirisasi: detailData.skema || detailData.nama_skema || '-',
+                        tahun_hilirisasi: detailData.tahun || detailData.thn_pelaksanaan || detailData.thn_pelaksanaan_kegiatan || '-',
+                        // Pengabdian-specific aliases for modal rendering
+                        isPengabdian,
+                        pengabdian_nama: detailData.nama || '-',
+                        pengabdian_institusi: detailData.nama_institusi || detailData.institusi || '-',
+                        pengabdian_status_pt: detailData.ptn_pts || '-',
+                        pengabdian_kabupaten: detailData.kab_pt || '-',
+                        pengabdian_provinsi: detailData.prov_pt || detailData.provinsi || '-',
+                        pengabdian_klaster: detailData.klaster || '-',
+                        pengabdian_skema: detailData.nama_skema || detailData.nama_singkat_skema || detailData.skema || '-',
+                        pengabdian_tahun: detailData.thn_pelaksanaan_kegiatan || detailData.tahun || '-',
+                        pengabdian_bidang_fokus: detailData.bidang_fokus || field || '-',
                     };
                     setSelectedResearch(normalized);
                     setIsModalOpen(true);

@@ -5,6 +5,9 @@ export default function ResearchModal({ isOpen, onClose, data }) {
     if (!isOpen || !data) return null;
 
     const isInstitusi = data.isInstitusi;
+    const isProduk = !isInstitusi && !!data.isProduk;
+    const isHilirisasi = !isInstitusi && !isProduk && !!data.isHilirisasi;
+    const isPengabdian = !isInstitusi && !isProduk && !isHilirisasi && !!data.isPengabdian;
     const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
     const formatNum = (n) => (n && !isNaN(n)) ? Number(n).toLocaleString('id-ID') : n;
 
@@ -58,6 +61,162 @@ export default function ResearchModal({ isOpen, onClose, data }) {
 
                     {/* Content Box */}
                     <div className="bg-[#F8FAFC] rounded-2xl p-6 space-y-8 overflow-y-auto max-h-[60vh] custom-scrollbar">
+                        {isProduk ? (
+                            <>
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        Informasi Produk
+                                    </h3>
+                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
+                                            <span className="text-sm font-medium text-gray-700">Nama Produk:</span>
+                                            <span>{safeValue(data.nama_produk || data.judul)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
+                                            <span className="text-sm font-medium text-gray-700">Deskripsi Produk:</span>
+                                            <span className="whitespace-pre-line">{safeValue(data.deskripsi_produk)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
+                                            <span className="text-sm font-medium text-gray-700">TKT:</span>
+                                            <span>{safeValue(data.tkt)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
+                                            <span className="text-sm font-medium text-gray-700">Bidang:</span>
+                                            <span>{safeValue(data.bidang || data.bidang_fokus)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        Informasi Inventor & Institusi
+                                    </h3>
+                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
+                                            <span className="text-sm font-medium text-gray-700">Nama Inventor:</span>
+                                            <span>{safeValue(data.nama_inventor || data.nama)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
+                                            <span className="text-sm font-medium text-gray-700">Email Inventor:</span>
+                                            <span>{safeValue(data.email_inventor)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
+                                            <span className="text-sm font-medium text-gray-700">Institusi:</span>
+                                            <span>{safeValue(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
+                                            <span className="text-sm font-medium text-gray-700">Provinsi:</span>
+                                            <span>{safeValue(data.provinsi || data.prov_pt)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        Informasi Paten
+                                    </h3>
+                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
+                                            <span className="text-sm font-medium text-gray-700">Nomor dan Deskripsi Paten:</span>
+                                            <span className="whitespace-pre-line">{safeValue(data.nomor_paten)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        ) : isHilirisasi ? (
+                            <>
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        Informasi Institusi
+                                    </h3>
+                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Peneliti:</span>
+                                            <span>{safeValue(data.nama_peneliti || data.nama || data.nama_ketua || data.nama_pengusul)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Institusi:</span>
+                                            <span>{safeValue(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Provinsi:</span>
+                                            <span>{safeValue(data.provinsi || data.prov_pt || data.prov_mitra)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        Informasi Penelitian
+                                    </h3>
+                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Skema:</span>
+                                            <span>{safeValue(data.skema_hilirisasi || data.skema || data.nama_skema)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Tahun:</span>
+                                            <span>{safeValue(data.tahun_hilirisasi || data.tahun || data.thn_pelaksanaan || data.thn_pelaksanaan_kegiatan)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        ) : isPengabdian ? (
+                            <>
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        Informasi Institusi
+                                    </h3>
+                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Nama:</span>
+                                            <span>{safeValue(data.pengabdian_nama)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Institusi:</span>
+                                            <span>{safeValue(data.pengabdian_institusi)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Status PT:</span>
+                                            <span>{safeValue(data.pengabdian_status_pt)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Kabupaten:</span>
+                                            <span>{safeValue(data.pengabdian_kabupaten)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Provinsi:</span>
+                                            <span>{safeValue(data.pengabdian_provinsi)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Klaster:</span>
+                                            <span>{safeValue(data.pengabdian_klaster)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        Informasi Program
+                                    </h3>
+                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Skema:</span>
+                                            <span>{safeValue(data.pengabdian_skema)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Tahun:</span>
+                                            <span>{safeValue(data.pengabdian_tahun)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
+                                            <span>{safeValue(data.pengabdian_bidang_fokus)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                        <>
                         {/* Section: Informasi Institusi */}
                         <div>
                             <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
@@ -161,6 +320,8 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                 </div>
                             </div>
                         </div>
+                        )}
+                        </>
                         )}
                     </div>
 
