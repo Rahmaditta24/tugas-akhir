@@ -55,7 +55,8 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
         router.get(route('produk.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats', 'mapData'],
+            only: ['researches', 'stats'],
+            replace: true,
         });
     };
 

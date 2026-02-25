@@ -51,7 +51,8 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
         router.get(route('fasilitas.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats', 'mapData'],
+            only: ['researches', 'stats'],
+            replace: true,
         });
     };
 

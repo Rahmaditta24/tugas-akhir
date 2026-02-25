@@ -182,7 +182,8 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         router.get(route('penelitian.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats', 'mapData'],
+            only: ['researches', 'stats'],
+            replace: true,
         });
     };
 
@@ -221,7 +222,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                 />
             </div>
 
-            <div className="w-full lg:max-w-[90%] w-full mx-auto mb-5">
+            <div className="w-full lg:max-w-[90%] mx-auto mb-5">
                 <section className="bg-white/80 backdrop-blur-sm">
                     <div className="container mx-auto sm:px-6 lg:px-0">
                         <StatisticsCards stats={currentStats} labels={{ totalResearch: 'Total Penelitian' }} />

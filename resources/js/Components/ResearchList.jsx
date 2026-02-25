@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { getFieldColor } from '../utils/fieldColors';
 
 export default function ResearchList({ researches = [], onAdvancedSearch, title = "Daftar Penelitian", isFiltered = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
@@ -7,17 +7,17 @@ export default function ResearchList({ researches = [], onAdvancedSearch, title 
     ]);
 
     const addRow = () => {
-        setSearchRows([...searchRows, { id: Date.now(), term: '', field: 'all', operator: 'AND' }]);
+        setSearchRows(prev => [...prev, { id: Date.now(), term: '', field: 'all', operator: 'AND' }]);
     };
 
     const removeRow = (id) => {
         if (searchRows.length > 1) {
-            setSearchRows(searchRows.filter(row => row.id !== id));
+            setSearchRows(prev => prev.filter(row => row.id !== id));
         }
     };
 
     const updateRow = (id, updates) => {
-        setSearchRows(searchRows.map(row => row.id === id ? { ...row, ...updates } : row));
+        setSearchRows(prev => prev.map(row => row.id === id ? { ...row, ...updates } : row));
     };
 
     const handleSearchTrigger = () => {
@@ -25,6 +25,69 @@ export default function ResearchList({ researches = [], onAdvancedSearch, title 
             onAdvancedSearch(searchRows);
         }
     };
+
+    const normalizedRows = useMemo(
+        () => searchRows.map((row) => ({ ...row, term: (row.term || '').trim().toLowerCase() })),
+        [searchRows]
+    );
+
+    const hasActiveQuery = useMemo(
+        () => normalizedRows.some((row) => row.term.length > 0),
+        [normalizedRows]
+    );
+
+    const getValueByField = (research, field) => {
+        const valuesByField = {
+            title: research?.judul,
+            university: research?.institusi,
+            researcher: research?.nama,
+            field: research?.bidang_fokus || research?.bidang,
+            priorityTheme: research?.tema_prioritas,
+            category: research?.kategori_pt || research?.ptn_pts || research?.jenis_pt,
+            cluster: research?.klaster,
+            directorate: research?.direktorat,
+            skema: research?.skema,
+            tkt: research?.tkt,
+            provinsi: research?.provinsi,
+            tahun: research?.tahun || research?.thn_pelaksanaan,
+        };
+
+        if (field === 'all') {
+            return Object.values(valuesByField).filter(Boolean).join(' ');
+        }
+
+        return valuesByField[field] || '';
+    };
+
+    const matchesRow = (research, row) => {
+        if (!row.term) return true;
+        const rawValue = getValueByField(research, row.field);
+        return String(rawValue || '').toLowerCase().includes(row.term);
+    };
+
+    const filteredResearches = useMemo(() => {
+        if (!Array.isArray(researches)) return [];
+        if (!hasActiveQuery) return researches;
+
+        return researches.filter((research) => {
+            let result = matchesRow(research, normalizedRows[0]);
+
+            for (let i = 1; i < normalizedRows.length; i += 1) {
+                const row = normalizedRows[i];
+                const rowMatch = matchesRow(research, row);
+
+                if (row.operator === 'OR') {
+                    result = result || rowMatch;
+                } else if (row.operator === 'AND NOT') {
+                    result = result && !rowMatch;
+                } else {
+                    result = result && rowMatch;
+                }
+            }
+
+            return result;
+        });
+    }, [researches, normalizedRows, hasActiveQuery]);
 
     const defaultFieldOptions = [
         { value: 'all', label: 'Semua' },
@@ -148,8 +211,12 @@ export default function ResearchList({ researches = [], onAdvancedSearch, title 
                                 : `Masukkan kata kunci untuk mencari ${title.toLowerCase().replace('daftar ', '')}`}
                         </p>
                     </div>
+                ) : (hasActiveQuery && filteredResearches.length === 0) ? (
+                    <div className="text-center py-12">
+                        <p className="text-slate-500 font-medium">Tidak ada data yang sesuai dengan kata kunci</p>
+                    </div>
                 ) : (
-                    researches.map((research, index) => (
+                    filteredResearches.map((research, index) => (
                         <div
                             key={index}
                             className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow"

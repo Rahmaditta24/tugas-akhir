@@ -55,7 +55,8 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
         router.get(route('hilirisasi.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats', 'mapData'],
+            only: ['researches', 'stats'],
+            replace: true,
         });
     };
 

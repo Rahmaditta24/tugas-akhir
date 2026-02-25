@@ -64,7 +64,8 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         router.get(route('pengabdian.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats', 'mapData'],
+            only: ['researches', 'stats'],
+            replace: true,
         });
     };
 
