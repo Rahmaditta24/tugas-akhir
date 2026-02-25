@@ -66,7 +66,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                             <div className="space-y-3 font-semibold text-sm text-gray-900">
                                 {isInstitusi && (
                                     <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                        <span className="text-sm font-medium text-gray-700">Total Penelitian:</span>
+                                        <span className="text-sm font-medium text-gray-700">{data.isFasilitasLab ? 'Total Fasilitas:' : 'Total Penelitian:'}</span>
                                         <span className="text-blue-600 font-bold">{formatNum(data.total_penelitian)}</span>
                                     </div>
                                 )}
@@ -91,7 +91,22 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                             </div>
                         </div>
 
-                        {/* Section: Informasi Penelitian */}
+                        {/* Section: Informasi Penelitian / Laboratorium */}
+                        {data.isFasilitasLab ? (
+                            <div>
+                                <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                    Informasi Laboratorium
+                                </h3>
+                                <span className="text-sm font-medium text-gray-700 block mb-2">Nama Lab:</span>
+                                <ul className="space-y-0.5">
+                                    {(data.lab_list || '').split('|').filter(Boolean).map((lab, i) => (
+                                        <li key={i} className="text-sm text-gray-800 py-1.5 border-b border-slate-100 last:border-0">
+                                            {lab}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : (
                         <div>
                             <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
                                 Informasi Penelitian
@@ -146,6 +161,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                 </div>
                             </div>
                         </div>
+                        )}
                     </div>
 
                     {/* Bottom Pill (Only for Researcher Mode) */}
