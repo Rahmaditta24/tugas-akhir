@@ -15,6 +15,7 @@ const FIELD_COLORS = {
     "Riset Dasar Teoritis": "#96CEB4"
 };
 
+
 export default function MapControls({
     onSearch,
     onDisplayModeChange,

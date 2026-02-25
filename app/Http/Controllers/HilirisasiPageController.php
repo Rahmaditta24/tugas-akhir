@@ -96,13 +96,10 @@ class HilirisasiPageController extends Controller
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
-
                 ->select(
-                    DB::raw('ROUND(pt_latitude, 2) as lat_rounded'),
-                    DB::raw('ROUND(pt_longitude, 2) as lng_rounded'),
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
-                    DB::raw('GROUP_CONCAT(DISTINCT perguruan_tinggi SEPARATOR " | ") as institusi'),
+                    DB::raw('perguruan_tinggi as institusi_name'),
                     DB::raw('MAX(provinsi) as provinsi'),
                     DB::raw('COUNT(*) as total_penelitian'),
                     DB::raw('GROUP_CONCAT(COALESCE(skema, "-") SEPARATOR "|") as all_fields'),
@@ -111,16 +108,16 @@ class HilirisasiPageController extends Controller
                     DB::raw('GROUP_CONCAT(CAST(tahun AS CHAR) SEPARATOR "|") as all_years'),
                     DB::raw('GROUP_CONCAT(COALESCE(luaran, "-") SEPARATOR "|") as all_themes'),
                     DB::raw('GROUP_CONCAT("-" SEPARATOR "|") as all_pt_types')
-
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
-                ->groupBy('lat_rounded', 'lng_rounded')
+                ->whereNotNull('perguruan_tinggi')
+                ->groupBy('perguruan_tinggi')
                 ->having('total_penelitian', '>', 0);
 
             return $query->get()->map(function($item) {
                 return [
-                    'institusi' => $item->institusi,
+                    'institusi' => $item->institusi_name,
                     'pt_latitude' => (float)$item->pt_latitude,
                     'pt_longitude' => (float)$item->pt_longitude,
                     'provinsi' => $item->provinsi,
@@ -133,7 +130,6 @@ class HilirisasiPageController extends Controller
                     'tema_list' => $item->all_themes,
                     'jenis_pt_list' => $item->all_pt_types,
                 ];
-
             })->all();
         });
 
@@ -208,5 +204,3 @@ class HilirisasiPageController extends Controller
         ]);
     }
 }
-
-

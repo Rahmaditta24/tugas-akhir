@@ -76,6 +76,7 @@ class FasilitasLabPageController extends Controller
             $baseQuery->whereIn('provinsi', $values);
         }
 
+
         $statsQ = clone $baseQuery;
         $stats = [
             'totalResearch' => (clone $statsQ)->count(),

@@ -1,20 +1,5 @@
 import React from 'react';
 
-const FIELD_COLORS = {
-    "Energi": "#FF5716",
-    "Kebencanaan": "#ECCEAA",
-    "Kemaritiman": "#00D0FF",
-    "Kesehatan": "#FF2A64",
-    "Material Maju": "#FFCC00",
-    "Pangan": "#10B374",
-    "Pertahanan dan Keamanan": "#1C4570",
-    "Produk rekayasa keteknikan": "#FE272F",
-    "Sosial Humaniora": "#A72184",
-    "Teknologi Informasi dan Komunikasi": "#B39B77",
-    "Transportasi": "#A578AE",
-    "Riset Dasar Teoritis": "#96CEB4"
-};
-
 export default function ResearchModal({ isOpen, onClose, data }) {
     if (!isOpen || !data) return null;
 
@@ -24,7 +9,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
 
     // Helper to get unique items or counts from pipe-separated strings
     const getSummary = (str, type = 'list') => {
-        if (!str) return [];
+        if (!str || typeof str !== 'string') return [];
         const items = str.split('|').map(s => s.trim()).filter(s => s && s !== '-');
 
         if (type === 'counts') {
@@ -38,149 +23,175 @@ export default function ResearchModal({ isOpen, onClose, data }) {
 
     const skemaBrief = getSummary(data.skema_list || '');
     const tahunBrief = getSummary(data.tahun_list || '');
-    const bidangBrief = getSummary(data.bidang_fokus || '', 'counts');
+    const bidangBrief = getSummary(data.bidang_fokus || '', isInstitusi ? 'counts' : 'list');
+    const temaBrief = getSummary(data.tema_list || '', isInstitusi ? 'counts' : 'list');
 
-    // Determine field color for Researcher Mode
-    let fieldColor = '#3E7DCA';
-    if (!isInstitusi) {
+    // Field Colors for the pill at the bottom
+    const FIELD_COLORS = {
+        'Pangan': '#EF4444',
+        'Energi': '#F59E0B',
+        'Kesehatan': '#3B82F6',
+        'Transportasi': '#10B981',
+        'Rekayasa Keteknikan': '#8B5CF6',
+        'Pertahanan': '#475569',
+        'Kemaritiman': '#06B6D4',
+        'Sosial Humaniora': '#BE185D',
+        'Seni Budaya': '#D946EF',
+        'Pendidikan': '#0EA5E9',
+        'Kebencanaan': '#F97316',
+        'Kehutanan': '#059669',
+        'Lingkungan': '#84CC16'
+    };
+
+
+    const getFieldColor = (focus) => {
+        if (!focus) return '#64748b';
         for (const [key, color] of Object.entries(FIELD_COLORS)) {
-            if (data.bidang_fokus && data.bidang_fokus.includes(key)) {
-                fieldColor = color;
-                break;
-            }
+            if (focus.toLowerCase().includes(key.toLowerCase())) return color;
         }
-    }
+        return '#64748b';
+    };
+
+    // Shared Jenis PT logic
+    const ptType = safeValue(data.ptn_pts || data.jenis_pt || data.kategori_pt || (data.jenis_pt_list ? getSummary(data.jenis_pt_list)[0] : '-'));
+
+    const currentFocus = !isInstitusi ? (data.bidang_fokus || data.bidang || '-') : '';
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
             <div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-in zoom-in-95 duration-200 relative"
+                className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                    className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors z-10"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
 
-                {/* Header with Title */}
-                <div className="px-6 pt-8 pb-4">
-                    <h2 className="text-xl font-bold text-gray-900 leading-snug">
-                        {isInstitusi ? (data.institusi || data.nama_institusi) : safeValue(data.judul || data.judul_kegiatan)}
-                    </h2>
-                </div>
-
-                {/* Content Area */}
-                <div className="px-6 pb-8 space-y-6 max-h-[75vh] overflow-y-auto">
-
-                    {/* Section: Informasi Institusi */}
-                    <div>
-                        <h3 className="text-[#3E7DCA] font-bold text-base mb-3 tracking-tight">Informasi Institusi</h3>
-                        <div className="space-y-2 pl-1">
-                            {isInstitusi && (
-                                <div className="grid grid-cols-[130px_1fr] items-baseline border-b border-gray-50 pb-1">
-                                    <span className="text-sm font-semibold text-gray-800">Total Penelitian:</span>
-                                    <span className="text-sm text-gray-600 pl-2 font-bold">{formatNum(data.total_penelitian)}</span>
-                                </div>
-                            )}
-                            {!isInstitusi && (
-                                <div className="grid grid-cols-[130px_1fr] items-baseline border-b border-gray-50 pb-1">
-                                    <span className="text-sm font-semibold text-gray-800">Nama:</span>
-                                    <span className="text-sm text-gray-600 pl-2">{safeValue(data.nama || data.nama_ketua || data.nama_pengusul)}</span>
-                                </div>
-                            )}
-                            <div className="grid grid-cols-[130px_1fr] items-baseline border-b border-gray-50 pb-1">
-                                <span className="text-sm font-semibold text-gray-800">Institusi:</span>
-                                <span className="text-sm text-gray-600 pl-2">{safeValue(data.nama_institusi || data.institusi || data.perguruan_tinggi)}</span>
-                            </div>
-                            <div className="grid grid-cols-[130px_1fr] items-baseline border-b border-gray-50 pb-1">
-                                <span className="text-sm font-semibold text-gray-800">Status PT:</span>
-                                <span className="text-sm text-gray-600 pl-2">{safeValue(data.ptn_pts || data.jenis_pt || data.kategori_pt)}</span>
-                            </div>
-                            <div className="grid grid-cols-[130px_1fr] items-baseline border-b border-gray-50 pb-1">
-                                <span className="text-sm font-semibold text-gray-800">Kabupaten:</span>
-                                <span className="text-sm text-gray-600 pl-2">{safeValue(data.kab_pt || data.kota || data.kabupaten_kota)}</span>
-                            </div>
-                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                <span className="text-sm font-semibold text-gray-800">Provinsi:</span>
-                                <span className="text-sm text-gray-600 pl-2">{safeValue(data.provinsi || data.prov_pt)}</span>
-                            </div>
-                        </div>
+                <div className="p-8">
+                    {/* Title */}
+                    <div className="mb-6">
+                        <h2 className="text-xl font-bold text-gray-900 leading-snug">
+                            {isInstitusi ? (data.institusi || data.nama_institusi) : safeValue(data.judul || data.judul_kegiatan)}
+                        </h2>
                     </div>
 
-                    {/* Section: Informasi Kegiatan */}
-                    <div>
-                        <h3 className="text-[#3E7DCA] font-bold text-base mb-3 tracking-tight">
-                            {isInstitusi || window.location.pathname === '/' ? 'Informasi Penelitian' : 'Informasi Program'}
-                        </h3>
-                        <div className="space-y-3 pl-1">
-                            {/* Skema */}
-                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                <span className="text-sm font-semibold text-gray-800">Skema:</span>
-                                <div className="pl-2">
-                                    {isInstitusi ? (
-                                        <ul className="list-disc list-outside ml-4 space-y-1">
-                                            {skemaBrief.map((s, i) => <li key={i} className="text-sm text-gray-600">{s}</li>)}
-                                        </ul>
-                                    ) : (
-                                        <span className="text-sm text-gray-600">{safeValue(data.skema || data.nama_skema)}</span>
-                                    )}
+                    {/* Content Box */}
+                    <div className="bg-[#F8FAFC] rounded-2xl p-6 space-y-8 overflow-y-auto max-h-[60vh] custom-scrollbar">
+                        {/* Section: Informasi Institusi */}
+                        <div>
+                            <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                Informasi Institusi
+                            </h3>
+                            <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                {isInstitusi && (
+                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <span className="text-sm font-medium text-gray-700">Total Penelitian:</span>
+                                        <span className="text-blue-600 font-bold">{formatNum(data.total_penelitian)}</span>
+                                    </div>
+                                )}
+                                {!isInstitusi && (
+                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <span className="text-sm font-medium text-gray-700">Peneliti:</span>
+                                        <span>{safeValue(data.nama || data.nama_ketua || data.nama_pengusul)}</span>
+                                    </div>
+                                )}
+                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                    <span className="text-sm font-medium text-gray-700">Institusi:</span>
+                                    <span>{safeValue(data.nama_institusi || data.institusi || data.perguruan_tinggi)}</span>
+                                </div>
+                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                    <span className="text-sm font-medium text-gray-700">Jenis PT:</span>
+                                    <span>{ptType}</span>
+                                </div>
+                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                    <span className="text-sm font-medium text-gray-700">Provinsi:</span>
+                                    <span>{safeValue(data.provinsi || data.prov_pt)}</span>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Tahun */}
-                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                <span className="text-sm font-semibold text-gray-800">Tahun:</span>
-                                <span className="text-sm text-gray-600 pl-2">
-                                    {isInstitusi ? tahunBrief.join(', ') : safeValue(data.tahun || data.thn_pelaksanaan || data.thn_pelaksanaan_kegiatan)}
-                                </span>
-                            </div>
-
-                            {/* Bidang Fokus */}
-                            {(data.bidang_fokus || isInstitusi) && (
+                        {/* Section: Informasi Penelitian */}
+                        <div>
+                            <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                Informasi Penelitian
+                            </h3>
+                            <div className="space-y-3 font-semibold text-sm text-gray-900">
                                 <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                    <span className="text-sm font-semibold text-gray-800">Bidang Fokus:</span>
-                                    <div className="pl-2">
-                                        {isInstitusi ? (
+                                    <span className="text-sm font-medium text-gray-700">Skema:</span>
+                                    <div>
+                                        {skemaBrief.length > 1 ? (
                                             <ul className="list-disc list-outside ml-4 space-y-1">
-                                                {bidangBrief.map(([f, c], i) => <li key={i} className="text-sm text-gray-600"><span className="font-bold text-gray-700">{formatNum(c)}</span> {f}</li>)}
+                                                {skemaBrief.map((s, i) => <li key={i}>{s}</li>)}
                                             </ul>
                                         ) : (
-                                            <span className="text-sm text-gray-600">{safeValue(data.bidang_fokus)}</span>
+                                            skemaBrief.length === 1 ? skemaBrief[0] : safeValue(data.skema || data.nama_skema)
                                         )}
                                     </div>
                                 </div>
-                            )}
 
-                            {/* Tema / Luaran */}
-                            {(data.tema_prioritas || data.luaran) && !isInstitusi && (
                                 <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                    <span className="text-sm font-semibold text-gray-800">
-                                        {window.location.pathname.includes('hilirisasi') ? 'Luaran:' : 'Tema:'}
-                                    </span>
-                                    <span className="text-sm text-gray-600 pl-2">{safeValue(data.tema_prioritas || data.luaran)}</span>
+                                    <span className="text-sm font-medium text-gray-700">Tahun:</span>
+                                    <div>{tahunBrief.length > 0 ? tahunBrief.join(', ') : safeValue(data.thn_pelaksanaan || data.tahun || data.thn_pelaksanaan_kegiatan)}</div>
                                 </div>
-                            )}
+
+                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                    <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
+                                    <div>
+                                        {isInstitusi && bidangBrief.length > 0 ? (
+                                            <ul className="list-disc list-outside ml-4 space-y-1">
+                                                {bidangBrief.map(([b, c], i) => (
+                                                    <li key={i}>{formatNum(c)} {b}</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            bidangBrief.length > 0 ? bidangBrief.join(', ') : safeValue(data.bidang_fokus || data.bidang)
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                    <span className="text-sm font-medium text-gray-700">Tema Prioritas:</span>
+                                    <div>
+                                        {isInstitusi && temaBrief.length > 0 ? (
+                                            <ul className="list-disc list-outside ml-4 space-y-1">
+                                                {temaBrief.map(([t, c], i) => (
+                                                    <li key={i}>{formatNum(c)} {t}</li>
+                                                ))}
+                                            </ul>
+                                        ) : (
+                                            temaBrief.length > 0 ? temaBrief.join(', ') : safeValue(data.tema_prioritas || data.luaran || data.tema)
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Colored Badge */}
-                    {!isInstitusi && (
-                        <div className="pt-2">
+                    {/* Bottom Pill (Only for Researcher Mode) */}
+                    {!isInstitusi && currentFocus !== '-' && (
+                        <div className="mt-6 flex">
                             <span
-                                className="inline-block px-4 py-1.5 rounded-full text-white text-[10px] font-bold shadow-sm uppercase"
-                                style={{ backgroundColor: fieldColor }}
+                                className="px-5 py-1.5 rounded-full text-white text-xs font-bold shadow-sm"
+                                style={{ backgroundColor: getFieldColor(currentFocus) }}
                             >
-                                {safeValue(data.bidang_fokus || data.skema)}
+                                {currentFocus}
                             </span>
                         </div>
                     )}
                 </div>
             </div>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+            `}} />
         </div>
     );
 }

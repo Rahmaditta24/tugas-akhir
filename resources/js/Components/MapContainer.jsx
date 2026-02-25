@@ -221,8 +221,10 @@ export default function MapContainer({
                     <span style="font-size: 12px; color: #4a5568;">${safeValue(tahun)}</span>
                   </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                    <div style="background-color: #3182ce; width: 24px; height: 10px; border-radius: 5px;"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                    <div style="background-color: ${color || '#3E7DCA'}; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">
+                        ${safeValue(field)}
+                    </div>
                     <span onclick="window.openResearchDetail('${id}', '${escField}')" 
                         style="color: #64748b; font-style: italic; border: none; background: transparent; padding: 0; font-size: 11px; cursor: pointer;">
                         Klik untuk detail
@@ -300,20 +302,21 @@ export default function MapContainer({
 
         if (showBubbles) {
             const clusterGroup = L.markerClusterGroup({
-                maxClusterRadius: 100, // Merging markers that are closer together
-                disableClusteringAtZoom: 13, // Bloom into petals only at high zoom levels
+                maxClusterRadius: 80, // Reduced radius to show more bubbles (more numerous distribution)
+                disableClusteringAtZoom: 8,
                 chunkedLoading: true,
                 removeOutsideVisibleBounds: true,
                 iconCreateFunction: function (cluster) {
                     const total = cluster.getAllChildMarkers().reduce((sum, m) => sum + (m.options.penelitianCount || 0), 0);
 
-                    // Set constant size for all bubbles
-                    const radius = 26;
+                    // Set constant size for all bubbles (Matching screenshot: 50px)
+                    const radius = 25;
                     const fontSize = 14;
                     return L.divIcon({
-                        html: `<div style="background-color: rgba(95, 151, 208, 0.8); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">${total.toLocaleString('id-ID')}</div>`,
+                        html: `<div style="background-color: rgba(62, 125, 202, 0.6); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
                         className: 'custom-cluster-icon',
-                        iconSize: L.point(radius * 2, radius * 2, true)
+                        iconSize: L.point(radius * 2, radius * 2, true),
+                        iconAnchor: L.point(radius, radius)
                     });
                 },
                 spiderfyOnMaxZoom: false,
@@ -333,190 +336,165 @@ export default function MapContainer({
             clusterGroupRef.current = clusterGroup;
             mapInstanceRef.current.addLayer(clusterGroup);
 
-            let index = 0;
-            const batchSize = 150;
+            const markersToAdd = [];
 
-            const processChunk = () => {
-                const limit = Math.min(index + batchSize, fullSource.length);
-                const markersToAdd = [];
+            for (let i = 0; i < fullSource.length; i++) {
+                const item = fullSource[i];
+                const lat = parseFloat(item.pt_latitude ?? item.latitude);
+                const lng = parseFloat(item.pt_longitude ?? item.longitude);
+                if (isNaN(lat) || isNaN(lng)) continue;
 
-                for (let i = index; i < limit; i++) {
-                    const item = fullSource[i];
-                    const lat = parseFloat(item.pt_latitude ?? item.latitude);
-                    const lng = parseFloat(item.pt_longitude ?? item.longitude);
-                    if (isNaN(lat) || isNaN(lng)) continue;
+                if (displayMode === 'institusi' && !isPermasalahan) {
+                    const count = item.total_penelitian || 1;
+                    let radius = 25;
+                    let fontSize = 14;
 
-                    if (displayMode === 'institusi' && !isPermasalahan) {
-                        const count = item.total_penelitian || 1;
-                        let radius = 24;
-                        let fontSize = 12;
+                    const marker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            html: `<div style="background-color: rgba(62, 125, 202, 0.8); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${count.toLocaleString('id-ID')}</div>`,
+                            className: 'custom-marker-institusi',
+                            iconSize: L.point(radius * 2, radius * 2, true),
+                            iconAnchor: L.point(radius, radius)
+                        }),
+                        penelitianCount: count,
+                        statsData: {
+                            institusi: item.institusi,
+                            provinsi: item.provinsi
+                        }
+                    });
+                    marker.bindPopup(`
+                        <div style="padding: 12px; min-width: 200px; font-family: 'Inter', sans-serif;">
+                            <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${item.institusi || '-'}</h3>
+                            <div style="font-size: 12px; color: #64748b;">${count.toLocaleString('id-ID')} penelitian</div>
+                            <div style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
+                                <span onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(item))}')"
+                                   style="color: #2563eb; font-size: 11px; text-decoration: none; font-style: italic; cursor: pointer;">Lihat detail kampus</span>
+                            </div>
+                        </div>
+                    `, { maxWidth: 300 });
 
+                    marker.on('click', () => {
+                        calculateStatsFromMarkers([marker]);
+                    });
+
+                    markersToAdd.push(marker);
+                }
+                else if (displayMode === 'peneliti' && !isPermasalahan) {
+                    const hasDetails = !!item.ids;
+                    const fields = hasDetails && item.bidang_fokus ? item.bidang_fokus.split('|') : [];
+                    const ids = hasDetails ? item.ids.split('|') : [];
+                    const titles = hasDetails && item.titles ? item.titles.split('|') : [];
+                    const years = hasDetails && item.tahun_list ? item.tahun_list.split('|') : [];
+                    const count = hasDetails ? ids.length : (item.total_penelitian || 1);
+
+                    if (!hasDetails && count > 30) {
+                        const radius = 25;
+                        const fontSize = 14;
                         const marker = L.marker([lat, lng], {
                             icon: L.divIcon({
-                                html: `<div style="background-color: #3B82F6; width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2.5px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); opacity: 0.8;">${count.toLocaleString('id-ID')}</div>`,
-                                className: 'custom-marker-institusi',
+                                html: `<div style="background-color: rgba(62, 125, 202, 0.8); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${count.toLocaleString('id-ID')}</div>`,
+                                className: 'custom-marker-default',
                                 iconSize: L.point(radius * 2, radius * 2, true),
                                 iconAnchor: L.point(radius, radius)
                             }),
                             penelitianCount: count,
                             statsData: {
                                 institusi: item.institusi,
-                                provinsi: item.provinsi
+                                provinsi: item.provinsi,
+                                bidang: item.bidang_fokus
                             }
                         });
-                        marker.bindPopup(`
-                            <div style="padding: 12px; min-width: 200px; font-family: 'Inter', sans-serif;">
-                                <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${item.institusi || '-'}</h3>
-                                <div style="font-size: 12px; color: #64748b;">${count.toLocaleString('id-ID')} penelitian</div>
-                                <div style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
-                                    <span onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(item))}')"
-                                       style="color: #2563eb; font-size: 11px; text-decoration: none; font-style: italic; cursor: pointer;">Lihat detail kampus</span>
-                                </div>
-                            </div>
-                        `, { maxWidth: 300 });
+                        marker.bindPopup(generatePopupContent(item), { maxWidth: 320 });
 
                         marker.on('click', () => {
                             calculateStatsFromMarkers([marker]);
                         });
 
                         markersToAdd.push(marker);
-                    }
-                    else if (displayMode === 'peneliti' && !isPermasalahan) {
-                        const hasDetails = !!item.ids;
-                        const fields = hasDetails && item.bidang_fokus ? item.bidang_fokus.split('|') : [];
-                        const ids = hasDetails ? item.ids.split('|') : [];
-                        const titles = hasDetails && item.titles ? item.titles.split('|') : [];
-                        const years = hasDetails && item.tahun_list ? item.tahun_list.split('|') : [];
-                        const count = hasDetails ? ids.length : (item.total_penelitian || 1);
+                    } else {
+                        for (let idx = 0; idx < count; idx++) {
+                            let matchedColor = '#3E7DCA';
+                            if (hasDetails) {
+                                const field = fields[idx];
+                                for (const [key, color] of Object.entries(FIELD_COLORS)) {
+                                    if (field && field.includes(key)) { matchedColor = color; break; }
+                                }
+                            }
 
-                        if (!hasDetails && count > 30) {
-                            // High count with no details -> Regular bubble to preserve performance
-                            const radius = 22;
-                            const marker = L.marker([lat, lng], {
-                                icon: L.divIcon({
-                                    html: `<div style="background-color: rgba(95, 151, 208, 0.9); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">${count.toLocaleString('id-ID')}</div>`,
-                                    className: 'custom-marker-default',
-                                    iconSize: L.point(radius * 2, radius * 2, true),
-                                    iconAnchor: L.point(radius, radius)
-                                }),
-                                penelitianCount: count,
+                            let coords;
+                            if (idx === 0) {
+                                coords = [lat, lng];
+                            } else {
+                                const radiusKm = 0.6;
+                                const radiusDegrees = radiusKm / 111;
+                                const angle = ((idx - 1) * (2 * Math.PI / (count - 1)));
+
+                                coords = [
+                                    lat + radiusDegrees * Math.cos(angle),
+                                    lng + radiusDegrees * Math.sin(angle)
+                                ];
+                            }
+
+                            const marker = L.circleMarker(coords, {
+                                radius: 8,
+                                fillColor: matchedColor,
+                                fillOpacity: 0.8,
+                                stroke: true,
+                                color: matchedColor,
+                                weight: 2,
+                                className: 'research-circle-marker-premium',
+                                penelitianCount: 1,
                                 statsData: {
                                     institusi: item.institusi,
                                     provinsi: item.provinsi,
-                                    bidang: item.bidang_fokus
+                                    bidang: fields[idx]
                                 }
                             });
-                            marker.bindPopup(generatePopupContent(item), { maxWidth: 320 });
+
+                            const popup = hasDetails ?
+                                generateDetailPopup(titles[idx] || 'Detail', fields[idx], item.institusi, item.provinsi, years[idx], ids[idx], matchedColor) :
+                                generatePopupContent(item);
+
+                            marker.bindPopup(popup, { maxWidth: 400 });
 
                             marker.on('click', () => {
                                 calculateStatsFromMarkers([marker]);
                             });
 
                             markersToAdd.push(marker);
-                        } else {
-                            // Expand into Floral Pattern with L.circleMarker (MATCHING VANILLA)
-                            for (let idx = 0; idx < count; idx++) {
-                                let matchedColor = '#3E7DCA';
-                                if (hasDetails) {
-                                    const field = fields[idx];
-                                    for (const [key, color] of Object.entries(FIELD_COLORS)) {
-                                        if (field && field.includes(key)) { matchedColor = color; break; }
-                                    }
-                                }
-
-                                // Pattern Bunga: Satu lingkaran lebar agar mekar sempurna
-                                let coords;
-                                if (idx === 0) {
-                                    coords = [lat, lng];
-                                } else {
-                                    // Melebarkan radius agar bentuk bunga lebih terlihat (600m)
-                                    const radiusKm = 0.6;
-                                    const radiusDegrees = radiusKm / 111;
-
-                                    // Sudut rotasi: dibagi rata berdasarkan jumlah data
-                                    const angle = ((idx - 1) * (2 * Math.PI / (count - 1)));
-
-                                    coords = [
-                                        lat + radiusDegrees * Math.cos(angle),
-                                        lng + radiusDegrees * Math.sin(angle)
-                                    ];
-                                }
-
-                                const marker = L.circleMarker(coords, {
-                                    radius: 14, // Larger petals for impact
-                                    fillColor: matchedColor,
-                                    fillOpacity: 0.85,
-                                    stroke: true,
-                                    color: 'white',
-                                    weight: 2,
-                                    className: 'research-circle-marker-premium',
-                                    penelitianCount: 1,
-                                    statsData: {
-                                        institusi: item.institusi,
-                                        provinsi: item.provinsi,
-                                        bidang: fields[idx]
-                                    }
-                                });
-
-                                const popup = hasDetails ?
-                                    generateDetailPopup(titles[idx] || 'Detail', fields[idx], item.institusi, item.provinsi, years[idx], ids[idx], matchedColor) :
-                                    generatePopupContent(item);
-
-                                marker.bindPopup(popup, { maxWidth: 400 });
-
-                                marker.on('click', () => {
-                                    calculateStatsFromMarkers([marker]);
-                                    // Optional: also open detail on marker click directly after a short delay
-                                    // so popup has time to show but user gets the modal quickly
-                                    // setTimeout(() => fetchDetail(ids[idx], fields[idx]), 100);
-                                });
-
-                                markersToAdd.push(marker);
-                            }
                         }
                     }
-                    else {
-                        const count = item.total_penelitian || 1;
-                        const marker = L.marker([lat, lng], {
-                            icon: L.divIcon({
-                                html: `<div style="background-color: rgba(95, 151, 208, 0.9); width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">${count.toLocaleString('id-ID')}</div>`,
-                                className: 'custom-marker-default',
-                                iconSize: [32, 32],
-                                iconAnchor: [16, 16]
-                            }),
-                            penelitianCount: count,
-                            statsData: {
-                                institusi: item.institusi,
-                                provinsi: item.provinsi
-                            }
-                        });
-                        marker.bindPopup(generatePopupContent(item));
-
-                        marker.on('click', () => {
-                            calculateStatsFromMarkers([marker]);
-                        });
-
-                        markersToAdd.push(marker);
-                    }
                 }
+                else {
+                    const count = item.total_penelitian || 1;
+                    const marker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            html: `<div style="background-color: rgba(95, 151, 208, 0.9); width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">${count.toLocaleString('id-ID')}</div>`,
+                            className: 'custom-marker-default',
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 16]
+                        }),
+                        penelitianCount: count,
+                        statsData: {
+                            institusi: item.institusi,
+                            provinsi: item.provinsi
+                        }
+                    });
+                    marker.bindPopup(generatePopupContent(item));
 
-                clusterGroup.addLayers(markersToAdd);
-                index = limit;
+                    marker.on('click', () => {
+                        calculateStatsFromMarkers([marker]);
+                    });
 
-                if (index < fullSource.length) {
-                    processingRef.current = requestAnimationFrame(processChunk);
-                } else {
-                    processingRef.current = null;
+                    markersToAdd.push(marker);
                 }
-            };
+            }
 
-            processChunk();
+            clusterGroup.addLayers(markersToAdd);
         }
 
         return () => {
             if (processingRef.current) cancelAnimationFrame(processingRef.current);
-            if (mapInstanceRef.current) {
-            }
         };
     }, [mapData, data, showBubbles, displayMode, viewMode]);
 

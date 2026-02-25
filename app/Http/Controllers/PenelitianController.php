@@ -118,13 +118,11 @@ class PenelitianController extends Controller
 
             $aggregatedData = (clone $baseQuery)
                 ->select(
-                    DB::raw('ROUND(pt_latitude, 2) as lat_rounded'),
-                    DB::raw('ROUND(pt_longitude, 2) as lng_rounded'),
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('COUNT(*) as total_penelitian'),
-                    DB::raw('GROUP_CONCAT(DISTINCT institusi SEPARATOR " | ") as institusi_list'),
-                    DB::raw('GROUP_CONCAT(DISTINCT provinsi) as provinsi'),
+                    DB::raw('institusi as institusi_name'),
+                    DB::raw('MAX(provinsi) as provinsi'),
                     DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, "-") SEPARATOR "|") as all_fields'),
                     DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as all_ids'),
                     DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
@@ -132,11 +130,11 @@ class PenelitianController extends Controller
                     DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan AS CHAR) SEPARATOR "|") as all_years'),
                     DB::raw('GROUP_CONCAT(COALESCE(tema_prioritas, "-") SEPARATOR "|") as all_themes'),
                     DB::raw('GROUP_CONCAT(COALESCE(jenis_pt, "-") SEPARATOR "|") as all_pt_types')
-
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
-                ->groupBy('lat_rounded', 'lng_rounded')
+                ->whereNotNull('institusi')
+                ->groupBy('institusi')
                 ->having('total_penelitian', '>', 0)
                 ->get();
 
@@ -145,7 +143,7 @@ class PenelitianController extends Controller
                     'pt_latitude' => (float)$item->pt_latitude,
                     'pt_longitude' => (float)$item->pt_longitude,
                     'total_penelitian' => (int)$item->total_penelitian,
-                    'institusi' => $item->institusi_list,
+                    'institusi' => $item->institusi_name,
                     'provinsi' => $item->provinsi,
                     'bidang_fokus' => $item->all_fields,
                     'ids' => $item->all_ids,
@@ -155,7 +153,6 @@ class PenelitianController extends Controller
                     'tema_list' => $item->all_themes,
                     'jenis_pt_list' => $item->all_pt_types,
                 ];
-
             })->toArray();
 
             return collect($result)->values()->all();
@@ -372,6 +369,9 @@ class PenelitianController extends Controller
             'penelitian' => \App\Models\Penelitian::find($id),
             'hilirisasi' => \App\Models\Hilirisasi::find($id),
             'pengabdian' => \App\Models\Pengabdian::find($id),
+            'produk' => \App\Models\Produk::find($id),
+            'fasilitas-lab' => \App\Models\FasilitasLab::find($id),
+            'permasalahan' => \App\Models\Permasalahan::find($id),
             default => null
         };
 

@@ -124,11 +124,9 @@ class PengabdianPageController extends Controller
             $query = (clone $baseQuery)
 
                 ->select(
-                    DB::raw('ROUND(pt_latitude, 2) as lat_rounded'),
-                    DB::raw('ROUND(pt_longitude, 2) as lng_rounded'),
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
-                    DB::raw('GROUP_CONCAT(DISTINCT nama_institusi SEPARATOR " | ") as institusi'),
+                    DB::raw('nama_institusi as institusi_name'),
                     DB::raw('MAX(prov_pt) as provinsi'),
                     DB::raw('COUNT(*) as total_penelitian'),
                     DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_fields'),
@@ -138,16 +136,16 @@ class PengabdianPageController extends Controller
                     DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan_kegiatan AS CHAR) SEPARATOR "|") as all_years'),
                     DB::raw('GROUP_CONCAT(COALESCE(bidang_teknologi_inovasi, "-") SEPARATOR "|") as all_themes'),
                     DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types')
-
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
-                ->groupBy('lat_rounded', 'lng_rounded')
+                ->whereNotNull('nama_institusi')
+                ->groupBy('nama_institusi')
                 ->having('total_penelitian', '>', 0);
 
             return $query->get()->map(function($item) {
                 return [
-                    'institusi' => $item->institusi,
+                    'institusi' => $item->institusi_name,
                     'pt_latitude' => (float)$item->pt_latitude,
                     'pt_longitude' => (float)$item->pt_longitude,
                     'provinsi' => $item->provinsi,

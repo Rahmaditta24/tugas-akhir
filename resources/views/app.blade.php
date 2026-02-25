@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title inertia>{{ config('app.name', 'Peta BIMA') }}</title>
+        <title inertia>{{ str_starts_with(request()->getPathInfo(), '/admin') ? 'Admin Panel' : config('app.name', 'Peta BIMA') }}</title>
 
         <!-- Favicon (use public/) -->
         <link rel="icon" href="/favicon.ico" />
