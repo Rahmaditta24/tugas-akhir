@@ -317,7 +317,7 @@ export default function MapContainer({
                     const radius = 25;
                     const fontSize = 14;
                     return L.divIcon({
-                        html: `<div style="background-color: rgba(62, 125, 202, 0.6); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
+                        html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
                         className: 'custom-cluster-icon',
                         iconSize: L.point(radius * 2, radius * 2, true),
                         iconAnchor: L.point(radius, radius)
@@ -360,7 +360,7 @@ export default function MapContainer({
 
                     const marker = L.marker([lat, lng], {
                         icon: L.divIcon({
-                            html: `<div style="background-color: rgba(62, 125, 202, 0.8); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${count.toLocaleString('id-ID')}</div>`,
+                            html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${count.toLocaleString('id-ID')}</div>`,
                             className: 'custom-marker-institusi',
                             iconSize: L.point(radius * 2, radius * 2, true),
                             iconAnchor: L.point(radius, radius)
@@ -411,7 +411,7 @@ export default function MapContainer({
                         const fontSize = 14;
                         const marker = L.marker([lat, lng], {
                             icon: L.divIcon({
-                                html: `<div style="background-color: rgba(62, 125, 202, 0.8); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${count.toLocaleString('id-ID')}</div>`,
+                                html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${count.toLocaleString('id-ID')}</div>`,
                                 className: 'custom-marker-default',
                                 iconSize: L.point(radius * 2, radius * 2, true),
                                 iconAnchor: L.point(radius, radius)
@@ -491,7 +491,7 @@ export default function MapContainer({
                     const count = item.total_penelitian || 1;
                     const marker = L.marker([lat, lng], {
                         icon: L.divIcon({
-                            html: `<div style="background-color: rgba(95, 151, 208, 0.9); width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">${count.toLocaleString('id-ID')}</div>`,
+                            html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">${count.toLocaleString('id-ID')}</div>`,
                             className: 'custom-marker-default',
                             iconSize: [32, 32],
                             iconAnchor: [16, 16]

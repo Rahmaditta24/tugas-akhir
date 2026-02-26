@@ -255,7 +255,7 @@ export default function PermasalahanMap({
         layer.addTo(mapInstanceRef.current);
         geoJsonLayerRef.current = layer;
         layer.bringToBack();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [geoJsonData, activeDataType, permasalahanStats]);
 
     // ── Effect 2: Only update colours when slider changes (real-time) ────────
@@ -330,7 +330,7 @@ export default function PermasalahanMap({
             const size = 50;
             const marker = L.marker([lat, lng], {
                 icon: L.divIcon({
-                    html: `<div style="background:rgba(62,125,202,0.85);width:${size}px;height:${size}px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.2);">${count.toLocaleString('id-ID')}</div>`,
+                    html: `<div style="background:rgba(62,125,202,0.7);width:${size}px;height:${size}px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.2);">${count.toLocaleString('id-ID')}</div>`,
                     className: '',
                     iconSize: L.point(size, size, true),
                     iconAnchor: L.point(size / 2, size / 2),
