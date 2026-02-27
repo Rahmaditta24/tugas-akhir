@@ -11,6 +11,8 @@ use App\Http\Controllers\PermasalahanPageController;
 use App\Http\Controllers\RumusanMasalahPageController;
 use App\Http\Controllers\ProdukPageController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RumusanMasalahCategoryController;
 use App\Http\Controllers\Admin\RumusanMasalahStatementController;
@@ -34,6 +36,12 @@ Route::get('/rumusan-masalah/panduan', [RumusanMasalahPageController::class, 'pa
 Route::get('/admin/login', [LoginController::class, 'showLogin'])->name('login');
 Route::post('/admin/login', [LoginController::class, 'login'])->name('login.attempt');
 Route::post('/admin/logout', [LoginController::class, 'logout'])->name('logout');
+
+// Forgot Password routes
+Route::get('/admin/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request')->middleware('guest');
+Route::post('/admin/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->name('password.email')->middleware('guest');
+Route::get('/admin/reset-password/{token}', [ResetPasswordController::class, 'showForm'])->name('password.reset')->middleware('guest');
+Route::post('/admin/reset-password', [ResetPasswordController::class, 'resetPassword'])->name('password.update')->middleware('guest');
 
 // Smart /admin entry: show login if guest, dashboard if authenticated
 Route::get('/admin', function () {

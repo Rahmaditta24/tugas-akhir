@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useForm, Head } from '@inertiajs/react';
+import { useForm, Head, Link } from '@inertiajs/react';
 
-export default function Login({ errors }) {
+export default function Login({ errors, status }) {
     const { data, setData, post, processing } = useForm({
         email: '',
         password: '',
@@ -31,6 +31,16 @@ export default function Login({ errors }) {
                 {/* Login Form */}
                 <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-8">
                     {/* <h2 className="text-xl font-semibold text-slate-800 mb-6">Masuk ke Admin Panel</h2> */}
+
+                    {/* Status sukses (e.g. setelah reset password) */}
+                    {status && (
+                        <div className="mb-4 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm flex items-start gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 flex-shrink-0 mt-0.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>{status}</span>
+                        </div>
+                    )}
 
                     {/* Email Field */}
                     <div className="mb-4">
@@ -95,8 +105,8 @@ export default function Login({ errors }) {
                         )}
                     </div>
 
-                    {/* Remember Me */}
-                    <div className="mb-6">
+                    {/* Remember Me + Lupa Password */}
+                    <div className="mb-6 flex items-center justify-between">
                         <label className="flex items-center">
                             <input
                                 type="checkbox"
@@ -106,6 +116,12 @@ export default function Login({ errors }) {
                             />
                             <span className="ml-2 text-sm text-slate-700">Ingat saya</span>
                         </label>
+                        <Link
+                            href="/admin/forgot-password"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                            Lupa password?
+                        </Link>
                     </div>
 
                     {/* Submit Button */}
