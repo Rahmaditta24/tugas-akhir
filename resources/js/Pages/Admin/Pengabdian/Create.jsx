@@ -215,7 +215,7 @@ export default function Create() {
                                                 value={data.klaster}
                                                 onChange={e => setData('klaster', e.target.value)}
                                                 className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none"
-                                                placeholder="Klaster..."
+                                                placeholder="Contoh: Utama"
                                             />
                                         </div>
                                     </div>
@@ -330,7 +330,7 @@ export default function Create() {
                                                 onChange={e => setData('bidang_fokus', e.target.value)}
                                                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                                 required
-                                                placeholder="Bidang fokus pengabdian"
+                                                placeholder="Contoh: Pangan"
                                             />
                                         </div>
                                     </div>

@@ -85,32 +85,58 @@ class FasilitasLabPageController extends Controller
             'totalFields' => (clone $statsQ)->distinct('jenis_laboratorium')->count('jenis_laboratorium'),
         ];
 
-        $cacheKey = 'map_data_fasilitas_lab_v5_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_fasilitas_lab_v7_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
-            $query = (clone $baseQuery)->select(
-                'id',
+            $rows = (clone $baseQuery)->select(
                 'institusi',
-                'latitude as pt_latitude',
-                'longitude as pt_longitude',
+                'kode_universitas',
+                'latitude',
+                'longitude',
                 'provinsi',
-                'nama_laboratorium as judul'
+                'kategori_pt',
+                'nama_laboratorium',
             )
             ->whereNotNull('latitude')
-            ->whereNotNull('longitude');
-            
-            $mapDataArray = [];
-            foreach ($query->cursor() as $item) {
-                $mapDataArray[] = [
-                    'id' => $item->id,
-                    'institusi' => $item->institusi,
-                    'pt_latitude' => (float)$item->pt_latitude,
-                    'pt_longitude' => (float)$item->pt_longitude,
-                    'provinsi' => $item->provinsi,
-                    'judul' => $item->judul ? substr($item->judul, 0, 150) : null,
-                    'count' => 1,
+            ->whereNotNull('longitude')
+            ->cursor();
+
+            $grouped = [];
+            foreach ($rows as $item) {
+                $key = $item->institusi ?? 'Unknown';
+                if (!isset($grouped[$key])) {
+                    $grouped[$key] = [
+                        'institusi'        => $item->institusi,
+                        'kode_universitas' => $item->kode_universitas,
+                        'pt_latitude'      => (float) $item->latitude,
+                        'pt_longitude'     => (float) $item->longitude,
+                        'provinsi'         => $item->provinsi,
+                        'kategori_pt'      => $item->kategori_pt,
+                        'total_penelitian' => 0,
+                        'lab_names'        => [],
+                        'isFasilitasLab'   => true,
+                    ];
+                }
+                $grouped[$key]['total_penelitian']++;
+                if ($item->nama_laboratorium) {
+                    $grouped[$key]['lab_names'][] = $item->nama_laboratorium;
+                }
+            }
+
+            $result = [];
+            foreach ($grouped as $entry) {
+                $result[] = [
+                    'institusi'        => $entry['institusi'],
+                    'kode_universitas' => $entry['kode_universitas'],
+                    'pt_latitude'      => $entry['pt_latitude'],
+                    'pt_longitude'     => $entry['pt_longitude'],
+                    'provinsi'         => $entry['provinsi'],
+                    'kategori_pt'      => $entry['kategori_pt'],
+                    'total_penelitian' => $entry['total_penelitian'],
+                    'lab_list'         => implode('|', $entry['lab_names']),
+                    'isFasilitasLab'   => true,
                 ];
             }
-            return collect($mapDataArray)->values()->all();
+            return $result;
         });
 
         // Only load list if filtered/searched

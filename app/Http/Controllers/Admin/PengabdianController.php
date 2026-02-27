@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 class PengabdianController extends Controller
 {
@@ -255,20 +256,20 @@ class PengabdianController extends Controller
         // Merge DB and JSON
         $allRows = array_merge($dbRows, $jsonRows);
 
-        // Sorting: Priority to higher year (2026+), then ID desc (for DB items), then institution name
+        // Sorting: Newest ID first, then year descending
         usort($allRows, function ($a, $b) {
-            $ya = (int)($a['thn_pelaksanaan_kegiatan'] ?? 0);
-            $yb = (int)($b['thn_pelaksanaan_kegiatan'] ?? 0);
-            
-            if ($ya !== $yb) {
-                return $yb <=> $ya; // Year descending
-            }
-            
-            // If same year, try to put items with higher ID (newer DB entries) first
+            // Priority 1: ID (Newest DB entries first)
             $ida = is_string($a['id']) ? 0 : ($a['id'] ?? 0);
             $idb = is_string($b['id']) ? 0 : ($b['id'] ?? 0);
             if ($ida !== $idb) {
                 return $idb <=> $ida;
+            }
+
+            // Priority 2: Year descending
+            $ya = (int)($a['thn_pelaksanaan_kegiatan'] ?? 0);
+            $yb = (int)($b['thn_pelaksanaan_kegiatan'] ?? 0);
+            if ($ya !== $yb) {
+                return $yb <=> $ya;
             }
 
             return strcasecmp((string)($a['nama_institusi'] ?? ''), (string)($b['nama_institusi'] ?? ''));
@@ -388,6 +389,7 @@ class PengabdianController extends Controller
         ]);
 
         Pengabdian::create($validated);
+        $this->clearCache();
 
         return redirect()->route('admin.pengabdian.index', ['type' => $request->batch_type])
             ->with('success', 'Data pengabdian berhasil ditambahkan');
@@ -658,6 +660,7 @@ class PengabdianController extends Controller
 
         if (is_string($id) && str_starts_with($id, 'json_')) {
             Pengabdian::create($validated);
+            $this->clearCache();
             return redirect()->route('admin.pengabdian.index', array_merge(['type' => $request->batch_type], $request->only(['page', 'search', 'perPage', 'filters'])))
                 ->with('success', 'Data dari JSON berhasil disimpan ke database');
         }
@@ -667,6 +670,7 @@ class PengabdianController extends Controller
             $validated['ptn_pts'] = $this->isPTN($validated['nama_institusi']) ? 'PTN' : 'PTS';
         }
         $pengabdian->update($validated);
+        $this->clearCache();
 
         return redirect()->route('admin.pengabdian.index', array_merge(['type' => $request->batch_type], $request->only(['page', 'search', 'perPage', 'filters'])))
             ->with('success', 'Data pengabdian berhasil diperbarui');
@@ -675,6 +679,18 @@ class PengabdianController extends Controller
     public function destroy(Pengabdian $pengabdian)
     {
         $pengabdian->delete();
+        $this->clearCache();
         return back()->with('success', 'Data dihapus');
+    }
+
+    private function clearCache()
+    {
+        // Increment version to invalidate all hash-based cache keys in PengabdianPageController
+        $v = (int) Cache::get('pengabdian_cache_version', 0);
+        Cache::put('pengabdian_cache_version', $v + 1, 86400 * 30); // Valid for 30 days
+        
+        // Also clear static filter option caches
+        Cache::forget('filter_pengabdian_provinsi');
+        Cache::forget('filter_pengabdian_tahun');
     }
 }

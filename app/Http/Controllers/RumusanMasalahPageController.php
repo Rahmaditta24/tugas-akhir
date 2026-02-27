@@ -19,4 +19,12 @@ class RumusanMasalahPageController extends Controller
             'categories' => $categories,
         ]);
     }
+
+    public function panduan()
+    {
+        $categories = \App\Models\RumusanMasalahCategory::ordered()->get();
+        return Inertia::render('RumusanMasalah/Panduan', [
+            'categories' => $categories
+        ]);
+    }
 }

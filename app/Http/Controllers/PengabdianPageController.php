@@ -13,6 +13,7 @@ class PengabdianPageController extends Controller
 {
     public function index(Request $request)
     {
+        $v = (int) Cache::get('pengabdian_cache_version', 1);
         $baseQuery = Pengabdian::query();
         
         // Apply simple search
@@ -108,7 +109,7 @@ class PengabdianPageController extends Controller
         }
 
         // Cache statistics
-        $statsCacheKey = 'stats_pengabdian_v4_' . md5(json_encode($request->all()));
+        $statsCacheKey = 'stats_pengabdian_v5_' . $v . '_' . md5(json_encode($request->all()));
         $stats = Cache::remember($statsCacheKey, 3600, function() use ($baseQuery) {
             $statsQ = clone $baseQuery;
             return [
@@ -123,7 +124,7 @@ class PengabdianPageController extends Controller
             ? 'GROUP_CONCAT(COALESCE(bidang_teknologi_inovasi, bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_themes'
             : 'GROUP_CONCAT(COALESCE(bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_themes';
 
-        $cacheKey = 'map_data_pengabdian_v5_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_pengabdian_v6_' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery, $themeSql) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
@@ -185,7 +186,7 @@ class PengabdianPageController extends Controller
 
         // Get filter options (cached)
         $filterOptions = [
-            'provinsi' => Cache::remember('filter_pengabdian_provinsi', 7200, function() {
+            'provinsi' => Cache::remember('filter_pengabdian_provinsi_' . $v, 7200, function() {
                 return DB::table('pengabdian')
                     ->select('prov_pt')
                     ->whereNotNull('prov_pt')
@@ -195,7 +196,7 @@ class PengabdianPageController extends Controller
                     ->filter()
                     ->values();
             }),
-            'tahun' => Cache::remember('filter_pengabdian_tahun', 7200, function() {
+            'tahun' => Cache::remember('filter_pengabdian_tahun_' . $v, 7200, function() {
                 return DB::table('pengabdian')
                     ->select('thn_pelaksanaan_kegiatan')
                     ->whereNotNull('thn_pelaksanaan_kegiatan')

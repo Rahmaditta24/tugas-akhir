@@ -151,6 +151,7 @@ export default function Create() {
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kategori_pt ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         required
                                     >
+                                        <option value="">Pilih Kategori PT</option>
                                         <option value="PTN">PTN</option>
                                         <option value="PTS">PTS</option>
                                         <option value="PTNBH">PTNBH</option>
@@ -167,7 +168,7 @@ export default function Create() {
                                         value={data.institusi_pilihan}
                                         onChange={e => setData('institusi_pilihan', e.target.value)}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.institusi_pilihan ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        placeholder="Nama institusi pilihan"
+                                        placeholder="Contoh: LLDIKTI Wilayah IV"
                                         required
                                     />
                                     {errors.institusi_pilihan && <p className="mt-1 text-sm text-red-600">{errors.institusi_pilihan}</p>}
@@ -277,7 +278,7 @@ export default function Create() {
                                             value={data.skema}
                                             onChange={e => setData('skema', e.target.value)}
                                             className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.skema ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                            placeholder="Nama skema penelitian"
+                                            placeholder="Contoh: Penelitian Kerja Sama Luar Negeri - Nusantara"
                                         />
                                         {errors.skema && <p className="mt-1 text-sm text-red-600">{errors.skema}</p>}
                                     </div>

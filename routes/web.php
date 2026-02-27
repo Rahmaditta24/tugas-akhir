@@ -28,6 +28,7 @@ Route::get('/produk', [ProdukPageController::class, 'index'])->name('produk.inde
 Route::get('/fasilitas-lab', [FasilitasLabPageController::class, 'index'])->name('fasilitas.index');
 Route::get('/permasalahan', [PermasalahanPageController::class, 'index'])->name('permasalahan.index');
 Route::get('/rumusan-masalah', [RumusanMasalahPageController::class, 'index'])->name('rumusan-masalah.index');
+Route::get('/rumusan-masalah/panduan', [RumusanMasalahPageController::class, 'panduan'])->name('rumusan-masalah.panduan');
 
 // Admin Auth under /admin
 Route::get('/admin/login', [LoginController::class, 'showLogin'])->name('login');
@@ -101,10 +102,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
             ->name('category.statements.destroy');
     });
 
+    /* 
     // Profile Management
     Route::get('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'showProfile'])->name('profile.show');
     Route::put('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('profile.update');
     
     // Password Change
     Route::put('/change-password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('change-password.update');
+    */
 });

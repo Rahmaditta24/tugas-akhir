@@ -56,17 +56,46 @@ export default function MapContainer({
             if (response.ok) {
                 const detailData = await response.json();
                 if (detailData) {
+                    const isProduk = type === 'produk';
+                    const isHilirisasi = type === 'hilirisasi';
+                    const isPengabdian = type === 'pengabdian';
                     // Create normalized data structure for the modal
                     const normalized = {
                         ...detailData,
                         isInstitusi: false,
                         // Ensure common field names are available
-                        nama: detailData.nama || detailData.nama_ketua || detailData.nama_pengusul || '-',
+                        judul: detailData.judul || detailData.judul_kegiatan || detailData.nama_produk || '-',
+                        nama: detailData.nama || detailData.nama_ketua || detailData.nama_pengusul || detailData.nama_inventor || '-',
                         institusi: detailData.institusi || detailData.nama_institusi || detailData.perguruan_tinggi || '-',
                         provinsi: detailData.provinsi || detailData.prov_pt || detailData.prov_mitra || '-',
                         skema: detailData.skema || detailData.nama_skema || '-',
                         tahun: detailData.tahun || detailData.thn_pelaksanaan || detailData.thn_pelaksanaan_kegiatan || '-',
-                        bidang_fokus: field || detailData.bidang_fokus || detailData.skema || detailData.nama_skema || '-'
+                        bidang_fokus: field || detailData.bidang_fokus || detailData.bidang || detailData.skema || detailData.nama_skema || '-',
+                        // Produk-specific aliases for modal rendering
+                        isProduk,
+                        isHilirisasi,
+                        nama_produk: detailData.nama_produk || '-',
+                        deskripsi_produk: detailData.deskripsi_produk || '-',
+                        tkt: detailData.tkt ?? '-',
+                        bidang: detailData.bidang || detailData.bidang_fokus || '-',
+                        nama_inventor: detailData.nama_inventor || detailData.nama || '-',
+                        email_inventor: detailData.email_inventor || '-',
+                        nomor_paten: detailData.nomor_paten || '-',
+                        // Hilirisasi-specific aliases for modal rendering
+                        nama_peneliti: detailData.nama || detailData.nama_ketua || detailData.nama_pengusul || '-',
+                        skema_hilirisasi: detailData.skema || detailData.nama_skema || '-',
+                        tahun_hilirisasi: detailData.tahun || detailData.thn_pelaksanaan || detailData.thn_pelaksanaan_kegiatan || '-',
+                        // Pengabdian-specific aliases for modal rendering
+                        isPengabdian,
+                        pengabdian_nama: detailData.nama || '-',
+                        pengabdian_institusi: detailData.nama_institusi || detailData.institusi || '-',
+                        pengabdian_status_pt: detailData.ptn_pts || '-',
+                        pengabdian_kabupaten: detailData.kab_pt || '-',
+                        pengabdian_provinsi: detailData.prov_pt || detailData.provinsi || '-',
+                        pengabdian_klaster: detailData.klaster || '-',
+                        pengabdian_skema: detailData.nama_skema || detailData.nama_singkat_skema || detailData.skema || '-',
+                        pengabdian_tahun: detailData.thn_pelaksanaan_kegiatan || detailData.tahun || '-',
+                        pengabdian_bidang_fokus: detailData.bidang_fokus || field || '-',
                     };
                     setSelectedResearch(normalized);
                     setIsModalOpen(true);
@@ -84,7 +113,13 @@ export default function MapContainer({
 
         window.openInstitusiDetail = (dataString) => {
             try {
-                const data = JSON.parse(decodeURIComponent(dataString));
+                // Handle both plain JSON (from marker click) and URL-encoded JSON (from popup onclick)
+                let data;
+                try {
+                    data = JSON.parse(dataString);
+                } catch {
+                    data = JSON.parse(decodeURIComponent(dataString));
+                }
                 setSelectedResearch({ ...data, isInstitusi: true });
                 setIsModalOpen(true);
             } catch (e) {
@@ -173,6 +208,30 @@ export default function MapContainer({
     const generatePopupContent = (item) => {
         const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
         const formatNum = (n) => (n && !isNaN(n)) ? Number(n).toLocaleString('id-ID') : '0';
+
+        if (item.isFasilitasLab) {
+            const modalData = {
+                isInstitusi: true,
+                isFasilitasLab: true,
+                institusi: item.institusi,
+                total_penelitian: item.total_penelitian,
+                ptn_pts: item.kategori_pt,
+                kategori_pt: item.kategori_pt,
+                provinsi: item.provinsi,
+                lab_list: item.lab_list || '',
+            };
+            const encoded = encodeURIComponent(JSON.stringify(modalData));
+            return `
+                <div style="padding: 12px; min-width: 200px; font-family: 'Inter', sans-serif;">
+                    <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${safeValue(item.institusi)}</h3>
+                    <div style="font-size: 12px; color: #64748b;">${formatNum(item.total_penelitian)} laboratorium</div>
+                    <div style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
+                        <span onclick="window.openInstitusiDetail('${encoded}')"
+                           style="color: #2563eb; font-size: 11px; font-style: italic; cursor: pointer;">Lihat detail kampus</span>
+                    </div>
+                </div>
+            `;
+        }
 
         if (item.jenis_permasalahan) {
             const region = item.kabupaten_kota || item.provinsi || 'Wilayah';
@@ -353,8 +412,55 @@ export default function MapContainer({
                 const lng = parseFloat(item.pt_longitude ?? item.longitude);
                 if (isNaN(lat) || isNaN(lng)) continue;
 
-                if (displayMode === 'institusi' && !isPermasalahan) {
+                // ── FasilitasLab: grouped per institusi ──────────────────
+                if (item.isFasilitasLab) {
                     const count = item.total_penelitian || 1;
+                    // Logo file named exactly as institusi name, stored in public/assets/logos/
+                    const logoUrl = item.institusi
+                        ? `/assets/logos/${encodeURIComponent(item.institusi)}.webp`
+                        : null;
+                    const initials = (item.institusi || '?').split(/\s+/).map(w => w[0]).slice(0, 3).join('');
+                    const size = 52;
+                    // Fallback text sits behind; img hides itself on error so text shows through
+                    const iconHtml = `<div style="position:relative;width:${size}px;height:${size}px;border-radius:50%;border:2.5px solid #3E7DCA;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.25);overflow:hidden;cursor:pointer;">
+                        <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#3E7DCA;">${initials}</span>
+                        ${logoUrl ? `<img src="${logoUrl}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;" onerror="this.style.display='none'"/>` : ''}
+                    </div>`;
+                    const marker = L.marker([lat, lng], {
+                        icon: L.divIcon({
+                            html: iconHtml,
+                            className: 'custom-marker-fasilitas',
+                            iconSize: L.point(size, size, true),
+                            iconAnchor: L.point(size / 2, size / 2)
+                        }),
+                        penelitianCount: count,
+                        statsData: { institusi: item.institusi, provinsi: item.provinsi },
+                    });
+                    marker._fasilitasData = {
+                        isInstitusi: true,
+                        isFasilitasLab: true,
+                        institusi: item.institusi,
+                        total_penelitian: count,
+                        ptn_pts: item.kategori_pt,
+                        kategori_pt: item.kategori_pt,
+                        provinsi: item.provinsi,
+                        lab_list: item.lab_list || '',
+                    };
+                    marker.bindTooltip(
+                        `<b>${item.institusi || '-'}</b><br/>${count} laboratorium`,
+                        { sticky: true, direction: 'top' }
+                    );
+                    marker.on('click', () => {
+                        calculateStatsFromMarkers([marker]);
+                        if (window.openInstitusiDetail && marker._fasilitasData) {
+                            window.openInstitusiDetail(JSON.stringify(marker._fasilitasData));
+                        }
+                    });
+                    markersToAdd.push(marker);
+                    continue;
+                }
+
+                if (displayMode === 'institusi' && !isPermasalahan) {                    const count = item.total_penelitian || 1;
                     let radius = 25;
                     let fontSize = 14;
 

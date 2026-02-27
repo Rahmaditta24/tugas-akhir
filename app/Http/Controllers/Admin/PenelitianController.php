@@ -111,10 +111,10 @@ class PenelitianController extends Controller
         if ($perPage < 10) { $perPage = 10; }
         if ($perPage > 100) { $perPage = 100; }
 
-        // Order by year (2025 first), then by ID descending
+        // Order by ID descending (newest record first)
         $penelitian = $query
-            ->orderByDesc('thn_pelaksanaan')
             ->orderByDesc('id')
+            ->orderByDesc('thn_pelaksanaan')
             ->paginate($perPage)
             ->withQueryString();
 
