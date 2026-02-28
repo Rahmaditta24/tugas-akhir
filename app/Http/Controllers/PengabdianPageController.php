@@ -124,7 +124,7 @@ class PengabdianPageController extends Controller
             ? 'GROUP_CONCAT(COALESCE(bidang_teknologi_inovasi, bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_themes'
             : 'GROUP_CONCAT(COALESCE(bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_themes';
 
-        $cacheKey = 'map_data_pengabdian_v6_' . $v . '_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_pengabdian_v7_' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery, $themeSql) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
@@ -141,7 +141,8 @@ class PengabdianPageController extends Controller
                     DB::raw('GROUP_CONCAT(COALESCE(nama_skema, "-") SEPARATOR "|") as all_skema'),
                     DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan_kegiatan AS CHAR) SEPARATOR "|") as all_years'),
                     DB::raw($themeSql),
-                    DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types')
+                    DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types'),
+                    DB::raw('GROUP_CONCAT(COALESCE(nama, "-") SEPARATOR "|") as all_researchers')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -163,6 +164,7 @@ class PengabdianPageController extends Controller
                     'tahun_list' => $item->all_years,
                     'tema_list' => $item->all_themes,
                     'jenis_pt_list' => $item->all_pt_types,
+                    'all_researchers' => $item->all_researchers,
                 ];
 
             })->all();

@@ -110,7 +110,7 @@ class PenelitianController extends Controller
         ];
 
         // For map: MEMORY-EFFICIENT GEOGRAPHIC CLUSTERING
-        $cacheKey = 'map_data_cache_v4_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_cache_v5_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 300, function() use ($baseQuery) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             // Aggregate by geographic location (rounded coordinates)
@@ -129,7 +129,8 @@ class PenelitianController extends Controller
                     DB::raw('GROUP_CONCAT(COALESCE(skema, "-") SEPARATOR "|") as all_skema'),
                     DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan AS CHAR) SEPARATOR "|") as all_years'),
                     DB::raw('GROUP_CONCAT(COALESCE(tema_prioritas, "-") SEPARATOR "|") as all_themes'),
-                    DB::raw('GROUP_CONCAT(COALESCE(jenis_pt, "-") SEPARATOR "|") as all_pt_types')
+                    DB::raw('GROUP_CONCAT(COALESCE(jenis_pt, "-") SEPARATOR "|") as all_pt_types'),
+                    DB::raw('GROUP_CONCAT(COALESCE(nama, "-") SEPARATOR "|") as all_researchers')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -152,6 +153,7 @@ class PenelitianController extends Controller
                     'tahun_list' => $item->all_years,
                     'tema_list' => $item->all_themes,
                     'jenis_pt_list' => $item->all_pt_types,
+                    'all_researchers' => $item->all_researchers,
                 ];
             })->toArray();
 

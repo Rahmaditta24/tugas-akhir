@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -36,8 +36,6 @@ export default function MapContainer({
     const processingRef = useRef(null);
     const [selectedResearch, setSelectedResearch] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const lastDataRef = useRef(null);
-    const lastModeRef = useRef(null);
 
     const getCurrentDataType = React.useCallback(() => {
         const path = window.location.pathname.toLowerCase();
@@ -110,24 +108,19 @@ export default function MapContainer({
 
     useEffect(() => {
         window.openResearchDetail = (id, field) => {
-            const currentId = id || window._lastClickedId;
-            if (currentId && currentId !== 'undefined' && currentId !== '-') {
-                fetchDetail(currentId, field);
-            } else {
-                console.warn('Attempted to open research detail with invalid ID:', id);
-            }
+            if (id) fetchDetail(id, field);
         };
 
         window.openInstitusiDetail = (dataString) => {
             try {
+                // Handle both plain JSON (from marker click) and URL-encoded JSON (from popup onclick)
                 let data;
                 try {
                     data = JSON.parse(dataString);
                 } catch {
                     data = JSON.parse(decodeURIComponent(dataString));
                 }
-                const currentDataType = typeof getCurrentDataType === 'function' ? getCurrentDataType() : null;
-                setSelectedResearch({ ...data, isInstitusi: true, currentDataType });
+                setSelectedResearch({ ...data, isInstitusi: true });
                 setIsModalOpen(true);
             } catch (e) {
                 console.error("Error parsing institusi data", e);
@@ -135,51 +128,11 @@ export default function MapContainer({
         };
 
         return () => {
-            // Keep globals for Leaflet popups unless unmounting completely
-            // Actually, usually safe to keep them or just re-assign.
+            // Avoid deleting if other components might still need it, but usually safe here
+            window.openResearchDetail = undefined;
+            window.openInstitusiDetail = undefined;
         };
     }, [fetchDetail]);
-
-    const normalizeItem = React.useCallback((item) => {
-        if (!item) return null;
-
-        // ID Detection (Priority: Specific IDs, then generic ID, then split IDS)
-        const id = item._id || item.hilirisasi_id || item.pengabdian_id || item.produk_id || item.id || (item.ids ? item.ids.split('|')[0] : null);
-
-        // Institution Detection
-        const institusi = (item._institusi && item._institusi !== 'undefined' && item._institusi !== '-') ? item._institusi : (item.institusi || item.nama_institusi || item.perguruan_tinggi || item.pt || '-');
-
-        // Province Detection
-        const provinsi = (item._provinsi && item._provinsi !== 'undefined' && item._provinsi !== '-') ? item._provinsi : (item.provinsi || item.prov_pt || item.prov_mitra || '-');
-
-        // Count Detection
-        const count = item._count || item.total_produk || item.total_penelitian || item.total_hilirisasi || item.total_pengabdian || 1;
-
-        // Field/Bidang Detection
-        const field = item._field || item.bidang_fokus || item.skema || item.bidang || '-';
-
-        // Title Detection
-        const judul = item._judul || item.judul || item.judul_kegiatan || item.nama_produk || item.title || 'Detail';
-
-        return {
-            ...item,
-            _id: (id && id !== 'undefined') ? String(id) : null,
-            _institusi: String(institusi),
-            _provinsi: String(provinsi),
-            _count: Number(count),
-            _field: String(field),
-            _judul: String(judul),
-            _tkt: item.tkt || item.tingkat_tkt || item.id_tkt || item.tkt_aplikasi || item.perkiraan_tkt || '-',
-            total_produk: item.total_produk || item.total_penelitian || count,
-            total_inventor: (() => {
-                if (item.all_researchers && typeof item.all_researchers === 'string') {
-                    const unique = new Set(item.all_researchers.split('|').map(s => s.trim()).filter(s => s && s !== '-'));
-                    return unique.size || '-';
-                }
-                return item.total_inventor || item.total_nama || item.jumlah_inventor || item.nama_inventor || item.nama || '-';
-            })()
-        };
-    }, []);
 
     useEffect(() => {
         if (!mapRef.current || mapInstanceRef.current) return;
@@ -193,7 +146,7 @@ export default function MapContainer({
             preferCanvas: true,
             maxBounds: CONFIG.INDONESIA_BOUNDS,
             maxBoundsViscosity: 0.8,
-            // ── Smooth zoom & pan ──────────────────────────────────────
+            // ΓöÇΓöÇ Smooth zoom & pan ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
             zoomAnimation: true,
             zoomAnimationThreshold: 4,
             markerZoomAnimation: true,
@@ -252,8 +205,7 @@ export default function MapContainer({
         };
     }, []);
 
-    const generatePopupContent = (itemArg) => {
-        const item = normalizeItem(itemArg);
+    const generatePopupContent = (item) => {
         const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
         const formatNum = (n) => (n && !isNaN(n)) ? Number(n).toLocaleString('id-ID') : '0';
 
@@ -261,30 +213,28 @@ export default function MapContainer({
             const modalData = {
                 isInstitusi: true,
                 isFasilitasLab: true,
-                institusi: item._institusi,
-                total_penelitian: item._count,
+                institusi: item.institusi,
+                total_penelitian: item.total_penelitian,
                 ptn_pts: item.kategori_pt,
                 kategori_pt: item.kategori_pt,
-                provinsi: item._provinsi,
+                provinsi: item.provinsi,
                 lab_list: item.lab_list || '',
             };
             const encoded = encodeURIComponent(JSON.stringify(modalData));
             return `
                 <div style="padding: 12px; min-width: 200px; font-family: 'Inter', sans-serif;">
-                    <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${safeValue(item._institusi)}</h3>
-                    <div style="font-size: 12px; color: #64748b;">${formatNum(item._count)} laboratorium</div>
+                    <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${safeValue(item.institusi)}</h3>
+                    <div style="font-size: 12px; color: #64748b;">${formatNum(item.total_penelitian)} laboratorium</div>
                     <div style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
-                        <button onclick="window.openInstitusiDetail('${encoded}')"
-                           style="color: white; background: #3E7DCA; border: none; border-radius: 4px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-                           Lihat Detail Kampus
-                        </button>
+                        <span onclick="window.openInstitusiDetail('${encoded}')"
+                           style="color: #2563eb; font-size: 11px; font-style: italic; cursor: pointer;">Lihat detail kampus</span>
                     </div>
                 </div>
             `;
         }
 
         if (item.jenis_permasalahan) {
-            const region = item.kabupaten_kota || item._provinsi || 'Wilayah';
+            const region = item.kabupaten_kota || item.provinsi || 'Wilayah';
             return `
                 <div style="padding: 8px 12px; min-width: 180px; font-family: sans-serif;">
                     <div style="font-weight: 600; font-size: 14px; color: #1f2937; margin-bottom: 4px;">${safeValue(region)}</div>
@@ -296,39 +246,23 @@ export default function MapContainer({
             `;
         } else {
             let popupContent = '<div class="p-3" style="max-width: 320px; font-family: sans-serif;">';
-            if (item._count > 1 || !item._id) {
-                popupContent += `<div class="mb-2 p-2 bg-blue-50 rounded"><p class="text-sm font-bold text-[#3E7DCA]">Total: ${formatNum(item._count)}</p></div>`;
+            if (item.total_penelitian) {
+                popupContent += `<div class="mb-2 p-2 bg-blue-50 rounded"><p class="text-sm font-bold text-[#3E7DCA]">Total: ${formatNum(item.total_penelitian)}</p></div>`;
             }
-            if (item._institusi && item._institusi !== '-') {
-                const arr = item._institusi.split(' | ');
-                const str = arr.length > 3 ? arr.slice(0, 3).join(', ') + ` (+${arr.length - 3})` : item._institusi.replace(/ \| /g, ', ');
+            if (item.institusi) {
+                const arr = item.institusi.split(' | ');
+                const str = arr.length > 3 ? arr.slice(0, 3).join(', ') + ` (+${arr.length - 3})` : item.institusi.replace(/ \| /g, ', ');
                 popupContent += `<p class="text-xs mb-1"><strong>Institusi:</strong> ${safeValue(str)}</p>`;
             }
-            if (item._provinsi && item._provinsi !== '-') popupContent += `<p class="text-xs"><strong>Provinsi:</strong> ${safeValue(item._provinsi)}</p>`;
-
-            if (item._id && item._id !== 'undefined') {
-                const escField = item._field.replace(/'/g, "\\'");
-                popupContent += `
-                    <div class="mt-2 pt-2 border-t border-gray-100 flex justify-end">
-                        <span onclick="window.openResearchDetail('${item._id}', '${escField}')" 
-                            style="color: #64748b; font-size: 11px; font-style: italic; cursor: pointer;">
-                            Klik untuk detail
-                        </span>
-                    </div>
-                `;
-            }
-
+            if (item.provinsi) popupContent += `<p class="text-xs"><strong>Provinsi:</strong> ${safeValue(item.provinsi)}</p>`;
             popupContent += '</div>';
             return popupContent;
         }
     };
 
-    const generateDetailPopup = (title, field, institusi, provinsi, tahun, id, color, tkt = null) => {
+    const generateDetailPopup = (title, field, institusi, provinsi, tahun, id, color) => {
         const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
         const escField = safeValue(field).replace(/'/g, "\\'");
-        const type = getCurrentDataType();
-        const isProdukMode = type === 'produk';
-        const isHilirisasiMode = type === 'hilirisasi';
 
         return `
             <div style="padding: 10px; min-width: 280px; max-width: 350px; font-family: 'Inter', sans-serif; background: #ffffff;">
@@ -336,35 +270,28 @@ export default function MapContainer({
                     ${safeValue(title)}
                 </div>
                 <div style="height: 1px; background-color: #f1f5f9; margin-bottom: 12px;"></div>
-                <div style="margin-bottom: 15px;">
+                <div style="margin-bottom: 15px; space-y: 6px;">
                   <div style="display: flex; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 85px; flex-shrink: 0;">Institusi:</span>
+                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 75px; flex-shrink: 0;">Institusi:</span>
                     <span style="font-size: 12px; color: #4a5568;">${safeValue(institusi)}</span>
                   </div>
                   <div style="display: flex; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 85px; flex-shrink: 0;">Provinsi:</span>
+                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 75px; flex-shrink: 0;">Provinsi:</span>
                     <span style="font-size: 12px; color: #4a5568;">${safeValue(provinsi)}</span>
                   </div>
-                  ${isProdukMode ? `
                   <div style="display: flex; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 85px; flex-shrink: 0;">TKT:</span>
-                    <span style="font-size: 12px; color: #4a5568;">${safeValue(tkt)}</span>
-                  </div>
-                  ` : `
-                  <div style="display: flex; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 85px; flex-shrink: 0;">Tahun:</span>
+                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 75px; flex-shrink: 0;">Tahun:</span>
                     <span style="font-size: 12px; color: #4a5568;">${safeValue(tahun)}</span>
                   </div>
-                  `}
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                    <div style="background-color: ${color || '#3E7DCA'}; color: white; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <div style="background-color: ${color || '#3E7DCA'}; color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;">
                         ${safeValue(field)}
                     </div>
-                    <button onclick="window.openResearchDetail('${id}', '${escField}')" 
-                        style="color: white; background: #3E7DCA; border: none; border-radius: 4px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(62, 125, 202, 0.2);">
-                        Lihat Detail
-                    </button>
+                    <span onclick="window.openResearchDetail('${id}', '${escField}')" 
+                        style="color: #64748b; font-style: italic; border: none; background: transparent; padding: 0; font-size: 11px; cursor: pointer;">
+                        Klik untuk detail
+                    </span>
                 </div>
             </div>
         `;
@@ -373,67 +300,50 @@ export default function MapContainer({
     const calculateStatsFromMarkers = (markers) => {
         if (!onStatsChange) return;
 
-        // Use setTimeout to allow the popup to open before a potential re-render triggers
-        setTimeout(() => {
-            let totalResearch = 0;
-            const institutions = new Set();
-            const provinces = new Set();
-            const fields = new Set();
+        let totalResearch = 0;
+        const institutions = new Set();
+        const provinces = new Set();
+        const fields = new Set();
 
-            markers.forEach(marker => {
-                const count = marker.options.penelitianCount || 0;
-                totalResearch += count;
+        markers.forEach(marker => {
+            const count = marker.options.penelitianCount || 0;
+            totalResearch += count;
 
-                const data = marker.options.statsData;
-                if (data) {
-                    if (data.institusi) {
-                        data.institusi.split('|').forEach(i => {
-                            const trimmed = i.trim();
-                            if (trimmed && trimmed !== '-') institutions.add(trimmed);
-                        });
-                    }
-                    if (data.provinsi) {
-                        data.provinsi.split('|').forEach(p => {
-                            const trimmed = p.trim();
-                            if (trimmed && trimmed !== '-') provinces.add(trimmed);
-                        });
-                    }
-                    if (data.bidang) {
-                        data.bidang.split('|').forEach(f => {
-                            const trimmed = f.trim();
-                            if (trimmed && trimmed !== '-') fields.add(trimmed);
-                        });
-                    }
+            const data = marker.options.statsData;
+            if (data) {
+                if (data.institusi) {
+                    // Handle pipe separated institutions in single markers if any
+                    data.institusi.split('|').forEach(i => {
+                        const trimmed = i.trim();
+                        if (trimmed && trimmed !== '-') institutions.add(trimmed);
+                    });
                 }
-            });
+                if (data.provinsi) {
+                    data.provinsi.split('|').forEach(p => {
+                        const trimmed = p.trim();
+                        if (trimmed && trimmed !== '-') provinces.add(trimmed);
+                    });
+                }
+                if (data.bidang) {
+                    data.bidang.split('|').forEach(f => {
+                        const trimmed = f.trim();
+                        if (trimmed && trimmed !== '-') fields.add(trimmed);
+                    });
+                }
+            }
+        });
 
-            onStatsChange({
-                totalResearch,
-                totalUniversities: institutions.size,
-                totalProvinces: provinces.size,
-                totalFields: fields.size || 13
-            });
-        }, 50);
+        onStatsChange({
+            totalResearch,
+            totalUniversities: institutions.size,
+            totalProvinces: provinces.size,
+            totalFields: fields.size || 13 // Fallback to global if 0 but research exists
+        });
     };
 
     useEffect(() => {
         const fullSource = (mapData && mapData.length) ? mapData : data;
         if (!mapInstanceRef.current) return;
-
-        // PREVENT UNNECESSARY REDRAWS: 
-        // Only clear and redraw if the displayMode has changed OR the data content has changed
-        const dataKey = JSON.stringify({
-            len: fullSource.length,
-            mode: displayMode,
-            bubbles: showBubbles,
-            firstId: fullSource[0]?.id || fullSource[0]?._id
-        });
-
-        if (lastDataRef.current === dataKey) {
-            return;
-        }
-
-        lastDataRef.current = dataKey;
 
         if (processingRef.current) {
             cancelAnimationFrame(processingRef.current);
@@ -447,9 +357,7 @@ export default function MapContainer({
 
         mapInstanceRef.current.eachLayer((layer) => {
             if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.GeoJSON) {
-                if (!layer.options?.permanent) { // Protection for base layers if any
-                    mapInstanceRef.current.removeLayer(layer);
-                }
+                mapInstanceRef.current.removeLayer(layer);
             }
         });
 
@@ -464,11 +372,11 @@ export default function MapContainer({
                 iconCreateFunction: function (cluster) {
                     const total = cluster.getAllChildMarkers().reduce((sum, m) => sum + (m.options.penelitianCount || 0), 0);
 
-                    // Set constant size for all bubbles (Matching original: 50px)
+                    // Set constant size for all bubbles (Matching screenshot: 50px)
                     const radius = 25;
                     const fontSize = 14;
                     return L.divIcon({
-                        html: `<div style="background-color: rgba(62, 125, 202, 0.6); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
+                        html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
                         className: 'custom-cluster-icon',
                         iconSize: L.point(radius * 2, radius * 2, true),
                         iconAnchor: L.point(radius, radius)
@@ -497,95 +405,64 @@ export default function MapContainer({
             mapInstanceRef.current.addLayer(clusterGroup);
 
             const markersToAdd = [];
-            let processedSource = fullSource;
 
-            if (displayMode === 'institusi' && !isPermasalahan && fullSource.length > 0 && !fullSource[0].isFasilitasLab) {
-                const campusMap = {};
-                for (let x = 0; x < fullSource.length; x++) {
-                    const raw = fullSource[x];
-                    const ni = normalizeItem(raw);
-                    const campusName = ni._institusi;
-                    if (!campusMap[campusName]) {
-                        campusMap[campusName] = {
-                            ...raw,
-                            _isAggregated: true,
-                            _totalCount: 0,
-                            _bidangList: [],
-                            _inventors: new Set(),
-                            _titles: []
-                        };
-                    }
-                    const g = campusMap[campusName];
-                    const c = ni._count || 1;
-                    g._totalCount += c;
-
-                    const bf = raw.bidang_fokus || raw.bidang || ni._field || '-';
-                    if (bf !== '-') g._bidangList.push(bf);
-
-                    const inv = raw.nama_inventor || raw.nama_ketua || raw.nama_pengusul || raw.nama || '-';
-                    if (inv !== '-') g._inventors.add(inv);
-
-                    if (raw.judul || raw.nama_produk) g._titles.push(raw.judul || raw.nama_produk);
-                }
-                processedSource = Object.values(campusMap).map(g => ({
-                    ...g,
-                    _count: g._totalCount, // Update normalized count for balloon numbering
-                    total_produk: g._totalCount,
-                    total_penelitian: g._totalCount,
-                    bidang_fokus: g._bidangList.join('|'),
-                    total_nama: g._inventors.size,
-                    total_inventor: g._inventors.size,
-                    skema_list: Array.from(new Set(g._bidangList)).join('|'),
-                }));
-            }
-
-            for (let i = 0; i < processedSource.length; i++) {
-                const rawItem = processedSource[i];
-                const item = normalizeItem(rawItem);
-                const lat = parseFloat(rawItem.pt_latitude ?? rawItem.latitude);
-                const lng = parseFloat(rawItem.pt_longitude ?? rawItem.longitude);
+            for (let i = 0; i < fullSource.length; i++) {
+                const item = fullSource[i];
+                const lat = parseFloat(item.pt_latitude ?? item.latitude);
+                const lng = parseFloat(item.pt_longitude ?? item.longitude);
                 if (isNaN(lat) || isNaN(lng)) continue;
 
-                // ── FasilitasLab: grouped per institusi ──────────────────
-                if (rawItem.isFasilitasLab) {
-                    const count = item._count;
+                // ΓöÇΓöÇ FasilitasLab: grouped per institusi ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+                if (item.isFasilitasLab) {
+                    const count = item.total_penelitian || 1;
                     // Logo file named exactly as institusi name, stored in public/assets/logos/
-                    const logoUrl = item._institusi
-                        ? `/assets/logos/${encodeURIComponent(item._institusi)}.webp`
+                    const logoUrl = item.institusi
+                        ? `/assets/logos/${encodeURIComponent(item.institusi)}.webp`
                         : null;
-                    const initials = (item._institusi || '?').split(/\s+/).map(w => w[0]).slice(0, 3).join('');
+                    const initials = (item.institusi || '?').split(/\s+/).map(w => w[0]).slice(0, 3).join('');
                     const size = 52;
                     // Fallback text sits behind; img hides itself on error so text shows through
                     const iconHtml = `<div style="position:relative;width:${size}px;height:${size}px;border-radius:50%;border:2.5px solid #3E7DCA;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.25);overflow:hidden;cursor:pointer;">
                         <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#3E7DCA;">${initials}</span>
                         ${logoUrl ? `<img src="${logoUrl}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;" onerror="this.style.display='none'"/>` : ''}
                     </div>`;
-
                     const marker = L.marker([lat, lng], {
                         icon: L.divIcon({
                             html: iconHtml,
-                            className: 'fasilitas-marker',
-                            iconSize: L.point(size, size),
+                            className: 'custom-marker-fasilitas',
+                            iconSize: L.point(size, size, true),
                             iconAnchor: L.point(size / 2, size / 2)
                         }),
                         penelitianCount: count,
-                        statsData: { institusi: item._institusi, provinsi: item._provinsi },
+                        statsData: { institusi: item.institusi, provinsi: item.provinsi },
                     });
-                    marker._fasilitasData = { ...rawItem, isInstitusi: true, isFasilitasLab: true };
-                    marker.bindPopup(generatePopupContent(rawItem), { maxWidth: 300 });
-                    marker.on('click', (e) => {
-                        L.DomEvent.stopPropagation(e);
+                    marker._fasilitasData = {
+                        isInstitusi: true,
+                        isFasilitasLab: true,
+                        institusi: item.institusi,
+                        total_penelitian: count,
+                        ptn_pts: item.kategori_pt,
+                        kategori_pt: item.kategori_pt,
+                        provinsi: item.provinsi,
+                        lab_list: item.lab_list || '',
+                    };
+                    marker.bindTooltip(
+                        `<b>${item.institusi || '-'}</b><br/>${count} laboratorium`,
+                        { sticky: true, direction: 'top' }
+                    );
+                    marker.on('click', () => {
                         calculateStatsFromMarkers([marker]);
-                        marker.openPopup();
+                        if (window.openInstitusiDetail && marker._fasilitasData) {
+                            window.openInstitusiDetail(JSON.stringify(marker._fasilitasData));
+                        }
                     });
                     markersToAdd.push(marker);
                     continue;
                 }
 
-                if (displayMode === 'institusi' && !isPermasalahan) {
-                    const count = item._count;
-                    const radius = 25;
-                    const fontSize = 14;
+                if (displayMode === 'institusi' && !isPermasalahan) {                    const count = item.total_penelitian || 1;
+                    let radius = 25;
+                    let fontSize = 14;
 
                     const marker = L.marker([lat, lng], {
                         icon: L.divIcon({
@@ -596,52 +473,44 @@ export default function MapContainer({
                         }),
                         penelitianCount: count,
                         statsData: {
-                            institusi: item._institusi,
-                            provinsi: item._provinsi
+                            institusi: item.institusi,
+                            provinsi: item.provinsi
                         }
                     });
                     marker.bindPopup(`
                         <div style="padding: 12px; min-width: 200px; font-family: 'Inter', sans-serif;">
-                            <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${item._institusi}</h3>
-                            <div style="font-size: 12px; color: #64748b;">${count.toLocaleString('id-ID')} data</div>
+                            <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${item.institusi || '-'}</h3>
+                            <div style="font-size: 12px; color: #64748b;">${count.toLocaleString('id-ID')} penelitian</div>
                             <div style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
-                                <button onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem))}')"
-                                   style="color: white; background: #3E7DCA; border: none; border-radius: 4px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-                                   Lihat Detail Kampus
-                                </button>
+                                <span onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(item))}')"
+                                   style="color: #2563eb; font-size: 11px; text-decoration: none; font-style: italic; cursor: pointer;">Lihat detail kampus</span>
                             </div>
                         </div>
                     `, { maxWidth: 300 });
 
-                    marker.on('click', (e) => {
-                        L.DomEvent.stopPropagation(e);
+                    marker.on('click', () => {
                         calculateStatsFromMarkers([marker]);
-                        marker.openPopup();
                     });
 
                     markersToAdd.push(marker);
                 }
                 else if (displayMode === 'peneliti' && !isPermasalahan) {
-                    const hasGroupedDetails = !!rawItem.ids;
-                    const hasSingleDetail = !!item._id;
+                    const hasGroupedDetails = !!item.ids;
+                    const hasSingleDetail = !!item.id;
                     const hasDetails = hasGroupedDetails || hasSingleDetail;
-
                     const fields = hasGroupedDetails
-                        ? (rawItem.bidang_fokus ? rawItem.bidang_fokus.split('|') : [])
-                        : [item._field];
+                        ? (item.bidang_fokus ? item.bidang_fokus.split('|') : [])
+                        : [item.bidang_fokus || item.skema || '-'];
                     const ids = hasGroupedDetails
-                        ? rawItem.ids.split('|').filter(id => id && id !== 'undefined')
-                        : (item._id ? [item._id] : []);
+                        ? item.ids.split('|')
+                        : [String(item.id)];
                     const titles = hasGroupedDetails
-                        ? (rawItem.titles ? rawItem.titles.split('|') : [])
-                        : [item._judul];
+                        ? (item.titles ? item.titles.split('|') : [])
+                        : [item.judul || item.title || 'Detail'];
                     const years = hasGroupedDetails
-                        ? (rawItem.tahun_list ? rawItem.tahun_list.split('|') : [])
-                        : [rawItem.tahun || '-'];
-                    const tkts = hasGroupedDetails
-                        ? (rawItem.tkt_list ? rawItem.tkt_list.split('|') : [])
-                        : [item._tkt || '-'];
-                    const count = hasDetails ? ids.length : (item._count || 1);
+                        ? (item.tahun_list ? item.tahun_list.split('|') : [])
+                        : [item.tahun || '-'];
+                    const count = hasDetails ? ids.length : (item.total_penelitian || 1);
 
                     if (!hasDetails && count > 30) {
                         const radius = 25;
@@ -655,17 +524,15 @@ export default function MapContainer({
                             }),
                             penelitianCount: count,
                             statsData: {
-                                institusi: item._institusi,
-                                provinsi: item._provinsi,
-                                bidang: item._field
+                                institusi: item.institusi,
+                                provinsi: item.provinsi,
+                                bidang: item.bidang_fokus
                             }
                         });
-                        marker.bindPopup(generatePopupContent(rawItem), { maxWidth: 320 });
+                        marker.bindPopup(generatePopupContent(item), { maxWidth: 320 });
 
-                        marker.on('click', (e) => {
-                            L.DomEvent.stopPropagation(e);
+                        marker.on('click', () => {
                             calculateStatsFromMarkers([marker]);
-                            marker.openPopup();
                         });
 
                         markersToAdd.push(marker);
@@ -703,56 +570,23 @@ export default function MapContainer({
                                 className: 'research-circle-marker-premium',
                                 penelitianCount: 1,
                                 statsData: {
-                                    institusi: item._institusi,
-                                    provinsi: item._provinsi,
+                                    institusi: item.institusi,
+                                    provinsi: item.provinsi,
                                     bidang: fields[idx]
                                 }
                             });
 
                             const popup = hasDetails ?
-                                generateDetailPopup(
-                                    titles[idx] || 'Detail',
-                                    fields[idx],
-                                    item._institusi,
-                                    item._provinsi,
-                                    years[idx],
-                                    ids[idx],
-                                    matchedColor,
-                                    tkts[idx]
-                                ) :
-                                generatePopupContent(rawItem);
+                                generateDetailPopup(titles[idx] || 'Detail', fields[idx], item.institusi, item.provinsi, years[idx], ids[idx], matchedColor) :
+                                generatePopupContent(item);
 
                             marker.bindPopup(popup, { maxWidth: 400 });
 
-                            marker.on('click', async (e) => {
-                                L.DomEvent.stopPropagation(e);
+                            marker.on('click', () => {
                                 calculateStatsFromMarkers([marker]);
-
-                                // AUTO-FETCH: Get TKT from API if missing in summary data
-                                const type = getCurrentDataType();
-                                const currentTkt = tkts[idx];
-                                if ((type === 'produk' || type === 'hilirisasi') && (currentTkt === '-' || currentTkt === 'undefined')) {
-                                    try {
-                                        const resp = await fetch(`/api/research/${type}/${ids[idx]}`);
-                                        if (resp.ok) {
-                                            const det = await resp.json();
-                                            const realTkt = det.tkt || det.id_tkt || det.tingkat_tkt || '-';
-                                            const updatedPopup = generateDetailPopup(
-                                                titles[idx] || 'Detail',
-                                                fields[idx],
-                                                item._institusi,
-                                                item._provinsi,
-                                                years[idx],
-                                                ids[idx],
-                                                matchedColor,
-                                                realTkt
-                                            );
-                                            marker.setPopupContent(updatedPopup);
-                                        }
-                                    } catch (err) { console.error("Error fetching popup TKT:", err); }
+                                if (ids[idx] && ids[idx] !== 'undefined' && ids[idx] !== '-') {
+                                    fetchDetail(ids[idx], fields[idx]);
                                 }
-
-                                marker.openPopup();
                             });
 
                             markersToAdd.push(marker);
@@ -760,7 +594,7 @@ export default function MapContainer({
                     }
                 }
                 else {
-                    const count = item._count;
+                    const count = item.total_penelitian || 1;
                     const marker = L.marker([lat, lng], {
                         icon: L.divIcon({
                             html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">${count.toLocaleString('id-ID')}</div>`,
@@ -770,16 +604,14 @@ export default function MapContainer({
                         }),
                         penelitianCount: count,
                         statsData: {
-                            institusi: item._institusi,
-                            provinsi: item._provinsi
+                            institusi: item.institusi,
+                            provinsi: item.provinsi
                         }
                     });
-                    marker.bindPopup(generatePopupContent(rawItem));
+                    marker.bindPopup(generatePopupContent(item));
 
-                    marker.on('click', (e) => {
-                        L.DomEvent.stopPropagation(e);
+                    marker.on('click', () => {
                         calculateStatsFromMarkers([marker]);
-                        marker.openPopup();
                     });
 
                     markersToAdd.push(marker);
@@ -792,7 +624,7 @@ export default function MapContainer({
         return () => {
             if (processingRef.current) cancelAnimationFrame(processingRef.current);
         };
-    }, [mapData, data, showBubbles, displayMode, viewMode, fetchDetail, normalizeItem]);
+    }, [mapData, data, showBubbles, displayMode, viewMode, fetchDetail]);
 
     return (
         <>

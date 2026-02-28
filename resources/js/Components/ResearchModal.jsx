@@ -4,10 +4,12 @@ import { getFieldColor } from '../utils/fieldColors';
 export default function ResearchModal({ isOpen, onClose, data }) {
     if (!isOpen || !data) return null;
 
-    const isInstitusi = data.isInstitusi;
+    const isInstitusi = !!data.isInstitusi;
+    const isProdukPage = data.currentDataType === 'produk' || window.location.pathname.toLowerCase().includes('produk');
     const isProduk = !isInstitusi && !!data.isProduk;
-    const isHilirisasi = !isInstitusi && !isProduk && !!data.isHilirisasi;
-    const isPengabdian = !isInstitusi && !isProduk && !isHilirisasi && !!data.isPengabdian;
+    const isHilirisasi = !isInstitusi && !!data.isHilirisasi;
+    const isPengabdian = !isInstitusi && !!data.isPengabdian;
+    const isFasilitasLab = !!data.isFasilitasLab;
     const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
     const formatNum = (n) => (n && !isNaN(n)) ? Number(n).toLocaleString('id-ID') : n;
 
@@ -67,21 +69,25 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                     <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
                                         Informasi Produk
                                     </h3>
-                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
-                                            <span className="text-sm font-medium text-gray-700">Nama Produk:</span>
-                                            <span>{safeValue(data.nama_produk || data.judul)}</span>
+                                    <div className="space-y-5 font-semibold text-sm text-gray-900">
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800 mb-1">Nama Produk:</p>
+                                            <p className="text-sm font-semibold">{safeValue(data.nama_produk || data.judul)}</p>
                                         </div>
-                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
-                                            <span className="text-sm font-medium text-gray-700">Deskripsi Produk:</span>
-                                            <span className="whitespace-pre-line">{safeValue(data.deskripsi_produk)}</span>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800 mb-1">Deskripsi Produk:</p>
+                                            <div className="max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
+                                                <p className="text-sm font-normal text-gray-700 leading-relaxed whitespace-pre-line">
+                                                    {safeValue(data.deskripsi_produk)}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
-                                            <span className="text-sm font-medium text-gray-700">TKT:</span>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-bold text-gray-800">TKT:</span>
                                             <span>{safeValue(data.tkt)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
-                                            <span className="text-sm font-medium text-gray-700">Bidang:</span>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-bold text-gray-800">Bidang:</span>
                                             <span>{safeValue(data.bidang || data.bidang_fokus)}</span>
                                         </div>
                                     </div>
@@ -91,21 +97,21 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                     <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
                                         Informasi Inventor & Institusi
                                     </h3>
-                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
-                                            <span className="text-sm font-medium text-gray-700">Nama Inventor:</span>
-                                            <span>{safeValue(data.nama_inventor || data.nama)}</span>
+                                    <div className="space-y-4 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-bold text-gray-800">Nama Inventor:</span>
+                                            <span>{safeValue(data.nama_inventor || data.nama || data.nama_ketua)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
-                                            <span className="text-sm font-medium text-gray-700">Email Inventor:</span>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-bold text-gray-800">Email Inventor:</span>
                                             <span>{safeValue(data.email_inventor)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
-                                            <span className="text-sm font-medium text-gray-700">Institusi:</span>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-bold text-gray-800">Institusi:</span>
                                             <span>{safeValue(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
-                                            <span className="text-sm font-medium text-gray-700">Provinsi:</span>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-bold text-gray-800">Provinsi:</span>
                                             <span>{safeValue(data.provinsi || data.prov_pt)}</span>
                                         </div>
                                     </div>
@@ -115,10 +121,12 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                     <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
                                         Informasi Paten
                                     </h3>
-                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[170px_1fr] items-start gap-y-1">
-                                            <span className="text-sm font-medium text-gray-700">Nomor dan Deskripsi Paten:</span>
-                                            <span className="whitespace-pre-line">{safeValue(data.nomor_paten)}</span>
+                                    <div className="space-y-4 font-semibold text-sm text-gray-900">
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-800 mb-1">Nomor dan Deskripsi Paten:</p>
+                                            <p className="text-sm font-normal text-gray-700 leading-relaxed whitespace-pre-line">
+                                                {safeValue(data.nomor_paten || data.deskripsi_paten)}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -216,112 +224,160 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                 </div>
                             </>
                         ) : (
-                        <>
-                        {/* Section: Informasi Institusi */}
-                        <div>
-                            <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
-                                Informasi Institusi
-                            </h3>
-                            <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                {isInstitusi && (
-                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                        <span className="text-sm font-medium text-gray-700">{data.isFasilitasLab ? 'Total Fasilitas:' : 'Total Penelitian:'}</span>
-                                        <span className="text-blue-600 font-bold">{formatNum(data.total_penelitian)}</span>
-                                    </div>
-                                )}
-                                {!isInstitusi && (
-                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                        <span className="text-sm font-medium text-gray-700">Peneliti:</span>
-                                        <span>{safeValue(data.nama || data.nama_ketua || data.nama_pengusul)}</span>
-                                    </div>
-                                )}
-                                <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                    <span className="text-sm font-medium text-gray-700">Institusi:</span>
-                                    <span>{safeValue(data.nama_institusi || data.institusi || data.perguruan_tinggi)}</span>
-                                </div>
-                                <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                    <span className="text-sm font-medium text-gray-700">Jenis PT:</span>
-                                    <span>{ptType}</span>
-                                </div>
-                                <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                    <span className="text-sm font-medium text-gray-700">Provinsi:</span>
-                                    <span>{safeValue(data.provinsi || data.prov_pt)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Section: Informasi Penelitian / Laboratorium */}
-                        {data.isFasilitasLab ? (
-                            <div>
-                                <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
-                                    Informasi Laboratorium
-                                </h3>
-                                <span className="text-sm font-medium text-gray-700 block mb-2">Nama Lab:</span>
-                                <ul className="space-y-0.5">
-                                    {(data.lab_list || '').split('|').filter(Boolean).map((lab, i) => (
-                                        <li key={i} className="text-sm text-gray-800 py-1.5 border-b border-slate-100 last:border-0">
-                                            {lab}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ) : (
-                        <div>
-                            <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
-                                Informasi Penelitian
-                            </h3>
-                            <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                    <span className="text-sm font-medium text-gray-700">Skema:</span>
-                                    <div>
-                                        {skemaBrief.length > 1 ? (
-                                            <ul className="list-disc list-outside ml-4 space-y-1">
-                                                {skemaBrief.map((s, i) => <li key={i}>{s}</li>)}
-                                            </ul>
-                                        ) : (
-                                            skemaBrief.length === 1 ? skemaBrief[0] : safeValue(data.skema || data.nama_skema)
+                            <>
+                                {/* Section: Informasi Institusi */}
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        {isProdukPage ? 'Informasi Kampus' : 'Informasi Institusi'}
+                                    </h3>
+                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                        {isInstitusi && (
+                                            <>
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">
+                                                        {isProdukPage ? 'Nama Kampus:' : (data.isFasilitasLab ? 'Nama Institusi:' : 'Institusi:')}
+                                                    </span>
+                                                    <span>{safeValue(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</span>
+                                                </div>
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">
+                                                        {isProdukPage ? 'Jumlah Produk:' : (data.isFasilitasLab ? 'Total Fasilitas:' : 'Total Penelitian:')}
+                                                    </span>
+                                                    <span className="text-blue-600 font-bold">{formatNum(data.total_produk || data.total_penelitian || data._count || 1)}</span>
+                                                </div>
+                                                {isProdukPage && (
+                                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                        <span className="text-sm font-medium text-gray-700">Jumlah Inventor:</span>
+                                                        <span>{safeValue(data.total_inventor || data.jumlah_inventor || '-')}</span>
+                                                    </div>
+                                                )}
+                                                {!isProdukPage && (
+                                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                        <span className="text-sm font-medium text-gray-700">Jenis PT:</span>
+                                                        <span>{ptType}</span>
+                                                    </div>
+                                                )}
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">Provinsi:</span>
+                                                    <span>{safeValue(data.provinsi || data.prov_pt)}</span>
+                                                </div>
+                                            </>
+                                        )}
+                                        {!isInstitusi && (
+                                            <>
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">Peneliti:</span>
+                                                    <span>{safeValue(data.nama || data.nama_ketua || data.nama_pengusul)}</span>
+                                                </div>
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">Institusi:</span>
+                                                    <span>{safeValue(data.nama_institusi || data.institusi || data.perguruan_tinggi)}</span>
+                                                </div>
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">Provinsi:</span>
+                                                    <span>{safeValue(data.provinsi || data.prov_pt)}</span>
+                                                </div>
+                                            </>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                    <span className="text-sm font-medium text-gray-700">Tahun:</span>
-                                    <div>{tahunBrief.length > 0 ? tahunBrief.join(', ') : safeValue(data.thn_pelaksanaan || data.tahun || data.thn_pelaksanaan_kegiatan)}</div>
-                                </div>
-
-                                <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                    <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
+                                {/* Section: Informasi Penelitian / Laboratorium */}
+                                {data.isFasilitasLab ? (
                                     <div>
-                                        {isInstitusi && bidangBrief.length > 0 ? (
-                                            <ul className="list-disc list-outside ml-4 space-y-1">
-                                                {bidangBrief.map(([b, c], i) => (
-                                                    <li key={i}>{formatNum(c)} {b}</li>
+                                        <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                            Informasi Laboratorium
+                                        </h3>
+                                        <span className="text-sm font-medium text-gray-700 block mb-2">Nama Lab:</span>
+                                        <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar border border-slate-50 rounded-lg p-2 bg-slate-50/30">
+                                            <ul className="list-disc list-outside ml-5 space-y-2">
+                                                {(data.lab_list || '').split('|').filter(Boolean).map((lab, i) => (
+                                                    <li key={i} className="text-sm text-gray-800 leading-relaxed">
+                                                        {lab}
+                                                    </li>
                                                 ))}
                                             </ul>
-                                        ) : (
-                                            bidangBrief.length > 0 ? bidangBrief.join(', ') : safeValue(data.bidang_fokus || data.bidang)
-                                        )}
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                    <span className="text-sm font-medium text-gray-700">Tema Prioritas:</span>
+                                ) : (
                                     <div>
-                                        {isInstitusi && temaBrief.length > 0 ? (
-                                            <ul className="list-disc list-outside ml-4 space-y-1">
-                                                {temaBrief.map(([t, c], i) => (
-                                                    <li key={i}>{formatNum(c)} {t}</li>
-                                                ))}
-                                            </ul>
-                                        ) : (
-                                            temaBrief.length > 0 ? temaBrief.join(', ') : safeValue(data.tema_prioritas || data.luaran || data.tema)
-                                        )}
+                                        <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                            {isProdukPage ? 'Bidang:' : (isPengabdian ? 'Informasi Pengabdian' : isHilirisasi ? 'Informasi Hilirisasi' : 'Informasi Penelitian')}
+                                        </h3>
+                                        <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                            {!isProdukPage && (
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">Skema:</span>
+                                                    <div>
+                                                        {skemaBrief.length > 1 ? (
+                                                            <ul className="list-disc list-outside ml-4 space-y-1">
+                                                                {skemaBrief.map((s, i) => <li key={i}>{s}</li>)}
+                                                            </ul>
+                                                        ) : (
+                                                            skemaBrief.length === 1 ? skemaBrief[0] : safeValue(data.skema || data.nama_skema)
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {!isProdukPage && (
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">Tahun:</span>
+                                                    <div>{tahunBrief.length > 0 ? tahunBrief.join(', ') : safeValue(data.thn_pelaksanaan || data.tahun || data.thn_pelaksanaan_kegiatan)}</div>
+                                                </div>
+                                            )}
+
+                                            {isProdukPage ? (
+                                                <div className="grid grid-cols-1 items-baseline">
+                                                    <div className="mt-1">
+                                                        {bidangBrief.length > 0 ? (
+                                                            <ul className="list-disc list-outside ml-4 space-y-1.5 font-normal text-gray-700">
+                                                                {bidangBrief.map(([b, c], i) => (
+                                                                    <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {b}</li>
+                                                                ))}
+                                                            </ul>
+                                                        ) : (
+                                                            <p className="text-sm font-normal text-gray-600">{safeValue(data.bidang_fokus || data.bidang)}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
+                                                    <div>
+                                                        {isInstitusi && bidangBrief.length > 0 ? (
+                                                            <ul className="list-disc list-outside ml-4 space-y-1">
+                                                                {bidangBrief.map(([b, c], i) => (
+                                                                    <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {b}</li>
+                                                                ))}
+                                                            </ul>
+                                                        ) : (
+                                                            bidangBrief.length > 0 ? bidangBrief.join(', ') : safeValue(data.bidang_fokus || data.bidang)
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {!isProdukPage && (
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">Tema Prioritas:</span>
+                                                    <div>
+                                                        {isInstitusi && temaBrief.length > 0 ? (
+                                                            <ul className="list-disc list-outside ml-4 space-y-1">
+                                                                {temaBrief.map(([t, c], i) => (
+                                                                    <li key={i}>{formatNum(c)} {t}</li>
+                                                                ))}
+                                                            </ul>
+                                                        ) : (
+                                                            temaBrief.length > 0 ? temaBrief.join(', ') : safeValue(data.tema_prioritas || data.luaran || data.tema)
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                        )}
-                        </>
+                                )}
+                            </>
                         )}
                     </div>
 
@@ -344,6 +400,6 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
             `}} />
-        </div>
+        </div >
     );
 }

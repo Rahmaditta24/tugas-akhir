@@ -87,7 +87,7 @@ class ProdukPageController extends Controller
             'totalFields' => (clone $statsQ)->distinct('bidang')->count('bidang'),
         ];
 
-        $cacheKey = 'map_data_produk_v5_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_produk_v6_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
             $mapDataArray = [];
             $query = (clone $baseQuery)->select(
@@ -97,6 +97,7 @@ class ProdukPageController extends Controller
                 'longitude as pt_longitude',
                 'provinsi',
                 'bidang as bidang_fokus',
+                'nama_inventor',
                 DB::raw('SUBSTRING(nama_produk, 1, 150) as judul_short')
             )
             ->whereNotNull('latitude')
@@ -110,6 +111,7 @@ class ProdukPageController extends Controller
                     'pt_longitude' => (float)$item->pt_longitude,
                     'provinsi' => $item->provinsi,
                     'bidang_fokus' => $item->bidang_fokus,
+                    'nama_inventor' => $item->nama_inventor,
                     'judul' => $item->judul_short,
                     'count' => 1,
                 ];
