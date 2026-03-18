@@ -894,12 +894,14 @@ export default function MapContainer({
                 }
                 else {
                     const count = item._count;
+                    const radius = 25;
+                    const fontSize = 14;
                     const marker = L.marker([lat, lng], {
                         icon: L.divIcon({
-                            html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: 32px; height: 32px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">${count.toLocaleString('id-ID')}</div>`,
+                            html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">${count.toLocaleString('id-ID')}</div>`,
                             className: 'custom-marker-default',
-                            iconSize: [32, 32],
-                            iconAnchor: [16, 16]
+                            iconSize: [radius * 2, radius * 2],
+                            iconAnchor: [radius, radius]
                         }),
                         penelitianCount: count,
                         statsData: {
