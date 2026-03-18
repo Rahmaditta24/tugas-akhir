@@ -487,7 +487,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                         {isInstitusi && skemaBrief.length > 0 ? (
                                                             <ul className="list-disc list-outside ml-4 space-y-1">
                                                                 {skemaBrief.map(([s, c], i) => (
-                                                                    <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {s}</li>
+                                                                    <li key={i}>{s}</li>
                                                                 ))}
                                                             </ul>
                                                         ) : (
@@ -508,11 +508,15 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                     <span className="text-sm font-medium text-gray-700">Tahun:</span>
                                                     <div>
                                                         {isInstitusi && tahunBrief.length > 0 ? (
-                                                            <ul className="list-disc list-outside ml-4 space-y-1">
-                                                                {tahunBrief.map(([y, c], i) => (
-                                                                    <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {y}</li>
-                                                                ))}
-                                                            </ul>
+                                                            isPenelitianPage ? (
+                                                                <span className="text-sm text-gray-800 font-semibold">{tahunBrief.map(([y, c]) => y).sort((a,b) => b-a).join(', ')}</span>
+                                                            ) : (
+                                                                <ul className="list-disc list-outside ml-4 space-y-1">
+                                                                    {tahunBrief.map(([y, c], i) => (
+                                                                        <li key={i}>{y}</li>
+                                                                    ))}
+                                                                </ul>
+                                                            )
                                                         ) : (
                                                             tahunBrief.length > 0 ? tahunBrief.join(', ') : safeValue(data.thn_pelaksanaan || data.tahun || data.thn_pelaksanaan_kegiatan)
                                                         )}
@@ -526,7 +530,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                         {bidangBrief.length > 0 ? (
                                                             <ul className="list-disc list-outside ml-4 space-y-1.5 font-normal text-gray-700">
                                                                 {bidangBrief.map(([b, c], i) => (
-                                                                    <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {b}</li>
+                                                                    <li key={i}>{b}</li>
                                                                 ))}
                                                             </ul>
                                                         ) : (
@@ -536,20 +540,20 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                 </div>
                                             ) : (
                                                 !isPengabdianPage && !isHilirisasiPage && (
-                                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                        <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
-                                                        <div>
-                                                            {isInstitusi && bidangBrief.length > 0 ? (
-                                                                <ul className="list-disc list-outside ml-4 space-y-1">
-                                                                    {bidangBrief.map(([b, c], i) => (
-                                                                        <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {b}</li>
-                                                                    ))}
-                                                                </ul>
-                                                            ) : (
-                                                                bidangBrief.length > 0 ? bidangBrief.join(', ') : safeValue(data.bidang_fokus || data.bidang)
-                                                            )}
+                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                            <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
+                                                            <div>
+                                                                {isInstitusi && bidangBrief.length > 0 ? (
+                                                                    <ul className="list-disc list-outside ml-4 space-y-1">
+                                                                        {bidangBrief.map(([b, c], i) => (
+                                                                            <li key={i}>{isPenelitianPage ? `${c} ${b}` : b}</li>
+                                                                        ))}
+                                                                    </ul>
+                                                                ) : (
+                                                                    bidangBrief.length > 0 ? bidangBrief.join(', ') : safeValue(data.bidang_fokus || data.bidang)
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                    </div>
                                                 )
                                             )}
 
@@ -560,7 +564,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                         {isInstitusi && temaBrief.length > 0 ? (
                                                             <ul className="list-disc list-outside ml-4 space-y-1">
                                                                 {temaBrief.map(([t, c], i) => (
-                                                                    <li key={i}>{formatNum(c)} {t}</li>
+                                                                    <li key={i}>{isPenelitianPage ? `${c} ${t}` : t}</li>
                                                                 ))}
                                                             </ul>
                                                         ) : (
