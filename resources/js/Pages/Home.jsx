@@ -220,6 +220,8 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                     filterOptions={filterOptions}
                     onFilterChange={handleFilterChange}
                     searchTerm={searchTerm}
+                    gridClass="grid-cols-1 md:grid-cols-3"
+                    widthClass="w-[95%] lg:w-[60%]"
                 />
             </div>
 

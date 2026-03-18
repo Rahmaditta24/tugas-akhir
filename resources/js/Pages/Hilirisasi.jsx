@@ -171,8 +171,6 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
                     onFilterChange={handleFilterChange}
                     filterFields={filterFields}
                     searchTerm={searchTerm}
-                    gridClass="grid-cols-1 md:grid-cols-2"
-                    widthClass="w-[95%] lg:w-1/2"
                 />
             </div>
             <div className="w-full lg:max-w-[90%] mx-auto mb-5">

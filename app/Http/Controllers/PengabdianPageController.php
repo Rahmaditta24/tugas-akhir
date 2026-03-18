@@ -176,13 +176,9 @@ class PengabdianPageController extends Controller
             })->all();
         });
 
-        // Only load list if filtered/searched
+        // Only load list if specifically searched (keyword)
         $isFiltered = $request->filled('search') 
-            || $request->filled('queries')
-            || $request->filled('dataType')
-            || $request->filled('skema')
-            || $request->filled('provinsi')
-            || $request->filled('tahun');
+            || $request->filled('queries');
         
         $items = $isFiltered 
             ? (clone $baseQuery)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'nama_skema as bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun')

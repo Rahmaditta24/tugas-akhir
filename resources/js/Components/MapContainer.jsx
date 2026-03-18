@@ -99,6 +99,11 @@ export default function MapContainer({
                         pengabdian_skema: detailData.nama_skema || detailData.nama_singkat_skema || detailData.skema || '-',
                         pengabdian_tahun: detailData.thn_pelaksanaan_kegiatan || detailData.tahun || '-',
                         pengabdian_bidang_fokus: detailData.bidang_fokus || field || '-',
+                        pengabdian_nama_pendamping: detailData.nama_pendamping || '-',
+                        pengabdian_institusi_pendamping: detailData.institusi_pendamping || '-',
+                        pengabdian_bidang_teknologi: detailData.bidang_teknologi_inovasi || '-',
+                        pengabdian_jenis_wilayah: detailData.jenis_wilayah_provinsi_mitra || '-',
+                        pengabdian_provinsi_mitra: detailData.prov_mitra || '-',
                     };
                     setSelectedResearch(normalized);
                     setIsModalOpen(true);
@@ -660,7 +665,7 @@ export default function MapContainer({
                                 Klik untuk melihat detail kampus
                             </div>
                         </div>
-                    `, { maxWidth: 320 });
+                    `, { maxWidth: 320, autoPanPadding: [50, 100] });
                     marker.on('click', (e) => {
                         L.DomEvent.stopPropagation(e);
 
@@ -736,7 +741,7 @@ export default function MapContainer({
                                 Klik untuk melihat detail kampus
                             </div>
                         </div>
-                    `, { maxWidth: 320 });
+                    `, { maxWidth: 320, autoPanPadding: [50, 100] });
 
 
                     marker.on('click', (e) => {
@@ -791,7 +796,7 @@ export default function MapContainer({
                                 bidang: item._field
                             }
                         });
-                        marker.bindPopup(generatePopupContent(rawItem), { maxWidth: 320 });
+                        marker.bindPopup(generatePopupContent(rawItem), { maxWidth: 320, autoPanPadding: [50, 100] });
 
                         marker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
@@ -855,7 +860,7 @@ export default function MapContainer({
                                 ) :
                                 generatePopupContent(rawItem);
 
-                            marker.bindPopup(popup, { maxWidth: 400 });
+                            marker.bindPopup(popup, { maxWidth: 400, autoPanPadding: [50, 100] });
 
                             marker.on('click', async (e) => {
                                 L.DomEvent.stopPropagation(e);
@@ -909,7 +914,7 @@ export default function MapContainer({
                             provinsi: item._provinsi
                         }
                     });
-                    marker.bindPopup(generatePopupContent(rawItem));
+                    marker.bindPopup(generatePopupContent(rawItem), { autoPanPadding: [50, 100] });
 
                     marker.on('click', (e) => {
                         L.DomEvent.stopPropagation(e);

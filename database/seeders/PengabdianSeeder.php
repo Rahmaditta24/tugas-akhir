@@ -135,6 +135,13 @@ class PengabdianSeeder extends Seeder
                     'bidang_fokus' => $normalize($item['bidang_fokus'] ?? null),
                     'prov_mitra' => $normalize(($item['prov_mitra'] ?? $item['provinsi_mitra'] ?? null)),
                     'kab_mitra' => $normalize(($item['kab_mitra'] ?? $item['lokus'] ?? null)),
+                    'nama_pendamping' => $normalize($item['nama_pendamping'] ?? null),
+                    'nidn_pendamping' => $normalize($item['nidn_pendamping'] ?? null),
+                    'kd_perguruan_tinggi_pendamping' => $normalize($item['kd_perguruan_tinggi_pendamping'] ?? null),
+                    'institusi_pendamping' => $normalize($item['institusi_pendamping'] ?? null),
+                    'lldikti_wilayah_pendamping' => $normalize($item['lldikti_wilayah_pendamping'] ?? null),
+                    'jenis_wilayah_provinsi_mitra' => $normalize(($item['jenis_wilayah_provinsi_mitra'] ?? $item['jenis_wilayah_provinsi_mitra'] ?? null)),
+                    'bidang_teknologi_inovasi' => $normalize(($item['bidang_teknologi_inovasi'] ?? $item['bidang_teknologi'] ?? null)),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

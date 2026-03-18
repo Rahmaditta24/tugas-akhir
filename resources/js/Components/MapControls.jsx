@@ -39,7 +39,8 @@ export default function MapControls({
     onViewModeChange = () => { },
     isLoading = false,
     gridClass = "grid-cols-1 md:grid-cols-2",
-    widthClass = "w-[95%] lg:w-[40%]"
+    widthClass = "w-[95%] lg:w-[40%]",
+    hideFilterIcons = undefined
 }) {
     const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(false);
 
@@ -157,7 +158,12 @@ export default function MapControls({
                             const selectedCount = getSelectedCount(field.requestKey, field.type);
                             let buttonText = isSingle ? (filters[field.requestKey] || 'Pilih...') : 'Semua';
                             if (!isSingle && selectedCount > 0) {
-                                buttonText = `${selectedCount} dipilih`;
+                                if (selectedCount === 1) {
+                                    const selectedValues = filters[field.requestKey] || [];
+                                    buttonText = Array.isArray(selectedValues) ? selectedValues[0] : selectedValues;
+                                } else {
+                                    buttonText = `${selectedCount} dipilih`;
+                                }
                             }
 
                             return (
@@ -197,25 +203,41 @@ export default function MapControls({
                                                         }
                                                     }
 
+                                                    const selected = isSelected(field.requestKey, option);
+                                                    const shoudHideIcon = field.hideIcon || (typeof hideFilterIcons !== 'undefined' && hideFilterIcons);
+                                                    
                                                     return (
-                                                        <label
+                                                        <div
                                                             key={idx}
-                                                            className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors"
+                                                            onClick={shoudHideIcon ? () => handleFilterSelect(field.requestKey, option, !selected, field.type) : undefined}
+                                                            className={`flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors ${shoudHideIcon && selected ? 'bg-blue-50' : ''}`}
                                                         >
-                                                            <input
-                                                                type={isSingle ? 'radio' : 'checkbox'}
-                                                                checked={isSelected(field.requestKey, option)}
-                                                                onChange={(e) => handleFilterSelect(field.requestKey, option, e.target.checked, field.type)}
-                                                                className={`w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 ${isSingle ? 'rounded-full' : 'rounded'}`}
-                                                            />
-                                                            <span
-                                                                className="ml-2 text-sm text-gray-700 font-medium"
-                                                                style={optionColor ? { color: optionColor } : {}}
-                                                            >
-                                                                {optionColor && <span className="mr-1">■</span>}
-                                                                {option}
-                                                            </span>
-                                                        </label>
+                                                            {!shoudHideIcon ? (
+                                                                <label className="flex items-center w-full cursor-pointer">
+                                                                    <input
+                                                                        type={field.type === 'single' ? 'radio' : 'checkbox'}
+                                                                        checked={selected}
+                                                                        onChange={(e) => handleFilterSelect(field.requestKey, option, e.target.checked, field.type)}
+                                                                        className={`w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 ${field.type === 'single' ? 'rounded-full' : 'rounded'}`}
+                                                                    />
+                                                                    <span
+                                                                        className="ml-2 text-sm text-gray-700 font-medium"
+                                                                        style={optionColor ? { color: optionColor } : {}}
+                                                                    >
+                                                                        {optionColor && <span className="mr-1">■</span>}
+                                                                        {option}
+                                                                    </span>
+                                                                </label>
+                                                            ) : (
+                                                                <span
+                                                                    className={`text-sm ${selected ? 'text-blue-600 font-bold' : 'text-gray-700 font-medium'}`}
+                                                                    style={optionColor ? { color: optionColor } : {}}
+                                                                >
+                                                                    {optionColor && <span className="mr-1">■</span>}
+                                                                    {option}
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     );
                                                 })}
                                             </div>

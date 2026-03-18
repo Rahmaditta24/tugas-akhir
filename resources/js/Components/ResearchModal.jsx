@@ -18,6 +18,12 @@ export default function ResearchModal({ isOpen, onClose, data }) {
     const isFasilitasLab = (isFasilitasLabPage || !!data.isFasilitasLab) && !isInstitusi;
     const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
     const formatNum = (n) => (n && !isNaN(n)) ? Number(n).toLocaleString('id-ID') : n;
+    const titleCase = (str) => {
+        if (!str || typeof str !== 'string') return str;
+        const s = str.trim();
+        if (!s || s === '-') return '-';
+        return s.toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    };
 
     // Helper to get unique items or counts from pipe-separated strings
     const getSummary = (str, type = 'list') => {
@@ -55,7 +61,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
     const currentFocus = !isInstitusi ? (data.bidang_fokus || data.bidang || '-') : '';
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
             <div
                 className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative"
                 onClick={(e) => e.stopPropagation()}
@@ -188,57 +194,97 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                             </>
                         ) : isPengabdian ? (
                             <>
-                                <div>
-                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
-                                        Informasi Institusi
-                                    </h3>
-                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                            <span className="text-sm font-medium text-gray-700">Nama:</span>
-                                            <span>{safeValue(data.pengabdian_nama)}</span>
-                                        </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                            <span className="text-sm font-medium text-gray-700">Institusi:</span>
-                                            <span>{safeValue(data.pengabdian_institusi)}</span>
-                                        </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                            <span className="text-sm font-medium text-gray-700">Status PT:</span>
-                                            <span>{safeValue(data.pengabdian_status_pt)}</span>
-                                        </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                            <span className="text-sm font-medium text-gray-700">Kabupaten:</span>
-                                            <span>{safeValue(data.pengabdian_kabupaten)}</span>
-                                        </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                            <span className="text-sm font-medium text-gray-700">Provinsi:</span>
-                                            <span>{safeValue(data.pengabdian_provinsi)}</span>
-                                        </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                            <span className="text-sm font-medium text-gray-700">Klaster:</span>
-                                            <span>{safeValue(data.pengabdian_klaster)}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                {(() => {
+                                    const isKosabangsa = data.pengabdian_skema?.toLowerCase().includes('kosabangsa') || data.skema?.toLowerCase().includes('kosabangsa');
+                                    
+                                    return (
+                                        <>
+                                            <div>
+                                                <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                                    Informasi Pelaksana
+                                                </h3>
+                                                <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                                    <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                        <span className="text-sm font-medium text-gray-700">Nama Pelaksana:</span>
+                                                        <span>{safeValue(data.pengabdian_nama)}</span>
+                                                    </div>
+                                                    <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                        <span className="text-sm font-medium text-gray-700">Institusi:</span>
+                                                        <span>{safeValue(data.pengabdian_institusi)}</span>
+                                                    </div>
+                                                    {isKosabangsa && (
+                                                        <>
+                                                            <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                                <span className="text-sm font-medium text-gray-700">Nama Pendamping:</span>
+                                                                <span>{safeValue(data.pengabdian_nama_pendamping)}</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                                <span className="text-sm font-medium text-gray-700">Institusi Pendamping:</span>
+                                                                <span>{safeValue(data.pengabdian_institusi_pendamping)}</span>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                    {!isKosabangsa && (
+                                                        <>
+                                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                                <span className="text-sm font-medium text-gray-700">Status PT:</span>
+                                                                <span>{safeValue(data.pengabdian_status_pt)}</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                                <span className="text-sm font-medium text-gray-700">Kabupaten:</span>
+                                                                <span>{titleCase(data.pengabdian_kabupaten)}</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                                <span className="text-sm font-medium text-gray-700">Provinsi:</span>
+                                                                <span>{titleCase(data.pengabdian_provinsi)}</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                                <span className="text-sm font-medium text-gray-700">Klaster:</span>
+                                                                <span>{safeValue(data.pengabdian_klaster)}</span>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
 
-                                <div>
-                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
-                                        Informasi Program
-                                    </h3>
-                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                            <span className="text-sm font-medium text-gray-700">Skema:</span>
-                                            <span>{safeValue(data.pengabdian_skema)}</span>
-                                        </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                            <span className="text-sm font-medium text-gray-700">Tahun:</span>
-                                            <span>{safeValue(data.pengabdian_tahun)}</span>
-                                        </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                            <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
-                                            <span>{safeValue(data.pengabdian_bidang_fokus)}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                            <div>
+                                                <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                                    Informasi Program
+                                                </h3>
+                                                <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                                    <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                        <span className="text-sm font-medium text-gray-700">Skema:</span>
+                                                        <span>{safeValue(data.pengabdian_skema)}</span>
+                                                    </div>
+                                                    <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                        <span className="text-sm font-medium text-gray-700">Tahun:</span>
+                                                        <span>{safeValue(data.pengabdian_tahun)}</span>
+                                                    </div>
+                                                    <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                        <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
+                                                        <span>{safeValue(data.pengabdian_bidang_fokus)}</span>
+                                                    </div>
+                                                    {isKosabangsa && (
+                                                        <>
+                                                            <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                                <span className="text-sm font-medium text-gray-700">Bidang Teknologi:</span>
+                                                                <span>{safeValue(data.pengabdian_bidang_teknologi)}</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                                <span className="text-sm font-medium text-gray-700">Jenis Wilayah:</span>
+                                                                <span>{safeValue(data.pengabdian_jenis_wilayah)}</span>
+                                                            </div>
+                                                            <div className="grid grid-cols-[135px_1fr] items-baseline">
+                                                                <span className="text-sm font-medium text-gray-700">Provinsi Mitra:</span>
+                                                                <span>{titleCase(data.pengabdian_provinsi_mitra)}</span>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </>
                         ) : isFasilitasLab ? (
                             <>
