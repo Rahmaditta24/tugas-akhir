@@ -64,13 +64,6 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
         });
     };
 
-    const handleStatsChange = (newStats) => {
-        if (!newStats) {
-            setCurrentStats(stats);
-        } else {
-            setCurrentStats(newStats);
-        }
-    };
 
     const handleReset = () => {
         setFilters({});
@@ -80,12 +73,20 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
 
     const handleDownload = () => { };
 
+    const handleCampusClick = (campusName) => {
+        handleFilterChange({ ...filters, kampus_ptnbh: [campusName] });
+    };
+
     return (
         <MainLayout title={title || "Peta Persebaran Penelitian BIMA Indonesia - Fasilitas Lab"}>
             <NavigationTabs activePage="fasilitas-lab" />
 
             <div className="relative">
-                <MapContainer mapData={mapData} displayMode={displayMode} onStatsChange={handleStatsChange} />
+                <MapContainer
+                    mapData={mapData}
+                    displayMode={displayMode}
+                    onCampusClick={handleCampusClick}
+                />
                 <MapControls
                     onSearch={handleSearch}
                     onDisplayModeChange={setDisplayMode}
@@ -111,14 +112,17 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
                             stats={currentStats}
                             labels={{
                                 totalResearch: 'Total Laboratorium',
-                                totalFields: false
+                                totalUniversities: 'Total Institusi',
+                                totalProvinces: 'Total Provinsi',
                             }}
                         />
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}
+                            onItemClick={(id, bidang) => window.openResearchDetail && window.openResearchDetail(id, bidang)}
                             title="Daftar Fasilitas Lab"
                             isFiltered={isFiltered}
+                            isFasilitasLab={true}
                             customFieldOptions={[
                                 { value: 'all', label: 'Semua' },
                                 { value: 'title', label: 'Nama Laboratorium' },

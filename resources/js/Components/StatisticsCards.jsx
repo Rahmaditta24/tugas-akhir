@@ -38,7 +38,7 @@ export default function StatisticsCards({ stats, labels = {} }) {
         totalResearch: 'Total Penelitian',
         totalUniversities: 'Total Perguruan Tinggi',
         totalProvinces: 'Total Provinsi',
-        totalFields: 'Bidang Fokus',
+        totalFields: 'Total Bidang Fokus',
     };
 
     const finalLabels = { ...defaultLabels, ...labels };
@@ -84,10 +84,20 @@ export default function StatisticsCards({ stats, labels = {} }) {
                 backgroundPosition: 'center',
             },
         },
+        {
+            key: 'totalAlat',
+            title: finalLabels.totalAlat,
+            value: stats?.totalAlat || 0,
+            bgStyle: {
+                backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.35) 100%), url('/assets/images/card/bg-total-bidang-fokus.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            },
+        },
     ];
 
-    // Filter out cards that have been explicitly disabled (set to null or false in labels)
-    const activeCards = cardConfigs.filter(card => labels[card.key] !== null && labels[card.key] !== false);
+    // Filter logic: show a card if its key is present in stats OR if it's explicitly labeled
+    const activeCards = cardConfigs.filter(card => (stats && stats[card.key] !== undefined) || (labels && labels[card.key]));
 
     const gridCols = activeCards.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4';
 

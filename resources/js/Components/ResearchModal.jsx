@@ -5,30 +5,47 @@ export default function ResearchModal({ isOpen, onClose, data }) {
     if (!isOpen || !data) return null;
 
     const isInstitusi = !!data.isInstitusi;
-    const isProdukPage = data.currentDataType === 'produk' || window.location.pathname.toLowerCase().includes('produk');
-    const isProduk = !isInstitusi && !!data.isProduk;
-    const isHilirisasi = !isInstitusi && !!data.isHilirisasi;
-    const isPengabdian = !isInstitusi && !!data.isPengabdian;
-    const isFasilitasLab = !!data.isFasilitasLab;
+    const path = window.location.pathname.toLowerCase();
+    const isProdukPage = data.currentDataType === 'produk' || path.includes('produk');
+    const isPengabdianPage = data.currentDataType === 'pengabdian' || path.includes('pengabdian');
+    const isHilirisasiPage = data.currentDataType === 'hilirisasi' || path.includes('hilirisasi');
+    const isFasilitasLabPage = data.currentDataType === 'fasilitas-lab' || path.includes('fasilitas-lab');
+    const isPenelitianPage = !isProdukPage && !isPengabdianPage && !isHilirisasiPage && !isFasilitasLabPage;
+
+    const isProduk = isProdukPage && !isInstitusi;
+    const isHilirisasi = isHilirisasiPage && !isInstitusi;
+    const isPengabdian = isPengabdianPage && !isInstitusi;
+    const isFasilitasLab = (isFasilitasLabPage || !!data.isFasilitasLab) && !isInstitusi;
     const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
     const formatNum = (n) => (n && !isNaN(n)) ? Number(n).toLocaleString('id-ID') : n;
 
     // Helper to get unique items or counts from pipe-separated strings
     const getSummary = (str, type = 'list') => {
         if (!str || typeof str !== 'string') return [];
-        const items = str.split('|').map(s => s.trim()).filter(s => s && s !== '-');
+        const parts = str.split('|').map(s => s.trim()).filter(s => s && s !== '-');
+
+        const counts = {};
+        const uniqueItems = new Set();
+
+        parts.forEach(part => {
+            const [val, countStr] = part.includes(':::') ? part.split(':::') : [part, '1'];
+            const trimmedVal = val.trim();
+            if (!trimmedVal || trimmedVal === '-' || trimmedVal === 'undefined') return;
+
+            const count = parseInt(countStr) || 1;
+            counts[trimmedVal] = (counts[trimmedVal] || 0) + count;
+            uniqueItems.add(trimmedVal);
+        });
 
         if (type === 'counts') {
-            const counts = {};
-            items.forEach(item => { counts[item] = (counts[item] || 0) + 1; });
             return Object.entries(counts).sort((a, b) => b[1] - a[1]);
         }
 
-        return [...new Set(items)].sort();
+        return Array.from(uniqueItems).sort();
     };
 
-    const skemaBrief = getSummary(data.skema_list || '');
-    const tahunBrief = getSummary(data.tahun_list || '');
+    const skemaBrief = getSummary(data.skema_list || '', isInstitusi ? 'counts' : 'list');
+    const tahunBrief = getSummary(data.tahun_list || '', isInstitusi ? 'counts' : 'list');
     const bidangBrief = getSummary(data.bidang_fokus || '', isInstitusi ? 'counts' : 'list');
     const temaBrief = getSummary(data.tema_list || '', isInstitusi ? 'counts' : 'list');
 
@@ -57,7 +74,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                     {/* Title */}
                     <div className="mb-6">
                         <h2 className="text-xl font-bold text-gray-900 leading-snug">
-                            {isInstitusi ? (data.institusi || data.nama_institusi) : safeValue(data.judul || data.judul_kegiatan)}
+                            {isInstitusi ? (data.institusi || data.nama_institusi) : safeValue(data.nama_laboratorium || data.judul || data.judul_kegiatan)}
                         </h2>
                     </div>
 
@@ -223,6 +240,88 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                     </div>
                                 </div>
                             </>
+                        ) : isFasilitasLab ? (
+                            <>
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        Informasi Institusi
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-4 font-semibold text-sm text-gray-900">
+                                        <div className="space-y-3">
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <span className="text-sm font-medium text-gray-700">Institusi:</span>
+                                                <span>{safeValue(data.institusi || data.nama_institusi)}</span>
+                                            </div>
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <span className="text-sm font-medium text-gray-700">Kategori PT:</span>
+                                                <span>{safeValue(data.kategori_pt || data.jenis_pt)}</span>
+                                            </div>
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <span className="text-sm font-medium text-gray-700">Fakultas:</span>
+                                                <span>{safeValue(data.fakultas)}</span>
+                                            </div>
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <span className="text-sm font-medium text-gray-700">Departemen:</span>
+                                                <span>{safeValue(data.departemen)}</span>
+                                            </div>
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <span className="text-sm font-medium text-gray-700">Jenis Lab:</span>
+                                                <span>{safeValue(data.jenis_laboratorium)}</span>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <span className="text-sm font-medium text-gray-700">Status Akses:</span>
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] w-fit font-bold ${data.status_akses === 'Terbuka Untuk Umum' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
+                                                    {safeValue(data.status_akses)}
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <span className="text-sm font-medium text-gray-700">Akreditasi:</span>
+                                                <span>{safeValue(data.akreditasi)}</span>
+                                            </div>
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <span className="text-sm font-medium text-gray-700">Jam Operasional:</span>
+                                                <span>{safeValue(data.jam_operasional)}</span>
+                                            </div>
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <span className="text-sm font-medium text-gray-700">Jumlah Akses:</span>
+                                                <span>{safeValue(data.jumlah_akses || '0')}</span>
+                                            </div>
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline border-t border-dashed border-slate-200 pt-2 mt-2">
+                                                <span className="text-sm font-bold text-gray-800">Total Alat:</span>
+                                                <span className="text-blue-600 font-bold">{safeValue(data.total_jumlah_alat || data.total_alat)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                        Lokasi
+                                    </h3>
+                                    <div className="space-y-2 font-semibold text-sm text-gray-900">
+                                        <p className="text-sm font-normal text-gray-700">{safeValue(data.provinsi)}, {safeValue(data.kota || data.kabupaten)}</p>
+                                    </div>
+                                </div>
+
+                                {data.nama_alat && (
+                                    <div>
+                                        <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                            Daftar Alat
+                                        </h3>
+                                        <div className="max-h-48 overflow-y-auto pr-2 custom-scrollbar border border-slate-100 rounded-lg p-3 bg-white shadow-sm">
+                                            <div className="flex flex-wrap gap-2">
+                                                {data.nama_alat.split('|').filter(Boolean).map((tool, i) => (
+                                                    <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-100">
+                                                        {tool.trim()}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         ) : (
                             <>
                                 {/* Section: Informasi Institusi */}
@@ -235,26 +334,27 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                             <>
                                                 <div className="grid grid-cols-[130px_1fr] items-baseline">
                                                     <span className="text-sm font-medium text-gray-700">
-                                                        {isProdukPage ? 'Nama Kampus:' : (data.isFasilitasLab ? 'Nama Institusi:' : 'Institusi:')}
+                                                        {isProdukPage ? 'Jumlah Produk:' :
+                                                            (data.isFasilitasLab ? 'Total Fasilitas:' : 'Total Penelitian:')}
                                                     </span>
-                                                    <span>{safeValue(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</span>
+                                                    <span className="text-blue-600 font-bold">{formatNum(data.total_produk || data.total_penelitian || data.total_pengabdian || data.total_hilirisasi || data._count || 1)}</span>
                                                 </div>
                                                 <div className="grid grid-cols-[130px_1fr] items-baseline">
                                                     <span className="text-sm font-medium text-gray-700">
-                                                        {isProdukPage ? 'Jumlah Produk:' : (data.isFasilitasLab ? 'Total Fasilitas:' : 'Total Penelitian:')}
+                                                        {isProdukPage ? 'Nama Kampus:' : 'Institusi:'}
                                                     </span>
-                                                    <span className="text-blue-600 font-bold">{formatNum(data.total_produk || data.total_penelitian || data._count || 1)}</span>
+                                                    <span>{safeValue(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</span>
                                                 </div>
+                                                {data.isFasilitasLab && (
+                                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                        <span className="text-sm font-medium text-gray-700">Jenis PT:</span>
+                                                        <span>{ptType}</span>
+                                                    </div>
+                                                )}
                                                 {isProdukPage && (
                                                     <div className="grid grid-cols-[130px_1fr] items-baseline">
                                                         <span className="text-sm font-medium text-gray-700">Jumlah Inventor:</span>
                                                         <span>{safeValue(data.total_inventor || data.jumlah_inventor || '-')}</span>
-                                                    </div>
-                                                )}
-                                                {!isProdukPage && (
-                                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                        <span className="text-sm font-medium text-gray-700">Jenis PT:</span>
-                                                        <span>{ptType}</span>
                                                     </div>
                                                 )}
                                                 <div className="grid grid-cols-[130px_1fr] items-baseline">
@@ -274,6 +374,10 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                     <span>{safeValue(data.nama_institusi || data.institusi || data.perguruan_tinggi)}</span>
                                                 </div>
                                                 <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <span className="text-sm font-medium text-gray-700">Jenis PT:</span>
+                                                    <span>{ptType}</span>
+                                                </div>
+                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
                                                     <span className="text-sm font-medium text-gray-700">Provinsi:</span>
                                                     <span>{safeValue(data.provinsi || data.prov_pt)}</span>
                                                 </div>
@@ -288,33 +392,66 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
                                             Informasi Laboratorium
                                         </h3>
-                                        <span className="text-sm font-medium text-gray-700 block mb-2">Nama Lab:</span>
-                                        <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar border border-slate-50 rounded-lg p-2 bg-slate-50/30">
-                                            <ul className="list-disc list-outside ml-5 space-y-2">
-                                                {(data.lab_list || '').split('|').filter(Boolean).map((lab, i) => (
-                                                    <li key={i} className="text-sm text-gray-800 leading-relaxed">
-                                                        {lab}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
+                                        {data.isFasilitasLab && (data.lab_list || data.nama_laboratorium) && (
+                                            <>
+                                                <span className="text-sm font-medium text-gray-700 block mb-2">Nama Lab:</span>
+                                                <div className="max-h-48 overflow-y-auto pr-2 custom-scrollbar border border-slate-50 rounded-lg p-2 bg-slate-50/30 mb-4">
+                                                    <ul className="list-disc list-outside ml-5 space-y-2">
+                                                        {data.isInstitusi ? (
+                                                            (data.lab_list || '').split('|').filter(Boolean).map((lab, i) => (
+                                                                <li key={i} className="text-sm text-gray-800 leading-relaxed">
+                                                                    {lab}
+                                                                </li>
+                                                            ))
+                                                        ) : (
+                                                            <li className="text-sm text-gray-800 leading-relaxed">
+                                                                {data.nama_laboratorium || data.judul}
+                                                            </li>
+                                                        )}
+                                                    </ul>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {(data.tool_list || data.nama_alat) && (
+                                            <>
+                                                <span className="text-sm font-medium text-gray-700 block mb-2">Alat yang Tersedia:</span>
+                                                <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar border border-slate-50 rounded-lg p-2 bg-slate-50/30">
+                                                    <ul className="list-disc list-outside ml-5 space-y-2">
+                                                        {(data.tool_list || data.nama_alat || '').split('|').filter(Boolean).map((tool, i) => (
+                                                            <li key={i} className="text-sm text-gray-800 leading-relaxed">
+                                                                {tool}
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 ) : (
                                     <div>
                                         <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
-                                            {isProdukPage ? 'Bidang:' : (isPengabdian ? 'Informasi Pengabdian' : isHilirisasi ? 'Informasi Hilirisasi' : 'Informasi Penelitian')}
+                                            {isProdukPage ? 'Bidang:' : 'Informasi Penelitian'}
                                         </h3>
                                         <div className="space-y-3 font-semibold text-sm text-gray-900">
                                             {!isProdukPage && (
                                                 <div className="grid grid-cols-[130px_1fr] items-baseline">
                                                     <span className="text-sm font-medium text-gray-700">Skema:</span>
                                                     <div>
-                                                        {skemaBrief.length > 1 ? (
+                                                        {isInstitusi && skemaBrief.length > 0 ? (
                                                             <ul className="list-disc list-outside ml-4 space-y-1">
-                                                                {skemaBrief.map((s, i) => <li key={i}>{s}</li>)}
+                                                                {skemaBrief.map(([s, c], i) => (
+                                                                    <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {s}</li>
+                                                                ))}
                                                             </ul>
                                                         ) : (
-                                                            skemaBrief.length === 1 ? skemaBrief[0] : safeValue(data.skema || data.nama_skema)
+                                                            skemaBrief.length > 1 ? (
+                                                                <ul className="list-disc list-outside ml-4 space-y-1">
+                                                                    {skemaBrief.map((s, i) => <li key={i}>{s}</li>)}
+                                                                </ul>
+                                                            ) : (
+                                                                skemaBrief.length === 1 ? skemaBrief[0] : safeValue(data.skema || data.nama_skema || data.pengabdian_skema || data.skema_hilirisasi)
+                                                            )
                                                         )}
                                                     </div>
                                                 </div>
@@ -323,7 +460,17 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                             {!isProdukPage && (
                                                 <div className="grid grid-cols-[130px_1fr] items-baseline">
                                                     <span className="text-sm font-medium text-gray-700">Tahun:</span>
-                                                    <div>{tahunBrief.length > 0 ? tahunBrief.join(', ') : safeValue(data.thn_pelaksanaan || data.tahun || data.thn_pelaksanaan_kegiatan)}</div>
+                                                    <div>
+                                                        {isInstitusi && tahunBrief.length > 0 ? (
+                                                            <ul className="list-disc list-outside ml-4 space-y-1">
+                                                                {tahunBrief.map(([y, c], i) => (
+                                                                    <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {y}</li>
+                                                                ))}
+                                                            </ul>
+                                                        ) : (
+                                                            tahunBrief.length > 0 ? tahunBrief.join(', ') : safeValue(data.thn_pelaksanaan || data.tahun || data.thn_pelaksanaan_kegiatan)
+                                                        )}
+                                                    </div>
                                                 </div>
                                             )}
 
@@ -342,23 +489,25 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                    <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
-                                                    <div>
-                                                        {isInstitusi && bidangBrief.length > 0 ? (
-                                                            <ul className="list-disc list-outside ml-4 space-y-1">
-                                                                {bidangBrief.map(([b, c], i) => (
-                                                                    <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {b}</li>
-                                                                ))}
-                                                            </ul>
-                                                        ) : (
-                                                            bidangBrief.length > 0 ? bidangBrief.join(', ') : safeValue(data.bidang_fokus || data.bidang)
-                                                        )}
+                                                !isPengabdianPage && !isHilirisasiPage && (
+                                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                        <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
+                                                        <div>
+                                                            {isInstitusi && bidangBrief.length > 0 ? (
+                                                                <ul className="list-disc list-outside ml-4 space-y-1">
+                                                                    {bidangBrief.map(([b, c], i) => (
+                                                                        <li key={i}><span className="font-bold text-gray-900">{formatNum(c)}</span> {b}</li>
+                                                                    ))}
+                                                                </ul>
+                                                            ) : (
+                                                                bidangBrief.length > 0 ? bidangBrief.join(', ') : safeValue(data.bidang_fokus || data.bidang)
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
+                                                )
                                             )}
 
-                                            {!isProdukPage && (
+                                            {!isProdukPage && !isPengabdianPage && !isHilirisasiPage && (
                                                 <div className="grid grid-cols-[130px_1fr] items-baseline">
                                                     <span className="text-sm font-medium text-gray-700">Tema Prioritas:</span>
                                                     <div>
@@ -382,7 +531,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                     </div>
 
                     {/* Bottom Pill (Only for Researcher Mode) */}
-                    {!isInstitusi && currentFocus !== '-' && (
+                    {!isInstitusi && currentFocus !== '-' && !isHilirisasiPage && (
                         <div className="mt-6 flex">
                             <span
                                 className="px-5 py-1.5 rounded-full text-white text-xs font-bold shadow-sm"

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import MainLayout from '../Layouts/MainLayout';
+import * as XLSX from 'xlsx';
+import toast, { Toaster } from 'react-hot-toast';
 import NavigationTabs from '../Components/NavigationTabs';
 import PermasalahanMap from '../Components/PermasalahanMap';
 import MapControls from '../Components/MapControls';
@@ -24,10 +26,11 @@ export default function Permasalahan({
     const [minPct, setMinPct] = useState(0);
     const [maxPct, setMaxPct] = useState(100);
     const [legendData, setLegendData] = useState({ min: 0, max: 1, satuan: '', activeDataType: filters.dataType });
+    const [isLoading, setIsLoading] = useState(false);
 
     const filterOptions = {
         dataType: jenisPermasalahan.length ? jenisPermasalahan : ['Sampah', 'Air', 'Udara', 'Tanah'],
-        bubbleType: ['Penelitian', 'Pengabdian'],
+        bubbleType: ['Penelitian', 'Pengabdian', 'Hilirisasi'],
         bidangFokus: ['Energi', 'Kesehatan', 'Pangan', 'Sosial Humaniora'],
         temaPrioritas: ['Tema A', 'Tema B'],
         kategoriPT: ['PTNBH', 'BLU', 'Satker'],
@@ -59,7 +62,66 @@ export default function Permasalahan({
     };
 
     const handleDownload = () => {
-        console.log('Download with filters:', filters);
+        setIsLoading(true);
+        const loadingToast = toast.loading('Sedang menyiapkan data Excel, mohon tunggu...', {
+            position: 'top-right'
+        });
+        try {
+            const activeType = filters.dataType || 'Sampah';
+            const provinsiRows = permasalahanStats[activeType] || [];
+            const kabupatenRows = mapData.filter(
+                (r) => r.kabupaten_kota && r.jenis_permasalahan === activeType
+            );
+
+            if (provinsiRows.length === 0 && kabupatenRows.length === 0) {
+                toast.error('Tidak ada data untuk diexport.');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            // Sheet 1: Data Provinsi
+            if (provinsiRows.length > 0) {
+                const provinsiData = provinsiRows.map(row => ({
+                    'Provinsi': row.provinsi || '-',
+                    'Jenis Permasalahan': activeType,
+                    'Nilai/Jumlah': row.nilai ?? row.jumlah ?? row.total ?? '-',
+                    'Satuan': legendData.satuan || '-',
+                }));
+                const ws1 = XLSX.utils.json_to_sheet(provinsiData);
+                ws1['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 12 }];
+                XLSX.utils.book_append_sheet(wb, ws1, 'Data Provinsi');
+            }
+
+            // Sheet 2: Data Kabupaten/Kota
+            if (kabupatenRows.length > 0) {
+                const kabupatenData = kabupatenRows.map(row => ({
+                    'Kabupaten/Kota': row.kabupaten_kota || '-',
+                    'Provinsi': row.provinsi || '-',
+                    'Jenis Permasalahan': row.jenis_permasalahan || activeType,
+                    'Nilai/Jumlah': row.nilai ?? row.jumlah ?? row.total ?? '-',
+                    'Satuan': row.satuan || legendData.satuan || '-',
+                }));
+                const ws2 = XLSX.utils.json_to_sheet(kabupatenData);
+                ws2['!cols'] = [{ wch: 30 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 12 }];
+                XLSX.utils.book_append_sheet(wb, ws2, 'Data Kabupaten-Kota');
+            }
+
+            const timestamp = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(wb, `permasalahan_${activeType}_${timestamp}.xlsx`);
+
+            toast.dismiss(loadingToast);
+            toast.success(`Berhasil export data permasalahan ${activeType}!`, {
+                duration: 4000, position: 'top-right',
+                style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
+            });
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            toast.dismiss(loadingToast);
+            toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleFilterChange = (newFilters) => {
@@ -76,6 +138,7 @@ export default function Permasalahan({
 
     return (
         <MainLayout title="Dashboard Pemetaan Riset - Permasalahan">
+            <Toaster />
             <NavigationTabs activePage="permasalahan" />
 
             <div className="relative">
@@ -91,7 +154,7 @@ export default function Permasalahan({
                 />
                 <MapControls
                     onSearch={handleSearch}
-                    onDisplayModeChange={() => {}}
+                    onDisplayModeChange={() => { }}
                     onReset={handleReset}
                     onDownload={handleDownload}
                     displayMode="peneliti"
@@ -105,6 +168,8 @@ export default function Permasalahan({
                     onToggleBubbles={handleToggleBubbles}
                     viewMode={viewMode}
                     onViewModeChange={handleViewModeChange}
+                    isLoading={isLoading}
+                    hideDownload={true}
                 />
             </div>
 

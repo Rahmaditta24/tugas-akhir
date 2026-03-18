@@ -153,27 +153,48 @@ class PenelitianController extends Controller
                 $query->search($request->search);
             }
 
-            // Get data
-            $data = $query->select(
-                'nama',
-                'nidn',
-                'institusi',
-                'jenis_pt',
-                'kategori_pt',
-                'klaster',
-                'provinsi',
-                'kota',
-                'judul',
-                'skema',
-                'thn_pelaksanaan',
-                'bidang_fokus',
-                'tema_prioritas'
-            )
-            ->orderBy('thn_pelaksanaan', 'desc')
-            ->orderBy('institusi')
-            ->get();
+            // OPTIMIZED: Use streaming response to avoid memory exhaustion
+            return response()->stream(function () use ($query) {
+                echo '[';
+                $first = true;
 
-            return response()->json($data);
+                $query->select(
+                    'nama',
+                    'nidn',
+                    'institusi',
+                    'jenis_pt',
+                    'kategori_pt',
+                    'klaster',
+                    'provinsi',
+                    'kota',
+                    'judul',
+                    'skema',
+                    'thn_pelaksanaan',
+                    'bidang_fokus',
+                    'tema_prioritas'
+                )
+                ->orderBy('thn_pelaksanaan', 'desc')
+                ->orderBy('institusi')
+                ->cursor()
+                ->each(function ($item) use (&$first) {
+                    if (!$first) {
+                        echo ',';
+                    }
+                    echo json_encode($item);
+                    $first = false;
+
+                    // Flush output buffer to prevent memory buildup
+                    if (ob_get_level() > 0) {
+                        ob_flush();
+                        flush();
+                    }
+                });
+
+                echo ']';
+            }, 200, [
+                'Content-Type' => 'application/json',
+                'Cache-Control' => 'no-cache',
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('API Export error: ' . $e->getMessage());

@@ -80,6 +80,15 @@ class HilirisasiSeeder extends Seeder
         $bar = $this->command->getOutput()->createProgressBar($total);
         $bar->start();
 
+        $validateCoords = function ($lat, $lon) {
+            $lat = (float) $lat;
+            $lon = (float) $lon;
+            if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
+                return [null, null];
+            }
+            return [$lat, $lon];
+        };
+
         foreach (array_chunk($hilirisasiData, $chunkSize) as $chunk) {
             $insertData = [];
 
@@ -93,6 +102,15 @@ class HilirisasiSeeder extends Seeder
                     continue;
                 }
 
+                $latRaw = $item['pt_latitude'] ?? null;
+                $lonRaw = $item['pt_longitude'] ?? null;
+                $lat = null;
+                $lon = null;
+
+                if (is_numeric($latRaw) && is_numeric($lonRaw)) {
+                    [$lat, $lon] = $validateCoords($latRaw, $lonRaw);
+                }
+
                 $insertData[] = [
                     'tahun' => isset($item['Tahun']) && is_numeric($item['Tahun']) ? (int)$item['Tahun'] : null,
                     'id_proposal' => isset($item['ID Proposal']) && is_numeric($item['ID Proposal']) ? (int)$item['ID Proposal'] : null,
@@ -100,8 +118,8 @@ class HilirisasiSeeder extends Seeder
                     'nama_pengusul' => $normalize($item['Nama Pengusul'] ?? null),
                     'direktorat' => $normalize($item['Direktorat'] ?? null),
                     'perguruan_tinggi' => $perguruanTinggi,
-                    'pt_latitude' => isset($item['pt_latitude']) && is_numeric($item['pt_latitude']) ? (float)$item['pt_latitude'] : null,
-                    'pt_longitude' => isset($item['pt_longitude']) && is_numeric($item['pt_longitude']) ? (float)$item['pt_longitude'] : null,
+                    'pt_latitude' => $lat,
+                    'pt_longitude' => $lon,
                     'provinsi' => $normalize($item['provinsi'] ?? null),
                     'mitra' => $normalize($item['Mitra'] ?? null),
                     'skema' => $normalize($item['Skema'] ?? null),

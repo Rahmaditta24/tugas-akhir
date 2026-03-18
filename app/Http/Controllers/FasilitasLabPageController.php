@@ -77,17 +77,20 @@ class FasilitasLabPageController extends Controller
         }
 
 
-        $statsQ = clone $baseQuery;
+        // For map and stats, we use the global query (without filters)
+        // so the map stays full and stats stay static as requested.
+        $globalQuery = FasilitasLab::query();
+
         $stats = [
-            'totalResearch' => (clone $statsQ)->count(),
-            'totalUniversities' => (clone $statsQ)->distinct('institusi')->count('institusi'),
-            'totalProvinces' => (clone $statsQ)->distinct('provinsi')->count('provinsi'),
-            'totalFields' => (clone $statsQ)->distinct('jenis_laboratorium')->count('jenis_laboratorium'),
+            'totalResearch' => (clone $globalQuery)->count(),
+            'totalUniversities' => (clone $globalQuery)->distinct('institusi')->count('institusi'),
+            'totalProvinces' => (clone $globalQuery)->distinct('provinsi')->count('provinsi'),
         ];
 
-        $cacheKey = 'map_data_fasilitas_lab_v7_' . md5(json_encode($request->all()));
-        $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
-            $rows = (clone $baseQuery)->select(
+        $cacheKey = 'map_data_fasilitas_lab_v8_global';
+        $mapData = Cache::remember($cacheKey, 1800, function() use ($globalQuery) {
+            DB::statement('SET SESSION group_concat_max_len = 1000000');
+            $rows = (clone $globalQuery)->select(
                 'institusi',
                 'kode_universitas',
                 'latitude',
@@ -95,6 +98,7 @@ class FasilitasLabPageController extends Controller
                 'provinsi',
                 'kategori_pt',
                 'nama_laboratorium',
+                'nama_alat',
             )
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
@@ -113,6 +117,7 @@ class FasilitasLabPageController extends Controller
                         'kategori_pt'      => $item->kategori_pt,
                         'total_penelitian' => 0,
                         'lab_names'        => [],
+                        'tool_names'       => [],
                         'isFasilitasLab'   => true,
                     ];
                 }
@@ -120,10 +125,21 @@ class FasilitasLabPageController extends Controller
                 if ($item->nama_laboratorium) {
                     $grouped[$key]['lab_names'][] = $item->nama_laboratorium;
                 }
+                if ($item->nama_alat) {
+                    foreach (explode('|', $item->nama_alat) as $tool) {
+                        $tool = trim($tool);
+                        if ($tool && !in_array($tool, $grouped[$key]['tool_names'])) {
+                            $grouped[$key]['tool_names'][] = $tool;
+                        }
+                    }
+                }
             }
 
             $result = [];
             foreach ($grouped as $entry) {
+                $tools = $entry['tool_names'];
+                sort($tools);
+
                 $result[] = [
                     'institusi'        => $entry['institusi'],
                     'kode_universitas' => $entry['kode_universitas'],
@@ -133,6 +149,7 @@ class FasilitasLabPageController extends Controller
                     'kategori_pt'      => $entry['kategori_pt'],
                     'total_penelitian' => $entry['total_penelitian'],
                     'lab_list'         => implode('|', $entry['lab_names']),
+                    'tool_list'        => implode('|', $tools),
                     'isFasilitasLab'   => true,
                 ];
             }
@@ -146,7 +163,19 @@ class FasilitasLabPageController extends Controller
             || $request->filled('provinsi');
 
         $items = $isFiltered
-            ? (clone $baseQuery)->select('id', 'nama_laboratorium as judul', 'institusi', 'provinsi', 'jenis_laboratorium as bidang_fokus')
+            ? (clone $baseQuery)->select(
+                'id', 
+                'nama_laboratorium as judul', 
+                'institusi', 
+                'provinsi', 
+                'jenis_laboratorium as bidang_fokus',
+                'fakultas',
+                'departemen',
+                'status_akses',
+                'kota',
+                'nama_alat',
+                'total_jumlah_alat'
+            )
                 ->latest('id')
                 ->limit(50)
                 ->get()

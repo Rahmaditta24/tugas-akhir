@@ -14,6 +14,12 @@ class PengabdianPageController extends Controller
     public function index(Request $request)
     {
         $v = (int) Cache::get('pengabdian_cache_version', 1);
+        
+        // Default dataType to 'Multitahun, Batch I & II' if not present
+        if (!$request->has('dataType') && !$request->has('search') && !$request->has('queries')) {
+            $request->merge(['dataType' => 'Multitahun, Batch I & II']);
+        }
+        
         $baseQuery = Pengabdian::query();
         
         // Apply simple search

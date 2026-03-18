@@ -83,6 +83,15 @@ class PengabdianSeeder extends Seeder
         $bar = $this->command->getOutput()->createProgressBar($total);
         $bar->start();
 
+        $validateCoords = function ($lat, $lon) {
+            $lat = (float) $lat;
+            $lon = (float) $lon;
+            if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
+                return [null, null];
+            }
+            return [$lat, $lon];
+        };
+
         foreach (array_chunk($allData, $chunkSize) as $chunk) {
             $insertData = [];
 
@@ -96,13 +105,22 @@ class PengabdianSeeder extends Seeder
                     continue;
                 }
 
+                $latRaw = $item['pt_latitude'] ?? null;
+                $lonRaw = $item['pt_longitude'] ?? null;
+                $lat = null;
+                $lon = null;
+
+                if (is_numeric($latRaw) && is_numeric($lonRaw)) {
+                    [$lat, $lon] = $validateCoords($latRaw, $lonRaw);
+                }
+
                 $insertData[] = [
                     'batch_type' => $normalize($item['batch_type'] ?? null),
                     'nama' => $normalize(($item['nama'] ?? $item['nama_ketua'] ?? $item['nama_pelaksana'] ?? null)),
                     'nidn' => $normalize(($item['nidn'] ?? $item['nidn_ketua'] ?? $item['nidn_pelaksana'] ?? null)),
                     'nama_institusi' => $namaInstitusi,
-                    'pt_latitude' => isset($item['pt_latitude']) && is_numeric($item['pt_latitude']) ? (float)$item['pt_latitude'] : null,
-                    'pt_longitude' => isset($item['pt_longitude']) && is_numeric($item['pt_longitude']) ? (float)$item['pt_longitude'] : null,
+                    'pt_latitude' => $lat,
+                    'pt_longitude' => $lon,
                     'kd_perguruan_tinggi' => $normalize($item['kd_perguruan_tinggi'] ?? null),
                     'wilayah_lldikti' => $normalize($item['wilayah_lldikti'] ?? null),
                     'ptn_pts' => $normalize($item['ptn/pts'] ?? null),

@@ -28,7 +28,8 @@ export default function MapContainer({
     displayMode = 'peneliti',
     showBubbles = true,
     viewMode = 'provinsi',
-    onStatsChange
+    onStatsChange,
+    onCampusClick
 }) {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
@@ -129,6 +130,11 @@ export default function MapContainer({
                 const currentDataType = typeof getCurrentDataType === 'function' ? getCurrentDataType() : null;
                 setSelectedResearch({ ...data, isInstitusi: true, currentDataType });
                 setIsModalOpen(true);
+
+                // Trigger parent callback if provided
+                if (onCampusClick && data.institusi) {
+                    onCampusClick(data.institusi);
+                }
             } catch (e) {
                 console.error("Error parsing institusi data", e);
             }
@@ -219,7 +225,20 @@ export default function MapContainer({
             if (onStatsChange) onStatsChange(null);
         });
 
+        const handleZoomClass = () => {
+            if (!mapRef.current) return;
+            const currentZoom = map.getZoom();
+            if (currentZoom >= 7) {
+                mapRef.current.classList.add('zoom-level-detail');
+                mapRef.current.classList.remove('zoom-level-overview');
+            } else {
+                mapRef.current.classList.add('zoom-level-overview');
+                mapRef.current.classList.remove('zoom-level-detail');
+            }
+        };
+
         map.on('zoomend', () => {
+            handleZoomClass();
             const currentZoom = map.getZoom();
             if (onStatsChange && clusterGroupRef.current) {
                 if (currentZoom <= CONFIG.DEFAULT_ZOOM) {
@@ -242,6 +261,7 @@ export default function MapContainer({
             }
         });
 
+        handleZoomClass();
         mapInstanceRef.current = map;
 
         return () => {
@@ -267,17 +287,19 @@ export default function MapContainer({
                 kategori_pt: item.kategori_pt,
                 provinsi: item._provinsi,
                 lab_list: item.lab_list || '',
+                tool_list: item.tool_list || '',
             };
             const encoded = encodeURIComponent(JSON.stringify(modalData));
             return `
                 <div style="padding: 12px; min-width: 200px; font-family: 'Inter', sans-serif;">
                     <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${safeValue(item._institusi)}</h3>
-                    <div style="font-size: 12px; color: #64748b;">${formatNum(item._count)} laboratorium</div>
-                    <div style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
-                        <button onclick="window.openInstitusiDetail('${encoded}')"
-                           style="color: white; background: #3E7DCA; border: none; border-radius: 4px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-                           Lihat Detail Kampus
-                        </button>
+                    <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">${formatNum(item._count)} laboratorium</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+                        <div style="width: 25px; height: 8px; background: #3E7DCA; border-radius: 4px;"></div>
+                        <span onclick="window.openInstitusiDetail('${encoded}')" 
+                             style="color: #64748b; font-size: 11px; font-style: italic; cursor: pointer; hover: color: #3E7DCA;">
+                             Klik untuk detail
+                        </span>
                     </div>
                 </div>
             `;
@@ -358,13 +380,17 @@ export default function MapContainer({
                   `}
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                    <div style="background-color: ${color || '#3E7DCA'}; color: white; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    ${!isHilirisasiMode ? `
+                    <div style="background-color: ${color || '#f43f5e'}; color: white; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
                         ${safeValue(field)}
                     </div>
-                    <button onclick="window.openResearchDetail('${id}', '${escField}')" 
-                        style="color: white; background: #3E7DCA; border: none; border-radius: 4px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(62, 125, 202, 0.2);">
-                        Lihat Detail
-                    </button>
+                    ` : `
+                    <div style="width: 25px; height: 8px; background: #3E7DCA; border-radius: 4px;"></div>
+                    `}
+                    <span onclick="window.openResearchDetail('${id}', '${escField}')" 
+                         style="color: #64748b; font-size: 11px; font-style: italic; cursor: pointer; hover: color: #3E7DCA;">
+                         Klik untuk detail
+                    </span>
                 </div>
             </div>
         `;
@@ -468,7 +494,7 @@ export default function MapContainer({
                     const radius = 25;
                     const fontSize = 14;
                     return L.divIcon({
-                        html: `<div style="background-color: rgba(62, 125, 202, 0.6); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
+                        html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 1px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
                         className: 'custom-cluster-icon',
                         iconSize: L.point(radius * 2, radius * 2, true),
                         iconAnchor: L.point(radius, radius)
@@ -510,32 +536,65 @@ export default function MapContainer({
                             ...raw,
                             _isAggregated: true,
                             _totalCount: 0,
-                            _bidangList: [],
-                            _inventors: new Set(),
-                            _titles: []
+                            _bidangCounts: {},
+                            _skemaCounts: {},
+                            _temaCounts: {},
+                            _tahunCounts: {},
+                            _inventors: new Set()
                         };
                     }
                     const g = campusMap[campusName];
                     const c = ni._count || 1;
                     g._totalCount += c;
 
-                    const bf = raw.bidang_fokus || raw.bidang || ni._field || '-';
-                    if (bf !== '-') g._bidangList.push(bf);
+                    const updateCounts = (sourceStr, countMap) => {
+                        if (sourceStr && typeof sourceStr === 'string' && sourceStr !== '-') {
+                            sourceStr.split('|').forEach(val => {
+                                const trimmed = val.trim();
+                                if (trimmed && trimmed !== '-' && trimmed !== 'undefined') {
+                                    if (trimmed.includes(':::')) {
+                                        const [item, count] = trimmed.split(':::');
+                                        countMap[item] = (countMap[item] || 0) + parseInt(count || 1);
+                                    } else {
+                                        countMap[trimmed] = (countMap[trimmed] || 0) + 1;
+                                    }
+                                }
+                            });
+                        }
+                    };
+
+                    const bf = raw.pengabdian_bidang_fokus || raw.bidang_fokus || raw.bidang || ni._field || '-';
+                    if (bf !== '-' && bf !== 'undefined' && !bf.includes('|')) g._bidangCounts[bf] = (g._bidangCounts[bf] || 0) + 1;
+                    else updateCounts(bf, g._bidangCounts);
+
+                    const sk = raw.pengabdian_skema || raw.nama_skema || raw.skema || raw.skema_hilirisasi || raw.skema_list || '-';
+                    if (sk !== '-' && sk !== 'undefined' && !sk.includes('|')) g._skemaCounts[sk] = (g._skemaCounts[sk] || 0) + 1;
+                    else updateCounts(sk, g._skemaCounts);
+
+                    const tm = raw.tema_prioritas || raw.tema || raw.luaran || raw.tema_list || '-';
+                    if (tm !== '-' && tm !== 'undefined' && !tm.includes('|')) g._temaCounts[tm] = (g._temaCounts[tm] || 0) + 1;
+                    else updateCounts(tm, g._temaCounts);
+
+                    const th = raw.pengabdian_tahun || raw.tahun || raw.thn_pelaksanaan || raw.thn_pelaksanaan_kegiatan || raw.tahun_list || '-';
+                    if (th !== '-' && th !== 'undefined' && !th.includes('|')) g._tahunCounts[th] = (g._tahunCounts[th] || 0) + 1;
+                    else updateCounts(th, g._tahunCounts);
 
                     const inv = raw.nama_inventor || raw.nama_ketua || raw.nama_pengusul || raw.nama || '-';
                     if (inv !== '-') g._inventors.add(inv);
-
-                    if (raw.judul || raw.nama_produk) g._titles.push(raw.judul || raw.nama_produk);
                 }
                 processedSource = Object.values(campusMap).map(g => ({
                     ...g,
-                    _count: g._totalCount, // Update normalized count for balloon numbering
+                    _count: g._totalCount,
                     total_produk: g._totalCount,
                     total_penelitian: g._totalCount,
-                    bidang_fokus: g._bidangList.join('|'),
+                    total_pengabdian: g._totalCount,
+                    total_hilirisasi: g._totalCount,
+                    bidang_fokus: Object.entries(g._bidangCounts).map(([k, v]) => `${k}:::${v}`).join('|'),
+                    skema_list: Object.entries(g._skemaCounts).map(([k, v]) => `${k}:::${v}`).join('|'),
+                    tema_list: Object.entries(g._temaCounts).map(([k, v]) => `${k}:::${v}`).join('|'),
+                    tahun_list: Object.entries(g._tahunCounts).map(([k, v]) => `${k}:::${v}`).join('|'),
                     total_nama: g._inventors.size,
                     total_inventor: g._inventors.size,
-                    skema_list: Array.from(new Set(g._bidangList)).join('|'),
                 }));
             }
 
@@ -555,10 +614,18 @@ export default function MapContainer({
                         : null;
                     const initials = (item._institusi || '?').split(/\s+/).map(w => w[0]).slice(0, 3).join('');
                     const size = 52;
-                    // Fallback text sits behind; img hides itself on error so text shows through
-                    const iconHtml = `<div style="position:relative;width:${size}px;height:${size}px;border-radius:50%;border:2.5px solid #3E7DCA;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.25);overflow:hidden;cursor:pointer;">
-                        <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#3E7DCA;">${initials}</span>
-                        ${logoUrl ? `<img src="${logoUrl}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;" onerror="this.style.display='none'"/>` : ''}
+                    const radius = 25;
+                    const fontSize = 14;
+
+                    const iconHtml = `
+                    <div class="fasilitas-institusi-marker" style="position:relative;width:${size}px;height:${size}px;cursor:pointer;">
+                        <div class="produk-bubble" style="position:absolute; inset:0; margin:auto; background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: none; transition: all 0.2s;">
+                            ${count.toLocaleString('id-ID')}
+                        </div>
+                        <div class="produk-logo" style="position:absolute; inset:0; border-radius:50%; border:2.5px solid #3E7DCA; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.25); overflow:hidden; pointer-events: none; transition: all 0.2s;">
+                            <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#3E7DCA;">${initials}</span>
+                            ${logoUrl ? `<img src="${logoUrl}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;" onerror="this.style.display='none'"/>` : ''}
+                        </div>
                     </div>`;
 
                     const marker = L.marker([lat, lng], {
@@ -571,12 +638,38 @@ export default function MapContainer({
                         penelitianCount: count,
                         statsData: { institusi: item._institusi, provinsi: item._provinsi },
                     });
-                    marker._fasilitasData = { ...rawItem, isInstitusi: true, isFasilitasLab: true };
-                    marker.bindPopup(generatePopupContent(rawItem), { maxWidth: 300 });
+
+                    marker.on('click', () => {
+                        if (onCampusClick && item._institusi) {
+                            onCampusClick(item._institusi);
+                        }
+                    });
+
+                    const fasilitasRawItem = { ...rawItem, isInstitusi: true, isFasilitasLab: true };
+                    marker._fasilitasData = fasilitasRawItem;
+
+                    marker.bindPopup(`
+                        <div style="padding: 8px 4px; min-width: 220px; font-family: 'Inter', sans-serif;">
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem))}')">
+                                ${item._institusi}
+                            </h3>
+                            <div style="font-size: 14px; color: #334155; margin-bottom: 12px;">
+                                ${count.toLocaleString('id-ID')} fasilitas laboratorium
+                            </div>
+                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem))}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
+                                Klik untuk melihat detail kampus
+                            </div>
+                        </div>
+                    `, { maxWidth: 320 });
                     marker.on('click', (e) => {
                         L.DomEvent.stopPropagation(e);
-                        calculateStatsFromMarkers([marker]);
-                        marker.openPopup();
+
+                        if (mapInstanceRef.current && mapInstanceRef.current.getZoom() < 7) {
+                            mapInstanceRef.current.flyTo([lat, lng], 8, { duration: 0.4 });
+                        } else {
+                            calculateStatsFromMarkers([marker]);
+                            marker.openPopup();
+                        }
                     });
                     markersToAdd.push(marker);
                     continue;
@@ -586,13 +679,43 @@ export default function MapContainer({
                     const count = item._count;
                     const radius = 25;
                     const fontSize = 14;
+                    const dataType = getCurrentDataType();
+
+                    let iconHtml = '';
+                    let iconSizeParams;
+                    let iconAnchorParams;
+
+                    if (dataType === 'produk') {
+                        const logoUrl = item._institusi
+                            ? `/assets/logos/${encodeURIComponent(item._institusi)}.webp`
+                            : null;
+                        const initials = (item._institusi || '?').split(/\s+/).map(w => w[0]).slice(0, 3).join('');
+                        const size = 52;
+
+                        iconHtml = `
+                        <div class="produk-institusi-marker" style="position:relative;width:${size}px;height:${size}px;cursor:pointer;">
+                            <div class="produk-bubble" style="position:absolute; inset:0; margin:auto; background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); pointer-events: none; transition: all 0.2s;">
+                                ${count.toLocaleString('id-ID')}
+                            </div>
+                            <div class="produk-logo" style="position:absolute; inset:0; border-radius:50%; border:2.5px solid #3E7DCA; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,0.25); overflow:hidden; pointer-events: none; transition: all 0.2s;">
+                                <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#3E7DCA;">${initials}</span>
+                                ${logoUrl ? `<img src="${logoUrl}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;" onerror="this.style.display='none'"/>` : ''}
+                            </div>
+                        </div>`;
+                        iconSizeParams = L.point(size, size);
+                        iconAnchorParams = L.point(size / 2, size / 2);
+                    } else {
+                        iconHtml = `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${count.toLocaleString('id-ID')}</div>`;
+                        iconSizeParams = L.point(radius * 2, radius * 2, true);
+                        iconAnchorParams = L.point(radius, radius);
+                    }
 
                     const marker = L.marker([lat, lng], {
                         icon: L.divIcon({
-                            html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${count.toLocaleString('id-ID')}</div>`,
+                            html: iconHtml,
                             className: 'custom-marker-institusi',
-                            iconSize: L.point(radius * 2, radius * 2, true),
-                            iconAnchor: L.point(radius, radius)
+                            iconSize: iconSizeParams,
+                            iconAnchor: iconAnchorParams
                         }),
                         penelitianCount: count,
                         statsData: {
@@ -600,23 +723,31 @@ export default function MapContainer({
                             provinsi: item._provinsi
                         }
                     });
+                    const labelName = dataType === 'produk' ? 'produk' : dataType === 'hilirisasi' ? 'hilirisasi' : dataType === 'pengabdian' ? 'pengabdian' : 'penelitian';
                     marker.bindPopup(`
-                        <div style="padding: 12px; min-width: 200px; font-family: 'Inter', sans-serif;">
-                            <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${item._institusi}</h3>
-                            <div style="font-size: 12px; color: #64748b;">${count.toLocaleString('id-ID')} data</div>
-                            <div style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 8px;">
-                                <button onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem))}')"
-                                   style="color: white; background: #3E7DCA; border: none; border-radius: 4px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-                                   Lihat Detail Kampus
-                                </button>
+                        <div style="padding: 8px 4px; min-width: 220px; font-family: 'Inter', sans-serif;">
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem))}')">
+                                ${item._institusi}
+                            </h3>
+                            <div style="font-size: 14px; color: #334155; margin-bottom: 12px;">
+                                ${count.toLocaleString('id-ID')} ${labelName}
+                            </div>
+                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem))}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
+                                Klik untuk melihat detail kampus
                             </div>
                         </div>
-                    `, { maxWidth: 300 });
+                    `, { maxWidth: 320 });
+
 
                     marker.on('click', (e) => {
                         L.DomEvent.stopPropagation(e);
-                        calculateStatsFromMarkers([marker]);
-                        marker.openPopup();
+
+                        if (dataType === 'produk' && mapInstanceRef.current && mapInstanceRef.current.getZoom() < 7) {
+                            mapInstanceRef.current.flyTo([lat, lng], 8, { duration: 0.4 });
+                        } else {
+                            calculateStatsFromMarkers([marker]);
+                            marker.openPopup();
+                        }
                     });
 
                     markersToAdd.push(marker);
@@ -672,7 +803,10 @@ export default function MapContainer({
                     } else {
                         for (let idx = 0; idx < count; idx++) {
                             let matchedColor = '#3E7DCA';
-                            if (hasDetails) {
+                            const dataType = getCurrentDataType();
+                            if (dataType === 'hilirisasi') {
+                                matchedColor = '#3E7DCA';
+                            } else if (hasDetails) {
                                 const field = fields[idx];
                                 for (const [key, color] of Object.entries(FIELD_COLORS)) {
                                     if (field && field.includes(key)) { matchedColor = color; break; }
@@ -708,7 +842,6 @@ export default function MapContainer({
                                     bidang: fields[idx]
                                 }
                             });
-
                             const popup = hasDetails ?
                                 generateDetailPopup(
                                     titles[idx] || 'Detail',
@@ -796,6 +929,13 @@ export default function MapContainer({
 
     return (
         <>
+            <style>{`
+                .zoom-level-overview .produk-logo { opacity: 0; pointer-events: none; transform: scale(0.5); }
+                .zoom-level-overview .produk-bubble { opacity: 1; pointer-events: none; transform: scale(1); }
+                .zoom-level-detail .produk-logo { opacity: 1; pointer-events: none; transform: scale(1); }
+                .zoom-level-detail .produk-bubble { opacity: 0; pointer-events: none; transform: scale(0.5); }
+                .produk-logo, .produk-bubble { transition: all 0.3s ease-in-out; }
+            `}</style>
             <section className="relative bg-white flex justify-center mb-2">
                 <div id="map" ref={mapRef} className="lg:w-[90%] w-full h-[65vh] border relative z-0 rounded-lg shadow-inner overflow-hidden" />
             </section>

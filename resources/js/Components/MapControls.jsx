@@ -21,6 +21,9 @@ export default function MapControls({
     onDisplayModeChange,
     onReset,
     onDownload,
+    onDownloadSecondary,
+    downloadLabel = 'Excel',
+    downloadSecondaryLabel = 'Excel 2',
     displayMode = 'peneliti',
     filters = {},
     filterOptions = {},
@@ -34,6 +37,7 @@ export default function MapControls({
     onToggleBubbles = () => { },
     viewMode = 'provinsi',
     onViewModeChange = () => { },
+    isLoading = false,
     gridClass = "grid-cols-1 md:grid-cols-2",
     widthClass = "w-[95%] lg:w-[40%]"
 }) {
@@ -47,10 +51,9 @@ export default function MapControls({
     const handleFilterSelect = (key, value, isChecked, type = 'multi') => {
         if (type === 'single') {
             const newFilters = { ...filters };
-            // If selecting the same value or 'Semua' or empty, handle appropriately
-            if (value === 'Semua' || !value) {
-                delete newFilters[key];
-            } else {
+            // For single select, we don't allow 'Semua' anymore based on requirement 
+            // but we keep the logic flexible: if a value is passed, use it.
+            if (value) {
                 newFilters[key] = value;
             }
             onFilterChange(newFilters);
@@ -152,9 +155,9 @@ export default function MapControls({
                         {filterFields.map((field) => {
                             const isSingle = field.type === 'single';
                             const selectedCount = getSelectedCount(field.requestKey, field.type);
-                            let buttonText = 'Semua';
-                            if (selectedCount > 0) {
-                                buttonText = isSingle ? filters[field.requestKey] : `${selectedCount} dipilih`;
+                            let buttonText = isSingle ? (filters[field.requestKey] || 'Pilih...') : 'Semua';
+                            if (!isSingle && selectedCount > 0) {
+                                buttonText = `${selectedCount} dipilih`;
                             }
 
                             return (
@@ -335,18 +338,51 @@ export default function MapControls({
                         </svg>
                     </button>
 
-                    {/* Download Excel Button */}
+                    {/* Download Excel Button 1 */}
                     {!hideDownload && (
                         <button
                             onClick={onDownload}
-                            className="flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold bg-[#16a34a] text-white hover:bg-[#15803d] transition-all shadow-sm"
+                            disabled={isLoading}
+                            className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${isLoading ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-[#16a34a] text-white hover:bg-[#15803d]'
+                                }`}
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                </path>
-                            </svg>
-                            Excel
+                            {isLoading ? (
+                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                            )}
+                            {isLoading ? 'Processing...' : downloadLabel}
+                        </button>
+                    )}
+
+                    {/* Download Excel Button 2 */}
+                    {!hideDownload && onDownloadSecondary && (
+                        <button
+                            onClick={onDownloadSecondary}
+                            disabled={isLoading}
+                            className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${isLoading ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                }`}
+                        >
+                            {isLoading ? (
+                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : (
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
+                                </svg>
+                            )}
+                            {isLoading ? 'Processing...' : downloadSecondaryLabel}
                         </button>
                     )}
                 </div>

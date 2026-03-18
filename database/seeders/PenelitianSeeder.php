@@ -93,6 +93,18 @@ class PenelitianSeeder extends Seeder
             }
         }
 
+        $validateCoords = function ($lat, $lon) {
+            $lat = (float) $lat;
+            $lon = (float) $lon;
+            // Latitude must be between -90 and 90
+            // Longitude must be between -180 and 180
+            // Also check if it fits in decimal(10,7) which allows max 3 digits before decimal
+            if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
+                return [null, null];
+            }
+            return [$lat, $lon];
+        };
+
         foreach (array_chunk($penelitianData, $chunkSize) as $chunk) {
             $insertData = [];
 
@@ -120,13 +132,22 @@ class PenelitianSeeder extends Seeder
                 $kota = $normalize($item['kota'] ?? null) ?? $normalize($ref['kota'] ?? null);
                 $kode_pt = $normalize($item['kode_pt'] ?? null) ?? $normalize($ref['kode_pt'] ?? null);
 
+                $latRaw = $item['pt_latitude'] ?? null;
+                $lonRaw = $item['pt_longitude'] ?? null;
+                $lat = null;
+                $lon = null;
+
+                if (is_numeric($latRaw) && is_numeric($lonRaw)) {
+                    [$lat, $lon] = $validateCoords($latRaw, $lonRaw);
+                }
+
                 $insertData[] = [
                     'nama' => $normalize($item['nama'] ?? null),
                     'nidn' => isset($item['nidn']) && is_numeric($item['nidn']) ? (int)$item['nidn'] : null,
                     'nuptk' => $normalize($item['nuptk'] ?? null),
                     'institusi' => $institusi,
-                    'pt_latitude' => isset($item['pt_latitude']) && is_numeric($item['pt_latitude']) ? (float)$item['pt_latitude'] : null,
-                    'pt_longitude' => isset($item['pt_longitude']) && is_numeric($item['pt_longitude']) ? (float)$item['pt_longitude'] : null,
+                    'pt_latitude' => $lat,
+                    'pt_longitude' => $lon,
                     'kode_pt' => $kode_pt,
                     'jenis_pt' => $jenis_pt,
                     'kategori_pt' => $kategori_pt,

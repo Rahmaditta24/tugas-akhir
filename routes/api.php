@@ -35,12 +35,14 @@ Route::prefix('penelitian')->group(function () {
 // Hilirisasi endpoints
 Route::prefix('hilirisasi')->group(function () {
     Route::get('/', [HilirisasiController::class, 'index']);
+    Route::get('/export', [HilirisasiController::class, 'export']);
     Route::get('/{id}', [HilirisasiController::class, 'show']);
 });
 
 // Pengabdian endpoints
 Route::prefix('pengabdian')->group(function () {
     Route::get('/', [PengabdianController::class, 'index']);
+    Route::get('/export', [PengabdianController::class, 'export']);
     Route::get('/{id}', [PengabdianController::class, 'show']);
 });
 
@@ -54,6 +56,7 @@ Route::prefix('permasalahan')->group(function () {
 // Produk endpoints
 Route::prefix('produk')->group(function () {
     Route::get('/', [ProdukController::class, 'index']);
+    Route::get('/export', [ProdukController::class, 'export']);
     Route::get('/statistics', [ProdukController::class, 'statistics']);
     Route::get('/{id}', [ProdukController::class, 'show']);
 });
