@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -101,7 +101,7 @@ function resolveGeoJsonName(dbName) {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function PermasalahanMap({
+function PermasalahanMap({
     /** Permasalahan stats: { 'Sampah': [{provinsi, nilai, satuan, tahun}], ... } */
     permasalahanStats = {},
     /** Currently selected jenis permasalahan, e.g. 'Sampah' */
@@ -566,3 +566,6 @@ export default function PermasalahanMap({
         </section>
     );
 }
+
+// Memoize to prevent re-renders unless necessary props change
+export default React.memo(PermasalahanMap);

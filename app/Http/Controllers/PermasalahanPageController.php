@@ -16,11 +16,10 @@ class PermasalahanPageController extends Controller
         $limit = request()->input('limit', 100000); // Load all (max 100k to prevent memory issues)
         $offset = request()->input('offset', 0);
         
-        $mapDataQuery = Penelitian::select(
-                'id', 'judul', 'nama', 'institusi',
-                'provinsi', 'skema', 'thn_pelaksanaan as tahun',
-                'kategori_pt', 'klaster', 'pt_latitude', 'pt_longitude', 'kota',
-                'bidang_fokus', 'tema_prioritas', 'nidn', 'nuptk'
+        $mapDataQuery = Penelitian::selectRaw(
+                'id, judul, nama, institusi, provinsi, skema, ' .
+                'thn_pelaksanaan as tahun, kategori_pt, klaster, ' .
+                'pt_latitude, pt_longitude, kota, bidang_fokus, tema_prioritas, nidn, nuptk'
             )
             ->whereNotNull('judul')
             ->whereNotNull('pt_latitude')
@@ -51,7 +50,9 @@ class PermasalahanPageController extends Controller
         ];
 
         $permasalahanStats = \Cache::remember('permasalahan_choropleth_stats', 86400, function () use ($displayNameMap) {
-            return PermasalahanProvinsi::all()
+            return PermasalahanProvinsi::query()
+                ->selectRaw('jenis_permasalahan, provinsi, nilai, satuan, metrik, tahun')
+                ->get()
                 ->groupBy('jenis_permasalahan')
                 ->map(fn($items) => $items->map(fn($item) => [
                     'provinsi' => $item->provinsi,
@@ -68,11 +69,10 @@ class PermasalahanPageController extends Controller
 
         $jenisPermasalahan = array_keys($permasalahanStats);
 
-        // General penelitian list (first 50, ordered latest)
-        $researches = Penelitian::select(
-                'id', 'judul', 'nidn', 'nuptk', 'nama', 'institusi',
-                'provinsi', 'skema', 'thn_pelaksanaan as tahun',
-                'kategori_pt', 'klaster'
+        // General penelitian list (first 50, ordered latest) - optimized columns
+        $researches = Penelitian::selectRaw(
+                'id, judul, nidn, nuptk, nama, institusi, provinsi, skema, ' .
+                'thn_pelaksanaan as tahun, kategori_pt, klaster'
             )
             ->whereNotNull('judul')
             ->orderByDesc('thn_pelaksanaan')
@@ -80,26 +80,26 @@ class PermasalahanPageController extends Controller
             ->get()
             ->values();
 
-        // Clear old cache and recalculate with correct queries
-        \Cache::forget('permasalahan_stats');
-        
-        // Calculate stats without caching for now (will add caching later)
-        $baseQuery = Penelitian::whereNotNull('judul')
-                              ->whereNotNull('pt_latitude')
-                              ->whereNotNull('pt_longitude');
-        
-        $stats = [
-            'totalResearch' => $baseQuery->count(),
-            'totalUniversities' => Penelitian::whereNotNull('judul')
-                ->whereNotNull('institusi')
-                ->count(DB::raw('DISTINCT institusi')),
-            'totalProvinces' => Penelitian::whereNotNull('judul')
-                ->whereNotNull('provinsi')
-                ->count(DB::raw('DISTINCT provinsi')),
-            'totalFields' => Penelitian::whereNotNull('judul')
-                ->whereNotNull('bidang_fokus')
-                ->count(DB::raw('DISTINCT bidang_fokus')),
-        ];
+        // Clear old cache and recalculate with correct queries - cache for 24 hours
+        // These are expensive DISTINCT queries, so we cache them aggressively
+        $stats = \Cache::remember('permasalahan_stats', 86400, function () {
+            $baseQuery = Penelitian::whereNotNull('judul')
+                                  ->whereNotNull('pt_latitude')
+                                  ->whereNotNull('pt_longitude');
+            
+            return [
+                'totalResearch' => $baseQuery->count(),
+                'totalUniversities' => Penelitian::whereNotNull('judul')
+                    ->whereNotNull('institusi')
+                    ->count(DB::raw('DISTINCT institusi')),
+                'totalProvinces' => Penelitian::whereNotNull('judul')
+                    ->whereNotNull('provinsi')
+                    ->count(DB::raw('DISTINCT provinsi')),
+                'totalFields' => Penelitian::whereNotNull('judul')
+                    ->whereNotNull('bidang_fokus')
+                    ->count(DB::raw('DISTINCT bidang_fokus')),
+            ];
+        });
 
         return Inertia::render('Permasalahan', [
             'mapData'            => $mapData,

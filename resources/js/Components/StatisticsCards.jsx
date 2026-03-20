@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 function AnimatedCounter({ value, duration = 300 }) {
     const [displayValue, setDisplayValue] = useState(0);
@@ -33,7 +33,7 @@ function AnimatedCounter({ value, duration = 300 }) {
     return <span>{displayValue.toLocaleString('en-US')}</span>;
 }
 
-export default function StatisticsCards({ stats, labels = {} }) {
+function StatisticsCards({ stats, labels = {} }) {
     const defaultLabels = {
         totalResearch: 'Total Penelitian',
         totalUniversities: 'Total Perguruan Tinggi',
@@ -122,3 +122,6 @@ export default function StatisticsCards({ stats, labels = {} }) {
         </div>
     );
 }
+
+// Memoize to prevent re-renders when stats prop doesn't change
+export default React.memo(StatisticsCards);
