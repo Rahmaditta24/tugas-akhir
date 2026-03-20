@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { titleCase } from '../Utils/format';
 
 function exportToExcel(rows, columns, filename) {
     const header = columns.map((c) => c.label).join('\t');
@@ -65,7 +66,7 @@ export default function PermasalahanDataTable({
     const max = total ? Math.max(...values) : 0;
     const min = total ? Math.min(...values) : 0;
 
-    const colLabel = `${activeDataType} (${satuan || 'nilai'})`;
+    const colLabel = `${titleCase(activeDataType)} (${satuan || 'nilai'})`;
     const exportCols = [
         { key: nameKey, label: tab === 'provinsi' ? 'Provinsi' : 'Kabupaten/Kota' },
         { key: 'nilai', label: colLabel },
@@ -76,7 +77,7 @@ export default function PermasalahanDataTable({
             {/* Header */}
             <div className="bg-[#3B82F6] px-6 py-3 flex items-center justify-center">
                 <h2 className="text-white font-bold text-sm tracking-wide">
-                    Data {activeDataType}
+                    Data {titleCase(activeDataType)}
                 </h2>
             </div>
 

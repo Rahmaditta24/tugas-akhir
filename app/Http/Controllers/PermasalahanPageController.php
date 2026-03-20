@@ -5,66 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\PermasalahanProvinsi;
 use App\Models\PermasalahanKabupaten;
 use App\Models\Penelitian;
+use App\Models\Pengabdian;
+use App\Models\Hilirisasi;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 class PermasalahanPageController extends Controller
 {
     public function index()
     {
+        $dataType = request('dataType', 'Sampah');
+        $bubbleType = request('bubbleType', 'Penelitian');
+        $viewMode = request('viewMode', 'provinsi');
+
         // Province coordinates lookup
         $provinceCoords = $this->getProvinceCoordinates();
-        
-        // Get all permasalahan data with coordinates
-        $provinsiData = PermasalahanProvinsi::all()->map(function ($item) use ($provinceCoords) {
-            // Normalize province name: lowercase, trim, remove extra spaces
-            $cleanProv = strtolower(trim(preg_replace('/\s+/', ' ', $item->provinsi)));
-            $coords = $provinceCoords[$cleanProv] ?? null;
-            
-            // Debug fallback for Kalimantan Barat if still missing
-            if (!$coords && str_contains($cleanProv, 'kalimantan') && str_contains($cleanProv, 'barat')) {
-                 $coords = [0.0, 109.32]; // Force coords for Kalbar
-            }
 
-            return [
-                'id' => $item->id,
-                'provinsi' => $item->provinsi,
-                'jenis_permasalahan' => $item->jenis_permasalahan,
-                'nilai' => $item->nilai, // Raw value
-                'satuan' => $item->satuan,
-                'metrik' => $item->metrik,
-                'tahun' => $item->tahun,
-                'pt_latitude' => $coords ? $coords[0] : null,
-                'pt_longitude' => $coords ? $coords[1] : null,
-            ];
-        })->filter(fn($item) => !is_null($item['pt_latitude']) && !is_null($item['pt_longitude']));
-
-        $kabupatenData = PermasalahanKabupaten::all()->map(function ($item) use ($provinceCoords) {
-            // For kabupaten, use provinsi coordinates as fallback
-            $cleanProv = strtolower(trim(preg_replace('/\s+/', ' ', $item->provinsi)));
-            $coords = $provinceCoords[$cleanProv] ?? null;
-
-            // Debug fallback
-            if (!$coords && str_contains($cleanProv, 'kalimantan') && str_contains($cleanProv, 'barat')) {
-                 $coords = [0.0, 109.32];
-            }
-            
-            return [
-                'id' => $item->id,
-                'kabupaten_kota' => $item->kabupaten_kota,
-                'provinsi' => $item->provinsi,
-                'jenis_permasalahan' => $item->jenis_permasalahan,
-                'nilai' => $item->nilai,
-                'satuan' => $item->satuan,
-                'tahun' => $item->tahun,
-                'pt_latitude' => $coords ? $coords[0] : null,
-                'pt_longitude' => $coords ? $coords[1] : null,
-            ];
-        })->filter(fn($item) => !is_null($item['pt_latitude']) && !is_null($item['pt_longitude']));
-
-        // Combine both datasets
-        $mapData = $provinsiData->merge($kabupatenData)->values()->all();
-
-        // Choropleth data: group by jenis_permasalahan → [{provinsi, nilai, satuan, metrik, tahun}]
+        // 1. Get Permasalahan (Problem) data for the choropleth map (Polygons)
         $permasalahanStats = PermasalahanProvinsi::all()
             ->groupBy('jenis_permasalahan')
             ->map(fn($items) => $items->map(fn($item) => [
@@ -76,34 +33,249 @@ class PermasalahanPageController extends Controller
             ])->values()->toArray())
             ->toArray();
 
-        $jenisPermasalahan = array_keys($permasalahanStats);
+        // Standardize keys for frontend (Title Case)
+        $formattedPermasalahanStats = [];
+        foreach ($permasalahanStats as $key => $value) {
+            $formattedPermasalahanStats[ucwords(str_replace('_', ' ', $key))] = $value;
+        }
 
-        // General penelitian list (first 50, ordered latest)
-        $researches = Penelitian::select(
-                'id', 'judul', 'nidn', 'nuptk', 'nama', 'institusi',
-                'provinsi', 'skema', 'thn_pelaksanaan as tahun',
-                'kategori_pt', 'klaster'
-            )
-            ->whereNotNull('judul')
-            ->orderByDesc('thn_pelaksanaan')
-            ->limit(50)
-            ->get()
-            ->values();
+        $jenisPermasalahan = array_keys($formattedPermasalahanStats);
+
+        // 2. Filter data for bubbles
+        $keywords = $this->getKeywordsForDataType($dataType);
+        $mapData = collect();
+        $researches = collect();
+        $filteredStats = [];
+
+        if ($bubbleType === 'Data Permasalahan') {
+            // Markers represent the problem metrics (e.g. tons of waste)
+            $mapData = PermasalahanKabupaten::where('jenis_permasalahan', strtolower(str_replace(' ', '_', $dataType)))
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'institusi' => $item->kabupaten_kota, // Using city name as identifier
+                        'provinsi' => $item->provinsi,
+                        'total_penelitian' => $item->nilai, // 'total_penelitian' here acts as the 'value' for sizing
+                        'nilai' => $item->nilai,
+                        'satuan' => $item->satuan,
+                        'pt_latitude' => $item->latitude,
+                        'pt_longitude' => $item->longitude,
+                        'is_problem_data' => true
+                    ];
+                });
+            
+            // For the research list and stats, we still use keywords filtered research
+            // to show "what research is related to this problem"
+            $researchQuery = Penelitian::query();
+            if (!empty($keywords)) {
+                $researchQuery->where(function($q) use ($keywords) {
+                    foreach ($keywords as $keyword) {
+                        $q->orWhere('judul', 'LIKE', '%' . $keyword . '%');
+                    }
+                });
+            }
+            $researches = (clone $researchQuery)->orderByDesc('thn_pelaksanaan')->limit(50)->get()->map(fn($item) => $this->mapResearchItem($item, 'Penelitian'));
+            $filteredStats = [
+                'totalResearch' => $researchQuery->count(),
+                'totalUniversities' => $researchQuery->distinct('institusi')->count('institusi'),
+                'totalProvinces' => $researchQuery->distinct('provinsi')->count('provinsi'),
+                'totalFields' => $researchQuery->distinct('bidang_fokus')->count('bidang_fokus'),
+            ];
+        } else {
+            // Base query based on bubbleType (Research/Pengabdian/Hilirisasi)
+            if ($bubbleType === 'Pengabdian') {
+                $query = Pengabdian::query();
+                $institusiField = 'nama_institusi';
+                $provField = 'prov_pt';
+                $latField = 'pt_latitude';
+                $lngField = 'pt_longitude';
+            } elseif ($bubbleType === 'Hilirisasi') {
+                $query = Hilirisasi::query();
+                $institusiField = 'perguruan_tinggi';
+                $provField = 'provinsi';
+                $latField = 'pt_latitude';
+                $lngField = 'pt_longitude';
+            } else {
+                $query = Penelitian::query();
+                $institusiField = 'institusi';
+                $provField = 'provinsi';
+                $latField = 'pt_latitude';
+                $lngField = 'pt_longitude';
+            }
+
+            // Apply keywords filter (Robust Case Normalization)
+            if (!empty($keywords)) {
+                $query->where(function($q) use ($keywords) {
+                    foreach ($keywords as $keyword) {
+                        $q->orWhere('judul', 'LIKE', '%' . $keyword . '%');
+                    }
+                });
+            }
+
+            // Apply Request Filters
+            $this->applyRequestFilters($query, $bubbleType);
+
+            // 3. Prepare data for Markers (Aggregation by Institution)
+            // Using REAL coordinates from the DB instead of province approximations
+            $mapData = (clone $query)
+                ->select(
+                    $institusiField . ' as institusi', 
+                    $provField . ' as provinsi', 
+                    \DB::raw('count(*) as total_penelitian'),
+                    \DB::raw('MAX(' . $latField . ') as pt_latitude'),
+                    \DB::raw('MAX(' . $lngField . ') as pt_longitude')
+                )
+                ->groupBy($institusiField, $provField)
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'institusi' => $item->institusi,
+                        'provinsi' => $item->provinsi,
+                        'total_penelitian' => $item->total_penelitian,
+                        'pt_latitude' => $item->pt_latitude,
+                        'pt_longitude' => $item->pt_longitude,
+                        'is_problem_data' => false
+                    ];
+                })
+                ->filter(fn($item) => !is_null($item['pt_latitude']) && !is_null($item['pt_longitude']))
+                ->values();
+
+            $researches = (clone $query)
+                ->orderByDesc($bubbleType === 'Hilirisasi' ? 'tahun' : 'thn_pelaksanaan')
+                ->limit(50)
+                ->get()
+                ->map(fn($item) => $this->mapResearchItem($item, $bubbleType));
+            
+            $filteredStats = [
+                'totalResearch' => (clone $query)->count(),
+                'totalUniversities' => (clone $query)->distinct($institusiField)->count($institusiField),
+                'totalProvinces' => (clone $query)->distinct($provField)->count($provField),
+                'totalFields' => $bubbleType === 'Hilirisasi' ? 0 : (clone $query)->distinct('bidang_fokus')->count('bidang_fokus'),
+            ];
+        }
+
+
+        // 5. Global Stats (cached) for the Cards
+        $globalStats = Cache::remember('permasalahan_global_all_types', 3600, function() {
+            return [
+                'Penelitian' => [
+                    'totalResearch' => Penelitian::count(),
+                    'totalUniversities' => Penelitian::distinct('institusi')->count('institusi'),
+                    'totalProvinces' => Penelitian::distinct('provinsi')->count('provinsi'),
+                    'totalFields' => Penelitian::distinct('bidang_fokus')->count('bidang_fokus'),
+                ],
+                'Pengabdian' => [
+                    'totalResearch' => Pengabdian::count(),
+                    'totalUniversities' => Pengabdian::distinct('nama_institusi')->count('nama_institusi'),
+                    'totalProvinces' => Pengabdian::distinct('prov_pt')->count('prov_pt'),
+                    'totalFields' => Pengabdian::distinct('bidang_fokus')->count('bidang_fokus'),
+                ],
+                'Hilirisasi' => [
+                    'totalResearch' => Hilirisasi::count(),
+                    'totalUniversities' => Hilirisasi::distinct('perguruan_tinggi')->count('perguruan_tinggi'),
+                    'totalProvinces' => Hilirisasi::distinct('provinsi')->count('provinsi'),
+                    'totalFields' => Hilirisasi::distinct('skema')->count('skema'),
+                ],
+            ];
+        });
 
         return Inertia::render('Permasalahan', [
             'mapData'            => $mapData,
-            'permasalahanStats'  => $permasalahanStats,
+            'permasalahanStats'  => $formattedPermasalahanStats,
             'jenisPermasalahan'  => $jenisPermasalahan,
             'researches'         => $researches,
-            'stats' => [
-                'totalResearch' => PermasalahanProvinsi::count() + PermasalahanKabupaten::count(),
-                'totalUniversities' => 0, // Not applicable for Permasalahan
-                'totalProvinces' => PermasalahanProvinsi::distinct('provinsi')->count('provinsi'),
-                'totalFields' => PermasalahanProvinsi::distinct('jenis_permasalahan')->count('jenis_permasalahan') + 
-                                 PermasalahanKabupaten::distinct('jenis_permasalahan')->count('jenis_permasalahan'),
+            'stats'              => [
+                'Penelitian' => $globalStats['Penelitian'],
+                'Pengabdian' => $globalStats['Pengabdian'],
+                'Hilirisasi' => $globalStats['Hilirisasi'],
+                'Data Permasalahan' => $bubbleType === 'Data Permasalahan' ? $filteredStats : [],
             ],
+            'filters'            => [
+                'dataType' => $dataType,
+                'bubbleType' => $bubbleType,
+                'viewMode' => $viewMode,
+                'provinsi' => request('provinsi'),
+                'tahun' => request('tahun'),
+                'bidang_fokus' => request('bidang_fokus'),
+            ]
         ]);
     }
+
+    private function mapResearchItem($item, $bubbleType)
+    {
+        return [
+            'id' => $item->id,
+            'judul' => ($bubbleType === 'Hilirisasi') ? $item->judul_penelitian : $item->judul,
+            'nama' => ($bubbleType === 'Hilirisasi') ? ($item->nama_ketua ?? '-') : $item->nama,
+            'institusi' => ($bubbleType === 'Pengabdian') ? $item->nama_institusi : (($bubbleType === 'Hilirisasi') ? $item->perguruan_tinggi : $item->institusi),
+            'provinsi' => ($bubbleType === 'Pengabdian') ? $item->prov_pt : $item->provinsi,
+            'bidang_fokus' => $item->bidang_fokus ?? ($item->skema ?? '-'),
+            'tema_prioritas' => $item->tema_prioritas ?? null,
+            'tahun' => ($bubbleType === 'Penelitian' || $bubbleType === 'Pengabdian') ? $item->thn_pelaksanaan : $item->tahun,
+            'kategori_pt' => $item->kategori_pt ?? null,
+            'klaster' => $item->klaster ?? null,
+        ];
+    }
+
+    private function applyRequestFilters($query, $bubbleType)
+    {
+        if (request('provinsi')) {
+            $provField = $bubbleType === 'Pengabdian' ? 'prov_pt' : 'provinsi';
+            if (is_array(request('provinsi'))) {
+                $query->whereIn($provField, request('provinsi'));
+            } else {
+                $query->where($provField, request('provinsi'));
+            }
+        }
+        
+        if (request('tahun')) {
+            $yearField = $bubbleType === 'Penelitian' ? 'thn_pelaksanaan' : ($bubbleType === 'Pengabdian' ? 'thn_pelaksanaan' : 'tahun');
+            if (is_array(request('tahun'))) {
+                $query->whereIn($yearField, request('tahun'));
+            } else {
+                $query->where($yearField, request('tahun'));
+            }
+        }
+
+        if (request('bidang_fokus')) {
+            if (is_array(request('bidang_fokus'))) {
+                $query->whereIn('bidang_fokus', request('bidang_fokus'));
+            } else {
+                $query->where('bidang_fokus', request('bidang_fokus'));
+            }
+        }
+    }
+
+    private function getKeywordsForDataType($dataType)
+    {
+        $dataType = ucwords(strtolower(str_replace(['_', '-'], ' ', $dataType)));
+        
+        $map = [
+            'Sampah' => [
+                'sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 
+                'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut'
+            ],
+            'Stunting' => [
+                'stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita', 'bayi', 'anak', 'ibu hamil', 
+                'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi'
+            ],
+            'Gizi Buruk' => [
+                'gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus', 'vitamin', 'protein', 'karbo', 
+                'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan'
+            ],
+            'Krisis Listrik' => [
+                'listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit', 'pln', 'panel', 'solar', 
+                'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomat'
+            ],
+            'Ketahanan Pangan' => [
+                'pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 
+                'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani'
+            ],
+        ];
+
+        return $map[$dataType] ?? [];
+    }
+
 
     private function getProvinceCoordinates()
     {

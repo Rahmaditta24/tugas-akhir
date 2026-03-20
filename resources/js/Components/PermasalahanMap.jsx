@@ -106,8 +106,10 @@ export default function PermasalahanMap({
     permasalahanStats = {},
     /** Currently selected jenis permasalahan, e.g. 'Sampah' */
     activeDataType = 'Sampah',
-    /** Bubble markers (existing mapData from controller) */
+    /** Bubble markers (research projects/institutions) */
     mapData = [],
+    /** Full research list for modal detail */
+    researches = [],
     /** Show / hide bubble layer */
     showBubbles = true,
     /** 'provinsi' | 'kabupaten' */
@@ -232,8 +234,8 @@ export default function PermasalahanMap({
                         ? getChoroColor(nilai, dataMin, dataMax, minPct, maxPct)
                         : '#e5e7eb',
                     fillOpacity: 0.75,
-                    color: '#ffffff',
-                    weight: 1.5,
+                    color: '#333333',
+                    weight: 1.0,
                     opacity: 1,
                 };
             },
@@ -245,7 +247,13 @@ export default function PermasalahanMap({
                     : 'Tidak ada data';
 
                 layer.on('click', () => {
-                    setModalData({ geoName, formattedNilai, activeDataType, nilai, satuan });
+                    // Filter researches for this province
+                    const provResearches = (researches || []).filter(r => {
+                        const rGeoName = resolveGeoJsonName(r.provinsi || r.prov_pt);
+                        return rGeoName === geoName;
+                    });
+                    
+                    setModalData({ geoName, formattedNilai, activeDataType, nilai, satuan, provResearches });
                 });
                 layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 2.5 }));
                 layer.on('mouseout', () => layer.setStyle({ fillOpacity: 0.75, weight: 1.5 }));
@@ -255,8 +263,7 @@ export default function PermasalahanMap({
         layer.addTo(mapInstanceRef.current);
         geoJsonLayerRef.current = layer;
         layer.bringToBack();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [geoJsonData, activeDataType, permasalahanStats]);
+    }, [geoJsonData, activeDataType, permasalahanStats, researches]);
 
     // ── Effect 2: Only update colours when slider changes (real-time) ────────
     useEffect(() => {
@@ -295,20 +302,31 @@ export default function PermasalahanMap({
             zoomToBoundsOnClick: false,
             showCoverageOnHover: false,
             spiderfyOnMaxZoom: false,
+            // ── Premium Cluster Styling ──────────────────────────────────────
             iconCreateFunction: (cluster) => {
                 const total = cluster.getAllChildMarkers().reduce(
                     (s, m) => s + (m.options.penelitianCount || 0),
                     0
                 );
-                const size = 50;
+                const firstMarker = cluster.getAllChildMarkers()[0];
+                const isProblem = firstMarker?.options?.isProblemData;
+                const bubbleColor = isProblem ? '#1d4ed8' : getMarkerColorByBubbleType(activeDataType);
+
+                const size = 44;
                 return L.divIcon({
-                    html: `<div style="background:rgba(62,125,202,0.7);width:${size}px;height:${size}px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.25);">${total.toLocaleString('id-ID')}</div>`,
-                    className: '',
+                    html: `<div style="background:${bubbleColor};width:${size}px;height:${size}px;border-radius:50%;border:3px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11px;box-shadow:0 4px 10px rgba(0,0,0,0.25);transition: transform 0.2s ease;">${total.toLocaleString('id-ID')}</div>`,
+                    className: 'marker-cluster-premium',
                     iconSize: L.point(size, size, true),
                     iconAnchor: L.point(size / 2, size / 2),
                 });
             },
         });
+
+        // Helper to get marker color based on context
+        function getMarkerColorByBubbleType(type) {
+            // Using the bold blue from the screenshot
+            return '#1d4ed8'; 
+        }
 
         clusterGroup.on('clusterclick', (a) => {
             const currentZoom = mapInstanceRef.current.getZoom();
@@ -322,31 +340,51 @@ export default function PermasalahanMap({
 
         const markers = [];
         mapData.forEach((item) => {
-            const lat = parseFloat(item.pt_latitude ?? item.latitude);
-            const lng = parseFloat(item.pt_longitude ?? item.longitude);
+            const lat = parseFloat(item.pt_latitude);
+            const lng = parseFloat(item.pt_longitude);
             if (isNaN(lat) || isNaN(lng)) return;
 
             const count = item.total_penelitian || 1;
-            const size = 50;
+            const size = 44;
+            const isProblem = item.is_problem_data;
+            
+            // Bold blue from screenshot
+            const color = '#3b82f6'; 
+
             const marker = L.marker([lat, lng], {
                 icon: L.divIcon({
-                    html: `<div style="background:rgba(62,125,202,0.7);width:${size}px;height:${size}px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.2);">${count.toLocaleString('id-ID')}</div>`,
-                    className: '',
+                    html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:10px;box-shadow:0 3px 6px rgba(0,0,0,0.2);">${count.toLocaleString('id-ID')}</div>`,
+                    className: 'marker-premium',
                     iconSize: L.point(size, size, true),
                     iconAnchor: L.point(size / 2, size / 2),
                 }),
                 penelitianCount: count,
+                isProblemData: isProblem
             });
 
-            marker.bindPopup(
-                `<div style="padding:8px 12px;min-width:160px;font-family:sans-serif;">
-                    <div style="font-weight:700;font-size:13px;color:#1e40af;">${item.provinsi || item.kabupaten_kota || '-'}</div>
-                    <div style="font-size:12px;color:#4b5563;margin-top:2px;">
-                        <strong>${item.jenis_permasalahan || 'Permasalahan'}:</strong>
-                        ${item.nilai !== undefined ? Number(item.nilai).toLocaleString('id-ID') + ' ' + (item.satuan || '') : '-'}
-                    </div>
-                </div>`
-            );
+            if (isProblem) {
+                marker.bindPopup(
+                    `<div style="padding:10px;min-width:180px;font-family:'Inter', sans-serif;">
+                        <div style="font-weight:800;font-size:13px;color:#1e40af;margin-bottom:4px;border-bottom:1px solid #e5e7eb;padding-bottom:4px;">${item.institusi || '-'}</div>
+                        <div style="font-size:12px;color:#4b5563;margin-top:4px;">
+                            <span style="font-weight:700;">${activeDataType}:</span> ${Number(item.nilai).toLocaleString('id-ID')} ${item.satuan || ''}
+                        </div>
+                        <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${item.provinsi || '-'}</div>
+                    </div>`,
+                    { offset: [0, -size/2] }
+                );
+            } else {
+                marker.bindPopup(
+                    `<div style="padding:10px;min-width:200px;font-family:'Inter', sans-serif;">
+                        <div style="font-weight:800;font-size:13px;color:#1e40af;margin-bottom:4px;border-bottom:1px solid #e5e7eb;padding-bottom:4px;">${item.institusi || '-'}</div>
+                        <div style="font-size:12px;color:#4b5563;margin-top:4px;">
+                            <span style="font-weight:700;">Total Riset:</span> ${count.toLocaleString('id-ID')}
+                        </div>
+                         <div style="font-size:11px;color:#9ca3af;margin-top:2px;">${item.provinsi || '-'}</div>
+                    </div>`,
+                    { offset: [0, -size/2] }
+                );
+            }
             markers.push(marker);
         });
 
@@ -374,33 +412,84 @@ export default function PermasalahanMap({
                     onClick={() => setModalData(null)}
                 >
                     <div
-                        className="bg-white rounded-xl shadow-2xl border border-gray-200"
-                        style={{ minWidth: 260, maxWidth: 360, padding: '20px 24px', position: 'relative' }}
+                        className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden"
+                        style={{ width: '90%', maxWidth: 450, position: 'relative' }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        {/* Close button */}
-                        <button
-                            onClick={() => setModalData(null)}
-                            className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition-colors"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}
-                            aria-label="Tutup"
-                        >
-                            ✕
-                        </button>
-
-                        {/* Province name */}
-                        <div style={{ fontWeight: 700, fontSize: 17, color: '#1f2937', marginBottom: 8, paddingRight: 20 }}>
-                            {modalData.geoName}
+                        {/* Header */}
+                        <div className="bg-slate-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center group">
+                            <div>
+                                <h3 className="font-extrabold text-slate-800 text-lg leading-tight">{modalData.geoName}</h3>
+                                <p className="text-xs text-slate-500 font-medium mt-0.5">Ringkasan Data & Riset</p>
+                            </div>
+                            <button
+                                onClick={() => setModalData(null)}
+                                className="p-1.5 rounded-full hover:bg-white hover:shadow-sm text-gray-400 hover:text-gray-700 transition-all"
+                                aria-label="Tutup"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
 
-                        {/* Value */}
-                        <div style={{ fontSize: 14, color: '#374151' }}>
-                            <span style={{ fontWeight: 600 }}>{modalData.activeDataType}:</span>{' '}
-                            <span>
-                                {modalData.nilai !== undefined
-                                    ? Number(modalData.nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' ' + modalData.satuan
-                                    : 'Tidak ada data'}
-                            </span>
+                        {/* Content */}
+                        <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                            {/* Problem Value Card */}
+                            <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100/50 mb-6">
+                                <div className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mb-1">Status {modalData.activeDataType}</div>
+                                <div className="text-xl font-black text-slate-800">
+                                    {modalData.nilai !== undefined
+                                        ? Number(modalData.nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' ' + modalData.satuan
+                                        : 'Tidak ada data'}
+                                </div>
+                            </div>
+
+                            {/* Research List */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-bold text-slate-700 uppercase tracking-tight">Riset Terkait ({modalData.provResearches?.length || 0})</h4>
+                                </div>
+
+                                {modalData.provResearches && modalData.provResearches.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {modalData.provResearches.slice(0, 10).map((r, i) => (
+                                            <div key={i} className="group p-3 rounded-lg border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all cursor-default">
+                                                <div className="text-[13px] font-bold text-slate-800 group-hover:text-blue-700 leading-snug line-clamp-2 uppercase">
+                                                    {r.judul}
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-2 text-[11px] text-slate-500 font-medium">
+                                                    <span className="truncate max-w-[150px]">{r.institusi}</span>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                    <span>{r.tahun}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {modalData.provResearches.length > 10 && (
+                                            <p className="text-[11px] text-center text-slate-400 italic pt-1">
+                                                Dan {modalData.provResearches.length - 10} riset lainnya...
+                                            </p>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                                        <svg className="w-8 h-8 text-slate-300 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                        </svg>
+                                        <p className="text-xs text-slate-400 font-medium">Belum ada riset terdata di wilayah ini</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="bg-slate-50 px-6 py-3 border-t border-gray-100 flex justify-end">
+                             <button
+                                onClick={() => setModalData(null)}
+                                className="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors uppercase tracking-widest"
+                            >
+                                Tutup
+                            </button>
                         </div>
                     </div>
                 </div>

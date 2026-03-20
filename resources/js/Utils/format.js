@@ -55,14 +55,16 @@ export const display = (v, fallback = 'null') => {
  * @returns {string}
  */
 export const titleCase = (v) => {
-    const s = fmt(v).toLowerCase();
-    if (!s) return 'null';
+    const raw = fmt(v).toLowerCase();
+    if (!raw) return '-';
+    const s = raw.replace(/_/g, ' ');
 
-    const acronyms = ['pt', 'cv', 'pens', 'ui', 'ugm', 'itb', 'ipb', 'ptn', 'pts'];
+    const acronyms = ['pt', 'cv', 'pens', 'ui', 'ugm', 'itb', 'ipb', 'ptn', 'pts', 'ptnbh', 'blu', 'satker'];
     return s.split(/\s+/).map(word => {
+        if (!word) return '';
         if (acronyms.includes(word)) return word.toUpperCase();
         return word.charAt(0).toUpperCase() + word.slice(1);
-    }).join(' ');
+    }).filter(Boolean).join(' ');
 };
 
 /**

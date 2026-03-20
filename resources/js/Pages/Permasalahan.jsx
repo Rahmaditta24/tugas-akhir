@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { router } from '@inertiajs/react';
 import MainLayout from '../Layouts/MainLayout';
 import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
@@ -16,12 +17,14 @@ export default function Permasalahan({
     jenisPermasalahan = [],
     researches = [],
     stats = {},
+    filters: initialFilters = {},
 }) {
     const [showBubbles, setShowBubbles] = useState(true);
     const [viewMode, setViewMode] = useState('provinsi');
     const [filters, setFilters] = useState({
-        dataType: jenisPermasalahan[0] || 'Sampah',
-        bubbleType: 'Penelitian',
+        dataType: initialFilters.dataType || jenisPermasalahan[0] || 'Sampah',
+        bubbleType: initialFilters.bubbleType || 'Penelitian',
+        ...initialFilters
     });
     const [minPct, setMinPct] = useState(0);
     const [maxPct, setMaxPct] = useState(100);
@@ -31,34 +34,87 @@ export default function Permasalahan({
     const filterOptions = {
         dataType: jenisPermasalahan.length ? jenisPermasalahan : ['Sampah', 'Air', 'Udara', 'Tanah'],
         bubbleType: ['Penelitian', 'Pengabdian', 'Hilirisasi'],
-        bidangFokus: ['Energi', 'Kesehatan', 'Pangan', 'Sosial Humaniora'],
-        temaPrioritas: ['Tema A', 'Tema B'],
-        kategoriPT: ['PTNBH', 'BLU', 'Satker'],
-        klaster: ['Mandiri', 'Utama', 'Madya', 'Binaan'],
-        provinsi: ['Jawa Barat', 'Jawa Timur', 'DKI Jakarta'],
-        tahun: ['2020', '2021', '2022', '2023', '2024'],
+        bidangFokus: [
+            "Energi", "Kebencanaan", "Kemaritiman", "Kesehatan", "Material Maju",
+            "Pangan", "Pertahanan dan Keamanan", "Produk rekayasa keteknikan",
+            "Sosial Humaniora", "Teknologi Informasi dan Komunikasi", "Transportasi",
+            "Riset Dasar Teoritis"
+        ],
+        temaPrioritas: [
+            "Digital Economy", "Digitalisasi", "Ekonomi Biru", "Ekonomi Hijau",
+            "Ekonomi Kreatif", "Elektrifikasi Transportasi", "Hilirisasi Dan Industrialisasi",
+            "Industri Manufaktur", "Kecerdasan Buatan", "Kemandirian Kesehatan",
+            "Kesehatan", "Lainnya", "Lingkungan Hidup", "Material Maju", "Mineral",
+            "Pariwisata", "Pengelolaan Sampah", "Semikonduktor", "Swasembada Air",
+            "Swasembada Energi", "Swasembada Pangan", "Tidak Memilih"
+        ],
+        kategoriPT: ['PTN', 'PTNBH', 'PTS'],
+        klaster: ['Kelompok PT Binaan', 'Kelompok PT Madya', 'Kelompok PT Mandiri', 'Kelompok PT Pratama', 'Kelompok PT Utama'],
+        provinsi: [
+            "Aceh", "Bali", "Bangka Belitung", "Banten", "Bengkulu", "Di Yogyakarta", "Dki Jakarta",
+            "Gorontalo", "Jambi", "Jawa Barat", "Jawa Tengah", "Jawa Timur", "Kalimantan Barat",
+            "Kalimantan Selatan", "Kalimantan Tengah", "Kalimantan Timur", "Kalimantan Utara",
+            "Kepulauan Riau", "Lampung", "Maluku", "Maluku Utara", "Nusa Tenggara Barat",
+            "Nusa Tenggara Timur", "Papua", "Papua Barat", "Papua Barat Daya", "Papua Pegunungan",
+            "Papua Selatan", "Papua Tengah", "Riau", "Sulawesi Barat", "Sulawesi Selatan",
+            "Sulawesi Tengah", "Sulawesi Tenggara", "Sulawesi Utara", "Sumatera Barat",
+            "Sumatera Selatan", "Sumatera Utara"
+        ],
+        tahun: ["2025", "2024", "2023", "2022", "2021"],
+        skema: ['KBM', 'PMP', 'PKM', 'Kosabangsa', 'PMM', 'Pemberdayaan Masyarakat'],
+        direktorat: ['Direktorat Riset', 'Direktorat Pengabdian', 'Direktorat Vokasi'],
     };
 
-    const filterFields = [
-        { label: 'Pilih Data', requestKey: 'dataType', optionKey: 'dataType', type: 'single' },
-        { label: 'Pilih Jenis Bubble', requestKey: 'bubbleType', optionKey: 'bubbleType', type: 'single' },
-        { label: 'Bidang Fokus', requestKey: 'bidang_fokus', optionKey: 'bidangFokus' },
-        { label: 'Tema Prioritas', requestKey: 'tema_prioritas', optionKey: 'temaPrioritas' },
-        { label: 'Kategori PT', requestKey: 'kategori_pt', optionKey: 'kategoriPT' },
-        { label: 'Klaster', requestKey: 'klaster', optionKey: 'klaster' },
-        { label: 'Provinsi', requestKey: 'provinsi', optionKey: 'provinsi' },
-        { label: 'Tahun', requestKey: 'tahun', optionKey: 'tahun' },
-    ];
+    // Dinamis: Filter di bawah mengikuti bubbleType yang dipilih
+    const getDynamicFilterFields = () => {
+        const baseFields = [
+            { label: 'Pilih Data Permasalahan', requestKey: 'dataType', optionKey: 'dataType', type: 'single', hideIcon: true },
+            { label: 'Pilih Jenis Bubble', requestKey: 'bubbleType', optionKey: 'bubbleType', type: 'single', hideIcon: true },
+        ];
+
+        const bubbleType = filters.bubbleType || 'Data Permasalahan';
+        if (bubbleType === 'Data Permasalahan') {
+            return baseFields; // No extra filters for problem data
+        }
+
+        let adaptiveFields = [];
+        if (bubbleType === 'Penelitian') {
+            adaptiveFields = [
+                { label: 'Bidang Fokus', requestKey: 'bidang_fokus', optionKey: 'bidangFokus' },
+                { label: 'Tema Prioritas', requestKey: 'tema_prioritas', optionKey: 'temaPrioritas' },
+                { label: 'Kategori PT', requestKey: 'kategori_pt', optionKey: 'kategoriPT' },
+                { label: 'Klaster', requestKey: 'klaster', optionKey: 'klaster' },
+                { label: 'Provinsi', requestKey: 'provinsi', optionKey: 'provinsi' },
+                { label: 'Tahun', requestKey: 'tahun', optionKey: 'tahun' },
+            ];
+        } else if (bubbleType === 'Pengabdian') {
+            adaptiveFields = [
+                { label: 'Skema', requestKey: 'skema', optionKey: 'skema' },
+                { label: 'Provinsi', requestKey: 'provinsi', optionKey: 'provinsi' },
+                { label: 'Tahun', requestKey: 'tahun', optionKey: 'tahun' },
+            ];
+        } else if (bubbleType === 'Hilirisasi') {
+            adaptiveFields = [
+                { label: 'Direktorat', requestKey: 'direktorat', optionKey: 'direktorat' },
+                { label: 'Skema', requestKey: 'skema', optionKey: 'skema' },
+                { label: 'Provinsi', requestKey: 'provinsi', optionKey: 'provinsi' },
+                { label: 'Tahun', requestKey: 'tahun', optionKey: 'tahun' },
+            ];
+        }
+
+        return [...baseFields, ...adaptiveFields];
+    };
+
+
+    const filterFields = getDynamicFilterFields();
 
     const handleSearch = (term) => {
-        console.log('Search:', term);
+        const newFilters = { ...filters, search: term };
+        handleFilterChange(newFilters);
     };
 
     const handleReset = () => {
-        setFilters({
-            dataType: 'Sampah',
-            bubbleType: 'Penelitian'
-        });
+        router.get(route('permasalahan.index'));
     };
 
     const handleDownload = () => {
@@ -68,64 +124,50 @@ export default function Permasalahan({
         });
         try {
             const activeType = filters.dataType || 'Sampah';
-            const provinsiRows = permasalahanStats[activeType] || [];
-            const kabupatenRows = mapData.filter(
-                (r) => r.kabupaten_kota && r.jenis_permasalahan === activeType
-            );
+            const rows = researches || [];
 
-            if (provinsiRows.length === 0 && kabupatenRows.length === 0) {
+            if (rows.length === 0) {
                 toast.error('Tidak ada data untuk diexport.');
                 return;
             }
 
             const wb = XLSX.utils.book_new();
+            const exportData = rows.map(r => ({
+                'Judul': r.judul || '-',
+                'Universitas': r.institusi || '-',
+                'Provinsi': r.provinsi || '-',
+                'Bidang/Skema': r.bidang_fokus || '-',
+                'Tahun': r.tahun || '-',
+            }));
 
-            // Sheet 1: Data Provinsi
-            if (provinsiRows.length > 0) {
-                const provinsiData = provinsiRows.map(row => ({
-                    'Provinsi': row.provinsi || '-',
-                    'Jenis Permasalahan': activeType,
-                    'Nilai/Jumlah': row.nilai ?? row.jumlah ?? row.total ?? '-',
-                    'Satuan': legendData.satuan || '-',
-                }));
-                const ws1 = XLSX.utils.json_to_sheet(provinsiData);
-                ws1['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 12 }];
-                XLSX.utils.book_append_sheet(wb, ws1, 'Data Provinsi');
-            }
-
-            // Sheet 2: Data Kabupaten/Kota
-            if (kabupatenRows.length > 0) {
-                const kabupatenData = kabupatenRows.map(row => ({
-                    'Kabupaten/Kota': row.kabupaten_kota || '-',
-                    'Provinsi': row.provinsi || '-',
-                    'Jenis Permasalahan': row.jenis_permasalahan || activeType,
-                    'Nilai/Jumlah': row.nilai ?? row.jumlah ?? row.total ?? '-',
-                    'Satuan': row.satuan || legendData.satuan || '-',
-                }));
-                const ws2 = XLSX.utils.json_to_sheet(kabupatenData);
-                ws2['!cols'] = [{ wch: 30 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 12 }];
-                XLSX.utils.book_append_sheet(wb, ws2, 'Data Kabupaten-Kota');
-            }
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            XLSX.utils.book_append_sheet(wb, ws, 'Daftar Penelitian');
 
             const timestamp = new Date().toISOString().slice(0, 10);
-            XLSX.writeFile(wb, `permasalahan_${activeType}_${timestamp}.xlsx`);
+            XLSX.writeFile(wb, `penelitian_${activeType}_${timestamp}.xlsx`);
 
             toast.dismiss(loadingToast);
-            toast.success(`Berhasil export data permasalahan ${activeType}!`, {
+            toast.success(`Berhasil export data penelitian!`, {
                 duration: 4000, position: 'top-right',
-                style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
+                style: { background: '#16a34a', color: '#fff' },
             });
         } catch (error) {
-            console.error('Error exporting data:', error);
             toast.dismiss(loadingToast);
-            toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' });
+            toast.error('Gagal mengexport data.');
         } finally {
             setIsLoading(false);
         }
     };
 
+
     const handleFilterChange = (newFilters) => {
         setFilters(newFilters);
+        router.get(route('permasalahan.index'), newFilters, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            only: ['mapData', 'researches', 'stats', 'filters'],
+        });
     };
 
     const handleToggleBubbles = () => {
@@ -134,6 +176,7 @@ export default function Permasalahan({
 
     const handleViewModeChange = (mode) => {
         setViewMode(mode);
+        // Also update backend if needed, but polygons are currently all-at-once
     };
 
     return (
@@ -144,6 +187,7 @@ export default function Permasalahan({
             <div className="relative">
                 <PermasalahanMap
                     mapData={mapData}
+                    researches={researches}
                     permasalahanStats={permasalahanStats}
                     activeDataType={filters.dataType}
                     showBubbles={showBubbles}
@@ -159,7 +203,7 @@ export default function Permasalahan({
                     onDownload={handleDownload}
                     displayMode="peneliti"
                     filters={filters}
-                    filterOptions={filterOptions}
+                    filterOptions={{...filterOptions, dataType: jenisPermasalahan}}
                     onFilterChange={handleFilterChange}
                     filterFields={filterFields}
                     hideDisplayMode={true}
@@ -170,8 +214,11 @@ export default function Permasalahan({
                     onViewModeChange={handleViewModeChange}
                     isLoading={isLoading}
                     hideDownload={true}
+                    widthClass="w-[95%] lg:w-[60%]"
+                    gridClass="grid-cols-1 md:grid-cols-3"
                 />
             </div>
+
 
             <div className="w-full lg:max-w-[90%] mx-auto mb-5 mt-6">
                 <PermasalahanLegend
@@ -187,7 +234,14 @@ export default function Permasalahan({
 
                 <section className="bg-white/80 backdrop-blur-sm mt-6">
                     <div className="container mx-auto sm:px-6 lg:px-0">
-                        <StatisticsCards stats={stats} />
+                        <StatisticsCards 
+                            stats={stats[filters.bubbleType] || {}} 
+                            labels={{
+                                totalResearch: `Total ${filters.bubbleType}`,
+                                totalFields: filters.bubbleType === 'Pengabdian' ? 'Total Skema' : 
+                                             filters.bubbleType === 'Hilirisasi' ? 'Total Bidang' : 'Bidang Fokus'
+                            }}
+                        />
                     </div>
                 </section>
 

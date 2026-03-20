@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { titleCase } from '../Utils/format';
 
 const FIELD_COLORS = {
     "Energi": "#FF5716",
@@ -118,6 +119,131 @@ export default function MapControls({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [openDropdown]);
 
+    const renderField = (field) => {
+        const isSingle = field.type === 'single';
+        const selectedCount = getSelectedCount(field.requestKey, field.type);
+        let buttonText = isSingle ? (filters[field.requestKey] || 'Pilih...') : 'Semua';
+        if (!isSingle && selectedCount > 0) {
+            if (selectedCount === 1) {
+                const selectedValues = filters[field.requestKey] || [];
+                buttonText = Array.isArray(selectedValues) ? selectedValues[0] : selectedValues;
+            } else {
+                buttonText = `${selectedCount} dipilih`;
+            }
+        }
+
+        return (
+            <div className="relative dropdown-container">
+                <button
+                    type="button"
+                    onClick={() => setOpenDropdown(openDropdown === field.requestKey ? null : field.requestKey)}
+                    className="w-full p-2 bg-white border border-gray-300 rounded-lg text-[13px] text-left focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:bg-gray-50 transition-colors flex items-center justify-between shadow-sm"
+                >
+                    <span className="text-gray-700 truncate mr-2 font-medium">
+                        {titleCase(buttonText)}
+                    </span>
+                    <svg
+                        className={`w-4 h-4 flex-shrink-0 transition-transform ${openDropdown === field.requestKey ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                {openDropdown === field.requestKey && (
+                    <div className="absolute top-full left-0 w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-xl z-[999] max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
+                        {/* 'Semua' Toggle Option */}
+                        {(() => {
+                            const isAllSelected = !filters[field.requestKey] || (Array.isArray(filters[field.requestKey]) && filters[field.requestKey].length === 0);
+                            const shoudHideIcon = field.hideIcon || (typeof hideFilterIcons !== 'undefined' && hideFilterIcons);
+
+                            if (shoudHideIcon) return null;
+
+                            return (
+                                <div
+                                    onClick={() => {
+                                        const newFilters = { ...filters };
+                                        delete newFilters[field.requestKey];
+                                        onFilterChange(newFilters);
+                                        if (field.type === 'single') setOpenDropdown(null);
+                                    }}
+                                    className={`flex items-center px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors border-b border-gray-100 ${isAllSelected ? 'bg-blue-50/50' : ''}`}
+                                >
+                                    {!shoudHideIcon ? (
+                                        <label className="flex items-center w-full cursor-pointer">
+                                            <input
+                                                type={field.type === 'single' ? 'radio' : 'checkbox'}
+                                                checked={isAllSelected}
+                                                readOnly
+                                                className={`w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 ${field.type === 'single' ? 'rounded-full' : 'rounded'}`}
+                                            />
+                                            <span className="ml-3 text-sm text-gray-700 font-bold">Semua</span>
+                                        </label>
+                                    ) : (
+                                        <span className={`text-sm ${isAllSelected ? 'text-blue-600 font-bold' : 'text-gray-700 font-medium'}`}>
+                                            Semua
+                                        </span>
+                                    )}
+                                </div>
+                            );
+                        })()}
+
+                        {filterOptions[field.optionKey] && filterOptions[field.optionKey].map((option, idx) => {
+                            let optionColor = null;
+                            if (field.requestKey === 'bidang_fokus' || field.requestKey === 'skema') {
+                                for (const [key, color] of Object.entries(FIELD_COLORS)) {
+                                    if (option && option.includes(key)) {
+                                        optionColor = color;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            const selected = isSelected(field.requestKey, option);
+                            const shoudHideIcon = field.hideIcon || (typeof hideFilterIcons !== 'undefined' && hideFilterIcons);
+
+                            return (
+                                <div
+                                    key={idx}
+                                    onClick={() => handleFilterSelect(field.requestKey, option, !selected, field.type)}
+                                    className={`flex items-center px-4 py-2.5 hover:bg-slate-50 cursor-pointer transition-colors ${selected ? 'bg-blue-50/30' : ''}`}
+                                >
+                                    {!shoudHideIcon ? (
+                                        <label className="flex items-center w-full cursor-pointer">
+                                            <input
+                                                type={field.type === 'single' ? 'radio' : 'checkbox'}
+                                                checked={selected}
+                                                readOnly
+                                                className={`w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 ${field.type === 'single' ? 'rounded-full' : 'rounded'}`}
+                                            />
+                                            <span
+                                                className="ml-3 text-sm text-gray-700 font-medium"
+                                                style={optionColor ? { color: optionColor } : {}}
+                                            >
+                                                {optionColor && <span className="mr-1.5 font-bold">■</span>}
+                                                {titleCase(option)}
+                                            </span>
+                                        </label>
+                                    ) : (
+                                        <span
+                                            className={`text-sm ${selected ? 'text-blue-600 font-bold' : 'text-gray-700 font-medium'}`}
+                                            style={optionColor ? { color: optionColor } : {}}
+                                        >
+                                            {optionColor && <span className="mr-1.5 font-bold">■</span>}
+                                            {titleCase(option)}
+                                        </span>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <>
             {/* Search Box - Positioned over map */}
@@ -151,102 +277,44 @@ export default function MapControls({
 
             {/* Advanced Search Panel */}
             {isAdvancedSearchOpen && (
-                <div className={`absolute z-30 bottom-20 left-1/2 -translate-x-1/2 ${widthClass} bg-white/95 backdrop-blur-sm rounded-xl shadow-2xl p-6 animate-fade-in-up border border-gray-100`}>
-                    <div className={`grid ${gridClass} gap-4`}>
-                        {filterFields.map((field) => {
-                            const isSingle = field.type === 'single';
-                            const selectedCount = getSelectedCount(field.requestKey, field.type);
-                            let buttonText = isSingle ? (filters[field.requestKey] || 'Pilih...') : 'Semua';
-                            if (!isSingle && selectedCount > 0) {
-                                if (selectedCount === 1) {
-                                    const selectedValues = filters[field.requestKey] || [];
-                                    buttonText = Array.isArray(selectedValues) ? selectedValues[0] : selectedValues;
-                                } else {
-                                    buttonText = `${selectedCount} dipilih`;
-                                }
-                            }
+                <div className={`absolute z-30 bottom-24 left-1/2 -translate-x-1/2 ${widthClass} bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] p-4 lg:p-5 animate-fade-in-up border border-gray-100`}>
 
-                            return (
-                                <div key={field.requestKey} className="flex flex-col gap-1">
-                                    <label className="text-sm font-semibold text-gray-700">{field.label}</label>
-                                    <div className="relative dropdown-container">
-                                        <button
-                                            type="button"
-                                            onClick={() => setOpenDropdown(openDropdown === field.requestKey ? null : field.requestKey)}
-                                            className="w-full p-2 bg-white border border-gray-300 rounded-lg text-sm text-left focus:ring-2 focus:ring-blue-500 focus:border-transparent hover:bg-gray-50 transition-colors flex items-center justify-between"
-                                        >
-                                            <span className="text-gray-700 truncate mr-2">
-                                                {buttonText}
-                                            </span>
-                                            <svg
-                                                className={`w-4 h-4 flex-shrink-0 transition-transform ${openDropdown === field.requestKey ? 'rotate-180' : ''}`}
-                                                fill="none"
-                                                stroke="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                                            </svg>
-                                        </button>
-
-                                        {openDropdown === field.requestKey && (
-                                            <div className="absolute top-full left-0 w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
-                                                {filterOptions[field.optionKey] && filterOptions[field.optionKey].map((option, idx) => {
-                                                    // Determine color for Bidang Fokus or Skema
-                                                    let optionColor = null;
-                                                    if (field.requestKey === 'bidang_fokus' || field.requestKey === 'skema') {
-                                                        // Check if any FIELD_COLORS key is present in the option string
-                                                        for (const [key, color] of Object.entries(FIELD_COLORS)) {
-                                                            if (option && option.includes(key)) {
-                                                                optionColor = color;
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-
-                                                    const selected = isSelected(field.requestKey, option);
-                                                    const shoudHideIcon = field.hideIcon || (typeof hideFilterIcons !== 'undefined' && hideFilterIcons);
-                                                    
-                                                    return (
-                                                        <div
-                                                            key={idx}
-                                                            onClick={shoudHideIcon ? () => handleFilterSelect(field.requestKey, option, !selected, field.type) : undefined}
-                                                            className={`flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer transition-colors ${shoudHideIcon && selected ? 'bg-blue-50' : ''}`}
-                                                        >
-                                                            {!shoudHideIcon ? (
-                                                                <label className="flex items-center w-full cursor-pointer">
-                                                                    <input
-                                                                        type={field.type === 'single' ? 'radio' : 'checkbox'}
-                                                                        checked={selected}
-                                                                        onChange={(e) => handleFilterSelect(field.requestKey, option, e.target.checked, field.type)}
-                                                                        className={`w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500 ${field.type === 'single' ? 'rounded-full' : 'rounded'}`}
-                                                                    />
-                                                                    <span
-                                                                        className="ml-2 text-sm text-gray-700 font-medium"
-                                                                        style={optionColor ? { color: optionColor } : {}}
-                                                                    >
-                                                                        {optionColor && <span className="mr-1">■</span>}
-                                                                        {option}
-                                                                    </span>
-                                                                </label>
-                                                            ) : (
-                                                                <span
-                                                                    className={`text-sm ${selected ? 'text-blue-600 font-bold' : 'text-gray-700 font-medium'}`}
-                                                                    style={optionColor ? { color: optionColor } : {}}
-                                                                >
-                                                                    {optionColor && <span className="mr-1">■</span>}
-                                                                    {option}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
+                    {/* Render fields with better layout logic */}
+                    {showPermasalahanControls ? (
+                        <div className="flex flex-col gap-3">
+                            {/* Special Top Row for Permasalahan */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                                {filterFields.slice(0, 2).map((field) => (
+                                    <div key={field.requestKey} className="flex flex-col gap-1">
+                                        <label className="text-[12px] font-bold text-gray-800 ml-1">{field.label}</label>
+                                        {renderField(field)}
                                     </div>
+                                ))}
+                            </div>
+
+                            {/* Visual Divider */}
+                            <div className="h-px bg-slate-200/60 w-full my-0.5" />
+
+                            {/* Rest of the Fields in 3 Columns */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-3">
+                                {filterFields.slice(2).map((field) => (
+                                    <div key={field.requestKey} className="flex flex-col gap-1">
+                                        <label className="text-[12px] font-bold text-gray-800 ml-1">{field.label}</label>
+                                        {renderField(field)}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className={`grid ${gridClass} gap-4`}>
+                            {filterFields.map((field) => (
+                                <div key={field.requestKey} className="flex flex-col gap-1">
+                                    <label className="text-[12px] font-bold text-gray-800 ml-1">{field.label}</label>
+                                    {renderField(field)}
                                 </div>
-                            );
-                        })}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -312,25 +380,22 @@ export default function MapControls({
                     {showPermasalahanControls && (
                         <>
                             {/* Hide Bubbles Button */}
-                            <button
+                             <button
                                 onClick={onToggleBubbles}
-                                className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${!showBubbles
-                                    ? 'bg-purple-600 text-white ring-2 ring-white'
+                                className={`flex items-center justify-center gap-2 text-sm px-5 py-2 rounded-full font-bold transition-all shadow-sm ${!showBubbles
+                                    ? 'bg-purple-600 text-white'
                                     : 'bg-purple-500 text-white hover:bg-purple-600'
                                     }`}
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8s8 3.59 8 8s-3.59 8-8 8z" />
-                                </svg>
-                                Hide Bubbles
+                                {showBubbles ? 'Hide Bubbles' : 'Show Bubbles'}
                             </button>
 
                             {/* Mode Provinsi Button */}
                             <button
                                 onClick={() => onViewModeChange('provinsi')}
                                 className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${viewMode === 'provinsi'
-                                    ? 'bg-[#FFD700] text-black ring-2 ring-white'
-                                    : 'bg-white text-gray-700 hover:bg-gray-100'
+                                    ? 'bg-[#FFD700] text-black'
+                                    : 'bg-[#3E7DCA] text-white opacity-90 hover:opacity-100'
                                     }`}
                             >
                                 Mode Provinsi
@@ -340,8 +405,8 @@ export default function MapControls({
                             <button
                                 onClick={() => onViewModeChange('kabupaten')}
                                 className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${viewMode === 'kabupaten'
-                                    ? 'bg-[#3E7DCA] text-white ring-2 ring-white'
-                                    : 'bg-[#3E7DCA] text-white hover:brightness-110'
+                                    ? 'bg-[#FFD700] text-black'
+                                    : 'bg-[#3E7DCA] text-white opacity-90 hover:opacity-100'
                                     }`}
                             >
                                 Mode Kabupaten
