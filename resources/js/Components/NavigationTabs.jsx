@@ -37,8 +37,8 @@ export default function NavigationTabs({ activePage = 'penelitian' }) {
                             <button
                                 onClick={() => toggleDropdown(tab.key)}
                                 className={`w-full h-full flex items-center justify-between px-4 py-2 rounded-lg font-semibold text-center lg:text-sm text-xs transition-colors ${isActive
-                                        ? 'bg-yellow-400 text-black'
-                                        : 'bg-[#3E7DCA] text-white hover:bg-blue-900'
+                                    ? 'bg-yellow-400 text-black'
+                                    : 'bg-[#3E7DCA] text-white hover:bg-blue-900'
                                     }`}
                             >
                                 <span className="flex-1">{tab.name}</span>
@@ -68,8 +68,8 @@ export default function NavigationTabs({ activePage = 'penelitian' }) {
                                                 href={item.url}
                                                 onClick={() => setOpenDropdown(null)}
                                                 className={`block px-4 py-3 text-sm transition-colors ${activePage === item.key
-                                                        ? 'bg-gray-50 text-blue-700 font-bold'
-                                                        : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                                                    ? 'bg-gray-100 text-gray-900 font-bold'
+                                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                                     }`}
                                             >
                                                 {item.name}
@@ -88,8 +88,8 @@ export default function NavigationTabs({ activePage = 'penelitian' }) {
                         key={tab.key}
                         href={tab.url}
                         className={`flex-1 min-w-[140px] max-w-[150px] lg:text-sm text-xs px-4 py-2 rounded-lg font-semibold text-center flex items-center justify-center ${activePage === tab.key
-                                ? 'bg-yellow-400 text-black'
-                                : 'bg-[#3E7DCA] text-white hover:bg-blue-900'
+                            ? 'bg-yellow-400 text-black'
+                            : 'bg-[#3E7DCA] text-white hover:bg-blue-900'
                             }`}
                     >
                         {tab.name}

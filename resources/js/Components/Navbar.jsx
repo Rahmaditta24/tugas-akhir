@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 
-export default function Navbar() {
+export default function Navbar({ headerTitle }) {
     return (
         <>
             <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50">
@@ -22,9 +22,11 @@ export default function Navbar() {
                     </div>
 
                     {/* Judul tengah */}
-                    <div className="w-full text-center md:w-auto">
-                        <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-800">
-                            Dashboard Pemetaan Riset Berdampak di Seluruh Indonesia <span className="font-normal">(Beta)</span>
+                    <div className="w-full text-center md:w-auto px-2">
+                        <h2 className="text-[13px] sm:text-lg md:text-xl font-bold text-slate-800 leading-tight">
+                            {headerTitle ? headerTitle : (
+                                <>Dashboard Pemetaan Riset Berdampak di Seluruh Indonesia <span className="font-normal">(Beta)</span></>
+                            )}
                         </h2>
                     </div>
 

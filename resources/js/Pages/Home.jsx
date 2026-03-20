@@ -68,8 +68,12 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
     const handleDownload = async () => {
         // Show loading state
         setIsLoading(true);
+        const loadingToast = toast.loading('Sedang menyiapkan data Excel, mohon tunggu...', {
+            position: 'top-right'
+        });
 
         try {
+            console.log('Starting export with filters:', filters);
             // Build query string that supports arrays
             const queryParts = [];
             Object.keys(filters).forEach(key => {
@@ -101,15 +105,12 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
             // Prepare data for Excel export
             const exportData = allData.map(research => ({
-                'Nama Peneliti': research.nama || '-',
-                'NIDN': research.nidn || '-',
+                'Peneliti': research.nama || '-',
+                'Judul': research.judul || '-',
                 'Institusi': research.institusi || '-',
-                'Jenis PT': research.jenis_pt || '-',
                 'Kategori PT': research.kategori_pt || '-',
-                'Klaster': research.klaster || '-',
+                'Jenis PT': research.jenis_pt || '-',
                 'Provinsi': research.provinsi || '-',
-                'Kota': research.kota || '-',
-                'Judul Penelitian': research.judul || '-',
                 'Skema': research.skema || '-',
                 'Tahun': research.thn_pelaksanaan || '-',
                 'Bidang Fokus': research.bidang_fokus || '-',
@@ -123,15 +124,12 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
             // Auto-size columns
             const cols = [
-                { wch: 30 }, // Nama Peneliti
-                { wch: 15 }, // NIDN
-                { wch: 40 }, // Institusi
-                { wch: 15 }, // Jenis PT
-                { wch: 12 }, // Kategori PT
-                { wch: 25 }, // Klaster
-                { wch: 20 }, // Provinsi
-                { wch: 20 }, // Kota
+                { wch: 30 }, // Peneliti
                 { wch: 60 }, // Judul
+                { wch: 40 }, // Institusi
+                { wch: 12 }, // Kategori PT
+                { wch: 15 }, // Jenis PT
+                { wch: 20 }, // Provinsi
                 { wch: 30 }, // Skema
                 { wch: 10 }, // Tahun
                 { wch: 25 }, // Bidang Fokus
@@ -142,12 +140,13 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             // Generate filename with timestamp and filter info
             const timestamp = new Date().toISOString().slice(0, 10);
             const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
-            const filename = `penelitian${filterInfo}_${timestamp}.xlsx`;
+            const filename = `data-penelitian${filterInfo}_${timestamp}.xlsx`;
 
             // Download file
             XLSX.writeFile(wb, filename);
 
-            // Show success toast
+            // Remove loading toast and show success
+            toast.dismiss(loadingToast);
             toast.success(`Berhasil export ${exportData.length} data penelitian!`, {
                 duration: 4000,
                 position: 'top-right',
@@ -163,6 +162,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             });
         } catch (error) {
             console.error('Error exporting data:', error);
+            toast.dismiss(loadingToast);
             toast.error('Gagal mengexport data. Silakan coba lagi.', {
                 duration: 4000,
                 position: 'top-right',
@@ -214,18 +214,21 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                     onDisplayModeChange={setDisplayMode}
                     onReset={handleReset}
                     onDownload={handleDownload}
+                    isLoading={isLoading}
                     displayMode={displayMode}
                     filters={filters}
                     filterOptions={filterOptions}
                     onFilterChange={handleFilterChange}
                     searchTerm={searchTerm}
+                    gridClass="grid-cols-1 md:grid-cols-3"
+                    widthClass="w-[95%] lg:w-[60%]"
                 />
             </div>
 
             <div className="w-full lg:max-w-[90%] mx-auto mb-5">
                 <section className="bg-white/80 backdrop-blur-sm">
                     <div className="container mx-auto sm:px-6 lg:px-0">
-                        <StatisticsCards stats={currentStats} labels={{ totalResearch: 'Total Penelitian' }} />
+                        <StatisticsCards stats={currentStats} />
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}

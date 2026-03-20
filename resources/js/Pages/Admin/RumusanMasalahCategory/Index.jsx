@@ -9,6 +9,8 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
     const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
     const [editingCategory, setEditingCategory] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
 
     // Form Handling using Inertia useForm
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
@@ -79,14 +81,21 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
 
     // Handle Delete Category
     const { delete: destroy } = useForm();
-    const handleDelete = (id) => {
-        if (confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
-            destroy(route('admin.rumusan-masalah.categories.destroy', id), {
+    const handleDelete = (category) => {
+        setCategoryToDelete(category);
+        setShowDeleteModal(true);
+        setOpenMenuId(null);
+    };
+
+    const confirmDelete = () => {
+        if (categoryToDelete) {
+            destroy(route('admin.rumusan-masalah.categories.destroy', categoryToDelete.id), {
                 preserveScroll: true,
-                onSuccess: () => setOpenMenuId(null)
+                onSuccess: () => {
+                    setShowDeleteModal(false);
+                    setCategoryToDelete(null);
+                }
             });
-        } else {
-            setOpenMenuId(null);
         }
     };
 
@@ -149,7 +158,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                                     Edit Kategori
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(category.id)}
+                                                    onClick={() => handleDelete(category)}
                                                     className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                                                 >
                                                     Hapus Kategori
@@ -313,6 +322,39 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* --- DELETE CONFIRMATION MODAL --- */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+                        <div className="p-6">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                Konfirmasi Hapus
+                            </h3>
+                            <p className="text-gray-600 mb-8">
+                                Apakah Anda yakin ingin menghapus kategori <span className="font-semibold text-gray-800">{categoryToDelete?.name}</span> ini?
+                            </p>
+
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => {
+                                        setShowDeleteModal(false);
+                                        setCategoryToDelete(null);
+                                    }}
+                                    className="px-6 py-2 bg-[#e2e8f0] text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-colors"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="px-6 py-2 bg-[#c53030] text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                    Hapus
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

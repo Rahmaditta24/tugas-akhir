@@ -13,6 +13,13 @@ class PengabdianPageController extends Controller
 {
     public function index(Request $request)
     {
+        $v = (int) Cache::get('pengabdian_cache_version', 1);
+        
+        // Default dataType to 'Multitahun, Batch I & II' if not present
+        if (!$request->has('dataType') && !$request->has('search') && !$request->has('queries')) {
+            $request->merge(['dataType' => 'Multitahun, Batch I & II']);
+        }
+        
         $baseQuery = Pengabdian::query();
         
         // Apply simple search
@@ -108,7 +115,7 @@ class PengabdianPageController extends Controller
         }
 
         // Cache statistics
-        $statsCacheKey = 'stats_pengabdian_v4_' . md5(json_encode($request->all()));
+        $statsCacheKey = 'stats_pengabdian_v5_' . $v . '_' . md5(json_encode($request->all()));
         $stats = Cache::remember($statsCacheKey, 3600, function() use ($baseQuery) {
             $statsQ = clone $baseQuery;
             return [
@@ -123,7 +130,7 @@ class PengabdianPageController extends Controller
             ? 'GROUP_CONCAT(COALESCE(bidang_teknologi_inovasi, bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_themes'
             : 'GROUP_CONCAT(COALESCE(bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_themes';
 
-        $cacheKey = 'map_data_pengabdian_v5_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_pengabdian_v7_' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery, $themeSql) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
@@ -140,7 +147,8 @@ class PengabdianPageController extends Controller
                     DB::raw('GROUP_CONCAT(COALESCE(nama_skema, "-") SEPARATOR "|") as all_skema'),
                     DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan_kegiatan AS CHAR) SEPARATOR "|") as all_years'),
                     DB::raw($themeSql),
-                    DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types')
+                    DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types'),
+                    DB::raw('GROUP_CONCAT(COALESCE(nama, "-") SEPARATOR "|") as all_researchers')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -162,18 +170,15 @@ class PengabdianPageController extends Controller
                     'tahun_list' => $item->all_years,
                     'tema_list' => $item->all_themes,
                     'jenis_pt_list' => $item->all_pt_types,
+                    'all_researchers' => $item->all_researchers,
                 ];
 
             })->all();
         });
 
-        // Only load list if filtered/searched
+        // Only load list if specifically searched (keyword)
         $isFiltered = $request->filled('search') 
-            || $request->filled('queries')
-            || $request->filled('dataType')
-            || $request->filled('skema')
-            || $request->filled('provinsi')
-            || $request->filled('tahun');
+            || $request->filled('queries');
         
         $items = $isFiltered 
             ? (clone $baseQuery)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'nama_skema as bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun')
@@ -185,7 +190,7 @@ class PengabdianPageController extends Controller
 
         // Get filter options (cached)
         $filterOptions = [
-            'provinsi' => Cache::remember('filter_pengabdian_provinsi', 7200, function() {
+            'provinsi' => Cache::remember('filter_pengabdian_provinsi_' . $v, 7200, function() {
                 return DB::table('pengabdian')
                     ->select('prov_pt')
                     ->whereNotNull('prov_pt')
@@ -195,7 +200,7 @@ class PengabdianPageController extends Controller
                     ->filter()
                     ->values();
             }),
-            'tahun' => Cache::remember('filter_pengabdian_tahun', 7200, function() {
+            'tahun' => Cache::remember('filter_pengabdian_tahun_' . $v, 7200, function() {
                 return DB::table('pengabdian')
                     ->select('thn_pelaksanaan_kegiatan')
                     ->whereNotNull('thn_pelaksanaan_kegiatan')

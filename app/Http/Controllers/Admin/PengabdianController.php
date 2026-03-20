@@ -9,6 +9,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 class PengabdianController extends Controller
 {
@@ -90,17 +91,19 @@ class PengabdianController extends Controller
     {
         $type = $request->get('type', 'multitahun');
 
-        // Fetch data from database
         $query = Pengabdian::query();
         if ($type === 'kosabangsa') {
-            $query->where('batch_type', 'kosabangsa');
+            $query->where(function($q) {
+                $q->where('batch_type', 'kosabangsa')
+                  ->orWhere('nama_skema', 'like', '%Kosabangsa%');
+            });
         } elseif ($type === 'batch') {
             $query->whereIn('batch_type', ['batch_i', 'batch_ii', 'batch']);
         } else {
             $query->whereIn('batch_type', ['multitahun', 'multitahun_lanjutan']);
         }
 
-        // Apply filters to database query
+        // Apply global search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -110,6 +113,8 @@ class PengabdianController extends Controller
                   ->orWhere('prov_pt', 'like', "%{$search}%");
             });
         }
+
+        // Column-specific filters
         if ($request->filled('filters')) {
             $filters = $request->filters;
             foreach ($filters as $key => $value) {
@@ -124,197 +129,36 @@ class PengabdianController extends Controller
             }
         }
 
-        $dbRows = array_map(function($r) {
-            $r['nama'] = $this->formatName($r['nama']);
-            if (isset($r['nama_pendamping'])) $r['nama_pendamping'] = $this->formatName($r['nama_pendamping']);
-            if (empty($r['kd_perguruan_tinggi'])) $r['kd_perguruan_tinggi'] = '0';
-            return $r;
-        }, $query->get()->toArray());
+        $perPage = (int) $request->get('perPage', 20);
+        if ($perPage < 10) $perPage = 10;
+        if ($perPage > 100) $perPage = 100;
 
-        // Prefer data source from JSON file
-        $path = base_path('peta-bima/data/data-pengabdian_clean.json');
-        $jsonRows = [];
-        if (is_file($path)) {
-            $json = json_decode(file_get_contents($path), true);
-            if (is_array($json)) {
-                $map = [
-                    'Multitahun Lanjutan' => 'multitahun',
-                    'Batch I' => 'batch',
-                    'Batch II' => 'batch',
-                    'Kosabangsa' => 'kosabangsa',
-                ];
-                $globalIdx = 0;
-                foreach ($json as $group => $items) {
-                    if (!is_array($items)) continue;
-                    $batchType = $map[$group] ?? null;
-                    
-                    if (!$batchType) {
-                        $globalIdx += count($items);
-                        continue;
-                    }
-                    
-                    // Filter based on active tab
-                    $shouldShow = ($type === 'kosabangsa' && $batchType === 'kosabangsa') || 
-                                 ($type === 'batch' && $batchType === 'batch') ||
-                                 ($type === 'multitahun' && $batchType === 'multitahun');
+        $pengabdian = $query
+            ->orderByDesc('id')
+            ->orderByDesc('thn_pelaksanaan_kegiatan')
+            ->paginate($perPage)
+            ->withQueryString();
 
-                    foreach ($items as $it) {
-                        if ($shouldShow) {
-                            // Sanitasi NaN menjadi null dan hapus tanda kutip tunggal di awal
-                            $sanitize = function($v) {
-                                if (is_string($v)) {
-                                    $v = trim($v);
-                                    if (mb_strtolower($v) === 'nan') return null;
-                                    return ltrim($v, "'");
-                                }
-                                return $v;
-                            };
-
-                            $isKosabangsa = ($batchType === 'kosabangsa');
-                            
-                            $jsonRows[] = [
-                                'id' => 'json_' . $globalIdx, // ID unik berdasarkan posisi global di JSON
-                                'batch_type' => $batchType,
-                                'nama' => $this->formatName($sanitize($it['nama'] ?? ($it['nama_pelaksana'] ?? null))),
-                                'nidn' => $sanitize($it['nidn'] ?? ($it['nidn_pelaksana'] ?? null)),
-                                'nama_institusi' => $sanitize($it['nama_institusi'] ?? ($it['nama_institusi_pelaksana'] ?? null)),
-                                'pt_latitude' => $sanitize($it['pt_latitude'] ?? null),
-                                'pt_longitude' => $sanitize($it['pt_longitude'] ?? null),
-                                'kd_perguruan_tinggi' => $sanitize($it['kd_perguruan_tinggi'] ?? ($it['kd_perguruan_tinggi_pelaksana'] ?? '0')) ?: '0',
-                                'wilayah_lldikti' => $sanitize($it['wilayah_lldikti'] ?? ($it['lldikti_wilayah_pelaksana'] ?? null)),
-                                'ptn_pts' => (function() use ($sanitize, $it, $batchType) {
-                                $v = $sanitize($it['ptn/pts'] ?? ($it['ptn_pts'] ?? ($it['ptn/pts_pelaksana'] ?? ($it['ptn_pts_pelaksana'] ?? null))));
-                                if (empty($v) || $v === 'null') {
-                                    $inst = $sanitize($it['nama_institusi'] ?? ($it['nama_institusi_pelaksana'] ?? ''));
-                                    return $this->isPTN($inst) ? 'PTN' : 'PTS';
-                                }
-                                return $v;
-                            })(),
-                                'kab_pt' => isset($it['Kab PT']) ? preg_replace(['/^kab\.\s*/i','/^kab\s+/i'], ['Kabupaten ', 'Kabupaten '], trim($it['Kab PT'])) : (isset($it['kab_pt']) ? preg_replace(['/^kab\.\s*/i','/^kab\s+/i'], ['Kabupaten ', 'Kabupaten '], trim($it['kab_pt'])) : null),
-                                'prov_pt' => $sanitize($it['Prov PT'] ?? ($it['prov_pt'] ?? null)),
-                                'klaster' => $sanitize($it['klaster'] ?? null),
-                                'judul' => $sanitize($it['judul'] ?? null),
-                                'nama_singkat_skema' => $sanitize($it['nama_singkat_skema'] ?? ($isKosabangsa ? 'Kosabangsa' : null)),
-                                'thn_pelaksanaan_kegiatan' => $sanitize($it['thn_pelaksanaan_kegiatan'] ?? ($it['thn_pelaksanaan'] ?? null)),
-                                'urutan_thn_kegitan' => $sanitize($it['urutan_thn_kegitan'] ?? null),
-                                'nama_skema' => $sanitize($it['nama_skema'] ?? ($isKosabangsa ? 'Kosabangsa' : null)),
-                                'bidang_fokus' => $sanitize($it['bidang_fokus'] ?? null),
-                                'prov_mitra' => $sanitize($it['prov_mitra'] ?? ($it['provinsi_mitra'] ?? null)),
-                                'kab_mitra' => isset($it['kab_mitra']) ? preg_replace(['/^kab\.\s*/i','/^kab\s+/i'], ['Kabupaten ', 'Kabupaten '], trim($it['kab_mitra'])) : (isset($it['lokus']) ? preg_replace(['/^kab\.\s*/i','/^kab\s+/i'], ['Kabupaten ', 'Kabupaten '], trim($it['lokus'])) : null),
-                                
-                                // Kosabangsa fields
-                                'nama_pendamping' => $this->formatName($sanitize($it['nama_pendamping'] ?? null)),
-                                'nidn_pendamping' => $sanitize($it['nidn_pendamping'] ?? null),
-                                'kd_perguruan_tinggi_pendamping' => $sanitize($it['kd_perguruan_tinggi_pendamping'] ?? null),
-                                'institusi_pendamping' => $sanitize($it['institusi_pendamping'] ?? null),
-                                'lldikti_wilayah_pendamping' => $sanitize($it['lldikti_wilayah_pendamping'] ?? null),
-                                'jenis_wilayah_provinsi_mitra' => $sanitize($it['jenis_wilayah_provinsi_mitra'] ?? null),
-                                'bidang_teknologi_inovasi' => $sanitize($it['bidang_teknologi_inovasi'] ?? null),
-                            ];
-                        }
-                        $globalIdx++;
-                    }
-                }
-
+        $pengabdian->getCollection()->transform(function ($item) {
+            $item->nama = $this->formatName($item->nama);
+            if (!empty($item->nama_pendamping)) {
+                $item->nama_pendamping = $this->formatName($item->nama_pendamping);
             }
-        }
-
-        // Apply filters to JSON rows if search/filters active
-        if (!empty($jsonRows)) {
-            if ($request->filled('search')) {
-                $search = mb_strtolower($request->search);
-                $jsonRows = array_values(array_filter($jsonRows, function ($r) use ($search) {
-                    $fields = [
-                        $r['nama'] ?? '',
-                        $r['nama_institusi'] ?? '',
-                        $r['judul'] ?? '',
-                        $r['prov_pt'] ?? '',
-                    ];
-                    $hay = mb_strtolower(implode(' ', array_map(fn($v) => (string)$v, $fields)));
-                    return $search === '' ? true : (strpos($hay, $search) !== false);
-                }));
+            if (empty($item->kd_perguruan_tinggi)) {
+                $item->kd_perguruan_tinggi = '0';
             }
-
-            if ($request->filled('filters')) {
-                $filters = (array) $request->filters;
-                $whitelist = [
-                    'nama','nidn','nama_institusi','judul','prov_pt','kab_pt','ptn_pts','wilayah_lldikti','klaster',
-                    'nama_skema','nama_singkat_skema','bidang_fokus','thn_pelaksanaan_kegiatan','prov_mitra','kab_mitra',
-                ];
-                foreach ($filters as $key => $value) {
-                    if ($value !== null && $value !== '' && in_array($key, $whitelist)) {
-                        $v = mb_strtolower((string)$value);
-                        $jsonRows = array_values(array_filter($jsonRows, function ($r) use ($key, $v) {
-                            return strpos(mb_strtolower((string)($r[$key] ?? '')), $v) !== false;
-                        }));
-                    }
-                }
-            }
-        }
-
-        // Merge DB and JSON
-        $allRows = array_merge($dbRows, $jsonRows);
-
-        // Sorting: Priority to higher year (2026+), then ID desc (for DB items), then institution name
-        usort($allRows, function ($a, $b) {
-            $ya = (int)($a['thn_pelaksanaan_kegiatan'] ?? 0);
-            $yb = (int)($b['thn_pelaksanaan_kegiatan'] ?? 0);
-            
-            if ($ya !== $yb) {
-                return $yb <=> $ya; // Year descending
-            }
-            
-            // If same year, try to put items with higher ID (newer DB entries) first
-            $ida = is_string($a['id']) ? 0 : ($a['id'] ?? 0);
-            $idb = is_string($b['id']) ? 0 : ($b['id'] ?? 0);
-            if ($ida !== $idb) {
-                return $idb <=> $ida;
-            }
-
-            return strcasecmp((string)($a['nama_institusi'] ?? ''), (string)($b['nama_institusi'] ?? ''));
+            return $item;
         });
 
-        // Filtering and pagination
-        $perPage = (int) $request->get('perPage', 20);
-        if ($perPage < 10) { $perPage = 10; }
-        if ($perPage > 100) { $perPage = 100; }
-        $page = max(1, (int) $request->get('page', 1));
-
-        $total = count($allRows);
-        $slice = array_slice($allRows, ($page - 1) * $perPage, $perPage);
-        
-        $pengabdian = new LengthAwarePaginator(
-            $slice,
-            $total,
-            $perPage,
-            $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
-
-        // Calculate stats for all categories (from DB and from full JSON)
-        $allJsonData = [];
-        if (isset($json) && is_array($json)) {
-            foreach ($json as $group => $items) {
-                if (is_array($items)) {
-                    $bt = $map[$group] ?? null;
-                    foreach ($items as $it) {
-                        $allJsonData[] = array_merge($it, ['batch_type' => $bt]);
-                    }
-                }
-            }
-        }
-        $jsonCol = collect($allJsonData);
-        
         $stats = [
-            'total' => Pengabdian::count() + $jsonCol->count(),
-            'multitahun' => Pengabdian::whereIn('batch_type', ['multitahun', 'multitahun_lanjutan'])->count() 
-                + $jsonCol->where('batch_type', 'multitahun')->count(),
-            'batch' => Pengabdian::whereIn('batch_type', ['batch_i', 'batch_ii', 'batch'])->count() 
-                + $jsonCol->where('batch_type', 'batch')->count(),
-            'kosabangsa' => Pengabdian::where('batch_type', 'kosabangsa')->count()
-                + $jsonCol->where('batch_type', 'kosabangsa')->count(),
-            'withCoordinates' => Pengabdian::whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count()
-                + $jsonCol->filter(fn($r) => !empty($r['pt_latitude']) && !empty($r['pt_longitude']))->count(),
+            'total' => Pengabdian::count(),
+            'multitahun' => Pengabdian::whereIn('batch_type', ['multitahun', 'multitahun_lanjutan'])->count(),
+            'batch' => Pengabdian::whereIn('batch_type', ['batch_i', 'batch_ii', 'batch'])->count(),
+            'kosabangsa' => Pengabdian::where(function($q) {
+                $q->where('batch_type', 'kosabangsa')
+                  ->orWhere('nama_skema', 'like', '%Kosabangsa%');
+            })->count(),
+            'withCoordinates' => Pengabdian::whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count(),
         ];
 
         return Inertia::render('Admin/Pengabdian/Index', [
@@ -388,6 +232,7 @@ class PengabdianController extends Controller
         ]);
 
         Pengabdian::create($validated);
+        $this->clearCache();
 
         return redirect()->route('admin.pengabdian.index', ['type' => $request->batch_type])
             ->with('success', 'Data pengabdian berhasil ditambahkan');
@@ -658,6 +503,7 @@ class PengabdianController extends Controller
 
         if (is_string($id) && str_starts_with($id, 'json_')) {
             Pengabdian::create($validated);
+            $this->clearCache();
             return redirect()->route('admin.pengabdian.index', array_merge(['type' => $request->batch_type], $request->only(['page', 'search', 'perPage', 'filters'])))
                 ->with('success', 'Data dari JSON berhasil disimpan ke database');
         }
@@ -667,6 +513,7 @@ class PengabdianController extends Controller
             $validated['ptn_pts'] = $this->isPTN($validated['nama_institusi']) ? 'PTN' : 'PTS';
         }
         $pengabdian->update($validated);
+        $this->clearCache();
 
         return redirect()->route('admin.pengabdian.index', array_merge(['type' => $request->batch_type], $request->only(['page', 'search', 'perPage', 'filters'])))
             ->with('success', 'Data pengabdian berhasil diperbarui');
@@ -675,6 +522,18 @@ class PengabdianController extends Controller
     public function destroy(Pengabdian $pengabdian)
     {
         $pengabdian->delete();
+        $this->clearCache();
         return back()->with('success', 'Data dihapus');
+    }
+
+    private function clearCache()
+    {
+        // Increment version to invalidate all hash-based cache keys in PengabdianPageController
+        $v = (int) Cache::get('pengabdian_cache_version', 0);
+        Cache::put('pengabdian_cache_version', $v + 1, 86400 * 30); // Valid for 30 days
+        
+        // Also clear static filter option caches
+        Cache::forget('filter_pengabdian_provinsi');
+        Cache::forget('filter_pengabdian_tahun');
     }
 }

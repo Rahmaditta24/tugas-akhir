@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '../Layouts/MainLayout';
 import { router } from '@inertiajs/react';
+import * as XLSX from 'xlsx';
+import toast, { Toaster } from 'react-hot-toast';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
@@ -82,10 +84,76 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
         router.get(route('produk.index'));
     };
 
-    const handleDownload = () => { };
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleDownload = async () => {
+        setIsLoading(true);
+        const loadingToast = toast.loading('Sedang menyiapkan data Excel, mohon tunggu...', {
+            position: 'top-right'
+        });
+        try {
+            const queryParts = [];
+            Object.keys(filters).forEach(key => {
+                const value = filters[key];
+                if (Array.isArray(value)) {
+                    value.forEach(v => queryParts.push(`${key}[]=${encodeURIComponent(v)}`));
+                } else if (value) {
+                    queryParts.push(`${key}=${encodeURIComponent(value)}`);
+                }
+            });
+            const queryString = queryParts.join('&');
+
+            const response = await fetch(`/api/produk/export?${queryString}`);
+            if (!response.ok) throw new Error('Gagal mengambil data');
+
+            const allData = await response.json();
+            if (!allData || allData.length === 0) {
+                toast.error('Tidak ada data untuk diexport.');
+                setIsLoading(false);
+                return;
+            }
+
+            const exportData = allData.map(item => ({
+                'Institusi': item.institusi || '-',
+                'Provinsi': item.provinsi || '-',
+                'Nama Produk': item.nama_produk || '-',
+                'Deskripsi Produk': item.deskripsi_produk || '-',
+                'TKT': item.tkt || '-',
+                'Bidang': item.bidang || '-',
+                'Nama Inventor': item.nama_inventor || '-',
+                'Email Inventor': item.email_inventor || '-',
+                'Nomor Paten': item.nomor_paten || '-',
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Produk');
+            ws['!cols'] = [
+                { wch: 40 }, { wch: 20 }, { wch: 40 }, { wch: 60 },
+                { wch: 8 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, { wch: 20 },
+            ];
+
+            const timestamp = new Date().toISOString().slice(0, 10);
+            const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
+            XLSX.writeFile(wb, `data-produk${filterInfo}_${timestamp}.xlsx`);
+
+            toast.dismiss(loadingToast);
+            toast.success(`Berhasil export ${exportData.length} data produk!`, {
+                duration: 4000, position: 'top-right',
+                style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
+            });
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            toast.dismiss(loadingToast);
+            toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <MainLayout title={title || "Peta Persebaran Penelitian BIMA Indonesia - Produk"}>
+            <Toaster />
             <NavigationTabs activePage="produk" />
 
             <div className="relative">
@@ -95,6 +163,7 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
                     onDisplayModeChange={setDisplayMode}
                     onReset={handleReset}
                     onDownload={handleDownload}
+                    isLoading={isLoading}
                     displayMode={displayMode}
                     filters={filters}
                     filterOptions={filterOptions}
@@ -109,12 +178,7 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
             <div className="w-full lg:max-w-[90%] mx-auto mb-5">
                 <section className="bg-white/80 backdrop-blur-sm">
                     <div className="container mx-auto sm:px-6 lg:px-0">
-                        <StatisticsCards
-                            stats={currentStats}
-                            labels={{
-                                totalResearch: 'Total Produk'
-                            }}
-                        />
+                        <StatisticsCards stats={currentStats} />
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}

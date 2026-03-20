@@ -1,4 +1,5 @@
 import React from 'react';
+import { titleCase } from '../Utils/format';
 
 export default function PermasalahanLegend({
     activeData = 'Sampah',
@@ -18,7 +19,7 @@ export default function PermasalahanLegend({
             {/* Header Info Bar */}
             <div className="bg-[#EBF5FF] px-6 py-3 flex flex-col md:flex-row justify-between items-start md:items-center text-sm border-b border-blue-100">
                 <div className="font-medium text-gray-800">
-                    <span className="font-bold">Data Dipilih:</span> {activeData}
+                    <span className="font-bold">Data Dipilih:</span> {titleCase(activeData)}
                     <br className="md:hidden" />
                     <span className="hidden md:inline mx-4 text-gray-400">|</span>
                     <span className="font-bold">Jenis Bubble Dipilih:</span> Penelitian
@@ -31,7 +32,7 @@ export default function PermasalahanLegend({
             {/* Legend Content */}
             <div className="p-6">
                 <h3 className="font-bold text-gray-800 mb-4 text-sm">
-                    {activeData} {unit ? `(${unit})` : ''}
+                    {titleCase(activeData)} {unit ? `(${unit})` : ''}
                 </h3>
 
                 {/* Gradient Bar */}

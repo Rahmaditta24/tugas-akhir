@@ -35,6 +35,7 @@ export default function Index({ pengabdian, stats, filters }) {
         setColumnFilters(newFilters);
 
         router.get(route('admin.pengabdian.index'), {
+            type: filters.type || 'multitahun',
             search,
             filters: newFilters,
             perPage

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { getFieldColor } from '../utils/fieldColors';
 
-export default function ResearchList({ researches = [], onAdvancedSearch, title = "Daftar Penelitian", isFiltered = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
+export default function ResearchList({ researches = [], onAdvancedSearch, onItemClick, title = "Daftar Penelitian", isFiltered = false, isFasilitasLab = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
     const [searchRows, setSearchRows] = useState([
         { id: Date.now(), term: '', field: 'all', operator: 'AND' }
     ]);
@@ -145,9 +145,20 @@ export default function ResearchList({ researches = [], onAdvancedSearch, title 
                                     onChange={(e) => updateRow(row.id, { term: e.target.value })}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearchTrigger()}
                                     placeholder={getPlaceholder(row.field)}
-                                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-600"
+                                    className="w-full px-4 pr-10 py-2.5 border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-600"
                                     autoComplete="off"
                                 />
+                                {row.term && (
+                                    <button
+                                        onClick={() => updateRow(row.id, { term: '' })}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                        title="Hapus teks"
+                                    >
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                )}
                             </div>
                             <div className="relative shrink-0">
                                 <select
@@ -156,7 +167,7 @@ export default function ResearchList({ researches = [], onAdvancedSearch, title 
                                     className="px-4 pr-10 py-2.5 text-sm font-medium text-white bg-[#4479C4] rounded-lg focus:ring-2 focus:ring-blue-500 appearance-none min-w-[140px] cursor-pointer"
                                 >
                                     {fieldOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value} className="bg-white text-slate-800">{opt.label}</option>
+                                        <option key={opt.value} value={opt.value} className="bg-[#4479C4] text-white">{opt.label}</option>
                                     ))}
                                 </select>
                                 <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white">
@@ -219,26 +230,66 @@ export default function ResearchList({ researches = [], onAdvancedSearch, title 
                     filteredResearches.map((research, index) => (
                         <div
                             key={index}
-                            className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                            className={`relative border border-slate-200 rounded-xl p-5 hover:bg-slate-50 transition-all bg-white group cursor-pointer ${!isFasilitasLab ? 'pl-7' : ''}`}
+                            onClick={() => onItemClick && onItemClick(research.id, research.bidang_fokus)}
                         >
-                            <h4 className="font-semibold text-slate-800 mb-2">{research.judul}</h4>
-                            <div className="text-sm text-slate-600 space-y-1">
-                                <p><strong>Universitas:</strong> {research.institusi}</p>
-                                <p><strong>Peneliti:</strong> {research.nama}</p>
-                                {research.tema_prioritas && (
-                                    <p><strong>Tema Prioritas:</strong> {research.tema_prioritas}</p>
-                                )}
-                                {research.bidang_fokus && (
-                                    <div className="pt-1">
-                                        <span
-                                            className="inline-block px-3 py-0.5 rounded-full text-white text-xs font-semibold"
-                                            style={{ backgroundColor: getFieldColor(research.bidang_fokus) }}
-                                        >
-                                            {research.bidang_fokus}
-                                        </span>
+                            {!isFasilitasLab && (
+                                <div
+                                    className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl opacity-80"
+                                    style={{ backgroundColor: getFieldColor(research.bidang_fokus || research.bidang) }}
+                                />
+                            )}
+
+                            {isFasilitasLab ? (
+                                <div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="font-bold text-slate-800 text-[15px] group-hover:text-blue-600 transition-colors leading-tight">
+                                            {research.judul || research.nama_laboratorium}
+                                        </h4>
+                                        <div
+                                            className="w-4 h-1.5 rounded-full opacity-60 mt-2"
+                                            style={{ backgroundColor: getFieldColor(research.bidang_fokus || research.bidang) }}
+                                        />
                                     </div>
-                                )}
-                            </div>
+
+                                    <div className="space-y-0.5 text-[12.5px] text-slate-600">
+                                        <p><span className="font-bold text-slate-700">Institusi:</span> {research.institusi || '-'}</p>
+                                        <p><span className="font-bold text-slate-700">Fakultas:</span> {research.fakultas || '-'}</p>
+                                        <p><span className="font-bold text-slate-700">Departemen:</span> {research.departemen || '-'}</p>
+                                        <p><span className="font-bold text-slate-700">Status Akses:</span> {research.status_akses || '-'}</p>
+                                    </div>
+
+                                    <div className="mt-4 flex justify-between items-end">
+                                        <div className="text-slate-400 text-[11px] font-medium">
+                                            <span>{research.provinsi}{research.kota ? `, ${research.kota}` : ''}</span>
+                                        </div>
+                                        <div className="text-slate-900 text-[11.5px] font-bold">
+                                            {research.total_jumlah_alat !== undefined ? research.total_jumlah_alat : (research.nama_alat ? (typeof research.nama_alat === 'string' ? research.nama_alat.split('|').filter(Boolean).length : 0) : 0)} Alat
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="pl-0">
+                                    <h4 className="font-semibold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{research.judul}</h4>
+                                    <div className="text-sm text-slate-600 space-y-1">
+                                        <p><strong>Universitas:</strong> {research.institusi}</p>
+                                        <p><strong>Peneliti:</strong> {research.nama}</p>
+                                        {research.tema_prioritas && (
+                                            <p><strong>Tema Prioritas:</strong> {research.tema_prioritas}</p>
+                                        )}
+                                        {research.bidang_fokus && (
+                                            <div className="pt-2">
+                                                <span
+                                                    className="inline-block px-4 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-wider shadow-sm"
+                                                    style={{ backgroundColor: getFieldColor(research.bidang_fokus) }}
+                                                >
+                                                    {research.bidang_fokus}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ))
                 )}

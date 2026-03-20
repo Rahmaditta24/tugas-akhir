@@ -36,6 +36,68 @@ class ProdukController extends Controller
         return response()->json(['success' => true, 'data' => Produk::findOrFail($id)]);
     }
 
+    public function export(Request $request)
+    {
+        try {
+            $query = Produk::query();
+
+            if ($request->filled('provinsi')) {
+                $query->whereIn('provinsi', (array) $request->provinsi);
+            }
+
+            if ($request->filled('bidang')) {
+                $query->whereIn('bidang', (array) $request->bidang);
+            }
+
+            if ($request->filled('tkt')) {
+                $query->whereIn('tkt', (array) $request->tkt);
+            }
+
+            if ($request->filled('search')) {
+                $query->search($request->search);
+            }
+
+            return response()->stream(function () use ($query) {
+                echo '[';
+                $first = true;
+
+                $query->select(
+                    'institusi',
+                    'provinsi',
+                    'nama_produk',
+                    'deskripsi_produk',
+                    'tkt',
+                    'bidang',
+                    'nama_inventor',
+                    'email_inventor',
+                    'nomor_paten'
+                )
+                ->orderBy('institusi')
+                ->orderBy('nama_produk')
+                ->cursor()
+                ->each(function ($item) use (&$first) {
+                    if (!$first) {
+                        echo ',';
+                    }
+                    echo json_encode($item);
+                    $first = false;
+
+                    if (ob_get_level() > 0) {
+                        ob_flush();
+                        flush();
+                    }
+                });
+
+                echo ']';
+            }, 200, [
+                'Content-Type' => 'application/json',
+                'Cache-Control' => 'no-cache',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Produk Export error: ' . $e->getMessage());
+            return response()->json(['error' => 'Export failed: ' . $e->getMessage()], 500);
+        }
+    }
     public function statistics(Request $request)
     {
         $query = Produk::query();

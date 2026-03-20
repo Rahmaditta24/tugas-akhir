@@ -83,6 +83,15 @@ class PengabdianSeeder extends Seeder
         $bar = $this->command->getOutput()->createProgressBar($total);
         $bar->start();
 
+        $validateCoords = function ($lat, $lon) {
+            $lat = (float) $lat;
+            $lon = (float) $lon;
+            if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
+                return [null, null];
+            }
+            return [$lat, $lon];
+        };
+
         foreach (array_chunk($allData, $chunkSize) as $chunk) {
             $insertData = [];
 
@@ -96,13 +105,22 @@ class PengabdianSeeder extends Seeder
                     continue;
                 }
 
+                $latRaw = $item['pt_latitude'] ?? null;
+                $lonRaw = $item['pt_longitude'] ?? null;
+                $lat = null;
+                $lon = null;
+
+                if (is_numeric($latRaw) && is_numeric($lonRaw)) {
+                    [$lat, $lon] = $validateCoords($latRaw, $lonRaw);
+                }
+
                 $insertData[] = [
                     'batch_type' => $normalize($item['batch_type'] ?? null),
                     'nama' => $normalize(($item['nama'] ?? $item['nama_ketua'] ?? $item['nama_pelaksana'] ?? null)),
                     'nidn' => $normalize(($item['nidn'] ?? $item['nidn_ketua'] ?? $item['nidn_pelaksana'] ?? null)),
                     'nama_institusi' => $namaInstitusi,
-                    'pt_latitude' => isset($item['pt_latitude']) && is_numeric($item['pt_latitude']) ? (float)$item['pt_latitude'] : null,
-                    'pt_longitude' => isset($item['pt_longitude']) && is_numeric($item['pt_longitude']) ? (float)$item['pt_longitude'] : null,
+                    'pt_latitude' => $lat,
+                    'pt_longitude' => $lon,
                     'kd_perguruan_tinggi' => $normalize($item['kd_perguruan_tinggi'] ?? null),
                     'wilayah_lldikti' => $normalize($item['wilayah_lldikti'] ?? null),
                     'ptn_pts' => $normalize($item['ptn/pts'] ?? null),
@@ -117,6 +135,13 @@ class PengabdianSeeder extends Seeder
                     'bidang_fokus' => $normalize($item['bidang_fokus'] ?? null),
                     'prov_mitra' => $normalize(($item['prov_mitra'] ?? $item['provinsi_mitra'] ?? null)),
                     'kab_mitra' => $normalize(($item['kab_mitra'] ?? $item['lokus'] ?? null)),
+                    'nama_pendamping' => $normalize($item['nama_pendamping'] ?? null),
+                    'nidn_pendamping' => $normalize($item['nidn_pendamping'] ?? null),
+                    'kd_perguruan_tinggi_pendamping' => $normalize($item['kd_perguruan_tinggi_pendamping'] ?? null),
+                    'institusi_pendamping' => $normalize($item['institusi_pendamping'] ?? null),
+                    'lldikti_wilayah_pendamping' => $normalize($item['lldikti_wilayah_pendamping'] ?? null),
+                    'jenis_wilayah_provinsi_mitra' => $normalize(($item['jenis_wilayah_provinsi_mitra'] ?? $item['jenis_wilayah_provinsi_mitra'] ?? null)),
+                    'bidang_teknologi_inovasi' => $normalize(($item['bidang_teknologi_inovasi'] ?? $item['bidang_teknologi'] ?? null)),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

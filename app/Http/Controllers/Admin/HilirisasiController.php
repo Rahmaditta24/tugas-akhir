@@ -83,7 +83,7 @@ class HilirisasiController extends Controller
 
         // Whitelisted sorting and pagination
         $allowedSorts = ['id', 'judul', 'id_proposal', 'nama_pengusul', 'perguruan_tinggi', 'tahun', 'direktorat', 'provinsi', 'skema'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true)? $request->get('sort'): 'tahun';
+        $sort = in_array($request->get('sort'), $allowedSorts, true)? $request->get('sort'): 'id';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
         $perPage = (int) $request->get('perPage', 20);
         if ($perPage < 10) { $perPage = 10; }

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import MainLayout from '../Layouts/MainLayout';
 import { router } from '@inertiajs/react';
+import * as XLSX from 'xlsx';
+import toast, { Toaster } from 'react-hot-toast';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
@@ -42,7 +44,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     };
 
     const filterFields = [
-        { label: 'Pilih Data', requestKey: 'dataType', optionKey: 'dataType', type: 'single' },
+        { label: 'Pilih Data', requestKey: 'dataType', optionKey: 'dataType', type: 'single', hideIcon: true },
         { label: 'Skema', requestKey: 'skema', optionKey: 'skema' },
         { label: 'Provinsi', requestKey: 'provinsi', optionKey: 'provinsi' },
         { label: 'Tahun', requestKey: 'tahun', optionKey: 'tahun' },
@@ -86,15 +88,86 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     };
 
     const handleReset = () => {
-        setFilters({});
+        setFilters({ dataType: 'Multitahun, Batch I & II' });
         setSearchTerm('');
-        router.get(route('pengabdian.index'));
+        router.get(route('pengabdian.index'), { dataType: 'Multitahun, Batch I & II' });
     };
 
-    const handleDownload = () => { };
+    const [isLoading, setIsLoading] = useState(false);
+    const handleDownload = async () => {
+        setIsLoading(true);
+        const label = filters.dataType || 'Pengabdian';
+        const loadingToast = toast.loading(`Sedang menyiapkan data Excel ${label}, mohon tunggu...`, {
+            position: 'top-right'
+        });
+
+        try {
+            const queryParts = [];
+            const activeFilters = { ...filters };
+
+            Object.keys(activeFilters).forEach(key => {
+                const value = activeFilters[key];
+                if (Array.isArray(value)) {
+                    value.forEach(v => queryParts.push(`${key}[]=${encodeURIComponent(v)}`));
+                } else if (value) {
+                    queryParts.push(`${key}=${encodeURIComponent(value)}`);
+                }
+            });
+            const queryString = queryParts.join('&');
+
+            const response = await fetch(`/api/pengabdian/export?${queryString}`);
+            if (!response.ok) throw new Error('Gagal mengambil data');
+
+            const allData = await response.json();
+            if (!allData || allData.length === 0) {
+                toast.error(`Tidak ada data ${label} untuk diexport.`);
+                return;
+            }
+
+            const exportData = allData.map(item => ({
+                'Tahun': item.thn_pelaksanaan_kegiatan || '-',
+                'Judul': item.judul || '-',
+                'Nama Pengusul': item.nama || '-',
+                'Direktorat': 'Direktorat Riset, Teknologi, dan Pengabdian kepada Masyarakat',
+                'Perguruan Tinggi': item.nama_institusi || '-',
+                'Provinsi': item.prov_pt || '-',
+                'Mitra': (item.kab_mitra && item.prov_mitra) ? `${item.kab_mitra}, ${item.prov_mitra}` : (item.kab_mitra || item.prov_mitra || '-'),
+                'Skema': item.nama_skema || '-',
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Pengabdian');
+            ws['!cols'] = [
+                { wch: 10 }, { wch: 60 }, { wch: 30 }, { wch: 45 }, { wch: 40 },
+                { wch: 20 }, { wch: 35 }, { wch: 40 }
+            ];
+
+            let typeSlug = label.toLowerCase();
+            if (typeSlug.includes('multitahun')) {
+                typeSlug = 'multitahun';
+            } else {
+                typeSlug = typeSlug.replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+            }
+
+            XLSX.writeFile(wb, `data-pengabdian-${typeSlug}.xlsx`);
+
+            toast.success(`Berhasil export ${exportData.length} data ${label}!`, {
+                duration: 4000, position: 'top-right',
+                style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
+            });
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' });
+        } finally {
+            toast.dismiss(loadingToast);
+            setIsLoading(false);
+        }
+    };
 
     return (
         <MainLayout title={title || "Peta Persebaran Penelitian BIMA Indonesia - Pengabdian"}>
+            <Toaster />
             <NavigationTabs activePage="pengabdian" />
 
             <div className="relative">
@@ -104,20 +177,20 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
                     onDisplayModeChange={setDisplayMode}
                     onReset={handleReset}
                     onDownload={handleDownload}
+                    downloadLabel="Excel"
+                    isLoading={isLoading}
                     displayMode={displayMode}
                     filters={filters}
                     filterOptions={filterOptions}
                     onFilterChange={handleFilterChange}
                     filterFields={filterFields}
                     searchTerm={searchTerm}
-                    gridClass="grid-cols-1 md:grid-cols-2"
-                    widthClass="w-[95%] lg:w-1/2"
                 />
             </div>
             <div className="w-full lg:max-w-[90%] mx-auto mb-5">
                 <section className="bg-white/80 backdrop-blur-sm">
                     <div className="container mx-auto sm:px-6 lg:px-0">
-                        <StatisticsCards stats={currentStats} labels={{ totalResearch: 'Total Pengabdian' }} />
+                        <StatisticsCards stats={currentStats} />
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}

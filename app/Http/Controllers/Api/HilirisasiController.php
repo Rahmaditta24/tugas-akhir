@@ -48,4 +48,71 @@ class HilirisasiController extends Controller
             'data' => Hilirisasi::findOrFail($id)
         ]);
     }
+
+    public function export(Request $request)
+    {
+        try {
+            $query = Hilirisasi::query();
+
+            if ($request->filled('provinsi')) {
+                $query->whereIn('provinsi', (array) $request->provinsi);
+            }
+
+            if ($request->filled('tahun')) {
+                $query->whereIn('tahun', (array) $request->tahun);
+            }
+
+            if ($request->filled('direktorat')) {
+                $query->whereIn('direktorat', (array) $request->direktorat);
+            }
+
+            if ($request->filled('skema')) {
+                $query->whereIn('skema', (array) $request->skema);
+            }
+
+            if ($request->filled('search')) {
+                $query->search($request->search);
+            }
+
+            return response()->stream(function () use ($query) {
+                echo '[';
+                $first = true;
+
+                $query->select(
+                    'tahun',
+                    'judul',
+                    'nama_pengusul',
+                    'direktorat',
+                    'perguruan_tinggi',
+                    'provinsi',
+                    'mitra',
+                    'skema',
+                    'luaran'
+                )
+                ->orderBy('tahun', 'desc')
+                ->orderBy('perguruan_tinggi')
+                ->cursor()
+                ->each(function ($item) use (&$first) {
+                    if (!$first) {
+                        echo ',';
+                    }
+                    echo json_encode($item);
+                    $first = false;
+
+                    if (ob_get_level() > 0) {
+                        ob_flush();
+                        flush();
+                    }
+                });
+
+                echo ']';
+            }, 200, [
+                'Content-Type' => 'application/json',
+                'Cache-Control' => 'no-cache',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Hilirisasi Export error: ' . $e->getMessage());
+            return response()->json(['error' => 'Export failed: ' . $e->getMessage()], 500);
+        }
+    }
 }

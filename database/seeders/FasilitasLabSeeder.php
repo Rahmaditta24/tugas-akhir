@@ -61,6 +61,15 @@ class FasilitasLabSeeder extends Seeder
         $skipped = 0;
         $errors = 0;
 
+        $validateCoords = function ($lat, $lon) {
+            $lat = (float) $lat;
+            $lon = (float) $lon;
+            if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
+                return [null, null];
+            }
+            return [$lat, $lon];
+        };
+
         $bar = $this->command->getOutput()->createProgressBar($total);
         $bar->start();
 
@@ -77,10 +86,19 @@ class FasilitasLabSeeder extends Seeder
                     continue;
                 }
 
+                $latRaw = $item['Latitude'] ?? null;
+                $lonRaw = $item['Longitude'] ?? null;
+                $lat = null;
+                $lon = null;
+
+                if (is_numeric($latRaw) && is_numeric($lonRaw)) {
+                    [$lat, $lon] = $validateCoords($latRaw, $lonRaw);
+                }
+
                 $insertData[] = [
                     'institusi' => $institusi,
-                    'latitude' => isset($item['Latitude']) && is_numeric($item['Latitude']) ? (float)$item['Latitude'] : null,
-                    'longitude' => isset($item['Longitude']) && is_numeric($item['Longitude']) ? (float)$item['Longitude'] : null,
+                    'latitude' => $lat,
+                    'longitude' => $lon,
                     'provinsi' => $normalize($item['Provinsi'] ?? null),
                     'status_akses' => $normalize($item['Status Akses'] ?? null),
                     // new structure mapping (best-effort from JSON)
