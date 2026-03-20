@@ -6,75 +6,65 @@ use App\Models\PermasalahanProvinsi;
 use App\Models\PermasalahanKabupaten;
 use App\Models\Penelitian;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
 
 class PermasalahanPageController extends Controller
 {
     public function index()
     {
-        // Province coordinates lookup
-        $provinceCoords = $this->getProvinceCoordinates();
+        // Get penelitian with coordinates as bubble markers - load all on initial load
+        $limit = request()->input('limit', 100000); // Load all (max 100k to prevent memory issues)
+        $offset = request()->input('offset', 0);
         
-        // Get all permasalahan data with coordinates
-        $provinsiData = PermasalahanProvinsi::all()->map(function ($item) use ($provinceCoords) {
-            // Normalize province name: lowercase, trim, remove extra spaces
-            $cleanProv = strtolower(trim(preg_replace('/\s+/', ' ', $item->provinsi)));
-            $coords = $provinceCoords[$cleanProv] ?? null;
-            
-            // Debug fallback for Kalimantan Barat if still missing
-            if (!$coords && str_contains($cleanProv, 'kalimantan') && str_contains($cleanProv, 'barat')) {
-                 $coords = [0.0, 109.32]; // Force coords for Kalbar
-            }
-
-            return [
-                'id' => $item->id,
-                'provinsi' => $item->provinsi,
-                'jenis_permasalahan' => $item->jenis_permasalahan,
-                'nilai' => $item->nilai, // Raw value
-                'satuan' => $item->satuan,
-                'metrik' => $item->metrik,
-                'tahun' => $item->tahun,
-                'pt_latitude' => $coords ? $coords[0] : null,
-                'pt_longitude' => $coords ? $coords[1] : null,
-            ];
-        })->filter(fn($item) => !is_null($item['pt_latitude']) && !is_null($item['pt_longitude']));
-
-        $kabupatenData = PermasalahanKabupaten::all()->map(function ($item) use ($provinceCoords) {
-            // For kabupaten, use provinsi coordinates as fallback
-            $cleanProv = strtolower(trim(preg_replace('/\s+/', ' ', $item->provinsi)));
-            $coords = $provinceCoords[$cleanProv] ?? null;
-
-            // Debug fallback
-            if (!$coords && str_contains($cleanProv, 'kalimantan') && str_contains($cleanProv, 'barat')) {
-                 $coords = [0.0, 109.32];
-            }
-            
-            return [
-                'id' => $item->id,
-                'kabupaten_kota' => $item->kabupaten_kota,
-                'provinsi' => $item->provinsi,
-                'jenis_permasalahan' => $item->jenis_permasalahan,
-                'nilai' => $item->nilai,
-                'satuan' => $item->satuan,
-                'tahun' => $item->tahun,
-                'pt_latitude' => $coords ? $coords[0] : null,
-                'pt_longitude' => $coords ? $coords[1] : null,
-            ];
-        })->filter(fn($item) => !is_null($item['pt_latitude']) && !is_null($item['pt_longitude']));
-
-        // Combine both datasets
-        $mapData = $provinsiData->merge($kabupatenData)->values()->all();
+        $mapDataQuery = Penelitian::select(
+                'id', 'judul', 'nama', 'institusi',
+                'provinsi', 'skema', 'thn_pelaksanaan as tahun',
+                'kategori_pt', 'klaster', 'pt_latitude', 'pt_longitude', 'kota',
+                'bidang_fokus', 'tema_prioritas', 'nidn', 'nuptk'
+            )
+            ->whereNotNull('judul')
+            ->whereNotNull('pt_latitude')
+            ->whereNotNull('pt_longitude')
+            ->orderBy('id');
+        
+        $totalCount = $mapDataQuery->count();
+        
+        // Load all data on initial load - frontend handles chunking display
+        $mapData = $mapDataQuery
+            ->offset($offset)
+            ->limit($limit)
+            ->get()
+            ->values()
+            ->toArray();
+        
+        // Debug logging
+        \Log::info('Permasalahan mapData count: ' . count($mapData) . ' / Total: ' . $totalCount);
 
         // Choropleth data: group by jenis_permasalahan → [{provinsi, nilai, satuan, metrik, tahun}]
-        $permasalahanStats = PermasalahanProvinsi::all()
-            ->groupBy('jenis_permasalahan')
-            ->map(fn($items) => $items->map(fn($item) => [
-                'provinsi' => $item->provinsi,
-                'nilai'    => $item->nilai,
-                'satuan'   => $item->satuan,
-                'metrik'   => $item->metrik,
-                'tahun'    => $item->tahun,
-            ])->values()->toArray())
-            ->toArray();
+        // Map database jenis_permasalahan to display names
+        $displayNameMap = [
+            'sampah' => 'Sampah',
+            'stunting' => 'Stunting',
+            'gizi_buruk' => 'Gizi Buruk',
+            'krisis_listrik' => 'Krisis Listrik',
+            'ketahanan_pangan' => 'Ketahanan Pangan',
+        ];
+
+        $permasalahanStats = \Cache::remember('permasalahan_choropleth_stats', 86400, function () use ($displayNameMap) {
+            return PermasalahanProvinsi::all()
+                ->groupBy('jenis_permasalahan')
+                ->map(fn($items) => $items->map(fn($item) => [
+                    'provinsi' => $item->provinsi,
+                    'nilai'    => $item->nilai,
+                    'satuan'   => $item->satuan,
+                    'metrik'   => $item->metrik,
+                    'tahun'    => $item->tahun,
+                ])->values()->toArray())
+                ->mapWithKeys(fn($items, $jenis) => [
+                    $displayNameMap[$jenis] ?? $jenis => $items
+                ])
+                ->toArray();
+        });
 
         $jenisPermasalahan = array_keys($permasalahanStats);
 
@@ -90,18 +80,35 @@ class PermasalahanPageController extends Controller
             ->get()
             ->values();
 
+        // Clear old cache and recalculate with correct queries
+        \Cache::forget('permasalahan_stats');
+        
+        // Calculate stats without caching for now (will add caching later)
+        $baseQuery = Penelitian::whereNotNull('judul')
+                              ->whereNotNull('pt_latitude')
+                              ->whereNotNull('pt_longitude');
+        
+        $stats = [
+            'totalResearch' => $baseQuery->count(),
+            'totalUniversities' => Penelitian::whereNotNull('judul')
+                ->whereNotNull('institusi')
+                ->count(DB::raw('DISTINCT institusi')),
+            'totalProvinces' => Penelitian::whereNotNull('judul')
+                ->whereNotNull('provinsi')
+                ->count(DB::raw('DISTINCT provinsi')),
+            'totalFields' => Penelitian::whereNotNull('judul')
+                ->whereNotNull('bidang_fokus')
+                ->count(DB::raw('DISTINCT bidang_fokus')),
+        ];
+
         return Inertia::render('Permasalahan', [
             'mapData'            => $mapData,
+            'totalMapDataCount'  => $totalCount, // For pagination
+            'hasMoreMapData'     => ($offset + count($mapData)) < $totalCount,
             'permasalahanStats'  => $permasalahanStats,
             'jenisPermasalahan'  => $jenisPermasalahan,
             'researches'         => $researches,
-            'stats' => [
-                'totalResearch' => PermasalahanProvinsi::count() + PermasalahanKabupaten::count(),
-                'totalUniversities' => 0, // Not applicable for Permasalahan
-                'totalProvinces' => PermasalahanProvinsi::distinct('provinsi')->count('provinsi'),
-                'totalFields' => PermasalahanProvinsi::distinct('jenis_permasalahan')->count('jenis_permasalahan') + 
-                                 PermasalahanKabupaten::distinct('jenis_permasalahan')->count('jenis_permasalahan'),
-            ],
+            'stats' => $stats,
         ]);
     }
 
@@ -159,6 +166,7 @@ class PermasalahanPageController extends Controller
             'diy' => [-7.795, 110.369],
             'jakarta' => [-6.2, 106.816],
             'jakarta raya' => [-6.2, 106.816],
+            'batam' => [1.145, 104.7],
         ];
     }
 }

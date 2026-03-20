@@ -24,6 +24,7 @@ export default function Permasalahan({
     const [minPct, setMinPct] = useState(0);
     const [maxPct, setMaxPct] = useState(100);
     const [legendData, setLegendData] = useState({ min: 0, max: 1, satuan: '', activeDataType: filters.dataType });
+    const [selectedMetrik, setSelectedMetrik] = useState('saidi');
 
     const filterOptions = {
         dataType: jenisPermasalahan.length ? jenisPermasalahan : ['Sampah', 'Air', 'Udara', 'Tanah'],
@@ -88,7 +89,28 @@ export default function Permasalahan({
                     minPct={minPct}
                     maxPct={maxPct}
                     onLegendDataChange={setLegendData}
+                    selectedMetrik={selectedMetrik}
+                    onMetrikChange={setSelectedMetrik}
+                    stats={stats}
                 />
+                
+                {/* Metric selector for Krisis Listrik */}
+                {filters.dataType === 'Krisis Listrik' && (
+                    <div className="absolute top-20 right-4 z-40 bg-white rounded-lg p-3 shadow-lg border border-gray-200">
+                        <label className="block text-xs font-semibold text-gray-600 mb-2">
+                            Pilih Metrik
+                        </label>
+                        <select
+                            value={selectedMetrik}
+                            onChange={(e) => setSelectedMetrik(e.target.value)}
+                            className="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="saidi">SAIDI (Jam/Pelanggan)</option>
+                            <option value="saifi">SAIFI (Kali/Pelanggan)</option>
+                        </select>
+                    </div>
+                )}
+                
                 <MapControls
                     onSearch={handleSearch}
                     onDisplayModeChange={() => {}}
@@ -100,6 +122,7 @@ export default function Permasalahan({
                     onFilterChange={handleFilterChange}
                     filterFields={filterFields}
                     hideDisplayMode={true}
+                    hideSearch={true}
                     showPermasalahanControls={true}
                     showBubbles={showBubbles}
                     onToggleBubbles={handleToggleBubbles}

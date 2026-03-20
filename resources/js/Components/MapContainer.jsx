@@ -365,10 +365,7 @@ export default function MapContainer({
 
         if (showBubbles) {
             const clusterGroup = L.markerClusterGroup({
-                maxClusterRadius: 80, // Reduced radius to show more bubbles (more numerous distribution)
-                disableClusteringAtZoom: 8,
-                chunkedLoading: true,
-                removeOutsideVisibleBounds: true,
+                maxClusterRadius: 50,
                 iconCreateFunction: function (cluster) {
                     const total = cluster.getAllChildMarkers().reduce((sum, m) => sum + (m.options.penelitianCount || 0), 0);
 
@@ -382,23 +379,9 @@ export default function MapContainer({
                         iconAnchor: L.point(radius, radius)
                     });
                 },
-                spiderfyOnMaxZoom: false,
-                showCoverageOnHover: false,
-                zoomToBoundsOnClick: false // Manual handling for "one-click bloom"
-            });
-
-            // One-click bloom logic like vanilla
-            clusterGroup.on('clusterclick', function (a) {
-                const currentZoom = mapInstanceRef.current.getZoom();
-                const targetZoom = Math.min(currentZoom + 3, 14);
-                mapInstanceRef.current.flyTo(a.latlng, targetZoom, {
-                    animate: true,
-                    duration: 0.55,
-                    easeLinearity: 0.15,
-                });
-
-                // Calculate stats for this cluster
-                calculateStatsFromMarkers(a.layer.getAllChildMarkers());
+                spiderfyOnMaxZoom: true,
+                showCoverageOnHover: true,
+                zoomToBoundsOnClick: true
             });
 
             clusterGroupRef.current = clusterGroup;

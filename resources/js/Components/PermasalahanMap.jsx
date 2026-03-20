@@ -108,6 +108,8 @@ export default function PermasalahanMap({
     activeDataType = 'Sampah',
     /** Bubble markers (existing mapData from controller) */
     mapData = [],
+    /** Statistics data */
+    stats = {},
     /** Show / hide bubble layer */
     showBubbles = true,
     /** 'provinsi' | 'kabupaten' */
@@ -117,6 +119,10 @@ export default function PermasalahanMap({
     maxPct = 100,
     /** Callback to inform parent about computed min/max/satuan so the legend can display them */
     onLegendDataChange,
+    /** Selected metric for Krisis Listrik (saidi or saifi) */
+    selectedMetrik = 'saidi',
+    /** Callback when metric changes */
+    onMetrikChange,
 }) {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
@@ -157,8 +163,7 @@ export default function PermasalahanMap({
             zoomControl: true,
             preferCanvas: true,
             maxBounds: [[-11.0, 94.0], [6.5, 141.0]],
-            maxBoundsViscosity: 0.8,
-            // ── Smooth zoom & pan ──────────────────────────────────────
+            maxBoundsViscosity: 1.0,
             zoomAnimation: true,
             zoomAnimationThreshold: 4,
             markerZoomAnimation: true,
@@ -172,8 +177,9 @@ export default function PermasalahanMap({
             zoomDelta: 1,
         });
 
+        // Use OpenStreetMap tiles (consistent with other tabs)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            attribution: '© OpenStreetMap contributors',
             maxZoom: 19,
             keepBuffer: 6,
             updateWhenIdle: false,
@@ -183,6 +189,7 @@ export default function PermasalahanMap({
 
         return () => {
             if (mapInstanceRef.current) {
+                // Simply remove the map - Leaflet handles all cleanup
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
             }
@@ -203,7 +210,13 @@ export default function PermasalahanMap({
         setModalData(null);
 
         // Build province→nilai lookup for the selected jenis
-        const rows = permasalahanStats[activeDataType] || [];
+        let rows = permasalahanStats[activeDataType] || [];
+
+        // For Krisis Listrik, filter by selected metrik
+        if (activeDataType === 'Krisis Listrik') {
+            rows = rows.filter((row) => !row.metrik || row.metrik === selectedMetrik);
+        }
+
         const provMap = {};
         rows.forEach((row) => {
             const geoName = resolveGeoJsonName(row.provinsi);
@@ -256,7 +269,7 @@ export default function PermasalahanMap({
         geoJsonLayerRef.current = layer;
         layer.bringToBack();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [geoJsonData, activeDataType, permasalahanStats]);
+    }, [geoJsonData, activeDataType, permasalahanStats, selectedMetrik]);
 
     // ── Effect 2: Only update colours when slider changes (real-time) ────────
     useEffect(() => {
@@ -286,20 +299,33 @@ export default function PermasalahanMap({
             clusterGroupRef.current = null;
         }
 
-        if (!showBubbles || !mapData.length) return;
+        if (!showBubbles || !mapData.length) {
+            console.log(`[Bubble] Skipping: showBubbles=${showBubbles}, mapData.length=${mapData.length}`);
+            return;
+        }
 
+        console.log(`[Bubble] mapData sample:`, mapData.slice(0, 2));
+
+        // Don't filter - show all available bubble data (no kota field check)
+        const filteredData = mapData;
+
+        console.log(`[Bubble] viewMode=${viewMode}, total mapData=${mapData.length}, filtered=${filteredData.length}`);
+
+        // Create clustering layer with optimized settings for 50k+ markers
         const clusterGroup = L.markerClusterGroup({
             maxClusterRadius: 80,
-            disableClusteringAtZoom: 8,
+            zoomToBoundsOnClick: true,
+            showCoverageOnHover: true,
+            spiderfyOnMaxZoom: true,
+            spiderfyDistanceMultiplier: 1.5,
+            disableClusteringAtZoom: null,
             chunkedLoading: true,
-            zoomToBoundsOnClick: false,
-            showCoverageOnHover: false,
-            spiderfyOnMaxZoom: false,
+            chunkSize: 500,
+            chunkDelay: 10,
+            chunkInterval: 200,
             iconCreateFunction: (cluster) => {
-                const total = cluster.getAllChildMarkers().reduce(
-                    (s, m) => s + (m.options.penelitianCount || 0),
-                    0
-                );
+                const childMarkers = cluster.getAllChildMarkers();
+                const total = childMarkers.length;
                 const size = 50;
                 return L.divIcon({
                     html: `<div style="background:rgba(62,125,202,0.7);width:${size}px;height:${size}px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.25);">${total.toLocaleString('id-ID')}</div>`,
@@ -310,52 +336,104 @@ export default function PermasalahanMap({
             },
         });
 
-        clusterGroup.on('clusterclick', (a) => {
-            const currentZoom = mapInstanceRef.current.getZoom();
-            const targetZoom = Math.min(currentZoom + 3, 14);
-            mapInstanceRef.current.flyTo(a.latlng, targetZoom, {
-                animate: true,
-                duration: 0.55,
-                easeLinearity: 0.15,
-            });
-        });
-
         const markers = [];
-        mapData.forEach((item) => {
-            const lat = parseFloat(item.pt_latitude ?? item.latitude);
-            const lng = parseFloat(item.pt_longitude ?? item.longitude);
-            if (isNaN(lat) || isNaN(lng)) return;
+        const CHUNK_SIZE = 2000;
+        let markerIndex = 0;
+        let isActive = true; // Track if effect is still active
+        let timeoutIds = []; // Store timeout IDs for cleanup
 
-            const count = item.total_penelitian || 1;
-            const size = 50;
-            const marker = L.marker([lat, lng], {
-                icon: L.divIcon({
-                    html: `<div style="background:rgba(62,125,202,0.85);width:${size}px;height:${size}px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.2);">${count.toLocaleString('id-ID')}</div>`,
-                    className: '',
-                    iconSize: L.point(size, size, true),
-                    iconAnchor: L.point(size / 2, size / 2),
-                }),
-                penelitianCount: count,
-            });
+        // Function to process markers in chunks
+        const processMarkersInChunks = () => {
+            if (!isActive) return; // Stop if effect was cleaned up
 
-            marker.bindPopup(
-                `<div style="padding:8px 12px;min-width:160px;font-family:sans-serif;">
-                    <div style="font-weight:700;font-size:13px;color:#1e40af;">${item.provinsi || item.kabupaten_kota || '-'}</div>
-                    <div style="font-size:12px;color:#4b5563;margin-top:2px;">
-                        <strong>${item.jenis_permasalahan || 'Permasalahan'}:</strong>
-                        ${item.nilai !== undefined ? Number(item.nilai).toLocaleString('id-ID') + ' ' + (item.satuan || '') : '-'}
-                    </div>
-                </div>`
-            );
-            markers.push(marker);
-        });
+            const endIndex = Math.min(markerIndex + CHUNK_SIZE, filteredData.length);
+            
+            for (let i = markerIndex; i < endIndex; i++) {
+                const item = filteredData[i];
+                const lat = parseFloat(item.pt_latitude ?? item.latitude);
+                const lng = parseFloat(item.pt_longitude ?? item.longitude);
+                if (isNaN(lat) || isNaN(lng)) continue;
 
-        clusterGroup.addLayers(markers);
-        clusterGroup.addTo(mapInstanceRef.current);
-        clusterGroupRef.current = clusterGroup;
+                const size = 28;
+                const marker = L.marker([lat, lng], {
+                    icon: L.divIcon({
+                        html: `<div style="background:transparent;width:${size}px;height:${size}px;border-radius:50%;border:2px solid rgba(62,125,202,0.85);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer;"></div>`,
+                        className: '',
+                        iconSize: L.point(size, size, true),
+                        iconAnchor: L.point(size / 2, size / 2),
+                    }),
+                });
 
-        // Keep choropleth below bubbles
-        if (geoJsonLayerRef.current) geoJsonLayerRef.current.bringToBack();
+                marker.itemData = item;
+                marker.markerLat = lat;
+                marker.markerLng = lng;
+
+                marker.on('click', function(e) {
+                    if (!isActive) return; // Don't process clicks if effect cleaned up
+
+                    const clickedLat = this.markerLat;
+                    const clickedLng = this.markerLng;
+                    const clickedItem = this.itemData;
+                    
+                    console.log('[Marker Click]', { clickedLat, clickedLng, item: clickedItem.judul });
+                    
+                    L.DomEvent.stopPropagation(e);
+                    
+                    const map = mapInstanceRef.current;
+                    if (map) {
+                        console.log('[Map setView]', clickedLat, clickedLng, 16);
+                        map.setView([clickedLat, clickedLng], 16, { animate: true, duration: 1.2 });
+                    }
+
+                    setTimeout(() => {
+                        if (!isActive) return;
+                        console.log('[Show Modal]');
+                        setModalData({
+                            judul: clickedItem.judul || 'Penelitian',
+                            nama: clickedItem.nama || '-',
+                            institusi: clickedItem.institusi || '-',
+                            nidn: clickedItem.nidn || '-',
+                            nuptk: clickedItem.nuptk || '-',
+                            provinsi: clickedItem.provinsi || '-',
+                            skema: clickedItem.skema || '-',
+                            klaster: clickedItem.klaster || '-',
+                            kategori_pt: clickedItem.kategori_pt || '-',
+                            tahun: clickedItem.tahun || '-',
+                            bidang_fokus: clickedItem.bidang_fokus || '-',
+                            tema_prioritas: clickedItem.tema_prioritas || '-',
+                            fullData: clickedItem
+                        });
+                    }, 1200);
+                });
+
+                markers.push(marker);
+            }
+
+            markerIndex = endIndex;
+
+            if (markerIndex < filteredData.length) {
+                const timeoutId = setTimeout(processMarkersInChunks, 0);
+                timeoutIds.push(timeoutId);
+            } else {
+                // All chunks processed, add to cluster
+                if (isActive && mapInstanceRef.current && clusterGroupRef.current === null) {
+                    clusterGroup.addLayers(markers);
+                    clusterGroup.addTo(mapInstanceRef.current);
+                    clusterGroupRef.current = clusterGroup;
+
+                    if (geoJsonLayerRef.current) geoJsonLayerRef.current.bringToBack();
+                }
+            }
+        };
+
+        processMarkersInChunks();
+
+        // Cleanup function
+        return () => {
+            isActive = false;
+            timeoutIds.forEach(id => clearTimeout(id)); // Clear all pending timeouts
+            timeoutIds = [];
+        };
     }, [mapData, showBubbles]);
 
     return (
@@ -375,7 +453,7 @@ export default function PermasalahanMap({
                 >
                     <div
                         className="bg-white rounded-xl shadow-2xl border border-gray-200"
-                        style={{ minWidth: 260, maxWidth: 360, padding: '20px 24px', position: 'relative' }}
+                        style={{ minWidth: 280, maxWidth: 420, padding: '20px 24px', position: 'relative' }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Close button */}
@@ -388,20 +466,95 @@ export default function PermasalahanMap({
                             ✕
                         </button>
 
-                        {/* Province name */}
-                        <div style={{ fontWeight: 700, fontSize: 17, color: '#1f2937', marginBottom: 8, paddingRight: 20 }}>
-                            {modalData.geoName}
+                        {/* Title */}
+                        <div style={{ fontWeight: 700, fontSize: 17, color: '#1f2937', marginBottom: 12, paddingRight: 20 }}>
+                            Detail Penelitian
                         </div>
 
-                        {/* Value */}
-                        <div style={{ fontSize: 14, color: '#374151' }}>
-                            <span style={{ fontWeight: 600 }}>{modalData.activeDataType}:</span>{' '}
-                            <span>
-                                {modalData.nilai !== undefined
-                                    ? Number(modalData.nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' ' + modalData.satuan
-                                    : 'Tidak ada data'}
-                            </span>
-                        </div>
+                        {/* Research Title */}
+                        {modalData.judul && (
+                            <div style={{ fontWeight: 600, fontSize: 14, color: '#1f2937', marginBottom: 16, lineHeight: 1.5, paddingRight: 20 }}>
+                                {modalData.judul}
+                            </div>
+                        )}
+
+                        {/* Content */}
+                        {modalData.fullData ? (
+                            // Penelitian detail - 2 column layout
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', fontSize: 13, color: '#374151' }}>
+                                {/* Left Column */}
+                                <div>
+                                    {modalData.nama && modalData.nama !== '-' && (
+                                        <div style={{ marginBottom: 16 }}>
+                                            <div style={{ fontWeight: 600, fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Peneliti:</div>
+                                            <div style={{ fontWeight: 500 }}>{modalData.nama}</div>
+                                        </div>
+                                    )}
+                                    {modalData.nidn && modalData.nidn !== '-' && (
+                                        <div style={{ marginBottom: 16 }}>
+                                            <div style={{ fontWeight: 600, fontSize: 12, color: '#6b7280', marginBottom: 4 }}>NIDN:</div>
+                                            <div style={{ fontWeight: 500 }}>{modalData.nidn}</div>
+                                        </div>
+                                    )}
+                                    {modalData.kategori_pt && modalData.kategori_pt !== '-' && (
+                                        <div style={{ marginBottom: 16 }}>
+                                            <div style={{ fontWeight: 600, fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Kategori PT:</div>
+                                            <div style={{ fontWeight: 500 }}>{modalData.kategori_pt}</div>
+                                        </div>
+                                    )}
+                                    {modalData.skema && modalData.skema !== '-' && (
+                                        <div style={{ marginBottom: 16 }}>
+                                            <div style={{ fontWeight: 600, fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Skema:</div>
+                                            <div style={{ fontWeight: 500 }}>{modalData.skema}</div>
+                                        </div>
+                                    )}
+                                    {modalData.bidang_fokus && modalData.bidang_fokus !== '-' && (
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Bidang Fokus:</div>
+                                            <div style={{ fontWeight: 500 }}>{modalData.bidang_fokus}</div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Right Column */}
+                                <div>
+                                    {modalData.institusi && modalData.institusi !== '-' && (
+                                        <div style={{ marginBottom: 16 }}>
+                                            <div style={{ fontWeight: 600, fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Institusi:</div>
+                                            <div style={{ fontWeight: 500 }}>{modalData.institusi}</div>
+                                        </div>
+                                    )}
+                                    {modalData.tahun && modalData.tahun !== '-' && (
+                                        <div style={{ marginBottom: 16 }}>
+                                            <div style={{ fontWeight: 600, fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Tahun:</div>
+                                            <div style={{ fontWeight: 500 }}>{modalData.tahun}</div>
+                                        </div>
+                                    )}
+                                    {modalData.klaster && modalData.klaster !== '-' && (
+                                        <div style={{ marginBottom: 16 }}>
+                                            <div style={{ fontWeight: 600, fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Klaster:</div>
+                                            <div style={{ fontWeight: 500 }}>{modalData.klaster}</div>
+                                        </div>
+                                    )}
+                                    {modalData.tema_prioritas && modalData.tema_prioritas !== '-' && (
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 12, color: '#6b7280', marginBottom: 4 }}>Tema Prioritas:</div>
+                                            <div style={{ fontWeight: 500 }}>{modalData.tema_prioritas}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            // Province choropleth detail
+                            <div style={{ fontSize: 14, color: '#374151' }}>
+                                <span style={{ fontWeight: 600 }}>{modalData.activeDataType}:</span>{' '}
+                                <span>
+                                    {modalData.nilai !== undefined
+                                        ? Number(modalData.nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' ' + modalData.satuan
+                                        : 'Tidak ada data'}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

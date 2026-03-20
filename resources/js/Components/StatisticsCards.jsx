@@ -30,7 +30,7 @@ function AnimatedCounter({ value, duration = 300 }) {
         requestAnimationFrame(animate);
     }, [value]);
 
-    return <span>{displayValue.toLocaleString('id-ID')}</span>;
+    return <span>{displayValue.toLocaleString('en-US')}</span>;
 }
 
 export default function StatisticsCards({ stats, labels = {} }) {

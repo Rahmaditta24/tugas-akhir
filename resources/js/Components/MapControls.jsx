@@ -29,6 +29,7 @@ export default function MapControls({
     filterFields: customFilterFields = [],
     hideDisplayMode = false, // Hide Peneliti/Institusi buttons
     hideDownload = false, // Hide Excel download button
+    hideSearch = false, // Hide search bar
     showPermasalahanControls = false, // Show Hide Bubbles & Mode buttons
     showBubbles = true,
     onToggleBubbles = () => { },
@@ -117,6 +118,7 @@ export default function MapControls({
     return (
         <>
             {/* Search Box - Positioned over map */}
+            {!hideSearch && (
             <div className="absolute z-20 top-5 left-1/2 -translate-x-1/2 lg:w-1/2 w-full">
                 <div className="relative w-full px-3">
                     <svg
@@ -144,6 +146,7 @@ export default function MapControls({
                     />
                 </div>
             </div>
+            )}
 
             {/* Advanced Search Panel */}
             {isAdvancedSearchOpen && (
