@@ -237,23 +237,24 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                             emptyText="Tidak ada data fasilitas laboratorium"
                             columns={[
                                 { key: 'no', title: 'No', className: 'w-16 text-center' },
-                                { key: 'nama_laboratorium', title: 'Nama Lab', className: 'min-w-[200px]', sortable: true, render: (v) => <div className="truncate" title={fmt(v)}>{display(v)}</div> },
-                                { key: 'institusi', title: 'Institusi', className: 'min-w-[180px]', sortable: true, render: (v) => <div className="truncate" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'nama_laboratorium', title: 'Nama Lab', className: 'min-w-[200px] max-w-[300px]', sortable: true, render: (v) => <div className="truncate" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'institusi', title: 'Institusi', className: 'min-w-[180px] max-w-[250px]', sortable: true, render: (v) => <div className="truncate" title={fmt(v)}>{display(v)}</div> },
                                 {
                                     key: 'nama_alat',
                                     title: 'Nama Alat',
-                                    className: 'min-w-[300px] py-4',
+                                    className: 'min-w-[300px] max-w-[450px] py-4',
                                     render: (v, row) => {
                                         const cleaned = fmt(v);
                                         if (!cleaned) return display(v);
-                                        const items = cleaned.split(/\r?\n|;\s*/).map(i => i.replace(/^\d+\.\s*/, '').trim()).filter(i => i !== '');
+                                        // Update regex untuk mendukung pemisah pipe (|)
+                                        const items = cleaned.split(/\r?\n|;\s*|\|\s*/).map(i => i.replace(/^\d+\.\s*/, '').trim()).filter(i => i !== '');
                                         if (items.length === 0) return display(v);
 
                                         return (
                                             <div className="space-y-1">
                                                 <ul className="text-sm text-slate-600 space-y-1">
                                                     {items.slice(0, 4).map((item, i) => (
-                                                        <li key={i} className="truncate" title={item}>
+                                                        <li key={i} className="leading-tight" title={item}>
                                                             <span className="font-medium text-slate-400 mr-1.5">{items.length > 1 ? `${i + 1}.` : ''}</span>
                                                             {item}
                                                         </li>

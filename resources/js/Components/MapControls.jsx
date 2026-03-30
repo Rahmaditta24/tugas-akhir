@@ -160,7 +160,7 @@ export default function MapControls({
                             const isAllSelected = !filters[field.requestKey] || (Array.isArray(filters[field.requestKey]) && filters[field.requestKey].length === 0);
                             const shoudHideIcon = field.hideIcon || (typeof hideFilterIcons !== 'undefined' && hideFilterIcons);
 
-                            if (shoudHideIcon) return null;
+                            if (shoudHideIcon || field.hideAllOption) return null;
 
                             return (
                                 <div
@@ -361,7 +361,7 @@ export default function MapControls({
                     {/* Advanced Search Button */}
                     <button
                         onClick={() => setIsAdvancedSearchOpen(!isAdvancedSearchOpen)}
-                        className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${isAdvancedSearchOpen ? 'bg-gray-100 text-gray-900 border-2 border-gray-300' : 'bg-white text-gray-700 hover:bg-gray-50'
+                        className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${isAdvancedSearchOpen ? 'bg-gray-100 text-gray-900' : 'bg-white text-gray-700 hover:bg-gray-50'
                             }`}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">

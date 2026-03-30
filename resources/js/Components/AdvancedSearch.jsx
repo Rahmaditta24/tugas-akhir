@@ -108,7 +108,7 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
                 <button
                     type="button"
                     onClick={() => setOpenDropdown(openDropdown === filterType ? null : filterType)}
-                    className="appearance-none w-full text-sm px-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-left bg-white"
+                    className="appearance-none w-full text-sm px-3 py-1.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 pr-8 text-left bg-white"
                 >
                     <span className="truncate block">{getSelectedText(filterType)}</span>
                 </button>
@@ -122,7 +122,7 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
                 {openDropdown === filterType && (
-                    <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 z-10 max-h-48 overflow-y-auto">
+                    <div className="absolute top-full left-0 w-full bg-white rounded-lg shadow-lg mt-1 z-10 max-h-48 overflow-y-auto">
                         {options && options.length > 0 ? (
                             options.map((option, index) => {
                                 // Determine color for Bidang Fokus or Skema
@@ -170,7 +170,7 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
 
     return (
         <div className="w-full mx-auto mb-5 translate-x-[-7px]">
-            <div className="bg-gray-100 border border-gray-300 rounded-xl p-4 shadow-sm">
+            <div className="bg-gray-100 rounded-xl p-4 shadow-sm">
                 {/* Filter Controls */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 items-end">
                     {renderDropdown('bidang_fokus', 'Bidang Fokus', filterOptions?.bidangFokus)}

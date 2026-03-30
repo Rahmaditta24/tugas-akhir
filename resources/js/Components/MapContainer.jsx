@@ -104,6 +104,7 @@ export default function MapContainer({
                         pengabdian_bidang_teknologi: detailData.bidang_teknologi_inovasi || '-',
                         pengabdian_jenis_wilayah: detailData.jenis_wilayah_provinsi_mitra || '-',
                         pengabdian_provinsi_mitra: detailData.prov_mitra || '-',
+                        currentDataType: type,
                     };
                     setSelectedResearch(normalized);
                     setIsModalOpen(true);
@@ -233,7 +234,7 @@ export default function MapContainer({
         const handleZoomClass = () => {
             if (!mapRef.current) return;
             const currentZoom = map.getZoom();
-            if (currentZoom >= 7) {
+            if (currentZoom >= 6) {
                 mapRef.current.classList.add('zoom-level-detail');
                 mapRef.current.classList.remove('zoom-level-overview');
             } else {
@@ -496,15 +497,37 @@ export default function MapContainer({
                     const radius = 25;
                     const fontSize = 14;
                     return L.divIcon({
-                        html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 1px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
+                        html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
                         className: 'custom-cluster-icon',
                         iconSize: L.point(radius * 2, radius * 2, true),
                         iconAnchor: L.point(radius, radius)
                     });
                 },
                 spiderfyOnMaxZoom: true,
-                showCoverageOnHover: true,
-                zoomToBoundsOnClick: true
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                spiderLegPolylineOptions: { weight: 0, color: 'transparent', opacity: 0 }
+            });
+
+            // Intercept cluster click: zoom in first, spiderfy only at high zoom
+            clusterGroup.on('clusterclick', function (event) {
+                const cluster = event.layer;
+                const map = mapInstanceRef.current;
+                if (!map) return;
+                const currentZoom = map.getZoom();
+                const maxZoom = map.getMaxZoom();
+
+                // For clusters that contain same-point markers (hilirisasi/produk):
+                // force zoom-in until high enough, then let spiderfy happen
+                const childMarkers = cluster.getAllChildMarkers();
+                const hasSamePointMarkers = childMarkers.length > 0 &&
+                    childMarkers[0].options?.icon?.options?.className?.includes('custom-marker-individu');
+
+                if (hasSamePointMarkers && currentZoom < 14) {
+                    L.DomEvent.stopPropagation(event);
+                    map.flyTo(cluster.getLatLng(), 14, { duration: 0.6 });
+                }
+                // At zoom >= 14 → default spiderfy behavior
             });
 
             clusterGroupRef.current = clusterGroup;
@@ -792,7 +815,7 @@ export default function MapContainer({
                         for (let idx = 0; idx < count; idx++) {
                             let matchedColor = '#3E7DCA';
                             const dataType = getCurrentDataType();
-                            if (dataType === 'hilirisasi') {
+                            if (dataType === 'hilirisasi' || dataType === 'produk') {
                                 matchedColor = '#3E7DCA';
                             } else if (hasDetails) {
                                 const field = fields[idx];
@@ -802,7 +825,10 @@ export default function MapContainer({
                             }
 
                             let coords;
-                            if (idx === 0) {
+                            if (dataType === 'hilirisasi' || dataType === 'produk') {
+                                // Always place at same point → let spiderfy create flower pattern
+                                coords = [lat, lng];
+                            } else if (idx === 0) {
                                 coords = [lat, lng];
                             } else {
                                 const radiusKm = 0.6;
@@ -815,21 +841,62 @@ export default function MapContainer({
                                 ];
                             }
 
-                            const marker = L.circleMarker(coords, {
-                                radius: 8,
-                                fillColor: matchedColor,
-                                fillOpacity: 0.8,
-                                stroke: true,
-                                color: matchedColor,
-                                weight: 2,
-                                className: 'research-circle-marker-premium',
-                                penelitianCount: 1,
-                                statsData: {
-                                    institusi: item._institusi,
-                                    provinsi: item._provinsi,
-                                    bidang: fields[idx]
-                                }
-                            });
+                            let marker;
+                            if (dataType === 'pengabdian') {
+                                marker = L.marker(coords, {
+                                    icon: L.divIcon({
+                                        className: 'research-circle-marker-premium custom-marker-individu',
+                                        html: `
+                                            <div class="individu-wrapper" style="width: 50px; height: 50px; position: relative;">
+                                                <div class="individu-dot" style="position: absolute; top: 17px; left: 17px; width: 16px; height: 16px; border-radius: 50%; background-color: ${matchedColor}; opacity: 0.8; border: 2px solid ${matchedColor};"></div>
+                                                <div class="individu-bubble" style="position: absolute; inset: 0; background-color: rgba(62, 125, 202, 0.7); width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">1</div>
+                                            </div>
+                                        `,
+                                        iconSize: L.point(50, 50),
+                                        iconAnchor: L.point(25, 25)
+                                    }),
+                                    penelitianCount: 1,
+                                    statsData: {
+                                        institusi: item._institusi,
+                                        provinsi: item._provinsi,
+                                        bidang: fields[idx]
+                                    }
+                                });
+                            } else if (dataType === 'hilirisasi' || dataType === 'produk') {
+                                marker = L.marker(coords, {
+                                    icon: L.divIcon({
+                                        className: 'research-circle-marker-premium custom-marker-individu',
+                                        html: `
+                                            <div class="individu-wrapper" style="width: 50px; height: 50px; position: relative;">
+                                                <div class="individu-dot" style="position: absolute; top: 17px; left: 17px; width: 16px; height: 16px; border-radius: 50%; background-color: #3E7DCA; opacity: 0.85;"></div>
+                                                <div class="individu-bubble" style="position: absolute; inset: 0; background-color: rgba(62, 125, 202, 0.7); width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">1</div>
+                                            </div>
+                                        `,
+                                        iconSize: L.point(50, 50),
+                                        iconAnchor: L.point(25, 25)
+                                    }),
+                                    penelitianCount: 1,
+                                    statsData: {
+                                        institusi: item._institusi,
+                                        provinsi: item._provinsi,
+                                        bidang: fields[idx]
+                                    }
+                                });
+                            } else {
+                                marker = L.circleMarker(coords, {
+                                    radius: 8,
+                                    fillColor: matchedColor,
+                                    fillOpacity: 0.8,
+                                    stroke: false,
+                                    className: 'research-circle-marker-premium',
+                                    penelitianCount: 1,
+                                    statsData: {
+                                        institusi: item._institusi,
+                                        provinsi: item._provinsi,
+                                        bidang: fields[idx]
+                                    }
+                                });
+                            }
                             const popup = hasDetails ?
                                 generateDetailPopup(
                                     titles[idx] || 'Detail',
@@ -925,6 +992,14 @@ export default function MapContainer({
                 .zoom-level-detail .produk-logo { opacity: 1; pointer-events: none; transform: scale(1); }
                 .zoom-level-detail .produk-bubble { opacity: 0; pointer-events: none; transform: scale(0.5); }
                 .produk-logo, .produk-bubble { transition: all 0.3s ease-in-out; }
+                
+                .zoom-level-overview .individu-dot { opacity: 0; pointer-events: none; transform: scale(0.5); }
+                .zoom-level-overview .individu-bubble { opacity: 1; pointer-events: none; transform: scale(1); }
+                .zoom-level-detail .individu-dot { opacity: 1; pointer-events: auto; transform: scale(1); }
+                .zoom-level-detail .individu-bubble { opacity: 0; pointer-events: none; transform: scale(0.5); }
+                .individu-dot, .individu-bubble { transition: all 0.3s ease-in-out; }
+                .leaflet-marker-icon.custom-marker-individu { background: transparent !important; border: none !important; }
+                .leaflet-cluster-spider-leg { display: none !important; }
             `}</style>
             <section className="relative bg-white flex justify-center mb-2">
                 <div id="map" ref={mapRef} className="lg:w-[90%] w-full h-[65vh] border relative z-0 rounded-lg shadow-inner overflow-hidden" />

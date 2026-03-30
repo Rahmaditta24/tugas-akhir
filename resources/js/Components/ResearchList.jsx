@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { getFieldColor } from '../utils/fieldColors';
 
-export default function ResearchList({ researches = [], onAdvancedSearch, onItemClick, title = "Daftar Penelitian", isFiltered = false, isFasilitasLab = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
+export default function ResearchList({ researches = [], totalCount = 0, onAdvancedSearch, onItemClick, title = "Daftar Penelitian", isFiltered = false, isFasilitasLab = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
     const [searchRows, setSearchRows] = useState([
         { id: Date.now(), term: '', field: 'all', operator: 'AND' }
     ]);
@@ -230,15 +230,9 @@ export default function ResearchList({ researches = [], onAdvancedSearch, onItem
                     filteredResearches.map((research, index) => (
                         <div
                             key={index}
-                            className={`relative border border-slate-200 rounded-xl p-5 hover:bg-slate-50 transition-all bg-white group cursor-pointer ${!isFasilitasLab ? 'pl-7' : ''}`}
+                            className={`border border-gray-200 rounded-md p-4 bg-white ${onItemClick ? 'cursor-pointer hover:bg-slate-50' : ''}`}
                             onClick={() => onItemClick && onItemClick(research.id, research.bidang_fokus)}
                         >
-                            {!isFasilitasLab && (
-                                <div
-                                    className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl opacity-80"
-                                    style={{ backgroundColor: getFieldColor(research.bidang_fokus || research.bidang) }}
-                                />
-                            )}
 
                             {isFasilitasLab ? (
                                 <div>
@@ -270,23 +264,18 @@ export default function ResearchList({ researches = [], onAdvancedSearch, onItem
                                 </div>
                             ) : (
                                 <div className="pl-0">
-                                    <h4 className="font-semibold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{research.judul}</h4>
-                                    <div className="text-sm text-slate-600 space-y-1">
-                                        <p><strong>Universitas:</strong> {research.institusi}</p>
-                                        <p><strong>Peneliti:</strong> {research.nama}</p>
-                                        {research.tema_prioritas && (
-                                            <p><strong>Tema Prioritas:</strong> {research.tema_prioritas}</p>
-                                        )}
-                                        {research.bidang_fokus && (
-                                            <div className="pt-2">
-                                                <span
-                                                    className="inline-block px-4 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-wider shadow-sm"
-                                                    style={{ backgroundColor: getFieldColor(research.bidang_fokus) }}
-                                                >
-                                                    {research.bidang_fokus}
-                                                </span>
-                                            </div>
-                                        )}
+                                    <h4 className="font-bold text-[#334155] text-[15px] mb-2">{research.judul || '-'}</h4>
+                                    <div className="text-[13px] text-gray-500 space-y-1">
+                                        {research.nidn && research.nidn !== '-' && <p><strong className="text-gray-600 font-bold">NIDN:</strong> {research.nidn}</p>}
+                                        {research.nuptk && research.nuptk !== '-' && <p><strong className="text-gray-600 font-bold">NUPTK:</strong> {research.nuptk}</p>}
+                                        <p><strong className="text-gray-600 font-bold">Nama:</strong> {research.nama || research.researcher || '-'}</p>
+                                        <p><strong className="text-gray-600 font-bold">Institusi:</strong> {research.institusi || '-'}</p>
+                                        {research.provinsi && research.provinsi !== '-' && <p><strong className="text-gray-600 font-bold">Provinsi:</strong> {research.provinsi}</p>}
+                                        {research.tahun && research.tahun !== '-' && <p><strong className="text-gray-600 font-bold">Tahun:</strong> {research.tahun}</p>}
+                                        {research.skema && research.skema !== '-' && <p><strong className="text-gray-600 font-bold">Skema:</strong> {research.skema}</p>}
+                                        {research.kategori_pt && research.kategori_pt !== '-' && <p><strong className="text-gray-600 font-bold">Kategori PT:</strong> {research.kategori_pt}</p>}
+                                        {research.klaster && research.klaster !== '-' && <p><strong className="text-gray-600 font-bold">Klaster:</strong> {research.klaster}</p>}
+
                                     </div>
                                 </div>
                             )}
@@ -294,6 +283,12 @@ export default function ResearchList({ researches = [], onAdvancedSearch, onItem
                     ))
                 )}
             </div>
+            
+            {(Array.isArray(filteredResearches) && filteredResearches.length > 0 && totalCount > 0) && (
+                <div className="mt-6 text-center text-slate-500 font-medium">
+                    Menampilkan {filteredResearches.length} dari {totalCount} hasil
+                </div>
+            )}
         </div>
     );
 }

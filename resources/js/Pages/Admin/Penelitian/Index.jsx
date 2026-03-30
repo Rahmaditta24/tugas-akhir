@@ -270,14 +270,15 @@ export default function Index({ penelitian, stats, filters }) {
                                     <Badge color="slate">{display(v)}</Badge>
                                 )
                             },
-                            {
+            
+                            /*{
                                 key: 'skema',
                                 title: 'Skema',
                                 className: 'min-w-[200px]',
                                 render: (v) => (
                                     <Badge color="indigo">{normalizeSkema(v)}</Badge>
                                 )
-                            },
+                            },*/
                             {
                                 key: 'thn_pelaksanaan',
                                 title: 'Tahun',
