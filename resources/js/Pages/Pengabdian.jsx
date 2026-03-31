@@ -37,7 +37,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     ];
 
     const filterOptions = {
-        dataType: ['Multitahun, Batch I & II', 'Kosabangsa'],
+        dataType: ['Multitahun, Batch I & Batch II', 'Kosabangsa'],
         skema: filters.dataType === 'Kosabangsa' ? ['Kosabangsa'] : allSkemas,
         provinsi: serverFilterOptions.provinsi || ['Jawa Barat', 'Jawa Timur', 'DKI Jakarta'],
         tahun: serverFilterOptions.tahun || ['2020', '2021', '2022', '2023', '2024', '2025', '2026'],
@@ -88,9 +88,9 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     };
 
     const handleReset = () => {
-        setFilters({ dataType: 'Multitahun, Batch I & II' });
+        setFilters({ dataType: 'Multitahun, Batch I & Batch II' });
         setSearchTerm('');
-        router.get(route('pengabdian.index'), { dataType: 'Multitahun, Batch I & II' });
+        router.get(route('pengabdian.index'), { dataType: 'Multitahun, Batch I & Batch II' });
     };
 
     const [isLoading, setIsLoading] = useState(false);

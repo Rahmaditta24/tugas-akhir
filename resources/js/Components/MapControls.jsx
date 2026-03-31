@@ -42,13 +42,29 @@ export default function MapControls({
     isLoading = false,
     gridClass = "grid-cols-1 md:grid-cols-2",
     widthClass = "w-[95%] lg:w-[40%]",
-    hideFilterIcons = undefined
+    hideFilterIcons = undefined,
+    selectedMetrik = 'saidi',
+    onMetrikChange = () => { }
 }) {
     const [isAdvancedSearchOpen, setIsAdvancedSearchOpen] = useState(false);
 
+    const [localSearch, setLocalSearch] = useState(searchTerm);
+
+    useEffect(() => {
+        setLocalSearch(searchTerm);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (localSearch !== searchTerm) {
+                onSearch(localSearch);
+            }
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [localSearch]);
+
     const handleSearchChange = (e) => {
-        const value = e.target.value;
-        onSearch(value);
+        setLocalSearch(e.target.value);
     };
 
     const handleFilterSelect = (key, value, isChecked, type = 'multi') => {
@@ -271,7 +287,12 @@ export default function MapControls({
                         type="text"
                         value={searchTerm}
                         onChange={handleSearchChange}
-                        placeholder="Cari penelitian, universitas, atau peneliti..."
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                onSearch(searchTerm);
+                            }
+                        }}
+                        placeholder={`Cari ${filters.bubbleType === 'Penelitian' ? 'penelitian, universitas, atau peneliti' : (filters.bubbleType === 'Pengabdian' ? 'pengabdian' : (filters.bubbleType === 'Hilirisasi' ? 'hilirisasi' : 'data'))}...`}
                         className="w-full pl-10 lg:w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                 </div>
@@ -284,28 +305,72 @@ export default function MapControls({
 
                     {/* Render fields with better layout logic */}
                     {showPermasalahanControls ? (
-                        <div className="flex flex-col gap-3">
-                            {/* Special Top Row for Permasalahan */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                                {filterFields.slice(0, 2).map((field) => (
-                                    <div key={field.requestKey} className="flex flex-col gap-1">
-                                        <label className="text-[12px] font-bold text-gray-800 ml-1">{field.label}</label>
-                                        {renderField(field)}
+                        <div className="flex flex-col gap-4">
+                            {/* Special Top Section for Permasalahan */}
+                            <div className="flex flex-col gap-4">
+                                <div className={`grid grid-cols-1 ${filters.dataType === 'Krisis Listrik' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-x-8 gap-y-3`}>
+                                    {filterFields.slice(0, 2).map((field) => (
+                                        <div key={field.requestKey} className="flex flex-col gap-1">
+                                            <label className="text-[12px] font-bold text-gray-800 ml-1">{field.label}</label>
+                                            {renderField(field)}
+                                        </div>
+                                    ))}
+
+                                    {filters.dataType === 'Krisis Listrik' && (
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-[12px] font-bold text-gray-800 ml-1">Metrik Listrik</label>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onMetrikChange('saidi')}
+                                                    className={`flex-1 py-1 px-3 h-[38px] rounded-lg text-xs font-bold transition-all border ${
+                                                        selectedMetrik === 'saidi'
+                                                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                                            : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                                                    }`}
+                                                >
+                                                    SAIDI
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onMetrikChange('saifi')}
+                                                    className={`flex-1 py-1 px-3 h-[38px] rounded-lg text-xs font-bold transition-all border ${
+                                                        selectedMetrik === 'saifi'
+                                                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                                            : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                                                    }`}
+                                                >
+                                                    SAIFI
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Jenis Pengabdian ONLY if active and above the line */}
+                                {filters.bubbleType === 'Pengabdian' && filterFields[2] && (
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[12px] font-bold text-gray-800 ml-1">{filterFields[2].label}</label>
+                                        {renderField(filterFields[2])}
                                     </div>
-                                ))}
+                                )}
                             </div>
 
                             {/* Visual Divider */}
                             <div className="h-px bg-slate-200/60 w-full my-0.5" />
 
-                            {/* Rest of the Fields in 3 Columns */}
+                            {/* Rest of the Fields */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-3">
-                                {filterFields.slice(2).map((field) => (
-                                    <div key={field.requestKey} className="flex flex-col gap-1">
-                                        <label className="text-[12px] font-bold text-gray-800 ml-1">{field.label}</label>
-                                        {renderField(field)}
-                                    </div>
-                                ))}
+                                {(() => {
+                                    const isPengabdian = filters.bubbleType === 'Pengabdian';
+                                    const topCount = isPengabdian ? 3 : 2;
+                                    return filterFields.slice(topCount).map((field) => (
+                                        <div key={field.requestKey} className={`flex flex-col gap-1 ${field.colSpan || ''}`}>
+                                            <label className="text-[12px] font-bold text-gray-800 ml-1">{field.label}</label>
+                                            {renderField(field)}
+                                        </div>
+                                    ));
+                                })()}
                             </div>
                         </div>
                     ) : (

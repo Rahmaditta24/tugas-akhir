@@ -25,23 +25,27 @@ class PermasalahanPageController extends Controller
         $keywordsMap = [
             'Sampah' => [
                 'sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 
-                'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut'
+                'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut',
+                'residu', 'biomassa', 'waste-to-energy', 'tPA', 'pengelolaan sampah', 'sampah kota'
             ],
             'Stunting' => [
-                'stunting', 'tengkes', 'kerdil', 'gizis', 'pendek', 'balita', 'bayi', 'anak', 'ibu ham', 
-                'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi'
+                'stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita', 'bayi', 'anak', 'ibu hamil', 
+                'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi', 'malnutrisi', 'pangan bergizi',
+                'pola makan', 'asupan gizi'
             ],
             'Gizi Buruk' => [
                 'gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus', 'vitamin', 'protein', 'karbo', 
-                'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan'
+                'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan', 'gizi seimbang', 'beban ganda malnutrisi'
             ],
             'Krisis Listrik' => [
                 'listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit', 'pln', 'panel', 'solar', 
-                'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomat'
+                'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomatisasi', 'smart grid',
+                'elektrifikasi', 'energi terbarukan', 'transisi energi', 'panel surya', 'biofuel'
             ],
             'Ketahanan Pangan' => [
                 'pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 
-                'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani'
+                'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani', 'swasembada',
+                'benih', 'bioteknologi pangan', 'smart farming', 'diversifikasi pangan', 'produksi pangan'
             ],
         ];
 
@@ -51,11 +55,12 @@ class PermasalahanPageController extends Controller
             // Apply overlap filter (exact Admin logic)
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 if (isset($keywordsMap[$dataType])) {
-                    foreach ($keywordsMap[$dataType] as $kw) {
-                        $q->orWhere('judul', 'like', "%{$kw}%");
-                    }
+                    $regex = implode('|', array_map('preg_quote', $keywordsMap[$dataType]));
+                    $q->whereRaw("judul REGEXP ?", [$regex])
+                      ->orWhereRaw("bidang_fokus REGEXP ?", [$regex]);
                 } else {
-                    $q->where('judul', 'like', "%$dataType%");
+                    $q->where('judul', 'like', "%$dataType%")
+                      ->orWhere('bidang_fokus', 'like', "%$dataType%");
                 }
             });
 
@@ -64,15 +69,26 @@ class PermasalahanPageController extends Controller
             if ($request->filled('provinsi')) $query->whereIn('prov_pt', (array)$request->provinsi);
             if ($request->filled('tahun')) $query->whereIn('thn_pelaksanaan_kegiatan', (array)$request->tahun);
             if ($request->filled('skema')) $query->whereIn('nama_skema', (array)$request->skema);
+            
+            if ($request->filled('batch_type')) {
+                $batchValues = (array)$request->batch_type;
+                // Mapping combined UI value to DB values
+                if (in_array('Multitahun Lanjutan, Batch I & Batch II', $batchValues)) {
+                    $batchValues = array_merge($batchValues, ['multitahun_lanjutan', 'batch_ii', 'batch_i']);
+                }
+                $query->whereIn('batch_type', $batchValues);
+            }
 
             // Apply Search and Queries
             $this->applyAdvancedQueries($query, $request, 'Pengabdian');
+            
+            $isFiltered = true; // Ensure isFiltered is true when we apply these filters
 
             $mapQuery = clone $query;
-            $mapData = $mapQuery->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'nama_skema as bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun')
+            $mapData = $mapQuery->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'nama_skema as bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun', 'nidn', 'klaster', 'prov_mitra', 'kab_mitra', 'ptn_pts as kategori_pt', 'nama_skema as skema')
                 ->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->get()->toArray();
 
-            $researches = (clone $query)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'nama_skema as bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun')
+            $researches = (clone $query)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'nama_skema as bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun', 'nidn', 'klaster', 'prov_mitra', 'kab_mitra', 'ptn_pts as kategori_pt', 'nama_skema as skema')
                 ->orderByDesc('thn_pelaksanaan_kegiatan')->limit(50)->get();
 
         } elseif ($bubbleType === 'Hilirisasi') {
@@ -80,9 +96,8 @@ class PermasalahanPageController extends Controller
             // Apply overlap filter (exact Admin logic)
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 if (isset($keywordsMap[$dataType])) {
-                    foreach ($keywordsMap[$dataType] as $kw) {
-                        $q->orWhere('judul', 'like', "%{$kw}%");
-                    }
+                    $regex = implode('|', array_map('preg_quote', $keywordsMap[$dataType]));
+                    $q->whereRaw("judul REGEXP ?", [$regex]);
                 } else {
                     $q->where('judul', 'like', "%$dataType%");
                 }
@@ -109,9 +124,8 @@ class PermasalahanPageController extends Controller
             // Apply overlap filter (exact Admin logic)
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 if (isset($keywordsMap[$dataType])) {
-                    foreach ($keywordsMap[$dataType] as $kw) {
-                        $q->orWhere('judul', 'like', "%{$kw}%");
-                    }
+                    $regex = implode('|', array_map('preg_quote', $keywordsMap[$dataType]));
+                    $q->whereRaw("judul REGEXP ?", [$regex]);
                 } else {
                     $q->where('judul', 'like', "%$dataType%");
                 }
@@ -197,6 +211,10 @@ class PermasalahanPageController extends Controller
                 'provinsi' => \Cache::remember('filter_pengabdian_provinsi', 7200, fn() => DB::table('pengabdian')->select('prov_pt')->whereNotNull('prov_pt')->distinct()->orderBy('prov_pt')->pluck('prov_pt')->filter()->values()),
                 'tahun' => \Cache::remember('filter_pengabdian_tahun', 7200, fn() => DB::table('pengabdian')->select('thn_pelaksanaan_kegiatan')->whereNotNull('thn_pelaksanaan_kegiatan')->distinct()->orderBy('thn_pelaksanaan_kegiatan', 'desc')->pluck('thn_pelaksanaan_kegiatan')->filter()->values()),
                 'skema' => \Cache::remember('filter_pengabdian_skema', 7200, fn() => DB::table('pengabdian')->select('nama_skema')->whereNotNull('nama_skema')->distinct()->orderBy('nama_skema')->pluck('nama_skema')->filter()->values()),
+                'batchType' => [
+                    'Multitahun Lanjutan, Batch I & Batch II',
+                    'Kosabangsa'
+                ],
             ],
             'Hilirisasi' => [
                 'skema' => \Cache::remember('filter_hilirisasi_skema', 7200, fn() => DB::table('hilirisasi')->select('skema')->whereNotNull('skema')->distinct()->orderBy('skema')->pluck('skema')->filter()->values()),

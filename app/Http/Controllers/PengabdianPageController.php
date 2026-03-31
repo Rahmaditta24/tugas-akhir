@@ -17,7 +17,7 @@ class PengabdianPageController extends Controller
         
         // Default dataType to 'Multitahun, Batch I & II' if not present
         if (!$request->has('dataType') && !$request->has('search') && !$request->has('queries')) {
-            $request->merge(['dataType' => 'Multitahun, Batch I & II']);
+            $request->merge(['dataType' => 'Multitahun, Batch I & Batch II']);
         }
         
         $baseQuery = Pengabdian::query();

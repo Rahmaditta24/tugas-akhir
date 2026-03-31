@@ -61,21 +61,19 @@ function getChoroColor(value, dataMin, dataMax, minPct, maxPct, activeDataType =
     // 2. Default logic (Stunting, Gizi Buruk, Krisis Listrik, Ketahanan Pangan)
     // normalized: 0 is "Good/Green", 1 is "Bad/Red"
     let normalized = hi === lo ? 0 : Math.max(0, Math.min(1, (value - lo) / (hi - lo)));
-    
+
     // For Ketahanan Pangan, Higher value is Better (Secure), so we reverse the index
     // so that higher values result in Green (normalized near 0).
     if (typeLower === 'ketahanan pangan') {
         normalized = 1 - normalized;
     }
 
-    // Gradient: Green (#22c55e) -> Yellow (#eab308) -> Red (#ef4444)
-    if (normalized < 0.5) {
-        // Green to Yellow
-        return interpolateColor('#22c55e', '#eab308', normalized * 2);
-    } else {
-        // Yellow to Red
-        return interpolateColor('#eab308', '#ef4444', (normalized - 0.5) * 2);
-    }
+    // Use Legacy RGB logic from the old project for consistent aesthetics
+    const red = Math.round(normalized * 255);
+    const green = Math.round((1 - normalized) * 255);
+    const blue = 50;
+
+    return `rgb(${red}, ${green}, ${blue})`;
 }
 
 // ─── Province name normalisation ──────────────────────────────────────────────
@@ -86,6 +84,7 @@ function normProv(name) {
         .trim()
         .replace(/\s+/g, ' ')
         .replace(/^(prov\.\s*|provinsi\s*|daerah istimewa\s*|d\.i\.\s*|dki\s*|kab\.?|kabupaten|kota)\s+/g, '')
+        .replace(/\s+(penelitian|pengabdian|hilirisasi|inovasi)$/i, '')
         .trim();
 }
 
@@ -186,7 +185,7 @@ export default function PermasalahanMap({
         try {
             const geom = feature.geometry;
             if (!geom) return null;
-            
+
             let coords = geom.coordinates;
             let type = geom.type;
             let flatPoints = [];
@@ -283,135 +282,124 @@ export default function PermasalahanMap({
         };
     }, []);
 
-    // ── Effect 1: Rebuild choropleth layer when DATA changes ─────────────────
+    // ── Effect 1: Manage GeoJSON Layer Lifecycle ─────────────────────────────
     useEffect(() => {
         if (!mapInstanceRef.current || !geoJsonData) return;
 
-        // Remove old GeoJSON layer
+        // Rebuild only when geometry changes (viewMode or geoJsonData)
         if (geoJsonLayerRef.current) {
             mapInstanceRef.current.removeLayer(geoJsonLayerRef.current);
             geoJsonLayerRef.current = null;
         }
 
-        // Clear modal when data type changes
+        const layer = L.geoJSON(geoJsonData, {
+            style: {
+                fillColor: '#e5e7eb',
+                fillOpacity: 0.8,
+                color: '#000000',
+                weight: 1,
+                opacity: 1,
+            },
+            onEachFeature: (feature, layer) => {
+                layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1.5 }));
+                layer.on('mouseout', () => layer.setStyle({ fillOpacity: 0.75, weight: 0.8 }));
+            },
+        }).addTo(mapInstanceRef.current);
+
+        geoJsonLayerRef.current = layer;
+        layer.bringToBack();
+    }, [geoJsonData, viewMode]);
+
+    // ── Effect 1.5: Update Layer Properties when Stats change ──────────────
+    useEffect(() => {
+        if (!mapInstanceRef.current || !geoJsonLayerRef.current) return;
+
         setModalData(null);
-
-        // 1. Decide source stats
         const statsSource = (viewMode === 'provinsi' ? permasalahanStats : (permasalahanKabupatenStats || {})) || {};
-        let rows = statsSource[activeDataType] || [];
+        const rawActiveDataType = activeDataType || 'Sampah';
+        const finalActiveDataType = Array.isArray(rawActiveDataType) ? rawActiveDataType[0] : rawActiveDataType;
 
-        // For Krisis Listrik, filter by selected metrik
-        if (activeDataType === 'Krisis Listrik') {
+        let rows = statsSource[finalActiveDataType] || [];
+        if (finalActiveDataType === 'Krisis Listrik') {
             rows = rows.filter((row) => !row.metrik || row.metrik === selectedMetrik);
         }
+
+        const keyName = viewMode === 'provinsi' ? 'provinsi' : 'kabupaten_kota';
+        const latestStatsMap = new Map();
+        rows.forEach(row => {
+            const locName = (row[keyName] || '').toLowerCase().trim();
+            if (!locName) return;
+            const current = latestStatsMap.get(locName);
+            const rowYear = parseInt(row.tahun) || 0;
+            const currentYear = current ? (parseInt(current.tahun) || 0) : -1;
+            if (rowYear >= currentYear) latestStatsMap.set(locName, row);
+        });
+        rows = Array.from(latestStatsMap.values());
 
         const values = rows.map((s) => s.nilai ?? 0).filter((v) => v !== null && v !== undefined);
         const dataMin = values.length ? Math.min(...values) : 0;
         const dataMax = values.length ? Math.max(...values) : 1;
         const satuan = rows[0]?.satuan || '';
 
-        // Store so the slider effect can call setStyle without re-running this
-        // 3. Create quick lookup map
         const dataLookup = {};
-        const keyName = viewMode === 'provinsi' ? 'provinsi' : 'kabupaten_kota';
         rows.forEach((s) => {
             if (s[keyName]) {
                 const name = s[keyName].toLowerCase().trim();
                 dataLookup[name] = s.nilai;
+                if (name === 'dki jakarta') dataLookup['jakarta'] = s.nilai;
+                if (name === 'di yogyakarta') dataLookup['yogyakarta'] = s.nilai;
             }
         });
 
         choroplethMetaRef.current = { dataLookup, dataMin, dataMax, satuan };
-
-        // Inform parent legend
         if (onLegendUpdate) {
             onLegendUpdate({ min: dataMin, max: dataMax, satuan, activeDataType });
         }
 
+        // Update styles & popups on existing layer
+        geoJsonLayerRef.current.eachLayer((layer) => {
+            const feature = layer.feature;
+            let rawName = '';
+            if (viewMode === 'kabupaten') {
+                rawName = feature.properties?.WADMKK || feature.properties?.NAMOBJ || '';
+            } else {
+                rawName = feature.properties?.state || feature.properties?.name || feature.properties?.PROVINSI || '';
+            }
+            const geoName = normProv(rawName);
+            const nilai = dataLookup[geoName] ?? dataLookup[rawName.toLowerCase().trim()];
 
-        // Pre-calculate centroids for regencies if in kabupaten mode
-        if (viewMode === 'kabupaten' && geoJsonData?.features) {
-            const centroids = {};
-            geoJsonData.features.forEach(f => {
-                const rawName = f.properties?.WADMKK || f.properties?.NAMOBJ || '';
-                if (rawName) {
-                    const norm = normProv(rawName);
-                    const center = calculateCentroid(f);
-                    if (center) centroids[norm] = center;
-                }
+            // Update Style
+            layer.setStyle({
+                fillColor: nilai !== undefined
+                    ? getChoroColor(nilai, dataMin, dataMax, minPct, maxPct, activeDataType)
+                    : '#e5e7eb',
             });
-            regencyCentroidsRef.current = centroids;
-        }
 
-        const layer = L.geoJSON(geoJsonData, {
-            style: (feature) => {
-                let rawName = '';
-                if (viewMode === 'kabupaten') {
-                    rawName = feature.properties?.WADMKK || feature.properties?.NAMOBJ || '';
-                } else {
-                    rawName = feature.properties?.state || feature.properties?.name || feature.properties?.PROVINSI || '';
-                }
-                const geoName = normProv(rawName);
-                const nilai = dataLookup[geoName] ?? dataLookup[rawName.toLowerCase().trim()];
-                
-                return {
-                    fillColor: nilai !== undefined
-                        ? getChoroColor(nilai, dataMin, dataMax, minPct, maxPct, activeDataType)
-                        : '#e5e7eb',
-                    fillOpacity: 0.8,
-                    color: '#000000',
-                    weight: 1,
-                    opacity: 1,
-                };
-            },
-            onEachFeature: (feature, layer) => {
-                let rawName = '';
-                if (viewMode === 'kabupaten') {
-                    rawName = feature.properties?.WADMKK || feature.properties?.NAMOBJ || '';
-                } else {
-                    rawName = feature.properties?.state || feature.properties?.name || feature.properties?.PROVINSI || '';
-                }
-                const geoName = normProv(rawName);
-                const nilai = dataLookup[geoName] ?? dataLookup[rawName.toLowerCase().trim()];
-                const formattedNilai = nilai !== undefined
-                    ? Number(nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 })
-                    : '-';
+            // Update Popup
+            const formattedNilai = nilai !== undefined ? Number(nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '-';
+            const labelName = activeDataType === 'Sampah' ? 'Timbulan Sampah' : (activeDataType || 'Nilai');
+            const nilaiBesar = nilai !== undefined ? `${formattedNilai} ${satuan || ''}` : '-';
 
-                const labelName = activeDataType === 'Sampah' ? 'Timbulan Sampah' : (activeDataType || 'Nilai');
-                const nilaiBesar = nilai !== undefined ? `${formattedNilai} ${satuan || ''}` : '-';
-                
-                let subtitle = '';
-                if (viewMode === 'kabupaten') {
-                    const kec = feature.properties?.WADMKC || '';
-                    const desa = feature.properties?.NAMOBJ || feature.properties?.WADMD || '';
-                    if (kec && desa && kec !== rawName && desa !== rawName) subtitle = `${kec} - ${desa}`;
-                    else subtitle = feature.properties?.WADMPR || '';
-                }
+            let subtitle = '';
+            if (viewMode === 'kabupaten') {
+                const kec = feature.properties?.WADMKC || '';
+                const desa = feature.properties?.NAMOBJ || feature.properties?.WADMD || '';
+                if (kec && desa && kec !== rawName && desa !== rawName) subtitle = `${kec} - ${desa}`;
+                else subtitle = feature.properties?.WADMPR || '';
+            }
 
-                const popupContent = `
-                    <div style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; min-width: 160px; line-height: 1.4;">
-                        <div style="color: #333; font-size: 14.5px; margin-bottom: ${subtitle ? '0' : '6'}px;">${rawName}</div>
-                        ${subtitle ? `<div style="color: #666; font-size: 12.5px; margin-bottom: 6px;">${subtitle}</div>` : ''}
-                        <div style="color: #333; font-size: 13.5px;">
-                            <strong>${labelName}:</strong> ${nilaiBesar}
-                        </div>
+            const popupContent = `
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; min-width: 160px; line-height: 1.4;">
+                    <div style="color: #333; font-size: 14.5px; margin-bottom: ${subtitle ? '0' : '6'}px;">${rawName}</div>
+                    ${subtitle ? `<div style="color: #666; font-size: 12.5px; margin-bottom: 6px;">${subtitle}</div>` : ''}
+                    <div style="color: #333; font-size: 13.5px;">
+                        <strong>${labelName}:</strong> ${nilaiBesar}
                     </div>
-                `;
-
-                layer.bindPopup(popupContent, {
-                    closeButton: true,
-                    autoPan: true
-                });
-                layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1.5 }));
-                layer.on('mouseout', () => layer.setStyle({ fillOpacity: 0.75, weight: 0.8 }));
-            },
+                </div>
+            `;
+            layer.bindPopup(popupContent, { closeButton: true, autoPan: true });
         });
-
-        layer.addTo(mapInstanceRef.current);
-        geoJsonLayerRef.current = layer;
-        layer.bringToBack();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [geoJsonData, activeDataType, permasalahanStats, permasalahanKabupatenStats, selectedMetrik, viewMode]);
+    }, [permasalahanStats, permasalahanKabupatenStats, selectedMetrik, activeDataType]);
 
     // ── Effect 2: Only update colours when slider changes (real-time) ────────
     useEffect(() => {
@@ -481,7 +469,12 @@ export default function PermasalahanMap({
             iconCreateFunction: (cluster) => {
                 const total = cluster.getAllChildMarkers().length;
                 const size = 46;
-                const bubbleColor = bubbleType === 'Hilirisasi' ? 'rgba(250, 204, 21, 0.7)' : 'rgba(62, 125, 202, 0.7)';
+                let bubbleColor = 'rgba(62, 125, 202, 0.7)'; // Default Blue
+                if (bubbleType === 'Hilirisasi') {
+                    bubbleColor = 'rgba(250, 204, 21, 0.7)'; // Yellow/Gold
+                } else if (bubbleType === 'Pengabdian') {
+                    bubbleColor = 'rgba(40, 167, 69, 0.7)'; // Green
+                }
                 return L.divIcon({
                     html: `<div style="
                         background-color: ${bubbleColor};
@@ -531,7 +524,7 @@ export default function PermasalahanMap({
 
             const CHUNK_SIZE = 1500;
             const endIndex = Math.min(markerIndex + CHUNK_SIZE, mapData.length);
-            
+
             for (let i = markerIndex; i < endIndex; i++) {
                 const item = mapData[i];
                 let lat = parseFloat(item.pt_latitude ?? item.latitude);
@@ -553,12 +546,12 @@ export default function PermasalahanMap({
                 if (isNaN(lat) || isNaN(lng)) continue;
 
                 const marker = L.marker([lat, lng], { icon: sharedIcon });
-                
+
                 // Optimized click handler with small delay to prevent immediate closing
                 marker.on('click', (e) => {
                     if (!isActive) return;
                     L.DomEvent.stopPropagation(e);
-                    
+
                     const map = mapInstanceRef.current;
                     if (map) map.setView([lat, lng], 16, { animate: true });
 
@@ -593,7 +586,7 @@ export default function PermasalahanMap({
                             klaster: safe(d.klaster),
                             bidang_fokus: safe(d.bidang_fokus || d.bidang),
                             tema_prioritas: safe(d.tema_prioritas),
-                            mitra: safe(d.mitra),
+                            mitra: safe(d.mitra || (d.kab_mitra ? `${d.kab_mitra}, ${d.prov_mitra}` : d.prov_mitra)),
                             luaran: safe(d.luaran),
                             bubbleType: bubbleType, // Added this
                             fullData: d
@@ -659,10 +652,10 @@ export default function PermasalahanMap({
                         {modalData.fullData ? (
                             <>
                                 {/* Header: Judul */}
-                                <div style={{ fontWeight: 700, fontSize: 13, color: '#3B82F6', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                    {modalData.bubbleType === 'Hilirisasi' ? 'Detail Hilirisasi' : 'Detail Penelitian'}
+                                <div style={{ fontWeight: 700, fontSize: 24, color: '#1f2937', marginBottom: 12, lineHeight: 1.2 }}>
+                                    {`Detail ${modalData.bubbleType || 'Penelitian'}`}
                                 </div>
-                                <div style={{ fontWeight: 700, fontSize: 15, color: '#1f2937', marginBottom: 16, paddingRight: 20, lineHeight: 1.5 }}>
+                                <div style={{ fontWeight: 700, fontSize: 16, color: '#1f2937', marginBottom: 20, paddingRight: 20, lineHeight: 1.4, textTransform: 'uppercase' }}>
                                     {modalData.judul}
                                 </div>
 
@@ -702,9 +695,9 @@ export default function PermasalahanMap({
                                         {/* Row 4: Luaran */}
                                         <div>
                                             <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Luaran:</div>
-                                            <div style={{ 
-                                                maxHeight: '120px', 
-                                                overflowY: 'auto', 
+                                            <div style={{
+                                                maxHeight: '120px',
+                                                overflowY: 'auto',
                                                 paddingRight: '12px',
                                                 fontSize: '13px',
                                                 lineHeight: '1.6',
@@ -716,8 +709,44 @@ export default function PermasalahanMap({
                                             </div>
                                         </div>
                                     </div>
+                                ) : modalData.bubbleType === 'Pengabdian' ? (
+                                    /* ─── Pengabdian Layout ────────────────── */
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 30px', fontSize: 13, color: '#374151' }}>
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Pelaksana:</div>
+                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.nama}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NIDN:</div>
+                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.nidn}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NUPTK:</div>
+                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.nuptk}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Institusi:</div>
+                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.institusi}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tahun:</div>
+                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.tahun}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Skema:</div>
+                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.skema}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Bidang Fokus:</div>
+                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.bidang_fokus}</div>
+                                        </div>
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Lokasi Mitra:</div>
+                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.mitra}</div>
+                                        </div>
+                                    </div>
                                 ) : (
-                                    /* Grid Style for Permasalahan Map Inline Modal */
+                                    /* Grid Style for Research Detail (Penelitian) */
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 30px', fontSize: 13, color: '#374151' }}>
                                         <div>
                                             <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Peneliti:</div>

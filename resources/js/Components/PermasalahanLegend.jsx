@@ -18,9 +18,9 @@ export default function PermasalahanLegend({
     const currentMaxValue = minValue + (maxValue - minValue) * (maxPct / 100);
 
     return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-8">
+        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4">
             {/* Legend Content */}
-            <div className="p-6 space-y-6">
+            <div className="p-4 space-y-4">
                 {/* Title */}
                 <h3 className="font-bold text-gray-900 text-sm">
                     {(() => {
@@ -43,20 +43,17 @@ export default function PermasalahanLegend({
                             background: (() => {
                                 const isPangan = activeData.toLowerCase() === 'ketahanan pangan';
                                 const GRAY = '#d1d5db';
-                                const GREEN = '#4ade80';
-                                const YELLOW = '#facc15';
-                                const RED = '#f87171';
                                 
-                                const startColor = isPangan ? RED : GREEN;
-                                const endColor = isPangan ? GREEN : RED;
-                                
-                                const mid = (minPct + maxPct) / 2;
+                                // Legacy RGB style colors
+                                const startColor = isPangan ? 'rgb(255, 0, 50)' : 'rgb(0, 255, 50)';
+                                const midColor = 'rgb(127, 127, 50)'; // Middle value (0.5) for legacy RGB
+                                const endColor = isPangan ? 'rgb(0, 255, 50)' : 'rgb(255, 0, 50)';
                                 
                                 return `linear-gradient(90deg, 
                                     ${GRAY} 0%, 
                                     ${GRAY} ${minPct}%, 
                                     ${startColor} ${minPct}%, 
-                                    ${YELLOW} ${mid}%, 
+                                    ${midColor} ${(minPct + maxPct) / 2}%, 
                                     ${endColor} ${maxPct}%, 
                                     ${GRAY} ${maxPct}%, 
                                     ${GRAY} 100%)`;
@@ -76,7 +73,7 @@ export default function PermasalahanLegend({
                 </div>
 
                 {/* Sliders Area */}
-                <div className="space-y-8 pt-2">
+                <div className="space-y-5 pt-1">
                     {/* Min Slider */}
                     <div className="relative">
                         <div className="flex justify-between items-end mb-1">

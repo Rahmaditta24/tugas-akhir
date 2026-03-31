@@ -69,7 +69,8 @@ export default function Permasalahan({
         );
     } else if (filters.bubbleType === 'Pengabdian') {
         filterFields.push(
-            { label: 'Jenis Pengabdian', requestKey: 'skema', optionKey: 'skema' },
+            { label: 'Jenis Pengabdian', requestKey: 'batch_type', optionKey: 'batchType', type: 'single', hideAllOption: true, colSpan: 'md:col-span-3' },
+            { label: 'Skema', requestKey: 'skema', optionKey: 'skema' },
             { label: 'Provinsi', requestKey: 'provinsi', optionKey: 'provinsi' },
             { label: 'Tahun', requestKey: 'tahun', optionKey: 'tahun' }
         );
@@ -111,6 +112,13 @@ export default function Permasalahan({
     };
 
     const handleFilterChange = (newFilters) => {
+        // Automatically set default batch_type if switched to Pengabdian and it's not set
+        if (newFilters.bubbleType === 'Pengabdian' && filters.bubbleType !== 'Pengabdian') {
+            if (!newFilters.batch_type) {
+                newFilters.batch_type = 'Multitahun Lanjutan, Batch I & Batch II';
+            }
+        }
+        
         setFilters(newFilters);
         const params = { ...newFilters, search: searchTerm };
         Object.keys(params).forEach(key => {
@@ -121,7 +129,19 @@ export default function Permasalahan({
             preserveState: true,
             preserveScroll: true,
             replace: true,
-            only: ['mapData', 'researches', 'stats'],
+            only: ['mapData', 'researches', 'stats', 'permasalahanStats', 'permasalahanKabupatenStats'],
+        });
+    };
+
+    const handleAdvancedSearch = (queries) => {
+        const params = { ...filters, queries: JSON.stringify(queries) };
+        if (queries.every(q => !q.term)) delete params.queries;
+
+        router.get(window.location.pathname, params, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            only: ['mapData', 'researches', 'stats', 'permasalahanStats', 'permasalahanKabupatenStats'],
         });
     };
 
@@ -134,7 +154,7 @@ export default function Permasalahan({
     };
 
     return (
-        <MainLayout title="Dashboard Pemetaan Riset - Permasalahan">
+        <MainLayout title="Peta Persebaran Penelitian BIMA Indonesia - Permasalahan">
             <NavigationTabs activePage="permasalahan" />
 
             <div className="relative">
@@ -142,7 +162,7 @@ export default function Permasalahan({
                     mapData={mapData}
                     permasalahanStats={permasalahanStats}
                     permasalahanKabupatenStats={permasalahanKabupatenStats}
-                    activeDataType={filters.dataType}
+                    activeDataType={Array.isArray(filters.dataType) ? filters.dataType[0] : (filters.dataType || 'Sampah')}
                     bubbleType={filters.bubbleType}
                     showBubbles={showBubbles}
                     viewMode={viewMode}
@@ -155,22 +175,6 @@ export default function Permasalahan({
                 />
                 
                 {/* Metric selector for Krisis Listrik */}
-                {filters.dataType === 'Krisis Listrik' && (
-                    <div className="absolute top-20 right-4 z-40 bg-white rounded-lg p-3 shadow-lg border border-gray-200">
-                        <label className="block text-xs font-semibold text-gray-600 mb-2">
-                            Pilih Metrik
-                        </label>
-                        <select
-                            value={selectedMetrik}
-                            onChange={(e) => setSelectedMetrik(e.target.value)}
-                            className="text-sm px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="saidi">SAIDI (Jam/Pelanggan)</option>
-                            <option value="saifi">SAIFI (Kali/Pelanggan)</option>
-                        </select>
-                    </div>
-                )}
-                
                 <MapControls
                     onSearch={handleSearch}
                     onDisplayModeChange={() => {}}
@@ -190,6 +194,9 @@ export default function Permasalahan({
                     onToggleBubbles={handleToggleBubbles}
                     viewMode={viewMode}
                     onViewModeChange={handleViewModeChange}
+                    selectedMetrik={selectedMetrik}
+                    onMetrikChange={setSelectedMetrik}
+                    widthClass="w-[95%] lg:w-[48%]"
                 />
             </div>
 
@@ -201,7 +208,13 @@ export default function Permasalahan({
                     </p>
                     <p className="text-gray-700">
                         <span className="font-bold text-gray-900">Jenis Bubble Dipilih:</span> {filters.bubbleType}
-                        {filters.bubbleType === 'Pengabdian' && filters.skema && ` (${Array.isArray(filters.skema) ? filters.skema.join(', ') : filters.skema})`}
+                        {filters.bubbleType === 'Pengabdian' && (
+                            <>
+                                {filters.skema && ` (${Array.isArray(filters.skema) ? filters.skema.join(', ') : filters.skema})`}
+                                {filters.batch_type && ` (${Array.isArray(filters.batch_type) ? filters.batch_type.join(', ') : filters.batch_type})`}
+                            </>
+                        )}
+                        {filters.bubbleType === 'Hilirisasi' && filters.skema && ` (${Array.isArray(filters.skema) ? filters.skema.join(', ') : filters.skema})`}
                     </p>
                 </div>
                 <div className="text-gray-700">
@@ -216,7 +229,7 @@ export default function Permasalahan({
                 </div>
             </div>
 
-            <div className="w-full lg:max-w-[90%] mx-auto mb-5 mt-6">
+            <div className="w-full lg:max-w-[90%] mx-auto mb-4 mt-2">
                 <PermasalahanLegend
                     activeData={filters.dataType || 'Sampah'}
                     minValue={legendData.min}
@@ -228,7 +241,7 @@ export default function Permasalahan({
                     onMaxPctChange={setMaxPct}
                 />
 
-                <section className="bg-white/80 backdrop-blur-sm mt-6">
+                <section className="bg-white/80 backdrop-blur-sm mt-2">
                     <div className="container mx-auto sm:px-6 lg:px-0">
                         <StatisticsCards
                             stats={stats}
@@ -255,7 +268,7 @@ export default function Permasalahan({
                 </section>
 
                 {/* Research list */}
-                <div className="mt-6">
+                <div className="mt-4">
                     <ResearchList
                         researches={researches}
                         totalCount={stats?.totalResearch || 0}
@@ -264,7 +277,7 @@ export default function Permasalahan({
                 </div>
 
                 {/* Data table: province & kabupaten */}
-                <div className="mt-6">
+                <div className="mt-4">
                     <PermasalahanDataTable
                         rows={permasalahanStats[filters.dataType] || []}
                         kabupatenRows={permasalahanKabupatenStats[filters.dataType] || []}
