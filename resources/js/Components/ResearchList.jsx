@@ -248,9 +248,9 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
 
                                     <div className="space-y-0.5 text-[12.5px] text-slate-600">
                                         <p><span className="font-bold text-slate-700">Institusi:</span> {research.institusi || '-'}</p>
-                                        <p><span className="font-bold text-slate-700">Fakultas:</span> {research.fakultas || '-'}</p>
+                                        {/* <p><span className="font-bold text-slate-700">Fakultas:</span> {research.fakultas || '-'}</p>
                                         <p><span className="font-bold text-slate-700">Departemen:</span> {research.departemen || '-'}</p>
-                                        <p><span className="font-bold text-slate-700">Status Akses:</span> {research.status_akses || '-'}</p>
+                                        <p><span className="font-bold text-slate-700">Status Akses:</span> {research.status_akses || '-'}</p> */}
                                     </div>
 
                                     <div className="mt-4 flex justify-between items-end">

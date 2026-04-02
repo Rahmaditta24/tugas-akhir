@@ -114,9 +114,7 @@ export default function Permasalahan({
     const handleFilterChange = (newFilters) => {
         // Automatically set default batch_type if switched to Pengabdian and it's not set
         if (newFilters.bubbleType === 'Pengabdian' && filters.bubbleType !== 'Pengabdian') {
-            if (!newFilters.batch_type) {
-                newFilters.batch_type = 'Multitahun Lanjutan, Batch I & Batch II';
-            }
+                newFilters.batch_type = 'Multitahun, Batch I & Batch II';
         }
         
         setFilters(newFilters);

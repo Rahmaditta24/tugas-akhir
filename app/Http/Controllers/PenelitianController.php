@@ -5,6 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Penelitian;
+use App\Models\Hilirisasi;
+use App\Models\Pengabdian;
+use App\Models\Produk;
+use App\Models\FasilitasLab;
+use App\Models\PermasalahanProvinsi;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
@@ -368,12 +373,12 @@ class PenelitianController extends Controller
     public function getDetail($type, $id)
     {
         $data = match($type) {
-            'penelitian' => \App\Models\Penelitian::find($id),
-            'hilirisasi' => \App\Models\Hilirisasi::find($id),
-            'pengabdian' => \App\Models\Pengabdian::find($id),
-            'produk' => \App\Models\Produk::find($id),
-            'fasilitas-lab' => \App\Models\FasilitasLab::find($id),
-            'permasalahan' => \App\Models\Permasalahan::find($id),
+            'penelitian' => Penelitian::find($id),
+            'hilirisasi' => Hilirisasi::find($id),
+            'pengabdian' => Pengabdian::find($id),
+            'produk' => Produk::find($id),
+            'fasilitas-lab' => FasilitasLab::find($id),
+            'permasalahan' => PermasalahanProvinsi::find($id),
             default => null
         };
 

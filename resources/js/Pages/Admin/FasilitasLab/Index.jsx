@@ -11,7 +11,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
     const [perPage, setPerPage] = useState(filters.perPage || 20);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
-    const [columnFilters, setColumnFilters] = useState(filters.filters || {});
+    const [columnFilters, setColumnFilters] = useState(filters.columns || {});
     const [toolsModal, setToolsModal] = useState({ show: false, title: '', items: [] });
 
     const sort = filters.sort || 'id';
@@ -233,7 +233,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                     <div className="overflow-x-auto">
                         <AdminTable
                             striped
-                            localFilterEnabled={false}
+                            columnFilterEnabled={true}
                             emptyText="Tidak ada data fasilitas laboratorium"
                             columns={[
                                 { key: 'no', title: 'No', className: 'w-16 text-center' },
@@ -275,8 +275,8 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                         );
                                     }
                                 },
-                                { key: 'total_jumlah_alat', title: 'Total Jumlah Alat', className: 'w-32 text-center', sortable: true, render: (v) => <Badge color="blue">{display(v === 0 ? '0' : v)}</Badge> },
-                                { key: 'kontak', title: 'Kontak', className: 'min-w-[140px]', render: (v) => display(v) },
+                                { key: 'total_jumlah_alat', title: 'Total Jumlah Alat', className: 'w-32 text-center', sortable: true, filterable: false, render: (v) => <Badge color="blue">{display(v === 0 ? '0' : v)}</Badge> },
+                                { key: 'kontak', title: 'Kontak', className: 'min-w-[140px]', filterable: false, render: (v) => display(v) },
                                 { key: 'aksi', title: 'Aksi', className: 'w-24' },
                             ]}
                             data={tableData}

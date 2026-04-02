@@ -48,12 +48,6 @@ class PengabdianSeeder extends Seeder
 
         $allData = [];
 
-        if (isset($data['Multitahun Lanjutan']) && is_array($data['Multitahun Lanjutan'])) {
-            foreach ($data['Multitahun Lanjutan'] as $item) {
-                $allData[] = array_merge($item, ['batch_type' => 'multitahun_lanjutan']);
-            }
-        }
-
         if (isset($data['Batch I']) && is_array($data['Batch I'])) {
             foreach ($data['Batch I'] as $item) {
                 $allData[] = array_merge($item, ['batch_type' => 'batch_i']);
@@ -79,6 +73,7 @@ class PengabdianSeeder extends Seeder
         $inserted = 0;
         $skipped = 0;
         $errors = 0;
+        $duplikasi = 0;
 
         $bar = $this->command->getOutput()->createProgressBar($total);
         $bar->start();
@@ -92,18 +87,32 @@ class PengabdianSeeder extends Seeder
             return [$lat, $lon];
         };
 
+        $seen = []; // Menyimpan state duplikasi
+
         foreach (array_chunk($allData, $chunkSize) as $chunk) {
             $insertData = [];
 
             foreach ($chunk as $item) {
                 $judul = $normalize($item['judul'] ?? null) ?? '';
                 $namaInstitusi = $normalize($item['nama_institusi'] ?? $item['nama_institusi_pelaksana'] ?? null) ?? '';
+                $nama = $normalize(($item['nama'] ?? $item['nama_ketua'] ?? $item['nama_pelaksana'] ?? null)) ?? '';
 
-                if (empty($judul) || empty($namaInstitusi)) {
+                if (empty($judul) || empty($namaInstitusi) || empty($nama)) {
                     $skipped++;
                     $bar->advance();
                     continue;
                 }
+
+                $batchType = $normalize($item['batch_type'] ?? null) ?? '';
+                
+                // Mencegah duplikasi: Judul + Nama + Institusi
+                $uniqueKey = md5(strtolower($judul . '|' . $nama . '|' . $namaInstitusi));
+                if (isset($seen[$uniqueKey])) {
+                    $duplikasi++;
+                    $bar->advance();
+                    continue; // Skip duplicate
+                }
+                $seen[$uniqueKey] = true;
 
                 $latRaw = $item['pt_latitude'] ?? null;
                 $lonRaw = $item['pt_longitude'] ?? null;
@@ -115,8 +124,8 @@ class PengabdianSeeder extends Seeder
                 }
 
                 $insertData[] = [
-                    'batch_type' => $normalize($item['batch_type'] ?? null),
-                    'nama' => $normalize(($item['nama'] ?? $item['nama_ketua'] ?? $item['nama_pelaksana'] ?? null)),
+                    'batch_type' => $batchType,
+                    'nama' => $nama ?: null,
                     'nidn' => $normalize(($item['nidn'] ?? $item['nidn_ketua'] ?? $item['nidn_pelaksana'] ?? null)),
                     'nama_institusi' => $namaInstitusi,
                     'pt_latitude' => $lat,
@@ -162,6 +171,6 @@ class PengabdianSeeder extends Seeder
 
         $bar->finish();
         $this->command->newLine();
-        $this->command->info("✓ Pengabdian: Total={$total}, Inserted={$inserted}, Skipped={$skipped}, Errors={$errors}, DB Total=" . DB::table('pengabdian')->count());
+        $this->command->info("✓ Pengabdian: Total={$total}, Inserted={$inserted}, Skipped={$skipped}, Duplikat={$duplikasi}, Errors={$errors}, DB Total=" . DB::table('pengabdian')->count());
     }
 }

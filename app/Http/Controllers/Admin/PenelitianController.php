@@ -111,10 +111,13 @@ class PenelitianController extends Controller
         if ($perPage < 10) { $perPage = 10; }
         if ($perPage > 100) { $perPage = 100; }
 
-        // Order by ID descending (newest record first)
+        // Whitelisted sorting and pagination
+        $allowedSorts = ['id', 'nama', 'nidn', 'institusi', 'judul', 'skema', 'thn_pelaksanaan', 'bidang_fokus', 'tema_prioritas', 'provinsi'];
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
+        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
+
         $penelitian = $query
-            ->orderByDesc('id')
-            ->orderByDesc('thn_pelaksanaan')
+            ->orderBy($sort, $direction)
             ->paginate($perPage)
             ->withQueryString();
 
@@ -137,6 +140,8 @@ class PenelitianController extends Controller
                 'search' => $request->search,
                 'columns' => $request->filters ?? [], // Pass column filters back
                 'perPage' => $perPage,
+                'sort' => $sort,
+                'direction' => $direction,
             ],
         ]);
     }

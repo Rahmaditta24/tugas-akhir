@@ -108,7 +108,7 @@ export default function AdminTable({
                                     {col.key === 'aksi' || col.key === 'no' || col.filterable === false ? (
                                         <div className="h-8" /> // Maintain height even if empty
                                     ) : (
-                                        <div className="relative group">
+                                        <div className="relative group w-full">
                                             <input
                                                 type="text"
                                                 value={filterValues[col.key] ?? ''}

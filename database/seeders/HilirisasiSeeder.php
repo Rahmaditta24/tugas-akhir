@@ -76,6 +76,7 @@ class HilirisasiSeeder extends Seeder
         $inserted = 0;
         $skipped = 0;
         $errors = 0;
+        $duplikasi = 0;
 
         $bar = $this->command->getOutput()->createProgressBar($total);
         $bar->start();
@@ -88,6 +89,8 @@ class HilirisasiSeeder extends Seeder
             }
             return [$lat, $lon];
         };
+
+        $seen = []; // Array map untuk melacak judul+institusi duplikat
 
         foreach (array_chunk($hilirisasiData, $chunkSize) as $chunk) {
             $insertData = [];
@@ -102,6 +105,16 @@ class HilirisasiSeeder extends Seeder
                     continue;
                 }
 
+                $namaField = $normalize($item['Nama Pengusul'] ?? null) ?? '';
+                // Create unique key from Judul and Pengusul
+                $uniqueKey = md5(strtolower($judul . '|' . $namaField));
+                if (isset($seen[$uniqueKey])) {
+                    $duplikasi++;
+                    $bar->advance();
+                    continue; // Skip duplicate
+                }
+                $seen[$uniqueKey] = true;
+
                 $latRaw = $item['pt_latitude'] ?? null;
                 $lonRaw = $item['pt_longitude'] ?? null;
                 $lat = null;
@@ -115,7 +128,7 @@ class HilirisasiSeeder extends Seeder
                     'tahun' => isset($item['Tahun']) && is_numeric($item['Tahun']) ? (int)$item['Tahun'] : null,
                     'id_proposal' => isset($item['ID Proposal']) && is_numeric($item['ID Proposal']) ? (int)$item['ID Proposal'] : null,
                     'judul' => $judul,
-                    'nama_pengusul' => $normalize($item['Nama Pengusul'] ?? null),
+                    'nama_pengusul' => $namaField ?: null,
                     'direktorat' => $normalize($item['Direktorat'] ?? null),
                     'perguruan_tinggi' => $perguruanTinggi,
                     'pt_latitude' => $lat,
@@ -144,6 +157,6 @@ class HilirisasiSeeder extends Seeder
 
         $bar->finish();
         $this->command->newLine();
-        $this->command->info("✓ Hilirisasi: Total={$total}, Inserted={$inserted}, Skipped={$skipped}, Errors={$errors}, DB Total=" . DB::table('hilirisasi')->count());
+        $this->command->info("✓ Hilirisasi: Total={$total}, Inserted={$inserted}, Skipped={$skipped}, Duplikat={$duplikasi}, Errors={$errors}, DB Total=" . DB::table('hilirisasi')->count());
     }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -47,9 +47,10 @@ export default function Index({
         krisis_listrik: 'Statistik PLN 2024',
         ketahanan_pangan: 'Peta Ketahanan & Kerentanan Pangan Indonesai (FSVA) 2024',
     };
+    const normalizedJenis = jenis.toLowerCase().replace(/ /g, '_');
     const sumberText = jenis === 'all'
         ? 'Sampah: Kementerian Lingkungan Hidup 2024 || Stunting: SSGI 2024 Kementerian Kesehatan || Gizi Buruk: SSGI 2024 Kementerian Kesehatan || Krisis Listrik: Statistik PLN 2024 || Ketahanan Pangan: Peta Ketahanan & Kerentanan Pangan Indonesai (FSVA) 2024'
-        : sumberDataMap[jenis] || '';
+        : sumberDataMap[normalizedJenis] || '';
 
     const handleSearch = (e) => {
         if (e) e.preventDefault();
@@ -198,7 +199,7 @@ export default function Index({
             <div className="space-y-4">
                 <PageHeader
                     title={baseData === 'statistik' ? "Data Permasalahan" : "Data Permasalahan"}
-                    subtitle={baseData === 'statistik' ? "Kelola data statistik per wilayah" : "Daftar riset yang berkaitan dengan kategori permasalahan"}
+                    subtitle={baseData === 'statistik' ? "Daftar data statistik per wilayah" : "Daftar riset terkait kategori permasalahan"}
                     icon={<span className="text-xl">⚠️</span>}
                 />
 
@@ -389,17 +390,17 @@ export default function Index({
                                         <AdminTable
                                             striped
                                             columns={
-                                                jenis === 'sampah' ? [
+                                                normalizedJenis === 'sampah' ? [
                                                     { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'timbulan_tahunan_ton', title: 'Timbulan Sampah Tahunan (ton)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                ] : jenis === 'krisis_listrik' ? [
+                                                ] : normalizedJenis === 'krisis_listrik' ? [
                                                     { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'satuan_pln_provinsi', title: 'Satuan PLN/Provinsi', render: (v) => display(v) },
                                                     { key: 'saidi', title: 'SAIDI (Jam/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
                                                     { key: 'saifi', title: 'SAIFI (Kali/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                ] : jenis === 'ketahanan_pangan' ? [
+                                                ] : normalizedJenis === 'ketahanan_pangan' ? [
                                                     { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'ikp', title: 'IKP', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
@@ -421,17 +422,17 @@ export default function Index({
                                         <AdminTable
                                             striped
                                             columns={
-                                                jenis === 'sampah' ? [
+                                                normalizedJenis === 'sampah' ? [
                                                     { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'timbulan_tahunan_ton', title: 'Timbulan Sampah Tahunan (ton)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                ] : jenis === 'krisis_listrik' ? [
+                                                ] : normalizedJenis === 'krisis_listrik' ? [
                                                     { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'satuan_pln_provinsi', title: 'Satuan PLN/Provinsi', render: (v) => display(v) },
                                                     { key: 'saidi', title: 'SAIDI (Jam/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
                                                     { key: 'saifi', title: 'SAIFI (Kali/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                ] : jenis === 'ketahanan_pangan' ? [
+                                                ] : normalizedJenis === 'ketahanan_pangan' ? [
                                                     { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'ikp', title: 'IKP', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
@@ -458,13 +459,14 @@ export default function Index({
                                     columnFilterEnabled={true}
                                     filters={localColumnFilters}
                                     onFilterChange={handleColumnFilterChange}
+                                    sort={{ key: filters.sort, direction: filters.direction }}
                                     columns={[
                                         { key: 'no', title: 'No', className: 'w-16 text-center' },
-                                        { key: 'judul', title: 'Judul Riset', className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-sm leading-relaxed" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
-                                        { key: 'peneliti', title: 'Peneliti / Pengusul', className: 'min-w-[180px]', render: (_, item) => getVal(item, 'peneliti') },
-                                        { key: 'institusi', title: 'Institusi', className: 'min-w-[200px]', render: (_, item) => <div className="truncate" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
-                                        { key: 'provinsi', title: 'Provinsi', className: 'min-w-[150px]', render: (_, item) => <Badge color="blue">{getVal(item, 'provinsi')}</Badge> },
-                                        { key: 'tahun', title: 'Tahun', className: 'w-24 text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
+                                        { key: 'judul', title: 'Judul Riset', sortable: true, className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-sm leading-relaxed" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
+                                        { key: 'peneliti', title: 'Peneliti / Pengusul', sortable: true, className: 'min-w-[180px]', render: (_, item) => getVal(item, 'peneliti') },
+                                        { key: 'institusi', title: 'Institusi', sortable: true, className: 'min-w-[200px]', render: (_, item) => <div className="truncate" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
+                                        { key: 'provinsi', title: 'Provinsi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <Badge color="blue">{getVal(item, 'provinsi')}</Badge> },
+                                        { key: 'tahun', title: 'Tahun', sortable: true, className: 'min-w-[160px] text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
                                     ]}
                                     data={(data.data || []).map((item, index) => ({
                                         ...item,

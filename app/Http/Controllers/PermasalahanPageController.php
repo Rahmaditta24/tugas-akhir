@@ -51,7 +51,7 @@ class PermasalahanPageController extends Controller
 
         // 2. Build Query based on Bubble Type
         if ($bubbleType === 'Pengabdian') {
-            $query = \App\Models\Pengabdian::query();
+            $query = Pengabdian::query();
             // Apply overlap filter (exact Admin logic)
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 if (isset($keywordsMap[$dataType])) {
@@ -73,8 +73,8 @@ class PermasalahanPageController extends Controller
             if ($request->filled('batch_type')) {
                 $batchValues = (array)$request->batch_type;
                 // Mapping combined UI value to DB values
-                if (in_array('Multitahun Lanjutan, Batch I & Batch II', $batchValues)) {
-                    $batchValues = array_merge($batchValues, ['multitahun_lanjutan', 'batch_ii', 'batch_i']);
+                if (in_array('Multitahun, Batch I & Batch II', $batchValues)) {
+                    $batchValues = array_merge($batchValues, ['multitahun', 'multitahun_lanjutan', 'batch_ii', 'batch_i', 'batch']);
                 }
                 $query->whereIn('batch_type', $batchValues);
             }
@@ -92,7 +92,7 @@ class PermasalahanPageController extends Controller
                 ->orderByDesc('thn_pelaksanaan_kegiatan')->limit(50)->get();
 
         } elseif ($bubbleType === 'Hilirisasi') {
-            $query = \App\Models\Hilirisasi::query();
+            $query = Hilirisasi::query();
             // Apply overlap filter (exact Admin logic)
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 if (isset($keywordsMap[$dataType])) {
@@ -120,7 +120,7 @@ class PermasalahanPageController extends Controller
                 ->orderByDesc('tahun')->limit(50)->get();
 
         } else { // Penelitian (Default)
-            $query = \App\Models\Penelitian::query();
+            $query = Penelitian::query();
             // Apply overlap filter (exact Admin logic)
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 if (isset($keywordsMap[$dataType])) {
@@ -152,7 +152,7 @@ class PermasalahanPageController extends Controller
 
         // 3. Stats calculation - dynamic based on bubbleType
         if ($bubbleType === 'Hilirisasi') {
-            $globalStatsQuery = \App\Models\Hilirisasi::query();
+            $globalStatsQuery = Hilirisasi::query();
             $stats = [
                 'totalResearch'    => (clone $globalStatsQuery)->count(),
                 'totalUniversities'=> (clone $globalStatsQuery)->distinct('perguruan_tinggi')->count('perguruan_tinggi'),
@@ -160,7 +160,7 @@ class PermasalahanPageController extends Controller
                 'totalFields'      => 0, // Hilirisasi tidak memiliki kolom bidang_fokus
             ];
         } elseif ($bubbleType === 'Pengabdian') {
-            $globalStatsQuery = \App\Models\Pengabdian::query();
+            $globalStatsQuery = Pengabdian::query();
             $stats = [
                 'totalResearch'    => (clone $globalStatsQuery)->count(),
                 'totalUniversities'=> (clone $globalStatsQuery)->distinct('nama_institusi')->count('nama_institusi'),
@@ -168,7 +168,7 @@ class PermasalahanPageController extends Controller
                 'totalFields'      => (clone $globalStatsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
             ];
         } else {
-            $globalStatsQuery = \App\Models\Penelitian::query();
+            $globalStatsQuery = Penelitian::query();
             $stats = [
                 'totalResearch'    => (clone $globalStatsQuery)->count(),
                 'totalUniversities'=> (clone $globalStatsQuery)->distinct('institusi')->count('institusi'),
@@ -212,15 +212,41 @@ class PermasalahanPageController extends Controller
                 'tahun' => \Cache::remember('filter_pengabdian_tahun', 7200, fn() => DB::table('pengabdian')->select('thn_pelaksanaan_kegiatan')->whereNotNull('thn_pelaksanaan_kegiatan')->distinct()->orderBy('thn_pelaksanaan_kegiatan', 'desc')->pluck('thn_pelaksanaan_kegiatan')->filter()->values()),
                 'skema' => \Cache::remember('filter_pengabdian_skema', 7200, fn() => DB::table('pengabdian')->select('nama_skema')->whereNotNull('nama_skema')->distinct()->orderBy('nama_skema')->pluck('nama_skema')->filter()->values()),
                 'batchType' => [
-                    'Multitahun Lanjutan, Batch I & Batch II',
+                    'Multitahun, Batch I & Batch II',
                     'Kosabangsa'
                 ],
             ],
             'Hilirisasi' => [
-                'skema' => \Cache::remember('filter_hilirisasi_skema', 7200, fn() => DB::table('hilirisasi')->select('skema')->whereNotNull('skema')->distinct()->orderBy('skema')->pluck('skema')->filter()->values()),
+                'skema' => \Cache::remember('filter_hilirisasi_skema', 7200, function() {
+                    $fromDb = DB::table('hilirisasi')->select('skema')->whereNotNull('skema')->distinct()->orderBy('skema')->pluck('skema')->filter()->values()->toArray();
+                    $manual = [
+                        'A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi',
+                        'A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI',
+                        'A3: Pengembangan produk inovasi bersama DUDI',
+                        'A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering',
+                        'B1: Penyelesaian persoalan yang ada di masyarakat',
+                        'B2: Penyelesaian persoalan yang ada di Institusi Pemerintah',
+                        'Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)',
+                        'Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)',
+                        'Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra',
+                        'Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI',
+                        'Penerapan rencana bisnis and business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen',
+                        'Dorongan Teknologi - Tim Pakar/Pengkaji',
+                        'Ajakan Industri PT - 1 Tahun',
+                        'Ajakan Industri PT - 2 Tahun',
+                        'Ajakan Industri PT - 3 Tahun',
+                        'Hilirisasi Inovasi Komersial',
+                        'Hilirisasi Inovasi Sosial'
+                    ];
+                    return array_values(array_unique(array_merge($manual, $fromDb)));
+                }),
                 'provinsi' => \Cache::remember('filter_hilirisasi_provinsi', 7200, fn() => DB::table('hilirisasi')->select('provinsi')->whereNotNull('provinsi')->distinct()->orderBy('provinsi')->pluck('provinsi')->filter()->values()),
                 'tahun' => \Cache::remember('filter_hilirisasi_tahun', 7200, fn() => DB::table('hilirisasi')->select('tahun')->whereNotNull('tahun')->distinct()->orderBy('tahun', 'desc')->pluck('tahun')->filter()->values()),
-                'direktorat' => \Cache::remember('filter_hilirisasi_direktorat', 7200, fn() => DB::table('hilirisasi')->select('direktorat')->whereNotNull('direktorat')->distinct()->orderBy('direktorat')->pluck('direktorat')->filter()->values()),
+                'direktorat' => \Cache::remember('filter_hilirisasi_direktorat', 7200, function() {
+                    $fromDb = DB::table('hilirisasi')->select('direktorat')->whereNotNull('direktorat')->distinct()->orderBy('direktorat')->pluck('direktorat')->filter()->values()->toArray();
+                    $manual = ['Direktorat Hilirisasi dan Kemitraan', 'DIKSI', 'DIKTI'];
+                    return array_values(array_unique(array_merge($manual, $fromDb)));
+                }),
             ]
         ];
 

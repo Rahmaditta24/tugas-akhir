@@ -282,39 +282,8 @@ export default function PermasalahanMap({
         };
     }, []);
 
-    // ── Effect 1: Manage GeoJSON Layer Lifecycle ─────────────────────────────
-    useEffect(() => {
-        if (!mapInstanceRef.current || !geoJsonData) return;
-
-        // Rebuild only when geometry changes (viewMode or geoJsonData)
-        if (geoJsonLayerRef.current) {
-            mapInstanceRef.current.removeLayer(geoJsonLayerRef.current);
-            geoJsonLayerRef.current = null;
-        }
-
-        const layer = L.geoJSON(geoJsonData, {
-            style: {
-                fillColor: '#e5e7eb',
-                fillOpacity: 0.8,
-                color: '#000000',
-                weight: 1,
-                opacity: 1,
-            },
-            onEachFeature: (feature, layer) => {
-                layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1.5 }));
-                layer.on('mouseout', () => layer.setStyle({ fillOpacity: 0.75, weight: 0.8 }));
-            },
-        }).addTo(mapInstanceRef.current);
-
-        geoJsonLayerRef.current = layer;
-        layer.bringToBack();
-    }, [geoJsonData, viewMode]);
-
-    // ── Effect 1.5: Update Layer Properties when Stats change ──────────────
-    useEffect(() => {
-        if (!mapInstanceRef.current || !geoJsonLayerRef.current) return;
-
-        setModalData(null);
+    // ── Pre-calculate lookup data (useMemo for efficiency/immediate availability) ────
+    const choroplethData = React.useMemo(() => {
         const statsSource = (viewMode === 'provinsi' ? permasalahanStats : (permasalahanKabupatenStats || {})) || {};
         const rawActiveDataType = activeDataType || 'Sampah';
         const finalActiveDataType = Array.isArray(rawActiveDataType) ? rawActiveDataType[0] : rawActiveDataType;
@@ -351,10 +320,75 @@ export default function PermasalahanMap({
             }
         });
 
-        choroplethMetaRef.current = { dataLookup, dataMin, dataMax, satuan };
+        return { dataLookup, dataMin, dataMax, satuan, activeDataType: finalActiveDataType };
+    }, [permasalahanStats, permasalahanKabupatenStats, activeDataType, viewMode, selectedMetrik]);
+
+    // Update legend parent whenever choroplethData changes
+    useEffect(() => {
         if (onLegendUpdate) {
-            onLegendUpdate({ min: dataMin, max: dataMax, satuan, activeDataType });
+            onLegendUpdate({
+                min: choroplethData.dataMin,
+                max: choroplethData.dataMax,
+                satuan: choroplethData.satuan,
+                activeDataType: choroplethData.activeDataType
+            });
         }
+    }, [choroplethData, onLegendUpdate]);
+
+    // Sync choroplethMetaRef for the slider effect
+    useEffect(() => {
+        choroplethMetaRef.current = choroplethData;
+    }, [choroplethData]);
+
+    // ── Effect 1: Manage GeoJSON Layer Lifecycle ─────────────────────────────
+    useEffect(() => {
+        if (!mapInstanceRef.current || !geoJsonData) return;
+
+        // Rebuild only when geometry changes (viewMode or geoJsonData)
+        if (geoJsonLayerRef.current) {
+            mapInstanceRef.current.removeLayer(geoJsonLayerRef.current);
+            geoJsonLayerRef.current = null;
+        }
+
+        const { dataLookup, dataMin, dataMax, activeDataType } = choroplethData;
+
+        const layer = L.geoJSON(geoJsonData, {
+            style: (feature) => {
+                let rawName = '';
+                if (viewMode === 'kabupaten') {
+                    rawName = feature.properties?.WADMKK || feature.properties?.NAMOBJ || '';
+                } else {
+                    rawName = feature.properties?.state || feature.properties?.name || feature.properties?.PROVINSI || '';
+                }
+                const geoName = normProv(rawName);
+                const nilai = dataLookup[geoName] ?? dataLookup[rawName.toLowerCase().trim()];
+                
+                return {
+                    fillColor: nilai !== undefined
+                        ? getChoroColor(nilai, dataMin, dataMax, minPct, maxPct, activeDataType)
+                        : '#e5e7eb',
+                    fillOpacity: 0.8,
+                    color: '#000000',
+                    weight: 1,
+                    opacity: 1,
+                };
+            },
+            onEachFeature: (feature, layer) => {
+                layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1.5 }));
+                layer.on('mouseout', () => layer.setStyle({ fillOpacity: 0.75, weight: 0.8 }));
+            },
+        }).addTo(mapInstanceRef.current);
+
+        geoJsonLayerRef.current = layer;
+        layer.bringToBack();
+    }, [geoJsonData, viewMode]);
+
+    // ── Effect 1.5: Update Layer Properties when Stats change ──────────────
+    useEffect(() => {
+        if (!mapInstanceRef.current || !geoJsonLayerRef.current) return;
+        setModalData(null);
+        
+        const { dataLookup, dataMin, dataMax, satuan, activeDataType } = choroplethData;
 
         // Update styles & popups on existing layer
         geoJsonLayerRef.current.eachLayer((layer) => {
@@ -399,7 +433,7 @@ export default function PermasalahanMap({
             `;
             layer.bindPopup(popupContent, { closeButton: true, autoPan: true });
         });
-    }, [permasalahanStats, permasalahanKabupatenStats, selectedMetrik, activeDataType]);
+    }, [choroplethData, viewMode]);
 
     // ── Effect 2: Only update colours when slider changes (real-time) ────────
     useEffect(() => {

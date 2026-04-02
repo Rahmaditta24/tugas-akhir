@@ -33,7 +33,7 @@ class FasilitasLabController extends Controller
                 if (!empty($value)) {
                     if (in_array($key, [
                         'nama_laboratorium', 'institusi', 'total_jumlah_alat', 
-                        'kontak', 'provinsi', 'kota', 'kode_universitas', 'kategori_pt'
+                        'kontak', 'provinsi', 'kota', 'kode_universitas', 'kategori_pt', 'nama_alat'
                     ])) {
                         $query->where($key, 'like', "%{$value}%");
                     }

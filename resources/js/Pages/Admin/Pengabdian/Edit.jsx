@@ -15,7 +15,7 @@ const toTitleCase = (str) => {
 
 export default function Edit({ item, filters }) {
     const { data, setData, put, processing, errors } = useForm({
-        batch_type: (['batch_i', 'batch_ii', 'batch'].includes(item.batch_type) ? 'batch' : (['multitahun', 'multitahun_lanjutan'].includes(item.batch_type) ? 'multitahun' : (item.batch_type || 'multitahun'))),
+        batch_type: (['batch_i', 'batch_ii', 'batch', 'multitahun', 'multitahun_lanjutan'].includes(item.batch_type) ? 'batch' : (item.batch_type || 'batch')),
         nama: toTitleCase(item.nama || ''),
         nidn: item.nidn ?? 0,
         nama_institusi: item.nama_institusi || '',
@@ -95,8 +95,7 @@ export default function Edit({ item, filters }) {
                                         className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                         required
                                     >
-                                        <option value="multitahun">Multitahun Lanjutan</option>
-                                        <option value="batch">Batch I & II</option>
+                                        <option value="batch">Multitahun, Batch I & Batch II</option>
                                         <option value="kosabangsa">Kosabangsa</option>
                                     </select>
                                     {errors.batch_type && <p className="mt-1 text-sm text-red-600">{errors.batch_type}</p>}

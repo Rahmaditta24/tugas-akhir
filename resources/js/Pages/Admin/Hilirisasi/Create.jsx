@@ -114,6 +114,7 @@ export default function Create() {
                                         <option value="">-- Pilih Direktorat --</option>
                                         <option value="DIKSI">DIKSI</option>
                                         <option value="DIKTI">DIKTI</option>
+                                        <option value="Direktorat Hilirisasi dan Kemitraan">Direktorat Hilirisasi dan Kemitraan</option>
                                     </select>
                                     {errors.direktorat && <p className="mt-1 text-sm text-red-600">{errors.direktorat}</p>}
                                 </div>
@@ -135,6 +136,17 @@ export default function Create() {
                                         <option value="A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering">A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering</option>
                                         <option value="B1: Penyelesaian persoalan yang ada di masyarakat">B1: Penyelesaian persoalan yang ada di masyarakat</option>
                                         <option value="B2: Penyelesaian persoalan yang ada di Institusi Pemerintah">B2: Penyelesaian persoalan yang ada di Institusi Pemerintah</option>
+                                        <option value="Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)">Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah</option>
+                                        <option value="Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)">Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi</option>
+                                        <option value="Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra">Adopsi atau difusi, hilirisasi, komersialisasi produk</option>
+                                        <option value="Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI">Pembentukan atau penguatan research and innovation center</option>
+                                        <option value="Penerapan rencana bisnis dan business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen">Penerapan rencana bisnis dan BMC Startup</option>
+                                        <option value="Dorongan Teknologi - Tim Pakar/Pengkaji">Dorongan Teknologi - Tim Pakar/Pengkaji</option>
+                                        <option value="Ajakan Industri PT - 1 Tahun">Ajakan Industri PT - 1 Tahun</option>
+                                        <option value="Ajakan Industri PT - 2 Tahun">Ajakan Industri PT - 2 Tahun</option>
+                                        <option value="Ajakan Industri PT - 3 Tahun">Ajakan Industri PT - 3 Tahun</option>
+                                        <option value="Hilirisasi Inovasi Komersial">Hilirisasi Inovasi Komersial</option>
+                                        <option value="Hilirisasi Inovasi Sosial">Hilirisasi Inovasi Sosial</option>
                                     </select>
                                     {errors.skema && <p className="mt-1 text-sm text-red-600">{errors.skema}</p>}
                                 </div>
