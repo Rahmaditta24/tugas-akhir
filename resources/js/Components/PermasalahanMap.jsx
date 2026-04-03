@@ -50,7 +50,7 @@ function getChoroColor(value, dataMin, dataMax, minPct, maxPct, activeDataType =
         if (value < 100000 * scaleFactor) return '#4ade80'; // green-400
         if (value < 200000 * scaleFactor) return '#86efac'; // green-300
         if (value < 300000 * scaleFactor) return '#bef264'; // lime-300
-        if (value < 400000 * scaleFactor) return '#facc15'; // yellow-400
+        if (value < 400000 * scaleFactor) return '#fbbf24'; // yellow-400
         if (value < 500000 * scaleFactor) return '#fcd34d'; // yellow-300
         if (value < 750000 * scaleFactor) return '#fb923c'; // orange-400
         if (value < 1000000 * scaleFactor) return '#f87171'; // red-400
@@ -139,6 +139,16 @@ function resolveGeoJsonName(dbName) {
     return PROV_ALIAS[norm] || null;
 }
 
+function getBubblesCount(geoName, viewMode, mapData) {
+    if (!mapData || !geoName) return 0;
+    const key = viewMode === 'kabupaten' ? 'kabupaten_kota' : 'provinsi';
+    const normTarget = normProv(geoName);
+    return mapData.filter((item) => {
+        const itemLocation = item[key] || item.kabupaten_kota || item.provinsi || '';
+        return normProv(itemLocation) === normTarget;
+    }).length;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function PermasalahanMap({
     /** Permasalahan stats: { 'Sampah': [{provinsi, nilai, satuan, tahun}], ... } */
@@ -157,7 +167,8 @@ export default function PermasalahanMap({
     showBubbles = true,
     /** 'provinsi' | 'kabupaten' */
     viewMode = 'provinsi',
-    /** Percentile trimming from legend sliders (0-100) */
+    /** Percentile trimming from legend s
+     * sliders (0-100) */
     minPct = 0,
     maxPct = 100,
     /** Callback to inform parent about computed min/max/satuan so the legend can display them */
@@ -166,6 +177,7 @@ export default function PermasalahanMap({
     selectedMetrik = 'saidi',
     /** Callback when metric changes */
     onMetrikChange,
+    onItemClick,
 }) {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
@@ -174,6 +186,8 @@ export default function PermasalahanMap({
     const [geoJsonData, setGeoJsonData] = useState(null);
     const [geoJsonLoading, setGeoJsonLoading] = useState(true);
     const [modalData, setModalData] = useState(null);
+
+    const safe = (val) => (val === null || val === undefined || val === '') ? '-' : val;
     // Store computed colour-scale params so the slider effect can access them without re-running the heavy effect
     const choroplethMetaRef = useRef({ dataLookup: {}, dataMin: 0, dataMax: 1, satuan: '' });
     const cachedMarkersRef = useRef([]);
@@ -340,6 +354,35 @@ export default function PermasalahanMap({
         choroplethMetaRef.current = choroplethData;
     }, [choroplethData]);
 
+    // Helper to generate popup HTML reliably
+    const generateGeoJsonPopup = (feature, rawName, viewMode, activeDataType, dataLookup) => {
+        const geoName = normProv(rawName);
+        const nilai = dataLookup[geoName] ?? dataLookup[rawName.toLowerCase().trim()];
+        const satuan = choroplethData.satuan || '';
+
+        const formattedNilai = nilai !== undefined ? Number(nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '-';
+        const labelName = activeDataType === 'Sampah' ? 'Timbulan Sampah' : (activeDataType || 'Nilai');
+        const nilaiBesar = nilai !== undefined ? `${formattedNilai} ${satuan || ''}` : '-';
+
+        let subtitle = '';
+        if (viewMode === 'kabupaten') {
+            const kec = feature.properties?.WADMKC || '';
+            const desa = feature.properties?.NAMOBJ || feature.properties?.WADMD || '';
+            if (kec && desa && kec !== rawName && desa !== rawName) subtitle = `${kec} - ${desa}`;
+            else subtitle = feature.properties?.WADMPR || '';
+        }
+
+        return `
+            <div style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; min-width: 160px; line-height: 1.4;">
+                <div style="color: #333; font-size: 14.5px; margin-bottom: ${subtitle ? '0' : '6'}px;">${rawName}</div>
+                ${subtitle ? `<div style="color: #666; font-size: 12.5px; margin-bottom: 6px;">${subtitle}</div>` : ''}
+                <div style="color: #333; font-size: 13.5px;">
+                    <strong>${labelName}:</strong> ${nilaiBesar}
+                </div>
+            </div>
+        `;
+    };
+
     // ── Effect 1: Manage GeoJSON Layer Lifecycle ─────────────────────────────
     useEffect(() => {
         if (!mapInstanceRef.current || !geoJsonData) return;
@@ -350,9 +393,9 @@ export default function PermasalahanMap({
             geoJsonLayerRef.current = null;
         }
 
-        const { dataLookup, dataMin, dataMax, activeDataType } = choroplethData;
+        const { dataLookup, dataMin, dataMax, satuan, activeDataType } = choroplethData;
 
-        const layer = L.geoJSON(geoJsonData, {
+          const layer = L.geoJSON(geoJsonData, {
             style: (feature) => {
                 let rawName = '';
                 if (viewMode === 'kabupaten') {
@@ -376,6 +419,15 @@ export default function PermasalahanMap({
             onEachFeature: (feature, layer) => {
                 layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1.5 }));
                 layer.on('mouseout', () => layer.setStyle({ fillOpacity: 0.75, weight: 0.8 }));
+
+                let rawName = '';
+                if (viewMode === 'kabupaten') {
+                    rawName = feature.properties?.WADMKK || feature.properties?.NAMOBJ || '';
+                } else {
+                    rawName = feature.properties?.state || feature.properties?.name || feature.properties?.PROVINSI || '';
+                }
+                const popupContent = generateGeoJsonPopup(feature, rawName, viewMode, activeDataType, dataLookup);
+                layer.bindPopup(popupContent, { closeButton: true, autoPan: true });
             },
         }).addTo(mapInstanceRef.current);
 
@@ -410,30 +462,15 @@ export default function PermasalahanMap({
             });
 
             // Update Popup
-            const formattedNilai = nilai !== undefined ? Number(nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '-';
-            const labelName = activeDataType === 'Sampah' ? 'Timbulan Sampah' : (activeDataType || 'Nilai');
-            const nilaiBesar = nilai !== undefined ? `${formattedNilai} ${satuan || ''}` : '-';
-
-            let subtitle = '';
-            if (viewMode === 'kabupaten') {
-                const kec = feature.properties?.WADMKC || '';
-                const desa = feature.properties?.NAMOBJ || feature.properties?.WADMD || '';
-                if (kec && desa && kec !== rawName && desa !== rawName) subtitle = `${kec} - ${desa}`;
-                else subtitle = feature.properties?.WADMPR || '';
+            const popupContent = generateGeoJsonPopup(feature, rawName, viewMode, activeDataType, dataLookup);
+            if (layer.getPopup()) {
+                layer.setPopupContent(popupContent);
+            } else {
+                layer.bindPopup(popupContent, { closeButton: true, autoPan: true });
             }
-
-            const popupContent = `
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; min-width: 160px; line-height: 1.4;">
-                    <div style="color: #333; font-size: 14.5px; margin-bottom: ${subtitle ? '0' : '6'}px;">${rawName}</div>
-                    ${subtitle ? `<div style="color: #666; font-size: 12.5px; margin-bottom: 6px;">${subtitle}</div>` : ''}
-                    <div style="color: #333; font-size: 13.5px;">
-                        <strong>${labelName}:</strong> ${nilaiBesar}
-                    </div>
-                </div>
-            `;
-            layer.bindPopup(popupContent, { closeButton: true, autoPan: true });
         });
     }, [choroplethData, viewMode]);
+
 
     // ── Effect 2: Only update colours when slider changes (real-time) ────────
     useEffect(() => {
@@ -556,6 +593,19 @@ export default function PermasalahanMap({
         const processChunks = () => {
             if (!isActive || !mapInstanceRef.current) return;
 
+            const safe = (v) => {
+                if (v === null || v === undefined || v === '' || v === '-') return 'Tidak tersedia';
+                if (typeof v === 'string' && v.startsWith('["') && v.endsWith('"]')) {
+                    try {
+                        const parsed = JSON.parse(v);
+                        if (Array.isArray(parsed)) return parsed.join(', ');
+                    } catch (e) {
+                        return v.replace(/[\[\]"]/g, '');
+                    }
+                }
+                return v;
+            };
+
             const CHUNK_SIZE = 1500;
             const endIndex = Math.min(markerIndex + CHUNK_SIZE, mapData.length);
 
@@ -594,37 +644,31 @@ export default function PermasalahanMap({
                     setTimeout(() => {
                         if (!isActive) return;
                         const d = item;
-                        const safe = (v) => {
-                            if (v === null || v === undefined || v === '' || v === '-') return 'Tidak tersedia';
-                            // Clean JSON array strings like ["item1", "item2"]
-                            if (typeof v === 'string' && v.startsWith('["') && v.endsWith('"]')) {
-                                try {
-                                    const parsed = JSON.parse(v);
-                                    if (Array.isArray(parsed)) return parsed.join(', ');
-                                } catch (e) {
-                                    // Fallback strip
-                                    return v.replace(/[\[\]"]/g, '');
-                                }
-                            }
-                            return v;
-                        };
-                        setModalData({
-                            judul: safe(d.judul || d.judul_kegiatan),
-                            nama: safe(d.nama || d.nama_ketua),
-                            nidn: safe(d.nidn),
-                            nuptk: safe(d.nuptk),
-                            institusi: safe(d.institusi || d.perguruan_tinggi),
-                            kategori_pt: safe(d.ptn_pts || d.jenis_pt || d.kategori_pt),
-                            tahun: safe(d.tahun || d.thn_pelaksanaan),
-                            skema: safe(d.skema || d.nama_skema),
-                            klaster: safe(d.klaster),
-                            bidang_fokus: safe(d.bidang_fokus || d.bidang),
-                            tema_prioritas: safe(d.tema_prioritas),
-                            mitra: safe(d.mitra || (d.kab_mitra ? `${d.kab_mitra}, ${d.prov_mitra}` : d.prov_mitra)),
-                            luaran: safe(d.luaran),
-                            bubbleType: bubbleType, // Added this
-                            fullData: d
-                        });
+
+                        if (onItemClick) {
+                            onItemClick({
+                                ...d,
+                                bubbleType: bubbleType
+                            });
+                        } else {
+                            setModalData({
+                                judul: safe(d.judul || d.judul_kegiatan),
+                                nama: safe(d.nama || d.nama_ketua),
+                                nidn: safe(d.nidn),
+                                nuptk: safe(d.nuptk),
+                                institusi: safe(d.institusi || d.perguruan_tinggi),
+                                kategori_pt: safe(d.ptn_pts || d.jenis_pt || d.kategori_pt),
+                                tahun: safe(d.tahun || d.thn_pelaksanaan),
+                                skema: safe(d.skema || d.nama_skema),
+                                klaster: safe(d.klaster),
+                                bidang_fokus: safe(d.bidang_fokus || d.bidang),
+                                tema_prioritas: safe(d.tema_prioritas),
+                                mitra: safe(d.mitra || (d.kab_mitra ? `${d.kab_mitra}, ${d.prov_mitra}` : d.prov_mitra)),
+                                luaran: safe(d.luaran),
+                                bubbleType: bubbleType,
+                                fullData: d
+                            });
+                        }
                     }, 300);
                 });
 
@@ -664,26 +708,28 @@ export default function PermasalahanMap({
             {/* Province click modal */}
             {modalData && (
                 <div
-                    className="absolute inset-0 flex items-center justify-center z-[9999]"
-                    style={{ top: 0, left: 0, right: 0, bottom: 0, cursor: 'default' }}
+                    className="fixed inset-0 flex items-center justify-center z-[99999] bg-black/40 backdrop-blur-sm"
+                    style={{ cursor: 'default' }}
                     onClick={() => setModalData(null)}
                 >
                     <div
-                        className="bg-white rounded-xl shadow-2xl border border-gray-200"
-                        style={{ minWidth: 320, maxWidth: 680, width: '90vw', padding: '24px 28px', position: 'relative' }}
+                        className="bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col"
+                        style={{ minWidth: 320, maxWidth: 650, width: '90vw', padding: '30px', position: 'relative', overflow: 'hidden' }}
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Close button */}
                         <button
                             onClick={() => setModalData(null)}
-                            className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 transition-colors"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, lineHeight: 1 }}
+                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-200"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1 }}
                             aria-label="Tutup"
                         >
-                            ✕
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                         </button>
 
-                        {modalData.fullData ? (
+                        {modalData.judul || modalData.nama ? (
                             <>
                                 {/* Header: Judul */}
                                 <div style={{ fontWeight: 700, fontSize: 24, color: '#1f2937', marginBottom: 12, lineHeight: 1.2 }}>

@@ -8,12 +8,15 @@ import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
 import StatisticsCards from '../Components/StatisticsCards';
+import ResearchModal from '../Components/ResearchModal';
 
 export default function Produk({ mapData = [], researches = [], stats = {}, title, isFiltered = false, filters: initialFilters = {}, filterOptions: serverFilterOptions = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
     const [filters, setFilters] = useState(initialFilters);
     const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
     const [currentStats, setCurrentStats] = useState(stats);
+    const [selectedResearch, setSelectedResearch] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Update currentStats when global stats from props change
     useEffect(() => {
@@ -82,6 +85,59 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
         setFilters({});
         setSearchTerm('');
         router.get(route('produk.index'));
+    };
+
+    const handleItemClick = async (research) => {
+        if (!research?.id) {
+            setSelectedResearch({
+                ...research,
+                isProduk: true,
+                currentDataType: 'produk',
+                tkt: research.tkt ?? '-',
+                nama_inventor: research.nama_inventor || research.nama || research.researcher || '-',
+                judul: research.judul || research.nama_produk || '-',
+                institusi: research.institusi || research.perguruan_tinggi || '-',
+                provinsi: research.provinsi || '-',
+                bidang_fokus: research.bidang_fokus || research.bidang || '-',
+                deskripsi_produk: research.deskripsi_produk || research.deskripsi || '-'
+            });
+            setIsModalOpen(true);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/research/produk/${research.id}`);
+            if (response.ok) {
+                const detail = await response.json();
+                setSelectedResearch({
+                    ...detail,
+                    isProduk: true,
+                    currentDataType: 'produk',
+                    deskripsi_produk: detail.deskripsi_produk || detail.deskripsi || research.deskripsi_produk || '-',
+                    tkt: detail.tkt ?? research.tkt ?? '-',
+                    nama_inventor: detail.nama_inventor || detail.nama || research.nama_inventor || '-',
+                    judul: detail.judul || detail.nama_produk || research.judul || '-',
+                    institusi: detail.institusi || detail.perguruan_tinggi || research.institusi || '-',
+                    provinsi: detail.provinsi || research.provinsi || '-',
+                    bidang_fokus: detail.bidang_fokus || detail.bidang || research.bidang_fokus || '-'
+                });
+            } else {
+                setSelectedResearch({ 
+                    ...research, 
+                    isProduk: true, 
+                    currentDataType: 'produk',
+                    deskripsi_produk: research.deskripsi_produk || research.deskripsi || '-' 
+                });
+            }
+        } catch {
+            setSelectedResearch({ 
+                ...research, 
+                isProduk: true, 
+                currentDataType: 'produk',
+                deskripsi_produk: research.deskripsi_produk || research.deskripsi || '-' 
+            });
+        }
+        setIsModalOpen(true);
     };
 
     const [isLoading, setIsLoading] = useState(false);
@@ -157,7 +213,12 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
             <NavigationTabs activePage="produk" />
 
             <div className="relative">
-                <MapContainer mapData={mapData} displayMode={displayMode} onStatsChange={handleStatsChange} />
+                <MapContainer 
+                    mapData={mapData} 
+                    displayMode={displayMode} 
+                    onStatsChange={handleStatsChange}
+                    filters={filters} 
+                />
                 <MapControls
                     onSearch={handleSearch}
                     onDisplayModeChange={setDisplayMode}
@@ -182,20 +243,26 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}
+                            onItemClick={handleItemClick}
                             title="Daftar Produk"
                             isFiltered={isFiltered}
+                            isProdukPage={true}
                             customFieldOptions={[
                                 { value: 'all', label: 'Semua' },
-                                { value: 'title', label: 'Judul Hilirisasi' },
+                                { value: 'title', label: 'Judul Produk' },
                                 { value: 'university', label: 'Universitas' },
-                                { value: 'researcher', label: 'Peneliti' },
-                                { value: 'directorate', label: 'Direktorat' },
-                                { value: 'skema', label: 'Skema' },
+                                { value: 'researcher', label: 'Inventor' },
+                                { value: 'bidang', label: 'Bidang' },
                             ]}
                         />
                     </div>
                 </section>
             </div>
+            <ResearchModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                data={selectedResearch} 
+            />
         </MainLayout>
     );
 }

@@ -12,13 +12,13 @@ export default function PermasalahanLegend({
     onMinPctChange,
     onMaxPctChange,
 }) {
-    const fmtNum = (n) => (n !== null && n !== undefined && !isNaN(n)) ? Number(n).toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '-';
+    const fmtNum = (n) => (n !== null && n !== undefined && !isNaN(n)) ? Number(n).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '-';
 
     const currentMinValue = minValue + (maxValue - minValue) * (minPct / 100);
     const currentMaxValue = minValue + (maxValue - minValue) * (maxPct / 100);
 
     return (
-        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-4">
+        <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-2">
             {/* Legend Content */}
             <div className="p-4 space-y-4">
                 {/* Title */}
@@ -44,10 +44,14 @@ export default function PermasalahanLegend({
                                 const isPangan = activeData.toLowerCase() === 'ketahanan pangan';
                                 const GRAY = '#d1d5db';
                                 
-                                // Legacy RGB style colors
-                                const startColor = isPangan ? 'rgb(255, 0, 50)' : 'rgb(0, 255, 50)';
-                                const midColor = 'rgb(127, 127, 50)'; // Middle value (0.5) for legacy RGB
-                                const endColor = isPangan ? 'rgb(0, 255, 50)' : 'rgb(255, 0, 50)';
+                                // Hex colors from legacy script-permasalahan.js
+                                const GREEN_400 = '#4ade80';
+                                const YELLOW_400 = '#fbbf24';
+                                const RED_400 = '#f87171';
+                                
+                                const startColor = isPangan ? RED_400 : GREEN_400;
+                                const midColor = YELLOW_400;
+                                const endColor = isPangan ? GREEN_400 : RED_400;
                                 
                                 return `linear-gradient(90deg, 
                                     ${GRAY} 0%, 
@@ -76,7 +80,7 @@ export default function PermasalahanLegend({
                 <div className="space-y-5 pt-1">
                     {/* Min Slider */}
                     <div className="relative">
-                        <div className="flex justify-between items-end mb-1">
+                        <div className="flex justify-between items-end">
                             <label className="text-xs font-bold text-gray-800">Atur skala minimum</label>
                             <span className="text-xs font-medium text-gray-900">Minimum: <span className="font-bold">{fmtNum(currentMinValue)}</span></span>
                         </div>
@@ -87,12 +91,13 @@ export default function PermasalahanLegend({
                             step="1"
                             value={minPct}
                             onChange={(e) => onMinPctChange && onMinPctChange(Number(e.target.value))}
-                            className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-blue-600 transition-all hover:accent-blue-700"
-                            style={{
-                                background: `linear-gradient(to right, #2563eb 0%, #2563eb ${(minPct / 90) * 100}%, #e5e7eb ${(minPct / 90) * 100}%, #e5e7eb 100%)`
+                            className="w-full h-1.5 rounded-lg appearance-none cursor-pointer transition-all"
+                            style={{ 
+                                background: `linear-gradient(to right, #3E7DCA 0%, #3E7DCA ${(minPct / 90) * 100}%, #e5e7eb ${(minPct / 90) * 100}%, #e5e7eb 100%)`,
+                                accentColor: '#3E7DCA' 
                             }}
                         />
-                        <div className="flex justify-between text-[11px] text-gray-400 mt-1.5 leading-none">
+                        <div className="flex justify-between text-[10px] text-gray-500 mt-1.5 leading-none">
                             <span>0%</span>
                             <span>90%</span>
                         </div>
@@ -100,7 +105,7 @@ export default function PermasalahanLegend({
 
                     {/* Max Slider */}
                     <div className="relative">
-                        <div className="flex justify-between items-end mb-1">
+                        <div className="flex justify-between items-end">
                             <label className="text-xs font-bold text-gray-800">Atur skala maksimum</label>
                             <span className="text-xs font-medium text-gray-900">Maksimum: <span className="font-bold">{fmtNum(currentMaxValue)}</span></span>
                         </div>
@@ -111,12 +116,13 @@ export default function PermasalahanLegend({
                             step="1"
                             value={maxPct}
                             onChange={(e) => onMaxPctChange && onMaxPctChange(Number(e.target.value))}
-                            className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-blue-600 transition-all hover:accent-blue-700"
-                            style={{
-                                background: `linear-gradient(to right, #2563eb 0%, #2563eb ${((maxPct - 10) / 90) * 100}%, #e5e7eb ${((maxPct - 10) / 90) * 100}%, #e5e7eb 100%)`
+                            className="w-full h-1.5 rounded-lg appearance-none cursor-pointer transition-all"
+                            style={{ 
+                                background: `linear-gradient(to right, #3E7DCA 0%, #3E7DCA ${((maxPct - 10) / 90) * 100}%, #e5e7eb ${((maxPct - 10) / 90) * 100}%, #e5e7eb 100%)`,
+                                accentColor: '#3E7DCA' 
                             }}
                         />
-                        <div className="flex justify-between text-[11px] text-gray-400 mt-1.5 leading-none">
+                        <div className="flex justify-between text-[10px] text-gray-500 mt-1.5 leading-none">
                             <span>10%</span>
                             <span>100%</span>
                         </div>
@@ -124,24 +130,26 @@ export default function PermasalahanLegend({
                 </div>
 
                 {/* Action Buttons Row */}
-                <div className="flex items-center gap-2 pt-2">
-                    <button
-                        onClick={() => onMinPctChange && onMinPctChange(0)}
-                        className="px-4 py-1.5 bg-[#E5E7EB] hover:bg-gray-300 text-gray-900 text-[11px] font-bold rounded transition-colors"
-                    >
-                        Reset minimum
-                    </button>
-                    <button
-                        onClick={() => onMaxPctChange && onMaxPctChange(100)}
-                        className="px-4 py-1.5 bg-[#E5E7EB] hover:bg-gray-300 text-gray-900 text-[11px] font-bold rounded transition-colors"
-                    >
-                        Reset maksimum
-                    </button>
+                <div className="space-y-2 pt-2">
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => onMinPctChange && onMinPctChange(0)}
+                            className="px-3 py-1.5 bg-[#E5E7EB] hover:bg-gray-300 text-gray-900 text-[10px] font-bold rounded transition-colors"
+                        >
+                            Reset Minimum
+                        </button>
+                        <button
+                            onClick={() => onMaxPctChange && onMaxPctChange(100)}
+                            className="px-3 py-1.5 bg-[#E5E7EB] hover:bg-gray-300 text-gray-900 text-[10px] font-bold rounded transition-colors"
+                        >
+                            Reset Maksimum
+                        </button>
+                    </div>
                     
-                    <label className="flex items-center gap-2 ml-4 cursor-pointer group">
-                        <input type="checkbox" className="w-4 h-4 border border-gray-400 rounded-sm text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer" />
-                        <span className="text-sm font-semibold text-gray-800 group-hover:text-black transition-colors">Tidak ada data</span>
-                    </label>
+                    <div className="flex items-center gap-2">
+                        <div className="w-5 h-4 bg-[#e5e7eb] border border-gray-400 shadow-sm"></div>
+                        <span className="text-xs font-bold text-gray-700">Tidak ada data</span>
+                    </div>
                 </div>
             </div>
         </div>

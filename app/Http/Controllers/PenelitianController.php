@@ -185,7 +185,8 @@ class PenelitianController extends Controller
                 'bidang_fokus',
                 'tema_prioritas',
                 'thn_pelaksanaan',
-                'skema'
+                'skema',
+                'provinsi'
             )
             ->limit(50) // Only load first 50 for performance
             ->get()

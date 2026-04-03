@@ -171,7 +171,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         </div>
                                         <div className="grid grid-cols-[130px_1fr] items-baseline">
                                             <span className="text-sm font-medium text-gray-700">Provinsi:</span>
-                                            <span>{safeValue(data.provinsi || data.prov_pt || data.prov_mitra)}</span>
+                                            <span>{titleCase(safeValue(data.provinsi || data.prov_pt || data.prov_mitra))}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -299,11 +299,18 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         </div>
                                         <div className="grid grid-cols-[130px_1fr] items-baseline">
                                             <span className="text-sm font-medium text-gray-600">Kategori PT:</span>
-                                            <span>{safeValue(data.kategori_pt || data.jenis_pt)}</span>
+                                            <span>{safeValue(data.kategori_pt || data.jenis_pt || data.ptn_pts || (data.kampus_ptnbh ? 'PTNBH' : null))}</span>
                                         </div>
                                         <div className="grid grid-cols-[130px_1fr] items-baseline border-t border-dashed border-slate-200 pt-3">
                                             <span className="text-sm font-bold text-gray-800">Total Alat:</span>
-                                            <span className="text-blue-600 font-bold">{safeValue(data.total_jumlah_alat || data.total_alat || '0')} Alat</span>
+                                            <span className="text-gray-800 font-bold">{(() => {
+                                                const total = data.total_jumlah_alat || data.total_alat;
+                                                if (total > 0) return total;
+                                                if (data.nama_alat && typeof data.nama_alat === 'string') {
+                                                    return data.nama_alat.split('|').filter(Boolean).length;
+                                                }
+                                                return 0;
+                                            })()} Alat</span>
                                         </div>
                                     </div>
                                 </div>

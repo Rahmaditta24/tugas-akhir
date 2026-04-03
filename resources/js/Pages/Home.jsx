@@ -6,9 +6,9 @@ import MainLayout from '../Layouts/MainLayout';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
-import AdvancedSearch from '../Components/AdvancedSearch';
 import StatisticsCards from '../Components/StatisticsCards';
 import ResearchList from '../Components/ResearchList';
+import ResearchModal from '../Components/ResearchModal';
 
 export default function Home({ mapData = [], researches = [], stats = {}, filterOptions = {}, filters: initialFilters = {}, isFiltered = false }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
@@ -16,6 +16,8 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
     const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
     const [isLoading, setIsLoading] = useState(false);
     const [currentStats, setCurrentStats] = useState(stats);
+    const [selectedResearch, setSelectedResearch] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Update currentStats when global stats from props change
     useEffect(() => {
@@ -31,7 +33,6 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
     const handleSearch = (term) => {
         setSearchTerm(term);
         const params = { ...filters, search: term };
-        // Remove empty filters
         Object.keys(params).forEach(key => {
             if (params[key] === '' || params[key] === null) delete params[key];
         });
@@ -54,7 +55,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         router.get(route('penelitian.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            replace: true, // Don't add to history for faster navigation
+            replace: true, 
             only: ['mapData', 'researches', 'stats'], // Only fetch data, not layout
         });
     };
@@ -195,6 +196,55 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         }
     };
 
+    const handleItemClick = async (research) => {
+        if (!research?.id) {
+            // If no ID, show what we have directly
+            setSelectedResearch({
+                ...research,
+                judul: research.judul || '-',
+                nama: research.nama || '-',
+                institusi: research.institusi || '-',
+                provinsi: research.provinsi || '-',
+                skema: research.skema || '-',
+                tahun: research.thn_pelaksanaan || '-',
+                bidang_fokus: research.bidang_fokus || '-',
+                tema_prioritas: research.tema_prioritas || '-',
+                isInstitusi: false,
+            });
+            setIsModalOpen(true);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/research/penelitian/${research.id}`);
+            if (response.ok) {
+                const detail = await response.json();
+                setSelectedResearch({
+                    ...detail,
+                    judul: detail.judul || '-',
+                    nama: detail.nama || '-',
+                    institusi: detail.institusi || detail.nama_institusi || '-',
+                    provinsi: detail.provinsi || detail.prov_pt || '-',
+                    skema: detail.skema || detail.nama_skema || '-',
+                    tahun: detail.tahun || detail.thn_pelaksanaan || '-',
+                    bidang_fokus: detail.bidang_fokus || detail.bidang || '-',
+                    tema_prioritas: detail.tema_prioritas || '-',
+                    jenis_pt: detail.jenis_pt || '-',
+                    kategori_pt: detail.kategori_pt || '-',
+                    klaster: detail.klaster || '-',
+                    kota: detail.kota || '-',
+                    isInstitusi: false,
+                });
+            } else {
+                // Fallback to list data
+                setSelectedResearch({ ...research, isInstitusi: false });
+            }
+        } catch {
+            setSelectedResearch({ ...research, isInstitusi: false });
+        }
+        setIsModalOpen(true);
+    };
+
     return (
         <MainLayout title="Peta Persebaran Penelitian BIMA Indonesia - Penelitian">
             <Toaster />
@@ -207,6 +257,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                     data={researches}
                     displayMode={displayMode}
                     onStatsChange={handleStatsChange}
+                    filters={filters}
                 />
 
                 <MapControls
@@ -233,10 +284,18 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}
                             isFiltered={isFiltered}
+                            isPenelitianPage={true}
+                            onItemClick={handleItemClick}
                         />
                     </div>
                 </section>
             </div>
+
+            <ResearchModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                data={selectedResearch}
+            />
         </MainLayout>
     );
 }

@@ -8,6 +8,7 @@ import StatisticsCards from '../Components/StatisticsCards';
 import PermasalahanLegend from '../Components/PermasalahanLegend';
 import ResearchList from '../Components/ResearchList';
 import PermasalahanDataTable from '../Components/PermasalahanDataTable';
+import PermasalahanDetailModal from '../Components/PermasalahanDetailModal';
 
 export default function Permasalahan({
     mapData = [],
@@ -32,6 +33,7 @@ export default function Permasalahan({
     const [maxPct, setMaxPct] = useState(100);
     const [legendData, setLegendData] = useState({ min: 0, max: 1, satuan: '', activeDataType: filters.dataType });
     const [selectedMetrik, setSelectedMetrik] = useState('saidi');
+    const [selectedResearch, setSelectedResearch] = useState(null);
 
     // Sync state with props
     useEffect(() => {
@@ -114,9 +116,25 @@ export default function Permasalahan({
     const handleFilterChange = (newFilters) => {
         // Automatically set default batch_type if switched to Pengabdian and it's not set
         if (newFilters.bubbleType === 'Pengabdian' && filters.bubbleType !== 'Pengabdian') {
-                newFilters.batch_type = 'Multitahun, Batch I & Batch II';
+            newFilters.batch_type = 'Multitahun, Batch I & Batch II';
         }
-        
+
+        // Clean up irrelevant filters when bubbleType changes
+        if (newFilters.bubbleType !== filters.bubbleType) {
+            // Remove batch_type if not in Pengabdian
+            if (newFilters.bubbleType !== 'Pengabdian') {
+                delete newFilters.batch_type;
+            }
+
+            // Remove other category-specific filters to prevent messy URLs and filter conflicts
+            const commonKeys = ['dataType', 'bubbleType', 'search'];
+            Object.keys(newFilters).forEach(key => {
+                if (!commonKeys.includes(key) && key !== 'batch_type') {
+                    delete newFilters[key];
+                }
+            });
+        }
+
         setFilters(newFilters);
         const params = { ...newFilters, search: searchTerm };
         Object.keys(params).forEach(key => {
@@ -171,11 +189,11 @@ export default function Permasalahan({
                     onMetrikChange={setSelectedMetrik}
                     stats={stats}
                 />
-                
+
                 {/* Metric selector for Krisis Listrik */}
                 <MapControls
                     onSearch={handleSearch}
-                    onDisplayModeChange={() => {}}
+                    onDisplayModeChange={() => { }}
                     onReset={handleReset}
                     onDownload={handleDownload}
                     displayMode="peneliti"
@@ -218,11 +236,11 @@ export default function Permasalahan({
                 <div className="text-gray-700">
                     <span className="font-bold text-gray-900">Sumber Data:</span> {
                         filters.dataType === 'Sampah' ? 'Kementerian Lingkungan Hidup 2024' :
-                        filters.dataType === 'Stunting' ? 'SSGI 2024 Kementerian Kesehatan' :
-                        filters.dataType === 'Gizi Buruk' ? 'SSGI 2024 Kementerian Kesehatan' :
-                        filters.dataType === 'Krisis Listrik' ? 'Statistik PLN 2024' :
-                        filters.dataType === 'Ketahanan Pangan' ? 'Peta Ketahanan & Kerentanan Pangan Indonesai (FSVA) 2024' :
-                        'Kementerian Terkait'
+                            filters.dataType === 'Stunting' ? 'SSGI 2024 Kementerian Kesehatan' :
+                                filters.dataType === 'Gizi Buruk' ? 'SSGI 2024 Kementerian Kesehatan' :
+                                    filters.dataType === 'Krisis Listrik' ? 'Statistik PLN 2024' :
+                                        filters.dataType === 'Ketahanan Pangan' ? 'Peta Ketahanan & Kerentanan Pangan Indonesai (FSVA) 2024' :
+                                            'Kementerian Terkait'
                     }
                 </div>
             </div>
@@ -239,7 +257,7 @@ export default function Permasalahan({
                     onMaxPctChange={setMaxPct}
                 />
 
-                <section className="bg-white/80 backdrop-blur-sm mt-2">
+                <section className="bg-white/80 backdrop-blur-sm mt-8">
                     <div className="container mx-auto sm:px-6 lg:px-0">
                         <StatisticsCards
                             stats={stats}
@@ -271,6 +289,8 @@ export default function Permasalahan({
                         researches={researches}
                         totalCount={stats?.totalResearch || 0}
                         isFiltered={researches.length > 0}
+                        isPermasalahanPage={true}
+                        onItemClick={(research) => setSelectedResearch({ ...research, bubbleType: research.bubbleType || filters.bubbleType || 'Penelitian' })}
                     />
                 </div>
 
@@ -284,6 +304,14 @@ export default function Permasalahan({
                     />
                 </div>
             </div>
+
+            {selectedResearch && (
+                <PermasalahanDetailModal
+                    isOpen={!!selectedResearch}
+                    data={selectedResearch}
+                    onClose={() => setSelectedResearch(null)}
+                />
+            )}
         </MainLayout>
     );
 }

@@ -29,7 +29,8 @@ export default function MapContainer({
     showBubbles = true,
     viewMode = 'provinsi',
     onStatsChange,
-    onCampusClick
+    onCampusClick,
+    filters
 }) {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
@@ -161,8 +162,20 @@ export default function MapContainer({
         // Institution Detection
         const institusi = (item._institusi && item._institusi !== 'undefined' && item._institusi !== '-') ? item._institusi : (item.institusi || item.nama_institusi || item.perguruan_tinggi || item.pt || '-');
 
+        const toTitleCase = (str) => {
+            if (!str || typeof str !== 'string' || str === '-') return str;
+            const specialWords = ['DKI', 'DI', 'DIY', 'PAPUA'];
+            return str.split(' ').map(word => {
+                if (specialWords.includes(word.toUpperCase())) {
+                    return word.toUpperCase();
+                }
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }).join(' ');
+        };
+
         // Province Detection
-        const provinsi = (item._provinsi && item._provinsi !== 'undefined' && item._provinsi !== '-') ? item._provinsi : (item.provinsi || item.prov_pt || item.prov_mitra || '-');
+        const rawProvinsi = (item._provinsi && item._provinsi !== 'undefined' && item._provinsi !== '-') ? item._provinsi : (item.provinsi || item.prov_pt || item.prov_mitra || '-');
+        const provinsi = toTitleCase(rawProvinsi);
 
         // Count Detection
         const count = item._count || item.total_produk || item.total_penelitian || item.total_hilirisasi || item.total_pengabdian || 1;
@@ -170,8 +183,15 @@ export default function MapContainer({
         // Field/Bidang Detection
         const field = item._field || item.bidang_fokus || item.skema || item.bidang || '-';
 
+        // Clean [M] and [U] from titles
+        const cleanJudul = (str) => {
+            if (!str || typeof str !== 'string') return str || '-';
+            return str.replace(/^\[[MU]\]\s*/i, '').trim();
+        };
+
         // Title Detection
-        const judul = item._judul || item.judul || item.judul_kegiatan || item.nama_produk || item.title || 'Detail';
+        const judulRaw = item._judul || item.judul || item.judul_kegiatan || item.nama_produk || item.title || 'Detail';
+        const judul = cleanJudul(judulRaw);
 
         return {
             ...item,
@@ -295,7 +315,7 @@ export default function MapContainer({
                 lab_list: item.lab_list || '',
                 tool_list: item.tool_list || '',
             };
-            const encoded = encodeURIComponent(JSON.stringify(modalData));
+            const encoded = encodeURIComponent(JSON.stringify(modalData)).replace(/'/g, "%27");
             return `
                 <div style="padding: 12px; min-width: 200px; font-family: 'Inter', sans-serif;">
                     <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${safeValue(item._institusi)}</h3>
@@ -661,13 +681,13 @@ export default function MapContainer({
 
                     marker.bindPopup(`
                         <div style="padding: 8px 4px; min-width: 220px; font-family: 'Inter', sans-serif;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem))}')">
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem)).replace(/'/g, "%27")}')">
                                 ${item._institusi}
                             </h3>
                             <div style="font-size: 14px; color: #334155; margin-bottom: 12px;">
                                 ${count.toLocaleString('id-ID')} fasilitas laboratorium
                             </div>
-                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem))}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
+                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem)).replace(/'/g, "%27")}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
                                 Klik untuk melihat detail kampus
                             </div>
                         </div>
@@ -737,13 +757,13 @@ export default function MapContainer({
                     const labelName = dataType === 'produk' ? 'produk' : dataType === 'hilirisasi' ? 'hilirisasi' : dataType === 'pengabdian' ? 'pengabdian' : 'penelitian';
                     marker.bindPopup(`
                         <div style="padding: 8px 4px; min-width: 220px; font-family: 'Inter', sans-serif;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem))}')">
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem)).replace(/'/g, "%27")}')">
                                 ${item._institusi}
                             </h3>
                             <div style="font-size: 14px; color: #334155; margin-bottom: 12px;">
                                 ${count.toLocaleString('id-ID')} ${labelName}
                             </div>
-                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem))}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
+                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem)).replace(/'/g, "%27")}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
                                 Klik untuk melihat detail kampus
                             </div>
                         </div>
@@ -982,7 +1002,7 @@ export default function MapContainer({
         return () => {
             if (processingRef.current) cancelAnimationFrame(processingRef.current);
         };
-    }, [mapData, data, showBubbles, displayMode, viewMode, fetchDetail, normalizeItem]);
+    }, [mapData, data, showBubbles, displayMode, viewMode, fetchDetail, normalizeItem, filters]);
 
     return (
         <>

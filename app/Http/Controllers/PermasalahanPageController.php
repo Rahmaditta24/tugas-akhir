@@ -18,6 +18,7 @@ class PermasalahanPageController extends Controller
         // 1. Determine Bubble Type and Data Type (Overlap filter)
         $bubbleType = $request->input('bubbleType', 'Penelitian');
         $dataType = $request->input('dataType', 'Sampah');
+        $requestHash = md5(json_encode($request->all()));
         
         $isFiltered = $request->filled('search') || $request->filled('queries') || $request->filled('bidang_fokus') || $request->filled('tema_prioritas') || $request->filled('provinsi') || $request->filled('tahun') || $request->filled('kategori_pt') || $request->filled('klaster') || $request->filled('skema') || $request->filled('direktorat');
 
@@ -52,7 +53,26 @@ class PermasalahanPageController extends Controller
         // 2. Build Query based on Bubble Type
         if ($bubbleType === 'Pengabdian') {
             $query = Pengabdian::query();
-            // Apply overlap filter (exact Admin logic)
+            
+            // Stats should only respect category (batch_type), not keywords
+            $statsQuery = clone $query;
+            if ($request->filled('batch_type')) {
+                $val = $request->batch_type;
+                if (stripos($val, 'Multitahun') !== false && stripos($val, 'Batch') !== false) {
+                    $statsQuery->where(function($q) {
+                        $q->where('batch_type', 'like', '%multitahun%')
+                          ->orWhere('batch_type', 'like', '%batch_i%') 
+                          ->orWhere('batch_type', 'like', '%batch_ii%');
+                    });
+                } elseif (stripos($val, 'Kosabangsa') !== false) {
+                    $statsQuery->where(function($q) {
+                        $q->where('batch_type', 'like', '%Kosabangsa%')
+                          ->orWhere('nama_skema', 'like', '%Kosabangsa%');
+                    });
+                }
+            }
+
+            // Keyword filter for Map and List ONLY
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 if (isset($keywordsMap[$dataType])) {
                     $regex = implode('|', array_map('preg_quote', $keywordsMap[$dataType]));
@@ -64,25 +84,31 @@ class PermasalahanPageController extends Controller
                 }
             });
 
-            // Apply other filters
+            // Apply other filters to Map/List
             if ($request->filled('bidang_fokus')) $query->whereIn('bidang_fokus', (array)$request->bidang_fokus);
             if ($request->filled('provinsi')) $query->whereIn('prov_pt', (array)$request->provinsi);
             if ($request->filled('tahun')) $query->whereIn('thn_pelaksanaan_kegiatan', (array)$request->tahun);
             if ($request->filled('skema')) $query->whereIn('nama_skema', (array)$request->skema);
             
             if ($request->filled('batch_type')) {
-                $batchValues = (array)$request->batch_type;
-                // Mapping combined UI value to DB values
-                if (in_array('Multitahun, Batch I & Batch II', $batchValues)) {
-                    $batchValues = array_merge($batchValues, ['multitahun', 'multitahun_lanjutan', 'batch_ii', 'batch_i', 'batch']);
+                $val = $request->batch_type;
+                if (stripos($val, 'Multitahun') !== false && stripos($val, 'Batch') !== false) {
+                    $query->where(function($q) {
+                        $q->where('batch_type', 'like', '%multitahun%')
+                          ->orWhere('batch_type', 'like', '%batch_i%') 
+                          ->orWhere('batch_type', 'like', '%batch_ii%');
+                    });
+                } elseif (stripos($val, 'Kosabangsa') !== false) {
+                    $query->where(function($q) {
+                        $q->where('batch_type', 'like', '%Kosabangsa%')
+                          ->orWhere('nama_skema', 'like', '%Kosabangsa%');
+                    });
                 }
-                $query->whereIn('batch_type', $batchValues);
             }
 
             // Apply Search and Queries
             $this->applyAdvancedQueries($query, $request, 'Pengabdian');
-            
-            $isFiltered = true; // Ensure isFiltered is true when we apply these filters
+            $isFiltered = true;
 
             $mapQuery = clone $query;
             $mapData = $mapQuery->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'nama_skema as bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun', 'nidn', 'klaster', 'prov_mitra', 'kab_mitra', 'ptn_pts as kategori_pt', 'nama_skema as skema')
@@ -93,7 +119,8 @@ class PermasalahanPageController extends Controller
 
         } elseif ($bubbleType === 'Hilirisasi') {
             $query = Hilirisasi::query();
-            // Apply overlap filter (exact Admin logic)
+            $statsQuery = clone $query; // No specific category filters for Hilirisasi global stats yet
+
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 if (isset($keywordsMap[$dataType])) {
                     $regex = implode('|', array_map('preg_quote', $keywordsMap[$dataType]));
@@ -103,25 +130,24 @@ class PermasalahanPageController extends Controller
                 }
             });
 
-            // Apply other filters
             if ($request->filled('provinsi')) $query->whereIn('provinsi', (array)$request->provinsi);
             if ($request->filled('tahun')) $query->whereIn('tahun', (array)$request->tahun);
             if ($request->filled('skema')) $query->whereIn('skema', (array)$request->skema);
             if ($request->filled('direktorat')) $query->whereIn('direktorat', (array)$request->direktorat);
 
-            // Apply Search and Queries
             $this->applyAdvancedQueries($query, $request, 'Hilirisasi');
 
             $mapQuery = clone $query;
             $mapData = $mapQuery->select('id', 'judul', 'nama_pengusul as nama', 'perguruan_tinggi as institusi', 'provinsi', \DB::raw("NULL as kabupaten_kota"), 'pt_latitude', 'pt_longitude', 'skema', 'tahun', 'mitra', 'luaran')
                 ->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->get()->toArray();
 
-            $researches = (clone $query)->select('id', 'judul', 'nama_pengusul as nama', 'perguruan_tinggi as institusi', 'provinsi', \DB::raw("NULL as kabupaten_kota"), 'skema', 'tahun', 'mitra', 'luaran')
+            $researches = (clone $query)->select('id', 'judul', 'nama_pengusul as nama', 'perguruan_tinggi as institusi', 'provinsi', \DB::raw("NULL as kabupaten_kota"), 'skema', 'tahun', 'mitra', 'luaran', \DB::raw("'Hilirisasi' as bubbleType"))
                 ->orderByDesc('tahun')->limit(50)->get();
 
         } else { // Penelitian (Default)
             $query = Penelitian::query();
-            // Apply overlap filter (exact Admin logic)
+            $statsQuery = clone $query; // No specific category filters for Penelitian total statistics yet
+
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 if (isset($keywordsMap[$dataType])) {
                     $regex = implode('|', array_map('preg_quote', $keywordsMap[$dataType]));
@@ -131,7 +157,6 @@ class PermasalahanPageController extends Controller
                 }
             });
 
-            // Apply other filters
             if ($request->filled('bidang_fokus')) $query->whereIn('bidang_fokus', (array)$request->bidang_fokus);
             if ($request->filled('tema_prioritas')) $query->whereIn('tema_prioritas', (array)$request->tema_prioritas);
             if ($request->filled('provinsi')) $query->whereIn('provinsi', (array)$request->provinsi);
@@ -139,7 +164,6 @@ class PermasalahanPageController extends Controller
             if ($request->filled('kategori_pt')) $query->whereIn('kategori_pt', (array)$request->kategori_pt);
             if ($request->filled('klaster')) $query->whereIn('klaster', (array)$request->klaster);
 
-            // Apply Search and Queries
             $this->applyAdvancedQueries($query, $request, 'Penelitian');
 
             $mapQuery = clone $query;
@@ -150,32 +174,31 @@ class PermasalahanPageController extends Controller
                 ->orderByDesc('thn_pelaksanaan')->limit(50)->get();
         }
 
-        // 3. Stats calculation - dynamic based on bubbleType
-        if ($bubbleType === 'Hilirisasi') {
-            $globalStatsQuery = Hilirisasi::query();
-            $stats = [
-                'totalResearch'    => (clone $globalStatsQuery)->count(),
-                'totalUniversities'=> (clone $globalStatsQuery)->distinct('perguruan_tinggi')->count('perguruan_tinggi'),
-                'totalProvinces'   => (clone $globalStatsQuery)->distinct('provinsi')->count('provinsi'),
-                'totalFields'      => 0, // Hilirisasi tidak memiliki kolom bidang_fokus
-            ];
-        } elseif ($bubbleType === 'Pengabdian') {
-            $globalStatsQuery = Pengabdian::query();
-            $stats = [
-                'totalResearch'    => (clone $globalStatsQuery)->count(),
-                'totalUniversities'=> (clone $globalStatsQuery)->distinct('nama_institusi')->count('nama_institusi'),
-                'totalProvinces'   => (clone $globalStatsQuery)->distinct('prov_pt')->count('prov_pt'),
-                'totalFields'      => (clone $globalStatsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
-            ];
-        } else {
-            $globalStatsQuery = Penelitian::query();
-            $stats = [
-                'totalResearch'    => (clone $globalStatsQuery)->count(),
-                'totalUniversities'=> (clone $globalStatsQuery)->distinct('institusi')->count('institusi'),
-                'totalProvinces'   => (clone $globalStatsQuery)->distinct('provinsi')->count('provinsi'),
-                'totalFields'      => (clone $globalStatsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
-            ];
-        }
+        // 3. Stats calculation - dynamic NOT filtered by Permasalahan keywords
+        $stats = \Cache::remember("permasalahan_global_stats_{$requestHash}", 300, function() use ($statsQuery, $bubbleType) {
+            if ($bubbleType === 'Hilirisasi') {
+                return [
+                    'totalResearch'    => (clone $statsQuery)->count(),
+                    'totalUniversities'=> (clone $statsQuery)->distinct('perguruan_tinggi')->count('perguruan_tinggi'),
+                    'totalProvinces'   => (clone $statsQuery)->distinct('provinsi')->count('provinsi'),
+                    'totalFields'      => 0,
+                ];
+            } elseif ($bubbleType === 'Pengabdian') {
+                return [
+                    'totalResearch'    => (clone $statsQuery)->count(),
+                    'totalUniversities'=> (clone $statsQuery)->distinct('nama_institusi')->count('nama_institusi'),
+                    'totalProvinces'   => (clone $statsQuery)->distinct('prov_pt')->count('prov_pt'),
+                    'totalFields'      => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
+                ];
+            } else {
+                return [
+                    'totalResearch'    => (clone $statsQuery)->count(),
+                    'totalUniversities'=> (clone $statsQuery)->distinct('institusi')->count('institusi'),
+                    'totalProvinces'   => (clone $statsQuery)->distinct('provinsi')->count('provinsi'),
+                    'totalFields'      => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
+                ];
+            }
+        });
 
         // 4. Choropleth data (including Kabupaten)
         $displayNameMap = ['sampah' => 'Sampah', 'stunting' => 'Stunting', 'gizi_buruk' => 'Gizi Buruk', 'krisis_listrik' => 'Krisis Listrik', 'ketahanan_pangan' => 'Ketahanan Pangan'];
@@ -378,5 +401,4 @@ class PermasalahanPageController extends Controller
         ];
     }
 }
-
 
