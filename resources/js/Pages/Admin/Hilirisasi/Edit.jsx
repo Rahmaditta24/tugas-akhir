@@ -16,17 +16,17 @@ const toTitleCase = (str) => {
 export default function Edit({ item, filters }) {
     const { data, setData, put, processing, errors } = useForm({
         tahun: String(item.tahun || ''),
-        id_proposal: String(item.id_proposal || ''),
-        judul: item.judul || '',
-        nama_pengusul: toTitleCase(item.nama_pengusul),
-        direktorat: item.direktorat || '',
-        perguruan_tinggi: item.perguruan_tinggi || '',
+        id_proposal: item.id_proposal === 0 ? '0' : (item.id_proposal || ''),
+        judul: item.judul || 'tidak tersedia',
+        nama_pengusul: toTitleCase(item.nama_pengusul) || 'tidak tersedia',
+        direktorat: item.direktorat || 'tidak tersedia',
+        perguruan_tinggi: item.perguruan_tinggi || 'tidak tersedia',
         pt_latitude: item.pt_latitude ?? 0,
         pt_longitude: item.pt_longitude ?? 0,
-        provinsi: item.provinsi || '',
-        mitra: toTitleCase(item.mitra),
-        skema: item.skema || '',
-        luaran: item.luaran || '',
+        provinsi: item.provinsi || 'tidak tersedia',
+        mitra: toTitleCase(item.mitra) || 'tidak tersedia',
+        skema: item.skema || 'tidak tersedia',
+        luaran: item.luaran || 'tidak tersedia',
     });
 
     const handleSubmit = (e) => {
@@ -71,7 +71,7 @@ export default function Edit({ item, filters }) {
                                         type="text"
                                         inputMode="numeric"
                                         value={data.id_proposal}
-                                        onChange={e => setData('id_proposal', e.target.value.replace(/\D/g, ''))}
+                                        onChange={e => setData('id_proposal', e.target.value === '' ? '' : e.target.value.replace(/\D/g, ''))}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.id_proposal ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         required
                                     />

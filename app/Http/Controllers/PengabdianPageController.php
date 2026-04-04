@@ -181,7 +181,13 @@ class PengabdianPageController extends Controller
             || $request->filled('queries');
         
         $items = $isFiltered 
-            ? (clone $baseQuery)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'nama_skema as bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun')
+            ? (clone $baseQuery)->select(
+                    'id', 'judul', 'nama', 'nama_institusi as institusi', 
+                    'prov_pt as provinsi', 'nama_skema as bidang_fokus', 
+                    'thn_pelaksanaan_kegiatan as tahun', 'nama_pendamping', 
+                    'institusi_pendamping', 'bidang_teknologi_inovasi', 
+                    'jenis_wilayah_provinsi_mitra', 'prov_mitra'
+                )
                 ->latest('thn_pelaksanaan_kegiatan')
                 ->limit(50)
                 ->get()

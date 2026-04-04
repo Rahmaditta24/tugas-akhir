@@ -328,6 +328,12 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                             <span className="text-sm font-medium text-gray-600">Kota/Kab:</span>
                                             <span>{safeValue(data.kota || data.kabupaten)}</span>
                                         </div>
+                                        {data.kontak && data.kontak !== '-' && (
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline border-t border-dashed border-slate-200 pt-3">
+                                                <span className="text-sm font-medium text-gray-600">Kontak:</span>
+                                                <span className="font-bold text-blue-600">{data.kontak}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

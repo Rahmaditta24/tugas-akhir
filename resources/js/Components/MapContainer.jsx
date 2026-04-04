@@ -41,7 +41,26 @@ export default function MapContainer({
     const lastDataRef = useRef(null);
     const lastModeRef = useRef(null);
 
+    // FIX: Use refs to avoid stale closures in map event handlers
+    const onStatsChangeRef = useRef(onStatsChange);
+    const onCampusClickRef = useRef(onCampusClick);
+    const filtersRef = useRef(filters);
+
+    useEffect(() => { onStatsChangeRef.current = onStatsChange; }, [onStatsChange]);
+    useEffect(() => { onCampusClickRef.current = onCampusClick; }, [onCampusClick]);
+    useEffect(() => { filtersRef.current = filters; }, [filters]);
+
     const getCurrentDataType = React.useCallback(() => {
+        // Prioritize explicit filter if available
+        if (filters?.dataType) {
+            const dt = String(filters.dataType).toLowerCase();
+            if (dt.includes('hilirisasi')) return 'hilirisasi';
+            if (dt.includes('pengabdian') || dt.includes('kosabangsa') || dt.includes('multitahun')) return 'pengabdian';
+            if (dt.includes('produk')) return 'produk';
+            if (dt.includes('fasilitas')) return 'fasilitas-lab';
+            if (dt.includes('permasalahan')) return 'permasalahan';
+        }
+
         const path = window.location.pathname.toLowerCase();
         if (path.includes('hilirisasi')) return 'hilirisasi';
         if (path.includes('pengabdian')) return 'pengabdian';
@@ -49,7 +68,7 @@ export default function MapContainer({
         if (path.includes('fasilitas')) return 'fasilitas-lab';
         if (path.includes('permasalahan')) return 'permasalahan';
         return 'penelitian';
-    }, []);
+    }, [filters?.dataType]);
 
     const fetchDetail = React.useCallback(async (id, field) => {
         if (!id || id === 'undefined' || id === '-') return;
@@ -248,7 +267,7 @@ export default function MapContainer({
 
         map.on('click', (e) => {
             // If click is on map background (not on a marker/cluster), reset stats
-            if (onStatsChange) onStatsChange(null);
+            if (onStatsChangeRef.current) onStatsChangeRef.current(null);
         });
 
         const handleZoomClass = () => {
@@ -266,9 +285,9 @@ export default function MapContainer({
         map.on('zoomend', () => {
             handleZoomClass();
             const currentZoom = map.getZoom();
-            if (onStatsChange && clusterGroupRef.current) {
+            if (onStatsChangeRef.current && clusterGroupRef.current) {
                 if (currentZoom <= CONFIG.DEFAULT_ZOOM) {
-                    onStatsChange(null);
+                    onStatsChangeRef.current(null);
                     return;
                 }
 
@@ -280,9 +299,14 @@ export default function MapContainer({
                 });
 
                 if (markers.length > 0) {
-                    calculateStatsFromMarkers(markers);
+                    // Call by ref to avoid stale calculation logic
+                    if (latestStatsCalcRef.current) {
+                        latestStatsCalcRef.current(markers);
+                    } else {
+                        calculateStatsFromMarkers(markers);
+                    }
                 } else {
-                    onStatsChange(null);
+                    onStatsChangeRef.current(null);
                 }
             }
         });
@@ -468,6 +492,11 @@ export default function MapContainer({
         }, 50);
     };
 
+    const latestStatsCalcRef = useRef(null);
+    useEffect(() => {
+        latestStatsCalcRef.current = calculateStatsFromMarkers;
+    });
+
     useEffect(() => {
         const fullSource = (mapData && mapData.length) ? mapData : data;
         if (!mapInstanceRef.current) return;
@@ -478,6 +507,7 @@ export default function MapContainer({
             len: fullSource.length,
             mode: displayMode,
             bubbles: showBubbles,
+            dataType: filters?.dataType, // IMPORTANT: track dataType changes
             firstId: fullSource[0]?.id || fullSource[0]?._id
         });
 

@@ -292,7 +292,7 @@ export default function MapControls({
                                 onSearch(searchTerm);
                             }
                         }}
-                        placeholder={`Cari ${filters.bubbleType === 'Penelitian' ? 'penelitian, universitas, atau peneliti' : (filters.bubbleType === 'Pengabdian' ? 'pengabdian' : (filters.bubbleType === 'Hilirisasi' ? 'hilirisasi' : 'data'))}...`}
+                        placeholder={`Cari ${filters.bubbleType === 'Penelitian' ? 'penelitian, universitas, atau peneliti' : (filters.bubbleType === 'Pengabdian' ? 'pengabdian' : (filters.bubbleType === 'Hilirisasi' ? 'hilirisasi' : 'penelitian, universitas, atau peneliti'))}...`}
                         className="w-full pl-10 lg:w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                 </div>

@@ -110,6 +110,12 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             pengabdian_kabupaten: r.pengabdian_kabupaten || r.kabupaten_kota || r.kab_pt || '-',
             pengabdian_klaster: r.pengabdian_klaster || r.klaster || '-',
             pengabdian_status_pt: r.pengabdian_status_pt || r.ptn_pts || r.kategori_pt || '-',
+            // Kosabangsa Fields mapping
+            pengabdian_nama_pendamping: r.pengabdian_nama_pendamping || r.nama_pendamping || '-',
+            pengabdian_institusi_pendamping: r.pengabdian_institusi_pendamping || r.institusi_pendamping || '-',
+            pengabdian_bidang_teknologi: r.pengabdian_bidang_teknologi || r.bidang_teknologi_inovasi || '-',
+            pengabdian_jenis_wilayah: r.pengabdian_jenis_wilayah || r.jenis_wilayah_provinsi_mitra || '-',
+            pengabdian_provinsi_mitra: r.pengabdian_provinsi_mitra || r.prov_mitra || '-',
         });
 
         if (!research?.id) {

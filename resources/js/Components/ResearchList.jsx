@@ -145,7 +145,7 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
                                     onChange={(e) => updateRow(row.id, { term: e.target.value })}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearchTrigger()}
                                     placeholder={getPlaceholder(row.field)}
-                                    className="w-full px-4 pr-10 py-2.5 border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-600"
+                                    className="w-full px-4 pr-10 py-2.5 border border-slate-300 rounded-lg  shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoComplete="off"
                                 />
                                 {row.term && (

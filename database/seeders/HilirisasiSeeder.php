@@ -11,6 +11,15 @@ class HilirisasiSeeder extends Seeder
     public function run(): void
     {
         $jsonPath = base_path('../peta-bima/data/data-hilirisasi_clean.json');
+        $toTitleCase = function ($str) {
+            if (!$str || $str === 'tidak tersedia') return $str;
+            $res = mb_convert_case($str, MB_CASE_TITLE, "UTF-8");
+            // Fix PT and CV capitalization including with dots
+            $res = preg_replace('/\bPt\.?\b/i', 'PT', $res);
+            $res = preg_replace('/\bCv\.?\b/i', 'CV', $res);
+            return $res;
+        };
+
         $normalize = function ($value) {
             if ($value === null) return null;
             if (is_string($value)) {
@@ -126,16 +135,16 @@ class HilirisasiSeeder extends Seeder
 
                 $insertData[] = [
                     'tahun' => isset($item['Tahun']) && is_numeric($item['Tahun']) ? (int)$item['Tahun'] : null,
-                    'id_proposal' => isset($item['ID Proposal']) && is_numeric($item['ID Proposal']) ? (int)$item['ID Proposal'] : null,
-                    'judul' => $judul,
-                    'nama_pengusul' => $namaField ?: null,
-                    'direktorat' => $normalize($item['Direktorat'] ?? null),
-                    'perguruan_tinggi' => $perguruanTinggi,
+                    'id_proposal' => isset($item['ID Proposal']) && is_numeric($item['ID Proposal']) ? (int)$item['ID Proposal'] : 0,
+                    'judul' => $judul ? $toTitleCase($judul) : 'tidak tersedia',
+                    'nama_pengusul' => $namaField ?: 'tidak tersedia',
+                    'direktorat' => $normalize($item['Direktorat'] ?? null) ?: 'tidak tersedia',
+                    'perguruan_tinggi' => $perguruanTinggi ?: 'tidak tersedia',
                     'pt_latitude' => $lat,
                     'pt_longitude' => $lon,
-                    'provinsi' => $normalize($item['provinsi'] ?? null),
-                    'mitra' => $normalize($item['Mitra'] ?? null),
-                    'skema' => $normalize($item['Skema'] ?? null),
+                    'provinsi' => $item['provinsi'] ? $toTitleCase($normalize($item['provinsi'])) : 'tidak tersedia',
+                    'mitra' => $item['Mitra'] ? $toTitleCase($normalize($item['Mitra'])) : 'tidak tersedia',
+                    'skema' => $normalize($item['Skema'] ?? null) ?: 'tidak tersedia',
                     'luaran' => $normalizeArray($item['Luaran'] ?? null),
                     'created_at' => now(),
                     'updated_at' => now(),

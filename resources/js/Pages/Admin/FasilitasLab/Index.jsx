@@ -237,16 +237,15 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                             emptyText="Tidak ada data fasilitas laboratorium"
                             columns={[
                                 { key: 'no', title: 'No', className: 'w-16 text-center' },
-                                { key: 'nama_laboratorium', title: 'Nama Lab', className: 'min-w-[200px] max-w-[300px]', sortable: true, render: (v) => <div className="truncate" title={fmt(v)}>{display(v)}</div> },
-                                { key: 'institusi', title: 'Institusi', className: 'min-w-[180px] max-w-[250px]', sortable: true, render: (v) => <div className="truncate" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'nama_laboratorium', title: 'Nama Lab', className: 'min-w-[200px]', sortable: true, render: (v) => <div className="whitespace-normal leading-relaxed text-sm font-medium text-slate-700" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'institusi', title: 'Institusi', className: 'min-w-[180px] max-w-[250px]', sortable: true, render: (v) => <div className="whitespace-normal leading-relaxed text-sm font-medium text-slate-700" title={fmt(v)}>{display(v)}</div> },
                                 {
                                     key: 'nama_alat',
                                     title: 'Nama Alat',
-                                    className: 'min-w-[300px] max-w-[450px] py-4',
+                                    className: 'min-w-[300px] max-w-[350px] y-2',
                                     render: (v, row) => {
                                         const cleaned = fmt(v);
                                         if (!cleaned) return display(v);
-                                        // Update regex untuk mendukung pemisah pipe (|)
                                         const items = cleaned.split(/\r?\n|;\s*|\|\s*/).map(i => i.replace(/^\d+\.\s*/, '').trim()).filter(i => i !== '');
                                         if (items.length === 0) return display(v);
 
@@ -275,8 +274,8 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                         );
                                     }
                                 },
-                                { key: 'total_jumlah_alat', title: 'Total Jumlah Alat', className: 'w-32 text-center', sortable: true, filterable: false, render: (v) => <Badge color="blue">{display(v === 0 ? '0' : v)}</Badge> },
-                                { key: 'kontak', title: 'Kontak', className: 'min-w-[140px]', filterable: false, render: (v) => display(v) },
+                                { key: 'total_jumlah_alat', title: 'Total Jumlah Alat', className: 'w-30 text-center', sortable: true, filterable: false, render: (v) => <Badge color="blue">{display(v === 0 ? '0' : v)}</Badge> },
+                                /*{ key: 'kontak', title: 'Kontak', className: 'min-w-[140px]', filterable: false, render: (v) => display(v) },*/
                                 { key: 'aksi', title: 'Aksi', className: 'w-24' },
                             ]}
                             data={tableData}

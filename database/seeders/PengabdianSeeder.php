@@ -11,8 +11,19 @@ class PengabdianSeeder extends Seeder
     public function run(): void
     {
         $jsonPath = base_path('../peta-bima/data/data-pengabdian_clean.json');
+        $toTitleCase = function ($str) {
+            if (!$str || $str === 'tidak tersedia')
+                return $str;
+            $res = mb_convert_case($str, MB_CASE_TITLE, "UTF-8");
+            // Fix PT and CV capitalization including with dots
+            $res = preg_replace('/\bPt\.?\b/i', 'PT', $res);
+            $res = preg_replace('/\bCv\.?\b/i', 'CV', $res);
+            return $res;
+        };
+
         $normalize = function ($value) {
-            if ($value === null) return null;
+            if ($value === null)
+                return null;
             if (is_string($value)) {
                 $v = trim($value);
                 if ($v === '' || $v === '-' || $v === '—' || $v === '?' || strcasecmp($v, 'na') === 0 || strcasecmp($v, 'n/a') === 0) {
@@ -104,7 +115,7 @@ class PengabdianSeeder extends Seeder
                 }
 
                 $batchType = $normalize($item['batch_type'] ?? null) ?? '';
-                
+
                 // Mencegah duplikasi: Judul + Nama + Institusi
                 $uniqueKey = md5(strtolower($judul . '|' . $nama . '|' . $namaInstitusi));
                 if (isset($seen[$uniqueKey])) {
@@ -134,15 +145,15 @@ class PengabdianSeeder extends Seeder
                     'wilayah_lldikti' => $normalize($item['wilayah_lldikti'] ?? null),
                     'ptn_pts' => $normalize($item['ptn/pts'] ?? null),
                     'kab_pt' => $normalize($item['Kab PT'] ?? null),
-                    'prov_pt' => $normalize(($item['Prov PT'] ?? $item['provinsi_mitra'] ?? null)),
+                    'prov_pt' => isset($item['Prov PT']) || isset($item['provinsi_mitra']) ? $toTitleCase($normalize(($item['Prov PT'] ?? $item['provinsi_mitra'] ?? null))) : null,
                     'klaster' => $normalize($item['klaster'] ?? null),
-                    'judul' => $judul,
+                    'judul' => $toTitleCase($judul),
                     'nama_singkat_skema' => $normalize($item['nama_singkat_skema'] ?? null),
-                    'thn_pelaksanaan_kegiatan' => (($thn = ($item['thn_pelaksanaan_kegiatan'] ?? $item['thn_pelaksanaan'] ?? null)) && is_numeric($thn)) ? (int)$thn : null,
-                    'urutan_thn_kegitan' => isset($item['urutan_thn_kegitan']) && is_numeric($item['urutan_thn_kegitan']) ? (int)$item['urutan_thn_kegitan'] : null,
+                    'thn_pelaksanaan_kegiatan' => (($thn = ($item['thn_pelaksanaan_kegiatan'] ?? $item['thn_pelaksanaan'] ?? null)) && is_numeric($thn)) ? (int) $thn : null,
+                    'urutan_thn_kegitan' => isset($item['urutan_thn_kegitan']) && is_numeric($item['urutan_thn_kegitan']) ? (int) $item['urutan_thn_kegitan'] : null,
                     'nama_skema' => $normalize($item['nama_skema'] ?? null),
                     'bidang_fokus' => $normalize($item['bidang_fokus'] ?? null),
-                    'prov_mitra' => $normalize(($item['prov_mitra'] ?? $item['provinsi_mitra'] ?? null)),
+                    'prov_mitra' => isset($item['prov_mitra']) || isset($item['provinsi_mitra']) ? $toTitleCase($normalize(($item['prov_mitra'] ?? $item['provinsi_mitra'] ?? null))) : null,
                     'kab_mitra' => $normalize(($item['kab_mitra'] ?? $item['lokus'] ?? null)),
                     'nama_pendamping' => $normalize($item['nama_pendamping'] ?? null),
                     'nidn_pendamping' => $normalize($item['nidn_pendamping'] ?? null),
