@@ -265,38 +265,38 @@ export default function MapControls({
         <>
             {/* Search Box - Positioned over map */}
             {!hideSearch && (
-            <div className="absolute z-20 top-5 left-1/2 -translate-x-1/2 lg:w-1/2 w-full">
-                <div className="relative w-full px-3">
-                    <svg
-                        className="absolute left-6 top-2 text-slate-400"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            fill="none"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="1.5"
-                            d="M19 11.5a7.5 7.5 0 1 1-15 0a7.5 7.5 0 0 1 15 0m-2.107 5.42l3.08 3.08"
+                <div className="absolute z-20 top-5 left-[52%] sm:left-1/2 -translate-x-1/2 lg:w-1/2 w-[75%]">
+                    <div className="relative w-full px-3">
+                        <svg
+                            className="absolute left-6 top-2 text-slate-400"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                fill="none"
+                                stroke="currentColor"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="1.5"
+                                d="M19 11.5a7.5 7.5 0 1 1-15 0a7.5 7.5 0 0 1 15 0m-2.107 5.42l3.08 3.08"
+                            />
+                        </svg>
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    onSearch(searchTerm);
+                                }
+                            }}
+                            placeholder={`Cari ${filters.bubbleType === 'Penelitian' ? 'penelitian, universitas, atau peneliti' : (filters.bubbleType === 'Pengabdian' ? 'pengabdian' : (filters.bubbleType === 'Hilirisasi' ? 'hilirisasi' : 'penelitian, universitas, atau peneliti'))}...`}
+                            className="w-full pl-10 lg:w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
-                    </svg>
-                    <input
-                        type="text"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                onSearch(searchTerm);
-                            }
-                        }}
-                        placeholder={`Cari ${filters.bubbleType === 'Penelitian' ? 'penelitian, universitas, atau peneliti' : (filters.bubbleType === 'Pengabdian' ? 'pengabdian' : (filters.bubbleType === 'Hilirisasi' ? 'hilirisasi' : 'penelitian, universitas, atau peneliti'))}...`}
-                        className="w-full pl-10 lg:w-full px-4 py-2 border border-slate-300 rounded-lg shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
+                    </div>
                 </div>
-            </div>
             )}
 
             {/* Advanced Search Panel */}
@@ -323,22 +323,20 @@ export default function MapControls({
                                                 <button
                                                     type="button"
                                                     onClick={() => onMetrikChange('saidi')}
-                                                    className={`flex-1 py-1 px-3 h-[38px] rounded-lg text-xs font-bold transition-all border ${
-                                                        selectedMetrik === 'saidi'
+                                                    className={`flex-1 py-1 px-3 h-[38px] rounded-lg text-xs font-bold transition-all border ${selectedMetrik === 'saidi'
                                                             ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                                                             : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     SAIDI
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => onMetrikChange('saifi')}
-                                                    className={`flex-1 py-1 px-3 h-[38px] rounded-lg text-xs font-bold transition-all border ${
-                                                        selectedMetrik === 'saifi'
+                                                    className={`flex-1 py-1 px-3 h-[38px] rounded-lg text-xs font-bold transition-all border ${selectedMetrik === 'saifi'
                                                             ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                                                             : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
-                                                    }`}
+                                                        }`}
                                                 >
                                                     SAIFI
                                                 </button>
@@ -387,159 +385,110 @@ export default function MapControls({
             )}
 
             {/* Control Buttons - Positioned at bottom of map */}
-            <div className="absolute z-20 bottom-5 left-1/2 -translate-x-1/2 lg:w-auto w-full px-3 lg:px-0 whitespace-nowrap overflow-x-auto max-w-full">
-                <div className="flex items-center justify-center gap-2 lg:gap-3 px-2">
-                    {/* Peneliti & Institusi Buttons - Hidden for Permasalahan */}
-                    {!hideDisplayMode && (
-                        <>
-                            {/* Peneliti Button */}
-                            <button
-                                onClick={() => onDisplayModeChange('peneliti')}
-                                className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${displayMode === 'peneliti'
-                                    ? 'bg-[#FFD700] text-black'
-                                    : 'bg-[#3E7DCA] text-white hover:brightness-110'
-                                    }`}
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M18.5 19l-4.7-7.5V5h1v-2h-5.6v2h1v6.5L5.5 19c-.6.9-.1 2.1 1 2.1h11c1.1 0 1.6-1.2 1-2.1zM9.8 8.6V5h4.4v3.6c0 .1 0 .1-.1.2l-1.2 1.9h-1.8l-1.2-1.9c-.1-.1-.1-.1-.1-.2z" />
-                                </svg>
-                                Peneliti
-                            </button>
+            <div className="absolute z-20 bottom-5 left-1/2 -translate-x-1/2 w-[95%] lg:w-auto px-1">
+                <div className="flex flex-col md:flex-row items-center justify-center gap-2 lg:gap-3">
+                    
+                    {/* TOP ROW (Mobile) / Left Group (Desktop) - MODES & TOGGLES */}
+                    <div className="flex items-center justify-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
+                        {!hideDisplayMode && (
+                            <>
+                                <button
+                                    onClick={() => onDisplayModeChange('peneliti')}
+                                    className={`flex items-center justify-center gap-2 text-xs md:text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm flex-shrink-0 ${displayMode === 'peneliti'
+                                        ? 'bg-[#FFD700] text-black'
+                                        : 'bg-[#3E7DCA] text-white hover:brightness-110'
+                                        }`}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M18.5 19l-4.7-7.5V5h1v-2h-5.6v2h1v6.5L5.5 19c-.6.9-.1 2.1 1 2.1h11c1.1 0 1.6-1.2 1-2.1zM9.8 8.6V5h4.4v3.6c0 .1 0 .1-.1.2l-1.2 1.9h-1.8l-1.2-1.9c-.1-.1-.1-.1-.1-.2z" />
+                                    </svg>
+                                    Peneliti
+                                </button>
+                                <button
+                                    onClick={() => onDisplayModeChange('institusi')}
+                                    className={`flex items-center justify-center gap-2 text-xs md:text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm flex-shrink-0 ${displayMode === 'institusi'
+                                        ? 'bg-[#FFD700] text-black'
+                                        : 'bg-[#3E7DCA] text-white hover:brightness-110'
+                                        }`}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                                        <path fill="currentColor" d="M12 3L1 9l11 6l9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
+                                    </svg>
+                                    Institusi
+                                </button>
+                            </>
+                        )}
 
-                            {/* Institusi Button */}
-                            <button
-                                onClick={() => onDisplayModeChange('institusi')}
-                                className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${displayMode === 'institusi'
-                                    ? 'bg-[#FFD700] text-black'
-                                    : 'bg-[#3E7DCA] text-white hover:brightness-110'
-                                    }`}
-                                title="Tampilkan Data Institusi"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M12 3L1 9l11 6l9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
-                                </svg>
-                                Institusi
-                            </button>
-                        </>
-                    )}
+                        {showPermasalahanControls && (
+                            <>
+                                <button
+                                    onClick={onToggleBubbles}
+                                    className={`flex items-center justify-center gap-2 text-xs md:text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm flex-shrink-0 ${!showBubbles ? 'bg-purple-600' : 'bg-purple-500'} text-white`}
+                                >
+                                    {showBubbles ? 'Hide Bubbles' : 'Show Bubbles'}
+                                </button>
+                                <button
+                                    onClick={() => onViewModeChange('provinsi')}
+                                    className={`flex items-center justify-center gap-2 text-xs md:text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm flex-shrink-0 ${viewMode === 'provinsi' ? 'bg-[#FFD700] text-black' : 'bg-[#3E7DCA] text-white'}`}
+                                >
+                                    Provinsi
+                                </button>
+                                <button
+                                    onClick={() => onViewModeChange('kabupaten')}
+                                    className={`flex items-center justify-center gap-2 text-xs md:text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm flex-shrink-0 ${viewMode === 'kabupaten' ? 'bg-[#FFD700] text-black' : 'bg-[#3E7DCA] text-white'}`}
+                                >
+                                    Kabupaten
+                                </button>
+                            </>
+                        )}
+                    </div>
 
-                    {/* Advanced Search Button */}
-                    <button
-                        onClick={() => setIsAdvancedSearchOpen(!isAdvancedSearchOpen)}
-                        className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${isAdvancedSearchOpen ? 'bg-gray-100 text-gray-900' : 'bg-white text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04c-.83 0-1.3.95-.79 1.61z" />
-                        </svg>
-                        Advanced Search
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            className={`transition-transform duration-200 ${isAdvancedSearchOpen ? 'rotate-180' : ''}`}
-                        >
-                            <path fill="currentColor" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6l-6-6l1.41-1.41z" />
-                        </svg>
-                    </button>
-
-                    {/* Permasalahan-specific controls */}
-                    {showPermasalahanControls && (
-                        <>
-                            {/* Hide Bubbles Button */}
-                             <button
-                                onClick={onToggleBubbles}
-                                className={`flex items-center justify-center gap-2 text-sm px-5 py-2 rounded-full font-bold transition-all shadow-sm ${!showBubbles
-                                    ? 'bg-purple-600 text-white'
-                                    : 'bg-purple-500 text-white hover:bg-purple-600'
-                                    }`}
-                            >
-                                {showBubbles ? 'Hide Bubbles' : 'Show Bubbles'}
-                            </button>
-
-                            {/* Mode Provinsi Button */}
-                            <button
-                                onClick={() => onViewModeChange('provinsi')}
-                                className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${viewMode === 'provinsi'
-                                    ? 'bg-[#FFD700] text-black'
-                                    : 'bg-[#3E7DCA] text-white opacity-90 hover:opacity-100'
-                                    }`}
-                            >
-                                Mode Provinsi
-                            </button>
-
-                            {/* Mode Kabupaten Button */}
-                            <button
-                                onClick={() => onViewModeChange('kabupaten')}
-                                className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${viewMode === 'kabupaten'
-                                    ? 'bg-[#FFD700] text-black'
-                                    : 'bg-[#3E7DCA] text-white opacity-90 hover:opacity-100'
-                                    }`}
-                            >
-                                Mode Kabupaten
-                            </button>
-                        </>
-                    )}
-
-                    {/* Reset Button */}
-                    <button
-                        onClick={onReset}
-                        className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-gray-600 hover:bg-gray-100 shadow-sm transition-all"
-                        title="Reset Filter"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
-                        </svg>
-                    </button>
-
-                    {/* Download Excel Button 1 */}
-                    {!hideDownload && (
+                    {/* BOTTOM ROW (Mobile) / Right Group (Desktop) - ACTIONS */}
+                    <div className="flex items-center justify-center gap-2 w-full md:w-auto">
                         <button
-                            onClick={onDownload}
-                            disabled={isLoading}
-                            className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${isLoading ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-[#16a34a] text-white hover:bg-[#15803d]'
-                                }`}
+                            onClick={() => setIsAdvancedSearchOpen(!isAdvancedSearchOpen)}
+                            className={`flex items-center justify-center gap-2 text-xs md:text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${isAdvancedSearchOpen ? 'bg-gray-100' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                         >
-                            {isLoading ? (
-                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                            ) : (
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                            )}
-                            {isLoading ? 'Processing...' : downloadLabel}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04c-.83 0-1.3.95-.79 1.61z" />
+                            </svg>
+                            <span className="hidden sm:inline">Advanced Search</span>
+                            <span className="sm:hidden">Advanced</span>
                         </button>
-                    )}
 
-                    {/* Download Excel Button 2 */}
-                    {!hideDownload && onDownloadSecondary && (
                         <button
-                            onClick={onDownloadSecondary}
-                            disabled={isLoading}
-                            className={`flex items-center justify-center gap-2 text-sm px-4 py-2 rounded-full font-bold transition-all shadow-sm ${isLoading ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                }`}
+                            onClick={onReset}
+                            className="flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full bg-white text-gray-600 shadow-sm transition-all hover:bg-gray-50"
+                            title="Reset Filter"
                         >
-                            {isLoading ? (
-                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                            ) : (
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                                    </path>
-                                </svg>
-                            )}
-                            {isLoading ? 'Processing...' : downloadSecondaryLabel}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+                                <path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-8 3.58-8 8s3.58 8 8 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                            </svg>
                         </button>
-                    )}
+
+                        {!hideDownload && (
+                            <button
+                                onClick={onDownload}
+                                disabled={isLoading}
+                                className={`flex items-center justify-center gap-2 text-xs md:text-sm px-4 py-2 rounded-full font-bold text-white transition-all shadow-sm ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#16a34a] hover:bg-[#15803d]'}`}
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>Excel</span>
+                            </button>
+                        )}
+                        
+                        {!hideDownload && onDownloadSecondary && (
+                            <button
+                                onClick={onDownloadSecondary}
+                                disabled={isLoading}
+                                className={`flex items-center justify-center gap-2 text-xs md:text-sm px-4 py-2 rounded-full font-bold text-white transition-all shadow-sm ${isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                            >
+                                <span>Excel 2</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
         </>

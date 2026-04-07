@@ -29,10 +29,7 @@ export default function RumusanMasalahIndex({ categories }) {
         >
             <Head title="Rumusan Masalah" />
 
-
             <NavigationTabs activePage="rumusan-masalah" />
-
-
 
             {/* Tombol Floating Mobile - Muncul di kanan tengah */}
             <button
@@ -53,42 +50,52 @@ export default function RumusanMasalahIndex({ categories }) {
             )}
 
             {/* Mobile Drawer Content */}
-            <div className={`fixed top-0 right-0 h-full w-[280px] bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden shadow-2xl ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                <div className="p-4 flex flex-col h-full overflow-y-auto">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="font-bold text-gray-800">Pilih Bidang</h2>
-                        <button onClick={() => setSidebarOpen(false)} className="p-2 text-gray-500 hover:text-gray-900">
+            <div className={`fixed top-0 right-0 h-full w-[300px] bg-white z-[60] transform transition-transform duration-300 ease-in-out lg:hidden shadow-[-4px_0_20px_rgba(0,0,0,0.1)] ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div className="p-0 flex flex-col h-full">
+                    {/* Header with Title and Close Button */}
+                    <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                        <h2 className="font-bold text-gray-800 text-lg">Pilih Bidang</h2>
+                        <button 
+                            onClick={() => setSidebarOpen(false)} 
+                            className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-all"
+                            aria-label="Tutup menu"
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
 
-                    <Link
-                        href="/rumusan-masalah/panduan"
-                        className="p-3 bg-[#4285f4] text-white font-bold text-center rounded-lg mb-6 shadow-md hover:bg-blue-600 transition-colors"
-                    >
-                        Lihat Panduan
-                    </Link>
+                    <div className="p-5 overflow-y-auto flex-1 custom-scrollbar">
+                        <Link
+                            href="/rumusan-masalah/panduan"
+                            className="w-full p-4 bg-[#4285f4] text-white font-bold text-left px-5 rounded-xl mb-6 shadow-md hover:bg-blue-600 transition-all flex items-center justify-between group"
+                        >
+                            <span>Lihat Panduan</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 group-hover:translate-x-1 transition-transform">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </Link>
 
-                    <div className="space-y-1">
-                        {categories && categories.map((category) => (
-                            <button
-                                key={category.id}
-                                onClick={() => {
-                                    handleCategoryClick(category);
-                                    setSidebarOpen(false);
-                                }}
-                                className={`w-full flex items-center gap-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 rounded-lg px-2 transition-all ${selectedCategory?.id === category.id ? 'bg-blue-50 font-bold' : ''}`}
-                            >
-                                <img
-                                    src={category.image.startsWith('http') || category.image.startsWith('/') ? category.image : `/storage/${category.image}`}
-                                    alt={category.name}
-                                    className="w-8 h-8 object-contain"
-                                />
-                                <span className="text-[14px] text-gray-700 font-medium">{category.name}</span>
-                            </button>
-                        ))}
+                        <div className="space-y-1">
+                            {categories && categories.map((category) => (
+                                <button
+                                    key={category.id}
+                                    onClick={() => {
+                                        handleCategoryClick(category);
+                                        setSidebarOpen(false);
+                                    }}
+                                    className={`w-full flex items-center justify-start text-left gap-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 rounded-lg px-2 transition-all ${selectedCategory?.id === category.id ? 'bg-blue-50 font-bold' : ''}`}
+                                >
+                                    <img
+                                        src={category.image.startsWith('http') || category.image.startsWith('/') ? category.image : `/storage/${category.image}`}
+                                        alt={category.name}
+                                        className="w-8 h-8 object-contain shrink-0"
+                                    />
+                                    <span className="text-[14px] text-gray-700 font-medium text-left leading-tight">{category.name}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -101,7 +108,7 @@ export default function RumusanMasalahIndex({ categories }) {
                         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden sticky top-24">
                             <Link
                                 href="/rumusan-masalah/panduan"
-                                className="p-3 bg-[#3374cd] text-white font-bold text-center text-lg block hover:bg-blue-700 transition-colors"
+                                className="p-3 bg-[#3374cd] text-white font-bold text-left px-5 text-lg block hover:bg-blue-700 transition-colors"
                             >
                                 Lihat Panduan
                             </Link>
@@ -116,7 +123,6 @@ export default function RumusanMasalahIndex({ categories }) {
                                             }`}
                                     >
                                         <div className="w-7 h-7 flex-shrink-0 flex items-center justify-center">
-                                            {/* Fix image rendering: use direct storage path if simple filename, or full path logic */}
                                             {category.image ? (
                                                 <img
                                                     src={category.image.startsWith('http') || category.image.startsWith('/') ? category.image : `/storage/${category.image}`}
@@ -148,7 +154,7 @@ export default function RumusanMasalahIndex({ categories }) {
                                         selectedCategory.statements.map((statement, index) => (
                                             <div key={statement.id} className="relative pl-0">
                                                 {/* Header Bar */}
-                                                <div className="flex items-center gap-3 mb-2">
+                                                <div className="flex items-center gap-3 mb-3">
                                                     <div className="flex-shrink-0 w-9 h-9 bg-[#3E7DCA] text-white rounded-md flex items-center justify-center font-bold text-sm shadow-sm">
                                                         {statement.full_number}
                                                     </div>
@@ -160,9 +166,11 @@ export default function RumusanMasalahIndex({ categories }) {
                                                 </div>
 
                                                 {/* Description Box */}
-                                                <div className="ml-12 bg-gray-50/80 rounded-lg p-5 border border-gray-100 text-gray-600 leading-relaxed text-[14px] text-justify shadow-sm">
-                                                    {statement.description}
-                                                </div>
+                                                {statement.description && statement.description !== '-' && (
+                                                    <div className="lg:ml-12 bg-gray-50/80 rounded-lg p-5 border border-gray-100 text-gray-600 leading-relaxed text-[14px] text-justify shadow-sm">
+                                                        {statement.description}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))
                                     ) : (

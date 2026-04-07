@@ -76,16 +76,16 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                     </svg>
                 </button>
 
-                <div className="p-8">
+                <div className="p-5 md:p-8">
                     {/* Title */}
-                    <div className="mb-6">
-                        <h2 className="text-xl font-bold text-gray-900 leading-snug">
+                    <div className="mb-4 md:mb-6">
+                        <h2 className="text-lg md:text-xl font-bold text-gray-900 leading-snug pr-8">
                             {isInstitusi ? (data.institusi || data.nama_institusi) : safeValue(data.nama_laboratorium || data.judul || data.judul_kegiatan)}
                         </h2>
                     </div>
 
                     {/* Content Box */}
-                    <div className="bg-[#F8FAFC] rounded-2xl p-6 space-y-8 overflow-y-auto max-h-[60vh] custom-scrollbar">
+                    <div className="bg-[#F8FAFC] rounded-2xl p-4 md:p-6 space-y-5 md:space-y-8 overflow-y-auto max-h-[65vh] md:max-h-[60vh] custom-scrollbar">
                         {isProduk ? (
                             <>
                                 <div>
@@ -568,9 +568,9 @@ export default function ResearchModal({ isOpen, onClose, data }) {
 
                     {/* Bottom Pill (Only for Researcher Mode) */}
                     {!isInstitusi && currentFocus !== '-' && !isHilirisasiPage && (
-                        <div className="mt-6 flex">
+                        <div className="mt-4 md:mt-6 flex">
                             <span
-                                className="px-5 py-1.5 rounded-full text-white text-xs font-bold shadow-sm"
+                                className="px-4 md:px-5 py-1 md:py-1.5 rounded-full text-white text-[10px] md:text-xs font-bold shadow-sm"
                                 style={{ backgroundColor: getFieldColor(currentFocus) }}
                             >
                                 {currentFocus}

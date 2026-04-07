@@ -1051,7 +1051,7 @@ export default function MapContainer({
                 .leaflet-marker-icon.custom-marker-individu { background: transparent !important; border: none !important; }
                 .leaflet-cluster-spider-leg { display: none !important; }
             `}</style>
-            <section className="relative bg-white flex justify-center mb-2">
+            <section className="relative bg-white flex justify-center mb-4 mt-4">
                 <div id="map" ref={mapRef} className="lg:w-[90%] w-full h-[65vh] border relative z-0 rounded-lg shadow-inner overflow-hidden" />
             </section>
             <ResearchModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} data={selectedResearch} />
