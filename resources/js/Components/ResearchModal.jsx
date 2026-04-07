@@ -1,5 +1,5 @@
 import React from 'react';
-import { getFieldColor } from '../utils/fieldColors';
+import { getFieldColor } from '../Utils/fieldColors';
 
 export default function ResearchModal({ isOpen, onClose, data }) {
     if (!isOpen || !data) return null;

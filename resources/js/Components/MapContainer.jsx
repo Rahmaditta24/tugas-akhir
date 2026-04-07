@@ -5,7 +5,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import ResearchModal from './ResearchModal';
-import { FIELD_COLORS, getFieldColor } from '../utils/fieldColors';
+import { FIELD_COLORS, getFieldColor } from '../Utils/fieldColors';
 
 const CONFIG = {
     DEFAULT_CENTER: [-2.5, 118],
