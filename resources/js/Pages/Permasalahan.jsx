@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import MainLayout from '../Layouts/MainLayout';
 import NavigationTabs from '../Components/NavigationTabs';
 import PermasalahanMap from '../Components/PermasalahanMap';
@@ -25,6 +26,14 @@ export default function Permasalahan({
     const [maxPct, setMaxPct] = useState(100);
     const [legendData, setLegendData] = useState({ min: 0, max: 1, satuan: '', activeDataType: filters.dataType });
     const [selectedMetrik, setSelectedMetrik] = useState('saidi');
+    const [provinces, setProvinces] = useState([]);
+
+    // Fetch provinces from API (Emsifa via backend, cached)
+    useEffect(() => {
+        axios.get('/api/provinces')
+            .then(res => setProvinces(res.data.map(p => p.name)))
+            .catch(() => {});
+    }, []);
 
     const filterOptions = {
         dataType: jenisPermasalahan.length ? jenisPermasalahan : ['Sampah', 'Air', 'Udara', 'Tanah'],
@@ -33,7 +42,7 @@ export default function Permasalahan({
         temaPrioritas: ['Tema A', 'Tema B'],
         kategoriPT: ['PTNBH', 'BLU', 'Satker'],
         klaster: ['Mandiri', 'Utama', 'Madya', 'Binaan'],
-        provinsi: ['Jawa Barat', 'Jawa Timur', 'DKI Jakarta'],
+        provinsi: provinces,
         tahun: ['2020', '2021', '2022', '2023', '2024'],
     };
 

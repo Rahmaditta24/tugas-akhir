@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use App\Models\Penelitian;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class PenelitianController extends Controller
 {
@@ -229,15 +230,16 @@ class PenelitianController extends Controller
                     ->filter()
                     ->values();
             }),
-            'provinsi' => Cache::remember('filter_provinsi', 7200, function() {
-                return DB::table('penelitian')
-                    ->select('provinsi')
-                    ->whereNotNull('provinsi')
-                    ->distinct()
-                    ->orderBy('provinsi')
-                    ->pluck('provinsi')
-                    ->filter()
-                    ->values();
+            'provinsi' => Cache::remember('global_provinces_list', 86400, function() {
+                $response = Http::get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
+                if ($response->successful()) {
+                    return collect($response->json())
+                        ->map(fn($p) => str()->title($p['name']))
+                        ->sort()
+                        ->values()
+                        ->all();
+                }
+                return [];
             }),
             'tahun' => Cache::remember('filter_tahun', 7200, function() {
                 return DB::table('penelitian')

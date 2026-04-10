@@ -26,11 +26,11 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
         setSearchTerm(initialFilters.search || '');
     }, [initialFilters]);
 
-    // Mock options for Produk
+    // Filter options from server (provinces come from backend via DB/API)
     const filterOptions = {
         bidang: serverFilterOptions.bidang || ['Pangan', 'Energi', 'Kesehatan', 'Transportasi', 'Teknologi Informasi'],
         tkt: serverFilterOptions.tkt || ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
-        provinsi: serverFilterOptions.provinsi || ['Jawa Barat', 'Jawa Timur', 'DKI Jakarta'],
+        provinsi: serverFilterOptions.provinsi || [],
         tahun: ['2020', '2021', '2022', '2023', '2024'], // Keep year hardcoded as it's not in DB
     };
 

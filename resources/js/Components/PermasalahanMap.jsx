@@ -133,6 +133,17 @@ function PermasalahanMap({
     const [modalData, setModalData] = useState(null);
     // Store computed colour-scale params so the slider effect can access them without re-running the heavy effect
     const choroplethMetaRef = useRef({ provMap: {}, dataMin: 0, dataMax: 1, satuan: '' });
+    
+    // Lazy-loading state
+    const [allMarkers, setAllMarkers] = useState(mapData); // All loaded markers
+    const loadedUpToRef = useRef(5000); // Track how many markers we've loaded from server
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    // Update allMarkers when initial mapData changes
+    useEffect(() => {
+        setAllMarkers(mapData);
+        loadedUpToRef.current = mapData.length; // Reset counter with initial data size
+    }, [mapData]);
 
     // Fetch GeoJSON once on mount using local file
     useEffect(() => {
@@ -195,6 +206,60 @@ function PermasalahanMap({
             }
         };
     }, []);
+
+    // ── Effect 0.5: Set up lazy-loading on map events ──────────────────────
+    useEffect(() => {
+        if (!mapInstanceRef.current) return;
+
+        const map = mapInstanceRef.current;
+
+        // Function to load more markers
+        const loadMoreMarkers = async () => {
+            if (isLoadingMore || !showBubbles) return;
+            
+            setIsLoadingMore(true);
+            try {
+                const response = await fetch(`/api/permasalahan/lazy-load-markers?offset=${loadedUpToRef.current}&limit=5000`);
+                const { markers, hasMore } = await response.json();
+                
+                if (markers && markers.length > 0) {
+                    setAllMarkers(prev => [...prev, ...markers]);
+                    loadedUpToRef.current += markers.length;
+                }
+            } catch (error) {
+                console.error('Error lazy-loading markers:', error);
+            } finally {
+                setIsLoadingMore(false);
+            }
+        };
+
+        // Trigger lazy-load on zoom out (zoom level < 8) or pan to edge
+        let lastLoadZoom = map.getZoom();
+        
+        const onMapMove = () => {
+            const currentZoom = map.getZoom();
+            // Load more markers if user zooms out significantly or pans and we're zoomed out
+            if (currentZoom < 8 && Math.abs(currentZoom - lastLoadZoom) > 1) {
+                loadMoreMarkers();
+                lastLoadZoom = currentZoom;
+            }
+        };
+
+        const onMapIdle = () => {
+            // Load more on idle if we haven't loaded everything
+            if (loadedUpToRef.current < 66669) { // Assuming ~66k total records
+                loadMoreMarkers();
+            }
+        };
+
+        map.on('zoom', onMapMove);
+        map.on('moveend', onMapIdle);
+
+        return () => {
+            map.off('zoom', onMapMove);
+            map.off('moveend', onMapIdle);
+        };
+    }, [showBubbles, isLoadingMore]);
 
     // ── Effect 1: Rebuild choropleth layer when DATA changes ─────────────────
     useEffect(() => {
@@ -299,17 +364,17 @@ function PermasalahanMap({
             clusterGroupRef.current = null;
         }
 
-        if (!showBubbles || !mapData.length) {
-            console.log(`[Bubble] Skipping: showBubbles=${showBubbles}, mapData.length=${mapData.length}`);
+        if (!showBubbles || !allMarkers.length) {
+            console.log(`[Bubble] Skipping: showBubbles=${showBubbles}, allMarkers.length=${allMarkers.length}`);
             return;
         }
 
-        console.log(`[Bubble] mapData sample:`, mapData.slice(0, 2));
+        console.log(`[Bubble] allMarkers count: ${allMarkers.length}, loaded up to ${loadedUpToRef.current}`);
 
         // Don't filter - show all available bubble data (no kota field check)
-        const filteredData = mapData;
+        const filteredData = allMarkers;
 
-        console.log(`[Bubble] viewMode=${viewMode}, total mapData=${mapData.length}, filtered=${filteredData.length}`);
+        console.log(`[Bubble] viewMode=${viewMode}, total markers=${allMarkers.length}, filtered=${filteredData.length}`);
 
         // Create clustering layer with optimized settings for 50k+ markers
         const clusterGroup = L.markerClusterGroup({
@@ -434,7 +499,7 @@ function PermasalahanMap({
             timeoutIds.forEach(id => clearTimeout(id)); // Clear all pending timeouts
             timeoutIds = [];
         };
-    }, [mapData, showBubbles]);
+    }, [allMarkers, showBubbles]);
 
     return (
         <section className="relative bg-white flex justify-center mb-2">

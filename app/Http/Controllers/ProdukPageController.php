@@ -6,6 +6,7 @@ use App\Models\Produk;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
 class ProdukPageController extends Controller
@@ -156,15 +157,16 @@ class ProdukPageController extends Controller
                     ->filter()
                     ->values();
             }),
-            'provinsi' => Cache::remember('filter_produk_provinsi', 7200, function() {
-                return DB::table('produk')
-                    ->select('provinsi')
-                    ->whereNotNull('provinsi')
-                    ->distinct()
-                    ->orderBy('provinsi')
-                    ->pluck('provinsi')
-                    ->filter()
-                    ->values();
+            'provinsi' => Cache::remember('global_provinces_list', 86400, function() {
+                $response = Http::get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
+                if ($response->successful()) {
+                    return collect($response->json())
+                        ->map(fn($p) => str()->title($p['name']))
+                        ->sort()
+                        ->values()
+                        ->all();
+                }
+                return [];
             }),
         ];
 

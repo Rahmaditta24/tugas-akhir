@@ -29,6 +29,7 @@ Route::get('/hilirisasi', [HilirisasiPageController::class, 'index'])->name('hil
 Route::get('/produk', [ProdukPageController::class, 'index'])->name('produk.index');
 Route::get('/fasilitas-lab', [FasilitasLabPageController::class, 'index'])->name('fasilitas.index');
 Route::get('/permasalahan', [PermasalahanPageController::class, 'index'])->name('permasalahan.index');
+Route::get('/api/permasalahan/lazy-load-markers', [PermasalahanPageController::class, 'lazyLoadMarkers'])->name('permasalahan.lazy-load');
 Route::get('/rumusan-masalah', [RumusanMasalahPageController::class, 'index'])->name('rumusan-masalah.index');
 Route::get('/rumusan-masalah/panduan', [RumusanMasalahPageController::class, 'panduan'])->name('rumusan-masalah.panduan');
 

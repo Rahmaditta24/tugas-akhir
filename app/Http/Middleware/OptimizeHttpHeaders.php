@@ -24,9 +24,6 @@ class OptimizeHttpHeaders
             $response->header('Cache-Control', 'public, max-age=86400'); // 24 hours
         }
 
-        // Enable gzip compression
-        $response->header('Content-Encoding', 'gzip');
-
         // Security and performance headers
         $response->header('X-Content-Type-Options', 'nosniff');
         $response->header('X-Frame-Options', 'SAMEORIGIN');

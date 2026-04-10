@@ -12,14 +12,10 @@ class PermasalahanPageController extends Controller
 {
     public function index()
     {
-        // Get penelitian with coordinates as bubble markers - load all on initial load
-        $limit = request()->input('limit', 100000); // Load all (max 100k to prevent memory issues)
-        $offset = request()->input('offset', 0);
-        
+        // Get penelitian with coordinates as bubble markers - lazy load on initial
+        // Initial load: only first 5000 minimal records to speed up page load
         $mapDataQuery = Penelitian::selectRaw(
-                'id, judul, nama, institusi, provinsi, skema, ' .
-                'thn_pelaksanaan as tahun, kategori_pt, klaster, ' .
-                'pt_latitude, pt_longitude, kota, bidang_fokus, tema_prioritas, nidn, nuptk'
+                'id, judul, pt_latitude, pt_longitude'
             )
             ->whereNotNull('judul')
             ->whereNotNull('pt_latitude')
@@ -28,12 +24,10 @@ class PermasalahanPageController extends Controller
         
         $totalCount = $mapDataQuery->count();
         
-        // Load all data on initial load - frontend handles chunking display
+        // Load only first 5000 on initial page load for fast rendering
         $mapData = $mapDataQuery
-            ->offset($offset)
-            ->limit($limit)
+            ->limit(5000)
             ->get()
-            ->values()
             ->toArray();
         
         // Debug logging
@@ -77,8 +71,7 @@ class PermasalahanPageController extends Controller
             ->whereNotNull('judul')
             ->orderByDesc('thn_pelaksanaan')
             ->limit(50)
-            ->get()
-            ->values();
+            ->get();
 
         // Clear old cache and recalculate with correct queries - cache for 24 hours
         // These are expensive DISTINCT queries, so we cache them aggressively
@@ -103,71 +96,43 @@ class PermasalahanPageController extends Controller
 
         return Inertia::render('Permasalahan', [
             'mapData'            => $mapData,
-            'totalMapDataCount'  => $totalCount, // For pagination
-            'hasMoreMapData'     => ($offset + count($mapData)) < $totalCount,
             'permasalahanStats'  => $permasalahanStats,
             'jenisPermasalahan'  => $jenisPermasalahan,
             'researches'         => $researches,
-            'stats' => $stats,
+            'stats'              => $stats,
         ]);
     }
 
-    private function getProvinceCoordinates()
+    /**
+     * API endpoint for lazy-loading marker details
+     * Fetch markers by offset/limit or by geographic bounds
+     */
+    public function lazyLoadMarkers()
     {
-        return [
-            'aceh' => [5.55, 95.32],
-            'sumatera utara' => [3.595, 98.672],
-            'sumatera barat' => [-0.949, 100.354],
-            'riau' => [0.507, 101.447],
-            'kepulauan riau' => [1.082, 104.03],
-            'jambi' => [-1.611, 103.615],
-            'sumatera selatan' => [-3.0, 104.75],
-            'bengkulu' => [-3.795, 102.259],
-            'lampung' => [-5.429, 105.262],
-            'kepulauan bangka belitung' => [-2.1, 106.1],
-            'banten' => [-6.4, 106.13],
-            'dki jakarta' => [-6.2, 106.816],
-            'jawa barat' => [-6.914, 107.609],
-            'jawa tengah' => [-7.0, 110.416],
-            'di yogyakarta' => [-7.795, 110.369],
-            'jawa timur' => [-7.25, 112.75],
-            'bali' => [-8.409, 115.188],
-            'nusa tenggara barat' => [-8.583, 116.116],
-            'nusa tenggara timur' => [-10.177, 123.607],
-            'kalimantan barat' => [0.0, 109.32],
-            'kalimantan tengah' => [-2.21, 113.92],
-            'kalimantan selatan' => [-3.319, 114.592],
-            'kalimantan timur' => [-0.502, 117.153],
-            'kalimantan utara' => [3.0, 116.0],
-            // Kalimantan Aliases
-            'prov. kalimantan barat' => [0.0, 109.32],
-            'kalbar' => [0.0, 109.32],
-            'kaltim' => [-0.502, 117.153],
-            'kalsel' => [-3.319, 114.592],
-            'kalteng' => [-2.21, 113.92],
-            'kalut' => [3.0, 116.0],
-            'sulawesi utara' => [1.48, 124.84],
-            'gorontalo' => [0.54, 123.06],
-            'sulawesi tengah' => [-0.9, 119.87],
-            'sulawesi barat' => [-2.67, 118.86],
-            'sulawesi selatan' => [-5.14, 119.41],
-            'sulawesi tenggara' => [-4.0, 122.0], // Added missing province
-            'maluku' => [-3.7, 128.18],
-            'maluku utara' => [0.79, 127.38],
-            'papua' => [-2.53, 140.71],
-            'papua barat' => [-0.87, 134.08],
-            'papua barat daya' => [-0.92, 131.28],
-            'papua selatan' => [-6.0, 140.0],
-            'papua tengah' => [-3.47, 138.08],
-            'papua pegunungan' => [-4.0, 138.0],
-            // Aliases for robustness
-            'daerah istimewa yogyakarta' => [-7.795, 110.369],
-            'yogyakarta' => [-7.795, 110.369],
-            'diy' => [-7.795, 110.369],
-            'jakarta' => [-6.2, 106.816],
-            'jakarta raya' => [-6.2, 106.816],
-            'batam' => [1.145, 104.7],
-        ];
+        $offset = request()->input('offset', 5000); // Start from 5000 (after initial load)
+        $limit = request()->input('limit', 5000);   // Load 5000 per chunk
+        
+        // Get markers with full detail for popup
+        $markers = Penelitian::selectRaw(
+                'id, judul, nama, institusi, provinsi, skema, ' .
+                'thn_pelaksanaan as tahun, kategori_pt, klaster, ' .
+                'pt_latitude, pt_longitude, bidang_fokus, tema_prioritas, nidn, nuptk'
+            )
+            ->whereNotNull('judul')
+            ->whereNotNull('pt_latitude')
+            ->whereNotNull('pt_longitude')
+            ->offset($offset)
+            ->limit($limit)
+            ->get()
+            ->toArray();
+
+        return response()->json([
+            'markers' => $markers,
+            'hasMore' => ($offset + count($markers)) < Penelitian::whereNotNull('judul')
+                ->whereNotNull('pt_latitude')
+                ->whereNotNull('pt_longitude')
+                ->count(),
+        ]);
     }
 }
 
