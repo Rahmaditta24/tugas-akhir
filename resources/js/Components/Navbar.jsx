@@ -14,16 +14,16 @@ export default function Navbar({ headerTitle }) {
                                 alt="Kementerian Pendidikan Tinggi, Sains, dan Teknologi Republik Indonesia"
                                 className="size-12 sm:size-14"
                             />
-                            <p className="uppercase font-bold text-[9px] sm:text-[10px] leading-tight">
+                            <p className="uppercase font-bold text-[10px] sm:text-[11px] leading-tight text-slate-800">
                                 Kementerian Pendidikan Tinggi,<br /> Sains, dan Teknologi
-                                <br /><span className="font-normal">Republik Indonesia</span>
+                                <br /><span className="font-normal text-slate-600">Republik Indonesia</span>
                             </p>
                         </Link>
                     </div>
 
                     {/* Judul tengah */}
-                    <div className="w-full text-center md:w-auto px-2">
-                        <h2 className="text-[13px] sm:text-lg md:text-xl font-bold text-slate-800 leading-tight">
+                    <div className="w-full text-center lg:w-auto px-2">
+                        <h2 className="text-[16px] sm:text-lg md:text-xl font-bold text-slate-800 leading-tight">
                             {headerTitle ? headerTitle : (
                                 <>Dashboard Pemetaan Riset Berdampak di Seluruh Indonesia <span className="font-normal">(Beta)</span></>
                             )}
@@ -47,16 +47,16 @@ export default function Navbar({ headerTitle }) {
 
             {/* Mobile logos */}
             <div className="lg:pt-0 pt-24">
-                <div className="flex justify-center items-center flex-shrink-0 block lg:hidden">
+                <div className="flex justify-center items-center flex-shrink-0 block lg:hidden px-4">
                     <Link href="/" className="flex items-center gap-2">
                         <img
                             src="/assets/images/logo/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png"
                             alt="Kementerian Pendidikan Tinggi, Sains, dan Teknologi Republik Indonesia"
                             className="size-12 sm:size-14"
                         />
-                        <p className="uppercase font-bold text-[9px] sm:text-[10px] leading-tight">
+                        <p className="uppercase font-bold text-[10px] sm:text-[11px] leading-tight text-slate-800">
                             Kementerian Pendidikan Tinggi,<br /> Sains, dan Teknologi
-                            <br /><span className="font-normal">Republik Indonesia</span>
+                            <br /><span className="font-normal text-slate-600">Republik Indonesia</span>
                         </p>
                     </Link>
                 </div>

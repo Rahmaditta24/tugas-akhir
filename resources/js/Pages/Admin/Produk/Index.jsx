@@ -163,10 +163,10 @@ export default function Index({ produk, stats, filters }) {
                         columnFilterEnabled
                         columns={[
                             { key: 'no', title: 'No', className: 'w-12' },
-                            { key: 'nama_produk', title: 'Nama Produk', render: (v) => <div className="max-w-md truncate" title={fmt(v)}>{display(v)}</div> },
-                            { key: 'institusi', title: 'Institusi', render: (v) => <div className="max-w-xs truncate" title={fmt(v)}>{display(v)}</div> },
-                            { key: 'bidang', title: 'Bidang', render: (v) => <Badge color="purple">{display(v)}</Badge> },
-                            { key: 'tkt', title: 'TKT', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
+                            { key: 'nama_produk', title: 'Nama Produk', sortable: true, render: (v) => (<div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            { key: 'institusi', title: 'Institusi', sortable: true, render: (v) => <div className="max-w-xs truncate" title={fmt(v)}>{display(v)}</div> },
+                            { key: 'bidang', title: 'Bidang', sortable: true, className: 'min-w-[100px]', render: (v) => <Badge color="purple">{display(v)}</Badge> },
+                            { key: 'tkt', title: 'TKT', sortable: true, className: 'min-w-[120px] text-center', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                             { key: 'aksi', title: 'Aksi', className: 'w-28' },
                         ]}
                         data={(produk.data || []).map((item, index) => ({

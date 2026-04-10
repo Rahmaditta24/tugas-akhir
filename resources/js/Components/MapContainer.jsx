@@ -5,7 +5,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import ResearchModal from './ResearchModal';
-import { FIELD_COLORS, getFieldColor } from '../utils/fieldColors';
+import { FIELD_COLORS, getFieldColor } from '../Utils/fieldColors';
 
 const CONFIG = {
     DEFAULT_CENTER: [-2.5, 118],
@@ -29,7 +29,8 @@ export default function MapContainer({
     showBubbles = true,
     viewMode = 'provinsi',
     onStatsChange,
-    onCampusClick
+    onCampusClick,
+    filters
 }) {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
@@ -40,7 +41,26 @@ export default function MapContainer({
     const lastDataRef = useRef(null);
     const lastModeRef = useRef(null);
 
+    // FIX: Use refs to avoid stale closures in map event handlers
+    const onStatsChangeRef = useRef(onStatsChange);
+    const onCampusClickRef = useRef(onCampusClick);
+    const filtersRef = useRef(filters);
+
+    useEffect(() => { onStatsChangeRef.current = onStatsChange; }, [onStatsChange]);
+    useEffect(() => { onCampusClickRef.current = onCampusClick; }, [onCampusClick]);
+    useEffect(() => { filtersRef.current = filters; }, [filters]);
+
     const getCurrentDataType = React.useCallback(() => {
+        // Prioritize explicit filter if available
+        if (filters?.dataType) {
+            const dt = String(filters.dataType).toLowerCase();
+            if (dt.includes('hilirisasi')) return 'hilirisasi';
+            if (dt.includes('pengabdian') || dt.includes('kosabangsa') || dt.includes('multitahun')) return 'pengabdian';
+            if (dt.includes('produk')) return 'produk';
+            if (dt.includes('fasilitas')) return 'fasilitas-lab';
+            if (dt.includes('permasalahan')) return 'permasalahan';
+        }
+
         const path = window.location.pathname.toLowerCase();
         if (path.includes('hilirisasi')) return 'hilirisasi';
         if (path.includes('pengabdian')) return 'pengabdian';
@@ -48,7 +68,7 @@ export default function MapContainer({
         if (path.includes('fasilitas')) return 'fasilitas-lab';
         if (path.includes('permasalahan')) return 'permasalahan';
         return 'penelitian';
-    }, []);
+    }, [filters?.dataType]);
 
     const fetchDetail = React.useCallback(async (id, field) => {
         if (!id || id === 'undefined' || id === '-') return;
@@ -104,6 +124,7 @@ export default function MapContainer({
                         pengabdian_bidang_teknologi: detailData.bidang_teknologi_inovasi || '-',
                         pengabdian_jenis_wilayah: detailData.jenis_wilayah_provinsi_mitra || '-',
                         pengabdian_provinsi_mitra: detailData.prov_mitra || '-',
+                        currentDataType: type,
                     };
                     setSelectedResearch(normalized);
                     setIsModalOpen(true);
@@ -160,8 +181,20 @@ export default function MapContainer({
         // Institution Detection
         const institusi = (item._institusi && item._institusi !== 'undefined' && item._institusi !== '-') ? item._institusi : (item.institusi || item.nama_institusi || item.perguruan_tinggi || item.pt || '-');
 
+        const toTitleCase = (str) => {
+            if (!str || typeof str !== 'string' || str === '-') return str;
+            const specialWords = ['DKI', 'DI', 'DIY', 'PAPUA'];
+            return str.split(' ').map(word => {
+                if (specialWords.includes(word.toUpperCase())) {
+                    return word.toUpperCase();
+                }
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }).join(' ');
+        };
+
         // Province Detection
-        const provinsi = (item._provinsi && item._provinsi !== 'undefined' && item._provinsi !== '-') ? item._provinsi : (item.provinsi || item.prov_pt || item.prov_mitra || '-');
+        const rawProvinsi = (item._provinsi && item._provinsi !== 'undefined' && item._provinsi !== '-') ? item._provinsi : (item.provinsi || item.prov_pt || item.prov_mitra || '-');
+        const provinsi = toTitleCase(rawProvinsi);
 
         // Count Detection
         const count = item._count || item.total_produk || item.total_penelitian || item.total_hilirisasi || item.total_pengabdian || 1;
@@ -169,8 +202,15 @@ export default function MapContainer({
         // Field/Bidang Detection
         const field = item._field || item.bidang_fokus || item.skema || item.bidang || '-';
 
+        // Clean [M] and [U] from titles
+        const cleanJudul = (str) => {
+            if (!str || typeof str !== 'string') return str || '-';
+            return str.replace(/^\[[MU]\]\s*/i, '').trim();
+        };
+
         // Title Detection
-        const judul = item._judul || item.judul || item.judul_kegiatan || item.nama_produk || item.title || 'Detail';
+        const judulRaw = item._judul || item.judul || item.judul_kegiatan || item.nama_produk || item.title || 'Detail';
+        const judul = cleanJudul(judulRaw);
 
         return {
             ...item,
@@ -227,13 +267,13 @@ export default function MapContainer({
 
         map.on('click', (e) => {
             // If click is on map background (not on a marker/cluster), reset stats
-            if (onStatsChange) onStatsChange(null);
+            if (onStatsChangeRef.current) onStatsChangeRef.current(null);
         });
 
         const handleZoomClass = () => {
             if (!mapRef.current) return;
             const currentZoom = map.getZoom();
-            if (currentZoom >= 7) {
+            if (currentZoom >= 6) {
                 mapRef.current.classList.add('zoom-level-detail');
                 mapRef.current.classList.remove('zoom-level-overview');
             } else {
@@ -245,9 +285,9 @@ export default function MapContainer({
         map.on('zoomend', () => {
             handleZoomClass();
             const currentZoom = map.getZoom();
-            if (onStatsChange && clusterGroupRef.current) {
+            if (onStatsChangeRef.current && clusterGroupRef.current) {
                 if (currentZoom <= CONFIG.DEFAULT_ZOOM) {
-                    onStatsChange(null);
+                    onStatsChangeRef.current(null);
                     return;
                 }
 
@@ -259,9 +299,14 @@ export default function MapContainer({
                 });
 
                 if (markers.length > 0) {
-                    calculateStatsFromMarkers(markers);
+                    // Call by ref to avoid stale calculation logic
+                    if (latestStatsCalcRef.current) {
+                        latestStatsCalcRef.current(markers);
+                    } else {
+                        calculateStatsFromMarkers(markers);
+                    }
                 } else {
-                    onStatsChange(null);
+                    onStatsChangeRef.current(null);
                 }
             }
         });
@@ -294,7 +339,7 @@ export default function MapContainer({
                 lab_list: item.lab_list || '',
                 tool_list: item.tool_list || '',
             };
-            const encoded = encodeURIComponent(JSON.stringify(modalData));
+            const encoded = encodeURIComponent(JSON.stringify(modalData)).replace(/'/g, "%27");
             return `
                 <div style="padding: 12px; min-width: 200px; font-family: 'Inter', sans-serif;">
                     <h3 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #1e40af;">${safeValue(item._institusi)}</h3>
@@ -447,6 +492,11 @@ export default function MapContainer({
         }, 50);
     };
 
+    const latestStatsCalcRef = useRef(null);
+    useEffect(() => {
+        latestStatsCalcRef.current = calculateStatsFromMarkers;
+    });
+
     useEffect(() => {
         const fullSource = (mapData && mapData.length) ? mapData : data;
         if (!mapInstanceRef.current) return;
@@ -457,6 +507,7 @@ export default function MapContainer({
             len: fullSource.length,
             mode: displayMode,
             bubbles: showBubbles,
+            dataType: filters?.dataType, // IMPORTANT: track dataType changes
             firstId: fullSource[0]?.id || fullSource[0]?._id
         });
 
@@ -496,15 +547,37 @@ export default function MapContainer({
                     const radius = 25;
                     const fontSize = 14;
                     return L.divIcon({
-                        html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 1px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
+                        html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${total.toLocaleString('id-ID')}</div>`,
                         className: 'custom-cluster-icon',
                         iconSize: L.point(radius * 2, radius * 2, true),
                         iconAnchor: L.point(radius, radius)
                     });
                 },
                 spiderfyOnMaxZoom: true,
-                showCoverageOnHover: true,
-                zoomToBoundsOnClick: true
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                spiderLegPolylineOptions: { weight: 0, color: 'transparent', opacity: 0 }
+            });
+
+            // Intercept cluster click: zoom in first, spiderfy only at high zoom
+            clusterGroup.on('clusterclick', function (event) {
+                const cluster = event.layer;
+                const map = mapInstanceRef.current;
+                if (!map) return;
+                const currentZoom = map.getZoom();
+                const maxZoom = map.getMaxZoom();
+
+                // For clusters that contain same-point markers (hilirisasi/produk):
+                // force zoom-in until high enough, then let spiderfy happen
+                const childMarkers = cluster.getAllChildMarkers();
+                const hasSamePointMarkers = childMarkers.length > 0 &&
+                    childMarkers[0].options?.icon?.options?.className?.includes('custom-marker-individu');
+
+                if (hasSamePointMarkers && currentZoom < 14) {
+                    L.DomEvent.stopPropagation(event);
+                    map.flyTo(cluster.getLatLng(), 14, { duration: 0.6 });
+                }
+                // At zoom >= 14 → default spiderfy behavior
             });
 
             clusterGroupRef.current = clusterGroup;
@@ -638,13 +711,13 @@ export default function MapContainer({
 
                     marker.bindPopup(`
                         <div style="padding: 8px 4px; min-width: 220px; font-family: 'Inter', sans-serif;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem))}')">
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem)).replace(/'/g, "%27")}')">
                                 ${item._institusi}
                             </h3>
                             <div style="font-size: 14px; color: #334155; margin-bottom: 12px;">
                                 ${count.toLocaleString('id-ID')} fasilitas laboratorium
                             </div>
-                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem))}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
+                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(fasilitasRawItem)).replace(/'/g, "%27")}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
                                 Klik untuk melihat detail kampus
                             </div>
                         </div>
@@ -714,13 +787,13 @@ export default function MapContainer({
                     const labelName = dataType === 'produk' ? 'produk' : dataType === 'hilirisasi' ? 'hilirisasi' : dataType === 'pengabdian' ? 'pengabdian' : 'penelitian';
                     marker.bindPopup(`
                         <div style="padding: 8px 4px; min-width: 220px; font-family: 'Inter', sans-serif;">
-                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem))}')">
+                            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 700; color: #3E7DCA; cursor: pointer;" onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem)).replace(/'/g, "%27")}')">
                                 ${item._institusi}
                             </h3>
                             <div style="font-size: 14px; color: #334155; margin-bottom: 12px;">
                                 ${count.toLocaleString('id-ID')} ${labelName}
                             </div>
-                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem))}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
+                            <div onclick="window.openInstitusiDetail('${encodeURIComponent(JSON.stringify(rawItem)).replace(/'/g, "%27")}')" style="color: #64748b; font-size: 12px; font-style: italic; cursor: pointer;">
                                 Klik untuk melihat detail kampus
                             </div>
                         </div>
@@ -792,7 +865,7 @@ export default function MapContainer({
                         for (let idx = 0; idx < count; idx++) {
                             let matchedColor = '#3E7DCA';
                             const dataType = getCurrentDataType();
-                            if (dataType === 'hilirisasi') {
+                            if (dataType === 'hilirisasi' || dataType === 'produk') {
                                 matchedColor = '#3E7DCA';
                             } else if (hasDetails) {
                                 const field = fields[idx];
@@ -802,7 +875,10 @@ export default function MapContainer({
                             }
 
                             let coords;
-                            if (idx === 0) {
+                            if (dataType === 'hilirisasi' || dataType === 'produk') {
+                                // Always place at same point → let spiderfy create flower pattern
+                                coords = [lat, lng];
+                            } else if (idx === 0) {
                                 coords = [lat, lng];
                             } else {
                                 const radiusKm = 0.6;
@@ -815,21 +891,62 @@ export default function MapContainer({
                                 ];
                             }
 
-                            const marker = L.circleMarker(coords, {
-                                radius: 8,
-                                fillColor: matchedColor,
-                                fillOpacity: 0.8,
-                                stroke: true,
-                                color: matchedColor,
-                                weight: 2,
-                                className: 'research-circle-marker-premium',
-                                penelitianCount: 1,
-                                statsData: {
-                                    institusi: item._institusi,
-                                    provinsi: item._provinsi,
-                                    bidang: fields[idx]
-                                }
-                            });
+                            let marker;
+                            if (dataType === 'pengabdian') {
+                                marker = L.marker(coords, {
+                                    icon: L.divIcon({
+                                        className: 'research-circle-marker-premium custom-marker-individu',
+                                        html: `
+                                            <div class="individu-wrapper" style="width: 50px; height: 50px; position: relative;">
+                                                <div class="individu-dot" style="position: absolute; top: 17px; left: 17px; width: 16px; height: 16px; border-radius: 50%; background-color: ${matchedColor}; opacity: 0.8; border: 2px solid ${matchedColor};"></div>
+                                                <div class="individu-bubble" style="position: absolute; inset: 0; background-color: rgba(62, 125, 202, 0.7); width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">1</div>
+                                            </div>
+                                        `,
+                                        iconSize: L.point(50, 50),
+                                        iconAnchor: L.point(25, 25)
+                                    }),
+                                    penelitianCount: 1,
+                                    statsData: {
+                                        institusi: item._institusi,
+                                        provinsi: item._provinsi,
+                                        bidang: fields[idx]
+                                    }
+                                });
+                            } else if (dataType === 'hilirisasi' || dataType === 'produk') {
+                                marker = L.marker(coords, {
+                                    icon: L.divIcon({
+                                        className: 'research-circle-marker-premium custom-marker-individu',
+                                        html: `
+                                            <div class="individu-wrapper" style="width: 50px; height: 50px; position: relative;">
+                                                <div class="individu-dot" style="position: absolute; top: 17px; left: 17px; width: 16px; height: 16px; border-radius: 50%; background-color: #3E7DCA; opacity: 0.85;"></div>
+                                                <div class="individu-bubble" style="position: absolute; inset: 0; background-color: rgba(62, 125, 202, 0.7); width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">1</div>
+                                            </div>
+                                        `,
+                                        iconSize: L.point(50, 50),
+                                        iconAnchor: L.point(25, 25)
+                                    }),
+                                    penelitianCount: 1,
+                                    statsData: {
+                                        institusi: item._institusi,
+                                        provinsi: item._provinsi,
+                                        bidang: fields[idx]
+                                    }
+                                });
+                            } else {
+                                marker = L.circleMarker(coords, {
+                                    radius: 8,
+                                    fillColor: matchedColor,
+                                    fillOpacity: 0.8,
+                                    stroke: false,
+                                    className: 'research-circle-marker-premium',
+                                    penelitianCount: 1,
+                                    statsData: {
+                                        institusi: item._institusi,
+                                        provinsi: item._provinsi,
+                                        bidang: fields[idx]
+                                    }
+                                });
+                            }
                             const popup = hasDetails ?
                                 generateDetailPopup(
                                     titles[idx] || 'Detail',
@@ -915,7 +1032,7 @@ export default function MapContainer({
         return () => {
             if (processingRef.current) cancelAnimationFrame(processingRef.current);
         };
-    }, [mapData, data, showBubbles, displayMode, viewMode, fetchDetail, normalizeItem]);
+    }, [mapData, data, showBubbles, displayMode, viewMode, fetchDetail, normalizeItem, filters]);
 
     return (
         <>
@@ -925,8 +1042,16 @@ export default function MapContainer({
                 .zoom-level-detail .produk-logo { opacity: 1; pointer-events: none; transform: scale(1); }
                 .zoom-level-detail .produk-bubble { opacity: 0; pointer-events: none; transform: scale(0.5); }
                 .produk-logo, .produk-bubble { transition: all 0.3s ease-in-out; }
+                
+                .zoom-level-overview .individu-dot { opacity: 0; pointer-events: none; transform: scale(0.5); }
+                .zoom-level-overview .individu-bubble { opacity: 1; pointer-events: none; transform: scale(1); }
+                .zoom-level-detail .individu-dot { opacity: 1; pointer-events: auto; transform: scale(1); }
+                .zoom-level-detail .individu-bubble { opacity: 0; pointer-events: none; transform: scale(0.5); }
+                .individu-dot, .individu-bubble { transition: all 0.3s ease-in-out; }
+                .leaflet-marker-icon.custom-marker-individu { background: transparent !important; border: none !important; }
+                .leaflet-cluster-spider-leg { display: none !important; }
             `}</style>
-            <section className="relative bg-white flex justify-center mb-2">
+            <section className="relative bg-white flex justify-center mb-4 mt-4">
                 <div id="map" ref={mapRef} className="lg:w-[90%] w-full h-[65vh] border relative z-0 rounded-lg shadow-inner overflow-hidden" />
             </section>
             <ResearchModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} data={selectedResearch} />

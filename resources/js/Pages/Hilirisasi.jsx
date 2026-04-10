@@ -8,12 +8,15 @@ import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
 import StatisticsCards from '../Components/StatisticsCards';
+import ResearchModal from '../Components/ResearchModal';
 
 export default function Hilirisasi({ mapData = [], researches = [], stats = {}, title, isFiltered = false, filters: initialFilters = {}, filterOptions: serverFilterOptions = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
     const [filters, setFilters] = useState(initialFilters);
     const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
     const [currentStats, setCurrentStats] = useState(stats);
+    const [selectedResearch, setSelectedResearch] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Update currentStats when global stats from props change
     useEffect(() => {
@@ -82,6 +85,52 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
         setFilters({});
         setSearchTerm('');
         router.get(route('hilirisasi.index'));
+    };
+
+    const toTitleCase = (str) => {
+        if (!str || str === '-') return str;
+        return str.replace(/\w\S*/g, (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+    };
+
+    const handleItemClick = async (research) => {
+        if (!research?.id) {
+            setSelectedResearch({
+                ...research,
+                isHilirisasi: true,
+                currentDataType: 'hilirisasi',
+                judul: research.judul || '-',
+                nama_peneliti: research.nama_pengusul || research.nama || '-',
+                institusi: research.perguruan_tinggi || research.institusi || '-',
+                provinsi: toTitleCase(research.provinsi) || '-',
+                skema_hilirisasi: research.skema || '-',
+                tahun_hilirisasi: research.tahun || '-',
+            });
+            setIsModalOpen(true);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/research/hilirisasi/${research.id}`);
+            if (response.ok) {
+                const detail = await response.json();
+                setSelectedResearch({
+                    ...detail,
+                    isHilirisasi: true,
+                    currentDataType: 'hilirisasi',
+                    judul: detail.judul || '-',
+                    nama_peneliti: detail.nama_pengusul || detail.nama || '-',
+                    institusi: detail.perguruan_tinggi || detail.institusi || '-',
+                    provinsi: toTitleCase(detail.provinsi) || '-',
+                    skema_hilirisasi: detail.skema || '-',
+                    tahun_hilirisasi: detail.tahun || '-',
+                });
+            } else {
+                setSelectedResearch({ ...research, isHilirisasi: true, currentDataType: 'hilirisasi' });
+            }
+        } catch {
+            setSelectedResearch({ ...research, isHilirisasi: true, currentDataType: 'hilirisasi' });
+        }
+        setIsModalOpen(true);
     };
 
     const [isLoading, setIsLoading] = useState(false);
@@ -158,7 +207,12 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
             <NavigationTabs activePage="hilirisasi" />
 
             <div className="relative">
-                <MapContainer mapData={mapData} displayMode={displayMode} onStatsChange={handleStatsChange} />
+                <MapContainer 
+                    mapData={mapData} 
+                    displayMode={displayMode} 
+                    onStatsChange={handleStatsChange}
+                    filters={filters} 
+                />
                 <MapControls
                     onSearch={handleSearch}
                     onDisplayModeChange={setDisplayMode}
@@ -180,8 +234,10 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}
+                            onItemClick={handleItemClick}
                             title="Daftar Hilirisasi"
                             isFiltered={isFiltered}
+                            isHilirisasiPage={true}
                             customFieldOptions={[
                                 { value: 'all', label: 'Semua' },
                                 { value: 'title', label: 'Judul Hilirisasi' },
@@ -194,6 +250,11 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
                     </div>
                 </section>
             </div>
+            <ResearchModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                data={selectedResearch} 
+            />
         </MainLayout>
     );
 }

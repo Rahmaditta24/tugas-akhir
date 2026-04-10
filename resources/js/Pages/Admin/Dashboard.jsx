@@ -203,6 +203,41 @@ export default function Dashboard({ stats = {} }) {
                 ))}
             </div>
 
+            {/* Info Cards */}
+            <div className="w-full">
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                        <span className="text-blue-600 font-bold">📊</span> Ringkasan Data
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div className="py-2 border-b md:border-b-0 md:border-r border-slate-100 pr-4">
+                            <span className="text-xs uppercase tracking-wider text-slate-500 font-bold block mb-1">Total Riset</span>
+                            <span className="text-2xl font-bold text-slate-900">
+                                {((liveStats.penelitian || 0) + (liveStats.pengabdian || 0) + (liveStats.hilirisasi || 0)).toLocaleString('id-ID')}
+                            </span>
+                        </div>
+                        <div className="py-2 border-b md:border-b-0 md:border-r border-slate-100 pr-4">
+                            <span className="text-xs uppercase tracking-wider text-slate-500 font-bold block mb-1">Produk & Fasilitas</span>
+                            <span className="text-2xl font-bold text-slate-900">
+                                {((liveStats.produk || 0) + (liveStats.fasilitas || 0)).toLocaleString('id-ID')}
+                            </span>
+                        </div>
+                        <div className="py-2 border-b md:border-b-0 md:border-r border-slate-100 pr-4">
+                            <span className="text-xs uppercase tracking-wider text-slate-500 font-bold block mb-1">Permasalahan</span>
+                            <span className="text-2xl font-bold text-slate-900">
+                                {((liveStats.permasalahan_prov || 0) + (liveStats.permasalahan_kab || 0)).toLocaleString('id-ID')}
+                            </span>
+                        </div>
+                        <div className="py-2">
+                            <span className="text-xs uppercase tracking-wider text-slate-500 font-bold block mb-1">Rumusan Masalah</span>
+                            <span className="text-2xl font-bold text-slate-900">
+                                {(liveStats.rumusan_masalah_category || 0).toLocaleString('id-ID')}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 <div className="glass-card rounded-xl p-6 lg:col-span-2">
@@ -280,65 +315,6 @@ export default function Dashboard({ stats = {} }) {
                             height={300}
                         />
                     )}
-                </div>
-            </div>
-
-            {/* Info Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                        <span className="text-blue-600">📊</span> Ringkasan Data
-                    </h3>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                            <span className="text-sm text-slate-600">Total semua data riset</span>
-                            <span className="font-semibold text-slate-900">
-                                {((liveStats.penelitian || 0) + (liveStats.pengabdian || 0) + (liveStats.hilirisasi || 0)).toLocaleString('id-ID')}
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                            <span className="text-sm text-slate-600">Total produk & fasilitas</span>
-                            <span className="font-semibold text-slate-900">
-                                {((liveStats.produk || 0) + (liveStats.fasilitas || 0)).toLocaleString('id-ID')}
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                            <span className="text-sm text-slate-600">Total permasalahan</span>
-                            <span className="font-semibold text-slate-900">
-                                {((liveStats.permasalahan_prov || 0) + (liveStats.permasalahan_kab || 0)).toLocaleString('id-ID')}
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center py-2">
-                            <span className="text-sm text-slate-600">Kategori rumusan masalah</span>
-                            <span className="font-semibold text-slate-900">
-                                {(liveStats.rumusan_masalah_category || 0).toLocaleString('id-ID')}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                        <span className="text-purple-600">💡</span> Panduan
-                    </h3>
-                    <ul className="space-y-3 text-sm text-slate-600">
-                        <li className="flex items-start gap-2">
-                            <span className="text-blue-600 mt-0.5">•</span>
-                            <span>Klik kartu statistik untuk langsung menuju halaman data</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-blue-600 mt-0.5">•</span>
-                            <span>Gunakan menu sidebar untuk navigasi lengkap</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-blue-600 mt-0.5">•</span>
-                            <span>Pastikan data memiliki koordinat untuk visualisasi peta</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                            <span className="text-blue-600 mt-0.5">•</span>
-                            <span>Data diperbarui otomatis setiap 30 detik</span>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </AdminLayout>

@@ -13,9 +13,22 @@ class PermasalahanController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = (int)($request->get('perPage', 20));
+        $perPage = (int)$request->get('perPage', 20);
         $baseData = $request->get('baseData', 'statistik');
-        $jenis = $request->get('jenis', 'all');
+        $jenis = $request->get('jenis');
+        $batch_type = $request->get('batch_type');
+
+        // Default 'jenis' for each mode to ensure we always show Overlaps correctly
+        if (!$jenis || $jenis === 'all') {
+            $jenis = 'Sampah';
+        }
+
+        // Default 'batch_type' for Pengabdian to match public dashboard
+        if ($baseData === 'pengabdian' && (!$batch_type || $batch_type === 'all')) {
+            $batch_type = 'Multitahun Lanjutan, Batch I & Batch II';
+            $request->merge(['batch_type' => $batch_type]);
+        }
+
         $search = $request->get('search');
         $activeTab = $request->get('tab', 'provinsi');
 
@@ -44,16 +57,20 @@ class PermasalahanController extends Controller
 
         // Mode 1: Raw Statistics (from JSON files)
         if ($baseData === 'statistik') {
+            // Normalize jenis for JSON file mapping
+            $normalizedJenis = strtolower(str_replace(' ', '_', $jenis));
+
             // default jenis to 'sampah' if not provided
             if (!$request->has('jenis') || $jenis === 'all') {
-                $jenis = 'sampah';
+                $normalizedJenis = 'sampah';
+                $jenis = 'Sampah';
             }
 
             $baseDir = realpath(base_path('..'.DIRECTORY_SEPARATOR.'peta-bima'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'permasalahan'));
             $rows = [];
             $kabRows = [];
 
-            if ($jenis === 'sampah') {
+            if ($normalizedJenis === 'sampah') {
                 $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-sampah.json';
                 if (is_file($path)) {
                     $json = json_decode(file_get_contents($path), true);
@@ -73,7 +90,7 @@ class PermasalahanController extends Controller
                         ];
                     }
                 }
-            } elseif ($jenis === 'stunting') {
+            } elseif ($normalizedJenis === 'stunting') {
                 $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-stunting.json';
                 if (is_file($path)) {
                     $json = json_decode(file_get_contents($path), true);
@@ -93,7 +110,7 @@ class PermasalahanController extends Controller
                         ];
                     }
                 }
-            } elseif ($jenis === 'gizi_buruk') {
+            } elseif ($normalizedJenis === 'gizi_buruk') {
                 $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-gizi-buruk.json';
                 if (is_file($path)) {
                     $json = json_decode(file_get_contents($path), true);
@@ -113,7 +130,7 @@ class PermasalahanController extends Controller
                         ];
                     }
                 }
-            } elseif ($jenis === 'krisis_listrik') {
+            } elseif ($normalizedJenis === 'krisis_listrik') {
                 $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-krisis-listrik.json';
                 if (is_file($path)) {
                     $json = json_decode(file_get_contents($path), true);
@@ -127,7 +144,7 @@ class PermasalahanController extends Controller
                         ];
                     }
                 }
-            } elseif ($jenis === 'ketahanan_pangan') {
+            } elseif ($normalizedJenis === 'ketahanan_pangan') {
                 $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-ketahanan-pangan.json';
                 if (is_file($path)) {
                     $json = json_decode(file_get_contents($path), true);
@@ -224,26 +241,31 @@ class PermasalahanController extends Controller
         }
 
         // Mode 2: Research Overlay (The keyword matching view)
-        $keywords = [
-            'sampah' => [
+        // Keywords mapping from Public controller for consistent counts (Case Match)
+        $keywordsMap = [
+            'Sampah' => [
                 'sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 
-                'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut'
+                'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut',
+                'residu', 'biomassa', 'waste-to-energy', 'tPA', 'pengelolaan sampah', 'sampah kota'
             ],
-            'stunting' => [
-                'stunting', 'tengkes', 'kerdil', 'gizis', 'pendek', 'balita', 'bayi', 'anak', 'ibu ham', 
-                'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi'
+            'Stunting' => [
+                'stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita', 'bayi', 'anak', 'ibu hamil', 
+                'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi', 'malnutrisi', 'pangan bergizi',
+                'pola makan', 'asupan gizi'
             ],
-            'gizi_buruk' => [
+            'Gizi Buruk' => [
                 'gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus', 'vitamin', 'protein', 'karbo', 
-                'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan'
+                'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan', 'gizi seimbang', 'beban ganda malnutrisi'
             ],
-            'krisis_listrik' => [
+            'Krisis Listrik' => [
                 'listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit', 'pln', 'panel', 'solar', 
-                'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomat'
+                'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomatisasi', 'smart grid',
+                'elektrifikasi', 'energi terbarukan', 'transisi energi', 'panel surya', 'biofuel'
             ],
-            'ketahanan_pangan' => [
+            'Ketahanan Pangan' => [
                 'pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 
-                'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani'
+                'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani', 'swasembada',
+                'benih', 'bioteknologi pangan', 'smart farming', 'diversifikasi pangan', 'produksi pangan'
             ],
         ];
 
@@ -257,14 +279,24 @@ class PermasalahanController extends Controller
             $baseData = 'penelitian';
         }
 
-        // Apply problem category filter (Overlay logic)
-        // If 'all', we don't apply any keyword filter so it shows 100% of the data
-        if ($jenis !== 'all' && $jenis !== 'none' && isset($keywords[$jenis])) {
-            $query->where(function ($q) use ($jenis, $keywords) {
-                foreach ($keywords[$jenis] as $kw) {
-                    $q->orWhere('judul', 'like', "%{$kw}%");
+        if (isset($keywordsMap[$jenis])) {
+            $regex = implode('|', array_map('preg_quote', $keywordsMap[$jenis]));
+            $query->where(function ($q) use ($regex, $baseData) {
+                $q->whereRaw("judul REGEXP ?", [$regex]);
+                // For Pengabdian, we follow public page and check bidang_fokus too
+                if ($baseData === 'pengabdian') {
+                    $q->orWhereRaw("bidang_fokus REGEXP ?", [$regex]);
                 }
             });
+        }
+
+        // Apply Batch Type filter for Pengabdian (following Public Mapping logic)
+        if ($baseData === 'pengabdian' && $request->filled('batch_type')) {
+            $batch_types = (array)$request->batch_type;
+            if (in_array('Multitahun Lanjutan, Batch I & Batch II', $batch_types)) {
+                $batch_types = array_merge($batch_types, ['multitahun_lanjutan', 'batch_ii', 'batch_i']);
+            }
+            $query->whereIn('batch_type', $batch_types);
         }
 
         if ($search) {
@@ -327,6 +359,8 @@ class PermasalahanController extends Controller
                 'direction' => $direction,
                 'baseData' => $baseData,
                 'jenis' => $jenis,
+                'batch_type' => $request->get('batch_type'),
+                'listrikMode' => $request->get('listrikMode', 'SAIDI'),
                 'columns' => $columnFilters,
             ],
             'stats' => [],

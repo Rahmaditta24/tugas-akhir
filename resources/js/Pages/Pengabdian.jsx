@@ -8,12 +8,15 @@ import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
 import StatisticsCards from '../Components/StatisticsCards';
+import ResearchModal from '../Components/ResearchModal';
 
 export default function Pengabdian({ mapData = [], researches = [], stats = {}, title, isFiltered = false, filters: initialFilters = {}, filterOptions: serverFilterOptions = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
     const [filters, setFilters] = useState(initialFilters);
     const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
     const [currentStats, setCurrentStats] = useState(stats);
+    const [selectedResearch, setSelectedResearch] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Update currentStats when global stats from props change
     useEffect(() => {
@@ -37,7 +40,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     ];
 
     const filterOptions = {
-        dataType: ['Multitahun, Batch I & II', 'Kosabangsa'],
+        dataType: ['Multitahun, Batch I & Batch II', 'Kosabangsa'],
         skema: filters.dataType === 'Kosabangsa' ? ['Kosabangsa'] : allSkemas,
         provinsi: serverFilterOptions.provinsi || [],
         tahun: serverFilterOptions.tahun || ['2020', '2021', '2022', '2023', '2024', '2025', '2026'],
@@ -88,9 +91,51 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     };
 
     const handleReset = () => {
-        setFilters({ dataType: 'Multitahun, Batch I & II' });
+        setFilters({ dataType: 'Multitahun, Batch I & Batch II' });
         setSearchTerm('');
-        router.get(route('pengabdian.index'), { dataType: 'Multitahun, Batch I & II' });
+        router.get(route('pengabdian.index'), { dataType: 'Multitahun, Batch I & Batch II' });
+    };
+
+    const handleItemClick = async (research) => {
+        const buildData = (r) => ({
+            ...r,
+            isPengabdian: true,
+            currentDataType: 'pengabdian',
+            pengabdian_nama: r.pengabdian_nama || r.nama || r.nama_ketua || '-',
+            pengabdian_institusi: r.pengabdian_institusi || r.institusi || r.nama_institusi || '-',
+            pengabdian_tahun: r.pengabdian_tahun || r.tahun || r.thn_pelaksanaan_kegiatan || '-',
+            pengabdian_skema: r.pengabdian_skema || r.skema || r.nama_skema || '-',
+            pengabdian_bidang_fokus: r.pengabdian_bidang_fokus || r.bidang_fokus || r.bidang || '-',
+            pengabdian_provinsi: r.pengabdian_provinsi || r.provinsi || r.prov_pt || '-',
+            pengabdian_kabupaten: r.pengabdian_kabupaten || r.kabupaten_kota || r.kab_pt || '-',
+            pengabdian_klaster: r.pengabdian_klaster || r.klaster || '-',
+            pengabdian_status_pt: r.pengabdian_status_pt || r.ptn_pts || r.kategori_pt || '-',
+            // Kosabangsa Fields mapping
+            pengabdian_nama_pendamping: r.pengabdian_nama_pendamping || r.nama_pendamping || '-',
+            pengabdian_institusi_pendamping: r.pengabdian_institusi_pendamping || r.institusi_pendamping || '-',
+            pengabdian_bidang_teknologi: r.pengabdian_bidang_teknologi || r.bidang_teknologi_inovasi || '-',
+            pengabdian_jenis_wilayah: r.pengabdian_jenis_wilayah || r.jenis_wilayah_provinsi_mitra || '-',
+            pengabdian_provinsi_mitra: r.pengabdian_provinsi_mitra || r.prov_mitra || '-',
+        });
+
+        if (!research?.id) {
+            setSelectedResearch(buildData(research));
+            setIsModalOpen(true);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/research/pengabdian/${research.id}`);
+            if (response.ok) {
+                const detail = await response.json();
+                setSelectedResearch(buildData(detail));
+            } else {
+                setSelectedResearch(buildData(research));
+            }
+        } catch {
+            setSelectedResearch(buildData(research));
+        }
+        setIsModalOpen(true);
     };
 
     const [isLoading, setIsLoading] = useState(false);
@@ -171,7 +216,12 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             <NavigationTabs activePage="pengabdian" />
 
             <div className="relative">
-                <MapContainer mapData={mapData} displayMode={displayMode} onStatsChange={handleStatsChange} />
+                <MapContainer 
+                    mapData={mapData} 
+                    displayMode={displayMode} 
+                    onStatsChange={handleStatsChange}
+                    filters={filters} 
+                />
                 <MapControls
                     onSearch={handleSearch}
                     onDisplayModeChange={setDisplayMode}
@@ -194,8 +244,10 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}
+                            onItemClick={handleItemClick}
                             title="Daftar Pengabdian"
                             isFiltered={isFiltered}
+                            isPenelitianPage={true}
                             customFieldOptions={[
                                 { value: 'all', label: 'Semua' },
                                 { value: 'title', label: 'Judul Pengabdian' },
@@ -208,6 +260,11 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
                     </div>
                 </section>
             </div>
+            <ResearchModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                data={selectedResearch}
+            />
         </MainLayout>
     );
 }

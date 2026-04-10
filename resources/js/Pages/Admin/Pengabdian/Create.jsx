@@ -6,7 +6,7 @@ import CampusSelect from '../../../Components/CampusSelect';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
-        batch_type: 'multitahun',
+        batch_type: 'batch',
         nama: '',
         nidn: '',
         nama_institusi: '',
@@ -99,8 +99,7 @@ export default function Create() {
                                         className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                         required
                                     >
-                                        <option value="multitahun">Multitahun Lanjutan</option>
-                                        <option value="batch">Batch I & II</option>
+                                        <option value="batch">Multitahun, Batch I & Batch II</option>
                                         <option value="kosabangsa">Kosabangsa</option>
                                     </select>
                                     {errors.batch_type && <p className="mt-1 text-sm text-red-600">{errors.batch_type}</p>}

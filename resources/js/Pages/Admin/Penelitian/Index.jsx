@@ -228,6 +228,7 @@ export default function Index({ penelitian, stats, filters }) {
                     <AdminTable
                         striped
                         columnFilterEnabled
+                        sort={{ key: filters.sort, direction: filters.direction }}
                         emptyText="Tidak ada data penelitian"
                         columns={[
                             {
@@ -239,12 +240,14 @@ export default function Index({ penelitian, stats, filters }) {
                             {
                                 key: 'nama',
                                 title: 'Peneliti',
+                                sortable: true,
                                 className: 'min-w-[180px]',
                                 render: (v) => display(v)
                             },
                             {
                                 key: 'judul',
                                 title: 'Judul',
+                                sortable: true,
                                 className: 'min-w-[420px]',
                                 render: (v) => (
                                     <div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={fmt(v)}>
@@ -255,7 +258,8 @@ export default function Index({ penelitian, stats, filters }) {
                             {
                                 key: 'institusi',
                                 title: 'Institusi',
-                                className: 'min-w-[240px]',
+                                sortable: true,
+                                className: 'min-w-[200px]',
                                 render: (v) => (
                                     <div className="max-w-md line-clamp-2 whitespace-normal leading-snug" title={fmt(v)}>
                                         {display(v)}
@@ -265,23 +269,26 @@ export default function Index({ penelitian, stats, filters }) {
                             {
                                 key: 'provinsi',
                                 title: 'Provinsi',
+                                sortable: true,
                                 className: 'min-w-[140px]',
                                 render: (v) => (
                                     <Badge color="slate">{display(v)}</Badge>
                                 )
                             },
-                            {
+            
+                            /*{
                                 key: 'skema',
                                 title: 'Skema',
                                 className: 'min-w-[200px]',
                                 render: (v) => (
                                     <Badge color="indigo">{normalizeSkema(v)}</Badge>
                                 )
-                            },
+                            },*/
                             {
                                 key: 'thn_pelaksanaan',
                                 title: 'Tahun',
-                                className: 'min-w-[90px] text-center',
+                                sortable: true,
+                                className: 'min-w-[160px] text-center',
                                 render: (v) => <Badge color="blue">{display(v)}</Badge>
                             },
                             {

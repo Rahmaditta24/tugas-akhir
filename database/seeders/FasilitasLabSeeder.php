@@ -11,6 +11,11 @@ class FasilitasLabSeeder extends Seeder
     public function run(): void
     {
         $jsonPath = base_path('../peta-bima/data/data-fasilitas-lab_clean.json');
+        $toTitleCase = function ($str) {
+            if (!$str || $str === 'tidak tersedia') return $str;
+            return mb_convert_case($str, MB_CASE_TITLE, "UTF-8");
+        };
+
         $normalize = function ($value) {
             if ($value === null) return null;
             if (is_string($value)) {
@@ -99,14 +104,14 @@ class FasilitasLabSeeder extends Seeder
                     'institusi' => $institusi,
                     'latitude' => $lat,
                     'longitude' => $lon,
-                    'provinsi' => $normalize($item['Provinsi'] ?? null),
+                    'provinsi' => $item['Provinsi'] ? $toTitleCase($normalize($item['Provinsi'])) : null,
                     'status_akses' => $normalize($item['Status Akses'] ?? null),
                     // new structure mapping (best-effort from JSON)
                     'kode_universitas' => $normalize($item['Kode Universitas'] ?? null),
                     'kategori_pt' => $normalize($item['Kategori PT'] ?? null),
                     'fakultas' => $normalize($item['Fakultas'] ?? null),
                     'departemen' => $normalize($item['Departemen'] ?? null),
-                    'nama_laboratorium' => $namaLab ?: null,
+                    'nama_laboratorium' => $namaLab ? $toTitleCase($namaLab) : null,
                     'jenis_laboratorium' => $normalize($item['Jenis Labolatorium'] ?? null),
                     'standar_akreditasi' => $normalize($item['Standar Akreditasi / Sertifikasi'] ?? null),
                     'jam_mulai' => $normalize($item['Jam Mulai Operasional'] ?? null),

@@ -35,7 +35,7 @@ export default function Index({ pengabdian, stats, filters }) {
         setColumnFilters(newFilters);
 
         router.get(route('admin.pengabdian.index'), {
-            type: filters.type || 'multitahun',
+            type: filters.type || 'batch',
             search,
             filters: newFilters,
             perPage
@@ -50,7 +50,7 @@ export default function Index({ pengabdian, stats, filters }) {
         if (e) e.preventDefault();
         router.get(route('admin.pengabdian.index'), {
             search,
-            type: filters.type || 'multitahun',
+            type: filters.type || 'batch',
             perPage,
             filters: columnFilters
         }, {
@@ -65,7 +65,7 @@ export default function Index({ pengabdian, stats, filters }) {
         setPerPage(next);
         router.get(route('admin.pengabdian.index'), {
             search,
-            type: filters.type || 'multitahun',
+            type: filters.type || 'batch',
             perPage: next,
             filters: columnFilters
         }, {
@@ -101,26 +101,14 @@ export default function Index({ pengabdian, stats, filters }) {
                 />
 
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <span className="text-xl">📅</span>
-                            </div>
-                            <div>
-                                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider">Multitahun</p>
-                                <p className="text-2xl font-black text-slate-800">{stats.multitahun?.toLocaleString('id-ID')}</p>
-                            </div>
-                        </div>
-                    </div>
-
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
                                 <span className="text-xl">📦</span>
                             </div>
                             <div>
-                                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider">Batch I & II</p>
+                                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider">Multitahun, Batch I & II</p>
                                 <p className="text-2xl font-black text-slate-800">{stats.batch?.toLocaleString('id-ID')}</p>
                             </div>
                         </div>
@@ -156,22 +144,13 @@ export default function Index({ pengabdian, stats, filters }) {
                     {/* Mode Tabs: Multitahun / Batch / Kosabangsa */}
                     <div className="flex border-b overflow-x-auto">
                         <button
-                            onClick={() => handleTypeChange('multitahun')}
-                            className={`px-8 py-4 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${(filters.type || 'multitahun') === 'multitahun'
-                                ? 'border-blue-600 text-blue-600 bg-blue-50/50'
-                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
-                                }`}
-                        >
-                            📅 Multitahun Lanjutan
-                        </button>
-                        <button
                             onClick={() => handleTypeChange('batch')}
-                            className={`px-8 py-4 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${filters.type === 'batch'
+                            className={`px-8 py-4 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${(filters.type || 'batch') === 'batch'
                                 ? 'border-amber-600 text-amber-600 bg-amber-50/50'
                                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                                 }`}
                         >
-                            📦 Batch I & II
+                            📦 Multitahun, Batch I & Batch II
                         </button>
                         <button
                             onClick={() => handleTypeChange('kosabangsa')}
@@ -240,10 +219,10 @@ export default function Index({ pengabdian, stats, filters }) {
                             columnFilterEnabled
                             columns={[
                                 { key: 'no', title: 'No', className: 'w-16 text-center' },
-                                { key: 'judul', title: 'Judul Pengabdian', className: 'min-w-[400px]', render: (v) => <div className="line-clamp-4 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
-                                { key: 'nama', title: 'Ketua Pengusul', className: 'min-w-[180px]', render: (v) => display(v) },
-                                { key: 'nama_institusi', title: 'Institusi', className: 'min-w-[200px]', render: (v) => <div className="line-clamp-2 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
-                                { key: 'thn_pelaksanaan_kegiatan', title: 'Tahun', className: 'w-24 text-center', render: (v) => <Badge color="blue">{display(v)}</Badge> },
+                                { key: 'judul', title: 'Judul Pengabdian', sortable: true, className: 'min-w-[400px]', render: (v) => <div className="line-clamp-4 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'nama', title: 'Ketua Pengusul', sortable: true, className: 'min-w-[180px]', render: (v) => display(v) },
+                                { key: 'nama_institusi', title: 'Institusi', sortable: true, className: 'min-w-[200px]', render: (v) => <div className="line-clamp-2 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'thn_pelaksanaan_kegiatan', title: 'Tahun', sortable: true, className: 'min-w-[160px] text-center', render: (v) => <Badge color="blue">{display(v)}</Badge> },
                                 { key: 'aksi', title: 'Aksi', className: 'w-28 text-center' },
                             ]}
                             data={(pengabdian.data || []).map((item, index) => ({
@@ -255,7 +234,7 @@ export default function Index({ pengabdian, stats, filters }) {
                                             href={route('admin.pengabdian.edit', item.id)}
                                             data={{
                                                 page: pengabdian.current_page,
-                                                type: filters.type || 'multitahun',
+                                                type: filters.type || 'batch',
                                                 search: filters.search || search,
                                                 perPage: filters.perPage || perPage,
                                                 filters: columnFilters

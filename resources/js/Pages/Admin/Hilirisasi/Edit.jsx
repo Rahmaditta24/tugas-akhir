@@ -16,17 +16,17 @@ const toTitleCase = (str) => {
 export default function Edit({ item, filters }) {
     const { data, setData, put, processing, errors } = useForm({
         tahun: String(item.tahun || ''),
-        id_proposal: String(item.id_proposal || ''),
-        judul: item.judul || '',
-        nama_pengusul: toTitleCase(item.nama_pengusul),
-        direktorat: item.direktorat || '',
-        perguruan_tinggi: item.perguruan_tinggi || '',
+        id_proposal: item.id_proposal === 0 ? '0' : (item.id_proposal || ''),
+        judul: item.judul || 'tidak tersedia',
+        nama_pengusul: toTitleCase(item.nama_pengusul) || 'tidak tersedia',
+        direktorat: item.direktorat || 'tidak tersedia',
+        perguruan_tinggi: item.perguruan_tinggi || 'tidak tersedia',
         pt_latitude: item.pt_latitude ?? 0,
         pt_longitude: item.pt_longitude ?? 0,
-        provinsi: item.provinsi || '',
-        mitra: toTitleCase(item.mitra),
-        skema: item.skema || '',
-        luaran: item.luaran || '',
+        provinsi: item.provinsi || 'tidak tersedia',
+        mitra: toTitleCase(item.mitra) || 'tidak tersedia',
+        skema: item.skema || 'tidak tersedia',
+        luaran: item.luaran || 'tidak tersedia',
     });
 
     const handleSubmit = (e) => {
@@ -71,7 +71,7 @@ export default function Edit({ item, filters }) {
                                         type="text"
                                         inputMode="numeric"
                                         value={data.id_proposal}
-                                        onChange={e => setData('id_proposal', e.target.value.replace(/\D/g, ''))}
+                                        onChange={e => setData('id_proposal', e.target.value === '' ? '' : e.target.value.replace(/\D/g, ''))}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.id_proposal ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         required
                                     />
@@ -120,6 +120,7 @@ export default function Edit({ item, filters }) {
                                         <option value="">-- null --</option>
                                         <option value="DIKSI">DIKSI</option>
                                         <option value="DIKTI">DIKTI</option>
+                                        <option value="Direktorat Hilirisasi dan Kemitraan">Direktorat Hilirisasi dan Kemitraan</option>
                                     </select>
                                     {errors.direktorat && <p className="mt-1 text-sm text-red-600">{errors.direktorat}</p>}
                                 </div>
@@ -141,13 +142,35 @@ export default function Edit({ item, filters }) {
                                         <option value="A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering">A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering</option>
                                         <option value="B1: Penyelesaian persoalan yang ada di masyarakat">B1: Penyelesaian persoalan yang ada di masyarakat</option>
                                         <option value="B2: Penyelesaian persoalan yang ada di Institusi Pemerintah">B2: Penyelesaian persoalan yang ada di Institusi Pemerintah</option>
+                                        <option value="Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)">Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah</option>
+                                        <option value="Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)">Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi</option>
+                                        <option value="Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra">Adopsi atau difusi, hilirisasi, komersialisasi produk</option>
+                                        <option value="Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI">Pembentukan atau penguatan research and innovation center</option>
+                                        <option value="Penerapan rencana bisnis dan business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen">Penerapan rencana bisnis dan BMC Startup</option>
+                                        <option value="Dorongan Teknologi - Tim Pakar/Pengkaji">Dorongan Teknologi - Tim Pakar/Pengkaji</option>
+                                        <option value="Ajakan Industri PT - 1 Tahun">Ajakan Industri PT - 1 Tahun</option>
+                                        <option value="Ajakan Industri PT - 2 Tahun">Ajakan Industri PT - 2 Tahun</option>
+                                        <option value="Ajakan Industri PT - 3 Tahun">Ajakan Industri PT - 3 Tahun</option>
+                                        <option value="Hilirisasi Inovasi Komersial">Hilirisasi Inovasi Komersial</option>
+                                        <option value="Hilirisasi Inovasi Sosial">Hilirisasi Inovasi Sosial</option>
                                         {data.skema && ![
                                             "A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi",
                                             "A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI",
                                             "A3: Pengembangan produk inovasi bersama DUDI",
                                             "A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering",
                                             "B1: Penyelesaian persoalan yang ada di masyarakat",
-                                            "B2: Penyelesaian persoalan yang ada di Institusi Pemerintah"
+                                            "B2: Penyelesaian persoalan yang ada di Institusi Pemerintah",
+                                            "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)",
+                                            "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)",
+                                            "Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra",
+                                            "Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI",
+                                            "Penerapan rencana bisnis dan business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen",
+                                            "Dorongan Teknologi - Tim Pakar/Pengkaji",
+                                            "Ajakan Industri PT - 1 Tahun",
+                                            "Ajakan Industri PT - 2 Tahun",
+                                            "Ajakan Industri PT - 3 Tahun",
+                                            "Hilirisasi Inovasi Komersial",
+                                            "Hilirisasi Inovasi Sosial"
                                         ].includes(data.skema) && (
                                                 <option value={data.skema}>{data.skema}</option>
                                             )}

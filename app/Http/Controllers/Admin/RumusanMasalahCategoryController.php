@@ -86,11 +86,12 @@ class RumusanMasalahCategoryController extends Controller
 
         // Handle image upload
         if ($request->hasFile('image')) {
-            // Hapus image lama jika ada
             if ($category->image && Storage::disk('public')->exists($category->image)) {
                 Storage::disk('public')->delete($category->image);
             }
             $validated['image'] = $request->file('image')->store('rumusan-masalah/categories', 'public');
+        } else {
+            unset($validated['image']);
         }
 
         $category->update($validated);

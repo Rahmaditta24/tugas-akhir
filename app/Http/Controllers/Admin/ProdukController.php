@@ -35,7 +35,13 @@ class ProdukController extends Controller
         }
 
         $perPage = $request->input('perPage', 20);
-        $produk = $query->orderByDesc('id')->paginate($perPage)->withQueryString();
+        
+        // Whitelisted sorting
+        $allowedSorts = ['id', 'nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi'];
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
+        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
+
+        $produk = $query->orderBy($sort, $direction)->paginate($perPage)->withQueryString();
 
         $stats = [
             'total' => Produk::count(),
@@ -50,6 +56,8 @@ class ProdukController extends Controller
                 'search' => $request->search,
                 'perPage' => $perPage,
                 'columns' => $filters,
+                'sort' => $sort,
+                'direction' => $direction,
             ],
         ]);
     }

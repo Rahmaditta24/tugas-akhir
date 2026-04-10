@@ -59,7 +59,7 @@ export const titleCase = (v) => {
     if (!raw) return '-';
     const s = raw.replace(/_/g, ' ');
 
-    const acronyms = ['pt', 'cv', 'pens', 'ui', 'ugm', 'itb', 'ipb', 'ptn', 'pts', 'ptnbh', 'blu', 'satker'];
+    const acronyms = ['pt', 'cv', 'pens', 'ui', 'ugm', 'itb', 'ipb', 'ptn', 'pts', 'ptnbh', 'blu', 'satker', 'ii', 'iii', 'iv', 'vi', 'vii', 'viii', 'ix', 'kbm', 'pdb', 'pkm', 'pm-upud', 'pmm', 'pmp', 'puk', 'pw', 'diksi', 'dikti'];
     return s.split(/\s+/).map(word => {
         if (!word) return '';
         if (acronyms.includes(word)) return word.toUpperCase();

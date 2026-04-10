@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -16,11 +16,30 @@ export default function Index({
     const [search, setSearch] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(filters.perPage || 20);
     const [baseData, setBaseData] = useState(filters.baseData || 'statistik');
-    const [jenis, setJenis] = useState((filters.baseData === 'statistik' ? (filters.jenis || 'sampah') : (filters.jenis || 'sampah')));
+    const [jenis, setJenis] = useState(filters.jenis || 'Sampah');
+    const [batchType, setBatchType] = useState(filters.batch_type || (filters.baseData === 'pengabdian' ? 'Multitahun Lanjutan, Batch I & Batch II' : ''));
+    const [listrikMode, setListrikMode] = useState(filters.listrikMode || 'SAIDI');
     const [activeTab, setActiveTab] = useState(filters.tab || 'provinsi');
     const [columnFilters, setColumnFilters] = useState(filters.columns || {});
+    const [localColumnFilters, setLocalColumnFilters] = useState(filters.columns || {});
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
+
+    // Debounce Column Filters (Keystrokes in table headers)
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            const hasChanged = JSON.stringify(localColumnFilters) !== JSON.stringify(columnFilters);
+            
+            if (hasChanged) {
+                setColumnFilters(localColumnFilters);
+                router.get(route('admin.permasalahan.index'), {
+                    search, perPage, baseData, jenis, batch_type: batchType, sort, direction, tab: activeTab,
+                    columns: localColumnFilters, listrikMode
+                }, { preserveState: true, preserveScroll: true, replace: true });
+            }
+        }, 600);
+        return () => clearTimeout(handler);
+    }, [localColumnFilters]);
     const sumberDataMap = {
         sampah: 'Kementerian Lingkungan Hidup 2024',
         stunting: 'SSGI 2024 Kementerian Kesehatan',
@@ -28,9 +47,10 @@ export default function Index({
         krisis_listrik: 'Statistik PLN 2024',
         ketahanan_pangan: 'Peta Ketahanan & Kerentanan Pangan Indonesai (FSVA) 2024',
     };
+    const normalizedJenis = jenis.toLowerCase().replace(/ /g, '_');
     const sumberText = jenis === 'all'
         ? 'Sampah: Kementerian Lingkungan Hidup 2024 || Stunting: SSGI 2024 Kementerian Kesehatan || Gizi Buruk: SSGI 2024 Kementerian Kesehatan || Krisis Listrik: Statistik PLN 2024 || Ketahanan Pangan: Peta Ketahanan & Kerentanan Pangan Indonesai (FSVA) 2024'
-        : sumberDataMap[jenis] || '';
+        : sumberDataMap[normalizedJenis] || '';
 
     const handleSearch = (e) => {
         if (e) e.preventDefault();
@@ -39,6 +59,7 @@ export default function Index({
             perPage,
             baseData,
             jenis,
+            batch_type: batchType,
             sort,
             direction,
             tab: activeTab,
@@ -51,22 +72,7 @@ export default function Index({
     };
 
     const handleColumnFilterChange = (key, value) => {
-        const newFilters = { ...columnFilters, [key]: value };
-        setColumnFilters(newFilters);
-        router.get(route('admin.permasalahan.index'), {
-            search,
-            perPage,
-            baseData,
-            jenis,
-            sort,
-            direction,
-            tab: activeTab,
-            columns: newFilters
-        }, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true
-        });
+        setLocalColumnFilters(prev => ({ ...prev, [key]: value }));
     };
 
     const handlePerPageChange = (e) => {
@@ -77,6 +83,7 @@ export default function Index({
             perPage: next,
             baseData,
             jenis,
+            batch_type: batchType,
             sort,
             direction,
             tab: activeTab
@@ -90,8 +97,10 @@ export default function Index({
     const handleBaseDataChange = (e) => {
         const val = e.target.value;
         setBaseData(val);
-        const nextJenis = val === 'statistik' ? 'sampah' : jenis;
-        if (val === 'statistik') setJenis('sampah');
+        const nextJenis = val === 'statistik' ? 'Sampah' : jenis;
+        const nextBatch = val === 'pengabdian' ? 'Multitahun Lanjutan, Batch I & Batch II' : '';
+        if (val === 'statistik') setJenis('Sampah');
+        if (val === 'pengabdian') setBatchType(nextBatch);
         router.get(route('admin.permasalahan.index'), {
             search,
             perPage,
@@ -100,6 +109,7 @@ export default function Index({
             sort: val === 'statistik' ? 'id' : (val === 'penelitian' ? 'thn_pelaksanaan' : (val === 'pengabdian' ? 'thn_pelaksanaan_kegiatan' : 'tahun')),
             direction: 'desc',
             tab: activeTab,
+            batch_type: nextBatch,
             columns: {} // Reset column filters when switching base data
         }, {
             preserveState: true,
@@ -117,6 +127,7 @@ export default function Index({
             perPage,
             baseData,
             jenis: val,
+            batch_type: batchType,
             sort,
             direction,
             tab: activeTab
@@ -134,9 +145,30 @@ export default function Index({
             perPage,
             baseData,
             jenis,
+            batch_type: batchType,
+            listrikMode: listrikMode,
             sort,
             direction,
             tab: tab
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
+
+    const handleListrikModeChange = (mode) => {
+        setListrikMode(mode);
+        router.get(route('admin.permasalahan.index'), {
+            search,
+            perPage,
+            baseData,
+            jenis,
+            batch_type: batchType,
+            listrikMode: mode,
+            sort,
+            direction,
+            tab: activeTab
         }, {
             preserveState: true,
             preserveScroll: true,
@@ -164,10 +196,10 @@ export default function Index({
 
     return (
         <AdminLayout title="">
-            <div className="space-y-6">
+            <div className="space-y-4">
                 <PageHeader
-                    title={baseData === 'statistik' ? "Data Permasalahan" : "Data Permasalahan (Overlaps)"}
-                    subtitle={baseData === 'statistik' ? "Kelola data statistik per wilayah" : "Daftar riset yang berkaitan dengan kategori permasalahan"}
+                    title={baseData === 'statistik' ? "Data Permasalahan" : "Data Permasalahan"}
+                    subtitle={baseData === 'statistik' ? "Daftar data statistik per wilayah" : "Daftar riset terkait kategori permasalahan"}
                     icon={<span className="text-xl">⚠️</span>}
                 />
 
@@ -219,76 +251,119 @@ export default function Index({
                 )}
 
                 <div className="bg-white rounded-lg shadow-sm">
-                    <div className="p-6 border-b border-slate-200/60">
-                        <form onSubmit={handleSearch} className="flex gap-4 items-end flex-wrap">
-                            <div className="flex-1 min-w-[200px]">
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">{baseData === 'statistik' ? 'Cari Provinsi / Jenis' : 'Cari Riset'}</label>
-                                <input
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    placeholder={baseData === 'statistik' ? 'Cari provinsi atau jenis...' : 'Cari judul, peneliti / pengusul, nama institusi...'}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
+                    <div className="p-4 border-b border-slate-200/60">
+                        <form onSubmit={handleSearch} className="space-y-4">
+                            {/* Row 1: Search and Main Actions */}
+                            <div className="flex gap-2 items-end">
+                                <div className="flex-1">
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">{baseData === 'statistik' ? 'Cari Provinsi / Jenis' : 'Cari Riset'}</label>
+                                    <input
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        placeholder={baseData === 'statistik' ? 'Cari provinsi atau jenis...' : 'Cari judul, peneliti / pengusul...'}
+                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                    />
+                                </div>
+                                <button type="submit" className="px-5 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm">
+                                    Cari
+                                </button>
+                                {(filters.search || filters.batch_type || Object.values(columnFilters).some(v => v)) && (
+                                    <Link
+                                        href={route('admin.permasalahan.index', { baseData, jenis })}
+                                        onClick={() => setBatchType('')}
+                                        className="px-5 py-1.5 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-medium transition-colors text-sm"
+                                    >
+                                        Reset
+                                    </Link>
+                                )}
                             </div>
 
-                            <div className="w-[200px]">
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Base Data</label>
-                                <select
-                                    value={baseData}
-                                    onChange={handleBaseDataChange}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                                >
-                                    <option value="statistik">Data Statistik (Raw)</option>
-                                    <option value="penelitian">Data Penelitian</option>
-                                    <option value="pengabdian">Data Pengabdian</option>
-                                    <option value="hilirisasi">Data Hilirisasi</option>
-                                </select>
-                            </div>
+                            {/* Row 2: Secondary Filters */}
+                            <div className="flex gap-4 items-end flex-wrap border-t border-slate-100 pt-3">
+                                <div className="w-[180px]">
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Base Data</label>
+                                    <select
+                                        value={baseData}
+                                        onChange={handleBaseDataChange}
+                                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                                    >
+                                        <option value="statistik">Data Statistik (Raw)</option>
+                                        <option value="penelitian">Data Penelitian</option>
+                                        <option value="pengabdian">Data Pengabdian</option>
+                                        <option value="hilirisasi">Data Hilirisasi</option>
+                                    </select>
+                                </div>
+                                
+                                {baseData === 'pengabdian' && (
+                                    <div className="w-[180px]">
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Jenis Pengabdian</label>
+                                        <select
+                                            value={batchType}
+                                            onChange={(e) => {
+                                                setBatchType(e.target.value);
+                                                router.get(route('admin.permasalahan.index'), {
+                                                    search, perPage, baseData, jenis, batch_type: e.target.value, sort, direction, tab: activeTab
+                                                }, { preserveState: true, replace: true });
+                                            }}
+                                            className="w-full px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                                        >
+                                            <option value="Multitahun Lanjutan, Batch I & Batch II">Multitahun Lanjutan, Batch I & Batch II</option>
+                                            <option value="Kosabangsa">Kosabangsa</option>
+                                        </select>
+                                    </div>
+                                )}
 
-                            <div className="w-[180px]">
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Tipe Permasalahan</label>
-                                <select
-                                    value={jenis}
-                                    onChange={handleJenisChange}
-                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                                >
-                                    <option value="sampah">Sampah</option>
-                                    <option value="stunting">Stunting</option>
-                                    <option value="gizi_buruk">Gizi Buruk</option>
-                                    <option value="krisis_listrik">Krisis Listrik</option>
-                                    <option value="ketahanan_pangan">Ketahanan Pangan</option>
-                                </select>
-                            </div>
+                                <div className="w-[180px]">
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Tipe Permasalahan</label>
+                                    <select
+                                        value={jenis}
+                                        onChange={handleJenisChange}
+                                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                                    >
+                                        <option value="Sampah">Sampah</option>
+                                        <option value="Stunting">Stunting</option>
+                                        <option value="Gizi Buruk">Gizi Buruk</option>
+                                        <option value="Krisis Listrik">Krisis Listrik</option>
+                                        <option value="Ketahanan Pangan">Ketahanan Pangan</option>
+                                    </select>
+                                </div>
 
-                            <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
-                                Cari
-                            </button>
+                                {jenis === 'Krisis Listrik' && (
+                                    <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleListrikModeChange('SAIDI')}
+                                            className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${listrikMode === 'SAIDI' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                        >
+                                            SAIDI
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleListrikModeChange('SAIFI')}
+                                            className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${listrikMode === 'SAIFI' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                        >
+                                            SAIFI
+                                        </button>
+                                    </div>
+                                )}
 
-                            {(filters.search || Object.values(columnFilters).some(v => v)) && (
-                                <Link
-                                    href={route('admin.permasalahan.index', { baseData, jenis })}
-                                    className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-medium transition-colors"
-                                >
-                                    Reset
-                                </Link>
-                            )}
-
-                            <div className="ml-auto flex flex-col items-end">
-                                <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Per halaman</label>
-                                <select
-                                    value={perPage}
-                                    onChange={handlePerPageChange}
-                                    className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                                >
-                                    <option value={20}>20</option>
-                                    <option value={50}>50</option>
-                                    <option value={100}>100</option>
-                                </select>
+                                <div className="w-[120px] ml-auto">
+                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Per halaman</label>
+                                    <select
+                                        value={perPage}
+                                        onChange={handlePerPageChange}
+                                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                                    >
+                                        <option value={20}>20</option>
+                                        <option value={50}>50</option>
+                                        <option value={100}>100</option>
+                                    </select>
+                                </div>
                             </div>
                         </form>
                     </div>
 
-                    <div className="p-6 pt-2">
+                    <div className="p-4 pt-1">
                         {/* Tab Switcher (Only in Statistik mode) */}
                         {baseData === 'statistik' && (
                             <div className="flex gap-1 bg-slate-100 p-1 rounded-lg w-fit mb-6">
@@ -315,17 +390,17 @@ export default function Index({
                                         <AdminTable
                                             striped
                                             columns={
-                                                jenis === 'sampah' ? [
+                                                normalizedJenis === 'sampah' ? [
                                                     { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'timbulan_tahunan_ton', title: 'Timbulan Sampah Tahunan (ton)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                ] : jenis === 'krisis_listrik' ? [
+                                                ] : normalizedJenis === 'krisis_listrik' ? [
                                                     { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'satuan_pln_provinsi', title: 'Satuan PLN/Provinsi', render: (v) => display(v) },
                                                     { key: 'saidi', title: 'SAIDI (Jam/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
                                                     { key: 'saifi', title: 'SAIFI (Kali/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                ] : jenis === 'ketahanan_pangan' ? [
+                                                ] : normalizedJenis === 'ketahanan_pangan' ? [
                                                     { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'ikp', title: 'IKP', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
@@ -347,17 +422,17 @@ export default function Index({
                                         <AdminTable
                                             striped
                                             columns={
-                                                jenis === 'sampah' ? [
+                                                normalizedJenis === 'sampah' ? [
                                                     { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'timbulan_tahunan_ton', title: 'Timbulan Sampah Tahunan (ton)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                ] : jenis === 'krisis_listrik' ? [
+                                                ] : normalizedJenis === 'krisis_listrik' ? [
                                                     { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'satuan_pln_provinsi', title: 'Satuan PLN/Provinsi', render: (v) => display(v) },
                                                     { key: 'saidi', title: 'SAIDI (Jam/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
                                                     { key: 'saifi', title: 'SAIFI (Kali/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                ] : jenis === 'ketahanan_pangan' ? [
+                                                ] : normalizedJenis === 'ketahanan_pangan' ? [
                                                     { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'ikp', title: 'IKP', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
@@ -382,15 +457,16 @@ export default function Index({
                                 <AdminTable
                                     striped
                                     columnFilterEnabled={true}
-                                    filters={columnFilters}
+                                    filters={localColumnFilters}
                                     onFilterChange={handleColumnFilterChange}
+                                    sort={{ key: filters.sort, direction: filters.direction }}
                                     columns={[
                                         { key: 'no', title: 'No', className: 'w-16 text-center' },
-                                        { key: 'judul', title: 'Judul Riset', className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-sm leading-relaxed" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
-                                        { key: 'peneliti', title: 'Peneliti / Pengusul', className: 'min-w-[180px]', render: (_, item) => getVal(item, 'peneliti') },
-                                        { key: 'institusi', title: 'Institusi', className: 'min-w-[200px]', render: (_, item) => <div className="truncate" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
-                                        { key: 'provinsi', title: 'Provinsi', className: 'min-w-[150px]', render: (_, item) => <Badge color="blue">{getVal(item, 'provinsi')}</Badge> },
-                                        { key: 'tahun', title: 'Tahun', className: 'w-24 text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
+                                        { key: 'judul', title: 'Judul Riset', sortable: true, className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-sm leading-relaxed" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
+                                        { key: 'peneliti', title: 'Peneliti / Pengusul', sortable: true, className: 'min-w-[180px]', render: (_, item) => getVal(item, 'peneliti') },
+                                        { key: 'institusi', title: 'Institusi', sortable: true, className: 'min-w-[200px]', render: (_, item) => <div className="truncate" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
+                                        { key: 'provinsi', title: 'Provinsi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <Badge color="blue">{getVal(item, 'provinsi')}</Badge> },
+                                        { key: 'tahun', title: 'Tahun', sortable: true, className: 'min-w-[160px] text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
                                     ]}
                                     data={(data.data || []).map((item, index) => ({
                                         ...item,

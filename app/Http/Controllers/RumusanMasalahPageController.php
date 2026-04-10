@@ -22,7 +22,7 @@ class RumusanMasalahPageController extends Controller
 
     public function panduan()
     {
-        $categories = \App\Models\RumusanMasalahCategory::ordered()->get();
+        $categories = RumusanMasalahCategory::ordered()->get();
         return Inertia::render('RumusanMasalah/Panduan', [
             'categories' => $categories
         ]);

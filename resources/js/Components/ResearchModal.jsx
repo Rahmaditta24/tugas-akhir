@@ -1,5 +1,5 @@
 import React from 'react';
-import { getFieldColor } from '../utils/fieldColors';
+import { getFieldColor } from '../Utils/fieldColors';
 
 export default function ResearchModal({ isOpen, onClose, data }) {
     if (!isOpen || !data) return null;
@@ -76,16 +76,16 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                     </svg>
                 </button>
 
-                <div className="p-8">
+                <div className="p-5 md:p-8">
                     {/* Title */}
-                    <div className="mb-6">
-                        <h2 className="text-xl font-bold text-gray-900 leading-snug">
+                    <div className="mb-4 md:mb-6">
+                        <h2 className="text-lg md:text-xl font-bold text-gray-900 leading-snug pr-8">
                             {isInstitusi ? (data.institusi || data.nama_institusi) : safeValue(data.nama_laboratorium || data.judul || data.judul_kegiatan)}
                         </h2>
                     </div>
 
                     {/* Content Box */}
-                    <div className="bg-[#F8FAFC] rounded-2xl p-6 space-y-8 overflow-y-auto max-h-[60vh] custom-scrollbar">
+                    <div className="bg-[#F8FAFC] rounded-2xl p-4 md:p-6 space-y-5 md:space-y-8 overflow-y-auto max-h-[65vh] md:max-h-[60vh] custom-scrollbar">
                         {isProduk ? (
                             <>
                                 <div>
@@ -171,7 +171,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         </div>
                                         <div className="grid grid-cols-[130px_1fr] items-baseline">
                                             <span className="text-sm font-medium text-gray-700">Provinsi:</span>
-                                            <span>{safeValue(data.provinsi || data.prov_pt || data.prov_mitra)}</span>
+                                            <span>{titleCase(safeValue(data.provinsi || data.prov_pt || data.prov_mitra))}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -289,77 +289,63 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                         ) : isFasilitasLab ? (
                             <>
                                 <div>
-                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
-                                        Informasi Institusi
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight border-b border-slate-100 pb-2">
+                                        Informasi Umum
                                     </h3>
-                                    <div className="grid grid-cols-2 gap-4 font-semibold text-sm text-gray-900">
-                                        <div className="space-y-3">
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                <span className="text-sm font-medium text-gray-700">Institusi:</span>
-                                                <span>{safeValue(data.institusi || data.nama_institusi)}</span>
-                                            </div>
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                <span className="text-sm font-medium text-gray-700">Kategori PT:</span>
-                                                <span>{safeValue(data.kategori_pt || data.jenis_pt)}</span>
-                                            </div>
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                <span className="text-sm font-medium text-gray-700">Fakultas:</span>
-                                                <span>{safeValue(data.fakultas)}</span>
-                                            </div>
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                <span className="text-sm font-medium text-gray-700">Departemen:</span>
-                                                <span>{safeValue(data.departemen)}</span>
-                                            </div>
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                <span className="text-sm font-medium text-gray-700">Jenis Lab:</span>
-                                                <span>{safeValue(data.jenis_laboratorium)}</span>
-                                            </div>
+                                    <div className="space-y-4 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-600">Institusi:</span>
+                                            <span className="font-bold">{safeValue(data.institusi || data.nama_institusi)}</span>
                                         </div>
-                                        <div className="space-y-3">
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                <span className="text-sm font-medium text-gray-700">Status Akses:</span>
-                                                <span className={`px-2 py-0.5 rounded-full text-[10px] w-fit font-bold ${data.status_akses === 'Terbuka Untuk Umum' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-orange-100 text-orange-700 border border-orange-200'}`}>
-                                                    {safeValue(data.status_akses)}
-                                                </span>
-                                            </div>
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                <span className="text-sm font-medium text-gray-700">Akreditasi:</span>
-                                                <span>{safeValue(data.akreditasi)}</span>
-                                            </div>
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                <span className="text-sm font-medium text-gray-700">Jam Operasional:</span>
-                                                <span>{safeValue(data.jam_operasional)}</span>
-                                            </div>
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
-                                                <span className="text-sm font-medium text-gray-700">Jumlah Akses:</span>
-                                                <span>{safeValue(data.jumlah_akses || '0')}</span>
-                                            </div>
-                                            <div className="grid grid-cols-[130px_1fr] items-baseline border-t border-dashed border-slate-200 pt-2 mt-2">
-                                                <span className="text-sm font-bold text-gray-800">Total Alat:</span>
-                                                <span className="text-blue-600 font-bold">{safeValue(data.total_jumlah_alat || data.total_alat)}</span>
-                                            </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-600">Kategori PT:</span>
+                                            <span>{safeValue(data.kategori_pt || data.jenis_pt || data.ptn_pts || (data.kampus_ptnbh ? 'PTNBH' : null))}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline border-t border-dashed border-slate-200 pt-3">
+                                            <span className="text-sm font-bold text-gray-800">Total Alat:</span>
+                                            <span className="text-gray-800 font-bold">{(() => {
+                                                const total = data.total_jumlah_alat || data.total_alat;
+                                                if (total > 0) return total;
+                                                if (data.nama_alat && typeof data.nama_alat === 'string') {
+                                                    return data.nama_alat.split('|').filter(Boolean).length;
+                                                }
+                                                return 0;
+                                            })()} Alat</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
+                                    <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight border-b border-slate-100 pb-2">
                                         Lokasi
                                     </h3>
-                                    <div className="space-y-2 font-semibold text-sm text-gray-900">
-                                        <p className="text-sm font-normal text-gray-700">{safeValue(data.provinsi)}, {safeValue(data.kota || data.kabupaten)}</p>
+                                    <div className="space-y-3 font-semibold text-sm text-gray-900">
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-600">Provinsi:</span>
+                                            <span>{safeValue(data.provinsi)}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <span className="text-sm font-medium text-gray-600">Kota/Kab:</span>
+                                            <span>{safeValue(data.kota || data.kabupaten)}</span>
+                                        </div>
+                                        {data.kontak && data.kontak !== '-' && (
+                                            <div className="grid grid-cols-[130px_1fr] items-baseline border-t border-dashed border-slate-200 pt-3">
+                                                <span className="text-sm font-medium text-gray-600">Kontak:</span>
+                                                <span className="font-bold text-blue-600">{data.kontak}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
                                 {data.nama_alat && (
                                     <div>
-                                        <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight">
-                                            Daftar Alat
+                                        <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight border-b border-slate-100 pb-2">
+                                            Daftar Alat yang Tersedia
                                         </h3>
-                                        <div className="max-h-48 overflow-y-auto pr-2 custom-scrollbar border border-slate-100 rounded-lg p-3 bg-white shadow-sm">
+                                        <div className="max-h-56 overflow-y-auto pr-2 custom-scrollbar pr-2 mt-2">
                                             <div className="flex flex-wrap gap-2">
                                                 {data.nama_alat.split('|').filter(Boolean).map((tool, i) => (
-                                                    <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg border border-blue-100">
+                                                    <span key={i} className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-md border border-slate-200 uppercase tracking-tight">
                                                         {tool.trim()}
                                                     </span>
                                                 ))}
@@ -582,9 +568,9 @@ export default function ResearchModal({ isOpen, onClose, data }) {
 
                     {/* Bottom Pill (Only for Researcher Mode) */}
                     {!isInstitusi && currentFocus !== '-' && !isHilirisasiPage && (
-                        <div className="mt-6 flex">
+                        <div className="mt-4 md:mt-6 flex">
                             <span
-                                className="px-5 py-1.5 rounded-full text-white text-xs font-bold shadow-sm"
+                                className="px-4 md:px-5 py-1 md:py-1.5 rounded-full text-white text-[10px] md:text-xs font-bold shadow-sm"
                                 style={{ backgroundColor: getFieldColor(currentFocus) }}
                             >
                                 {currentFocus}

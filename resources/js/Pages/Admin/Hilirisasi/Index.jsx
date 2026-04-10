@@ -227,25 +227,27 @@ export default function Index({ hilirisasi, stats, filters }) {
                         onFilterChange={handleColumnFilterChange}
                         columns={[
                             { key: 'no', title: 'No', className: 'w-12 text-center' },
-                            { key: 'judul', title: 'Judul', className: 'min-w-[320px]', render: (v) => (<div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            { key: 'judul', title: 'Judul', sortable: true, className: 'min-w-[320px]', render: (v) => (<div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
                             { key: 'nama_pengusul', title: 'Nama Pengusul', sortable: true, render: (v) => normalizeNameWithDegrees(v) },
                             {
                                 key: 'direktorat',
                                 title: 'Direktorat',
                                 sortable: true,
+                                className: 'min-w-[220px]',
                                 render: (v) => (
                                     <Badge color="purple">{display(v)}</Badge>
                                 )
                             },
-                            { key: 'skema', title: 'Skema', className: 'min-w-[280px]', render: (v) => (<div className="max-w-md line-clamp-3 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
-                            { key: 'perguruan_tinggi', title: 'Perguruan Tinggi', className: 'min-w-[200px]', render: (v) => (<div className="max-w-md line-clamp-2 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            { key: 'skema', title: 'Skema', sortable: true, className: 'min-w-[220px]', render: (v) => (<div className="max-w-md line-clamp-3 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            { key: 'perguruan_tinggi', title: 'Perguruan Tinggi', sortable: true, className: 'min-w-[200px]', render: (v) => (<div className="max-w-md line-clamp-2 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
                             {
                                 key: 'tahun',
                                 title: 'Tahun',
-                                className: 'w-24 text-center',
+                                sortable: true,
+                                className: 'min-w-[160px] text-center',
                                 render: (v) => <Badge color="blue">{display(v)}</Badge>
                             },
-                            { key: 'mitra', title: 'Mitra', sclassName: 'min-w-[320px]', render: (v) => <div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={titleCase(v)}>{display(titleCase(v))}</div> },
+                            { key: 'mitra', title: 'Mitra', className: 'min-w-[320px]', render: (v) => <div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={titleCase(v)}>{display(titleCase(v))}</div> },
                             { key: 'aksi', title: 'Aksi', className: 'w-28' },
                         ]}
                         data={(hilirisasi.data || []).map((item, index) => ({

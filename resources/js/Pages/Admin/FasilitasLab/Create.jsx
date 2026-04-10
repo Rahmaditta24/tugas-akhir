@@ -64,7 +64,7 @@ export default function Create() {
                                         value={data.kategori_pt}
                                         onChange={e => setData('kategori_pt', e.target.value)}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kategori_pt ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        placeholder="PTNBH"
+                                        placeholder="Contoh: PTNBH"
                                         required
                                     />
                                     {errors.kategori_pt && <p className="mt-1 text-sm text-red-600">{errors.kategori_pt}</p>}

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { getFieldColor } from '../utils/fieldColors';
+import { getFieldColor } from '../Utils/fieldColors';
 
-export default function ResearchList({ researches = [], onAdvancedSearch, onItemClick, title = "Daftar Penelitian", isFiltered = false, isFasilitasLab = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
+export default function ResearchList({ researches = [], totalCount = 0, onAdvancedSearch, onItemClick, title = "Daftar Penelitian", isFiltered = false, isFasilitasLab = false, isPenelitianPage = false, isHilirisasiPage = false, isProdukPage = false, isPermasalahanPage = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
     const [searchRows, setSearchRows] = useState([
         { id: Date.now(), term: '', field: 'all', operator: 'AND' }
     ]);
@@ -145,7 +145,7 @@ export default function ResearchList({ researches = [], onAdvancedSearch, onItem
                                     onChange={(e) => updateRow(row.id, { term: e.target.value })}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSearchTrigger()}
                                     placeholder={getPlaceholder(row.field)}
-                                    className="w-full px-4 pr-10 py-2.5 border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none text-slate-600"
+                                    className="w-full px-4 pr-10 py-2.5 border border-slate-300 rounded-lg  shadow-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     autoComplete="off"
                                 />
                                 {row.term && (
@@ -230,15 +230,14 @@ export default function ResearchList({ researches = [], onAdvancedSearch, onItem
                     filteredResearches.map((research, index) => (
                         <div
                             key={index}
-                            className={`relative border border-slate-200 rounded-xl p-5 hover:bg-slate-50 transition-all bg-white group cursor-pointer ${!isFasilitasLab ? 'pl-7' : ''}`}
-                            onClick={() => onItemClick && onItemClick(research.id, research.bidang_fokus)}
+                            className={`border ${isPenelitianPage || isHilirisasiPage || isProdukPage || isPermasalahanPage ? 'border-slate-200 rounded-xl bg-[#f8fafc]' : 'border-gray-200 rounded-md bg-white'} p-4 ${onItemClick && (isPenelitianPage || isHilirisasiPage || isProdukPage || isPermasalahanPage) ? 'cursor-pointer hover:shadow-md hover:border-blue-200 transition-all duration-200' : ''}`}
+                            onClick={() => {
+                                if (!onItemClick) return;
+                                if (isPenelitianPage || isHilirisasiPage || isProdukPage || isFasilitasLab || isPermasalahanPage) {
+                                    onItemClick(research);
+                                }
+                            }}
                         >
-                            {!isFasilitasLab && (
-                                <div
-                                    className="absolute left-0 top-0 bottom-0 w-1.5 rounded-l-xl opacity-80"
-                                    style={{ backgroundColor: getFieldColor(research.bidang_fokus || research.bidang) }}
-                                />
-                            )}
 
                             {isFasilitasLab ? (
                                 <div>
@@ -254,9 +253,9 @@ export default function ResearchList({ researches = [], onAdvancedSearch, onItem
 
                                     <div className="space-y-0.5 text-[12.5px] text-slate-600">
                                         <p><span className="font-bold text-slate-700">Institusi:</span> {research.institusi || '-'}</p>
-                                        <p><span className="font-bold text-slate-700">Fakultas:</span> {research.fakultas || '-'}</p>
+                                        {/* <p><span className="font-bold text-slate-700">Fakultas:</span> {research.fakultas || '-'}</p>
                                         <p><span className="font-bold text-slate-700">Departemen:</span> {research.departemen || '-'}</p>
-                                        <p><span className="font-bold text-slate-700">Status Akses:</span> {research.status_akses || '-'}</p>
+                                        <p><span className="font-bold text-slate-700">Status Akses:</span> {research.status_akses || '-'}</p> */}
                                     </div>
 
                                     <div className="mt-4 flex justify-between items-end">
@@ -269,31 +268,63 @@ export default function ResearchList({ researches = [], onAdvancedSearch, onItem
                                     </div>
                                 </div>
                             ) : (
-                                <div className="pl-0">
-                                    <h4 className="font-semibold text-slate-800 mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tight">{research.judul}</h4>
-                                    <div className="text-sm text-slate-600 space-y-1">
-                                        <p><strong>Universitas:</strong> {research.institusi}</p>
-                                        <p><strong>Peneliti:</strong> {research.nama}</p>
-                                        {research.tema_prioritas && (
-                                            <p><strong>Tema Prioritas:</strong> {research.tema_prioritas}</p>
+                                <div className="pl-0 flex flex-col h-full">
+                                    {isHilirisasiPage ? (
+                                        <div className="flex flex-col gap-2 mb-3">
+                                            {((research.tkt && research.tkt !== '-') || research.bidang_fokus || research.bidang) && (
+                                                <div className="self-start">
+                                                    <span 
+                                                        className="inline-block px-3 py-1.5 rounded-xl text-[11.5px] font-bold text-white shadow-sm leading-relaxed max-w-full break-words"
+                                                        style={{ backgroundColor: (research.tkt && research.tkt !== '-') ? '#2A3F54' : getFieldColor(research.bidang_fokus || research.bidang) }}
+                                                    >
+                                                        {(research.tkt && research.tkt !== '-') ? `TKT ${research.tkt}` : (research.bidang_fokus || research.bidang)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                            <h4 className="font-bold text-[#334155] text-[15px] leading-snug">{research.judul || '-'}</h4>
+                                        </div>
+                                    ) : (
+                                        <div className="flex justify-between items-start gap-4 mb-3">
+                                            <h4 className="font-bold text-[#334155] text-[15px] leading-snug">{research.judul || '-'}</h4>
+                                            {((research.tkt && research.tkt !== '-') || research.bidang_fokus || research.bidang) && (
+                                                <div className="shrink-0 text-right ml-auto">
+                                                    <span 
+                                                        className="inline-block px-3 py-1.5 rounded-xl text-[11.5px] font-bold text-white shadow-sm leading-tight"
+                                                        style={{ backgroundColor: (research.tkt && research.tkt !== '-') ? '#2A3F54' : getFieldColor(research.bidang_fokus || research.bidang) }}
+                                                    >
+                                                        {(research.tkt && research.tkt !== '-') ? `TKT ${research.tkt}` : (research.bidang_fokus || research.bidang)}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    <div className="text-[13px] text-slate-500 space-y-1.5 flex-1 mb-4">
+                                        {(isProdukPage || research.nama_inventor || research.inventor) ? (
+                                            <p><strong className="text-slate-700 font-bold">Inventor:</strong> {research.nama_inventor || research.inventor || research.nama || research.researcher || '-'}</p>
+                                        ) : (
+                                            <p><strong className="text-slate-700 font-bold">Peneliti:</strong> {research.nama || research.researcher || '-'}</p>
                                         )}
-                                        {research.bidang_fokus && (
-                                            <div className="pt-2">
-                                                <span
-                                                    className="inline-block px-4 py-1 rounded-full text-white text-[10px] font-bold uppercase tracking-wider shadow-sm"
-                                                    style={{ backgroundColor: getFieldColor(research.bidang_fokus) }}
-                                                >
-                                                    {research.bidang_fokus}
-                                                </span>
-                                            </div>
-                                        )}
+                                        <p><strong className="text-slate-700 font-bold">Universitas:</strong> {research.institusi || research.nama_institusi || '-'}</p>
+                                        {(research.provinsi || research.prov_pt) && (research.provinsi || research.prov_pt) !== '-' && <p><strong className="text-slate-700 font-bold">Provinsi:</strong> {research.provinsi || research.prov_pt}</p>}
+                                        {(research.skema || research.nama_skema) && (research.skema || research.nama_skema) !== '-' && <p><strong className="text-slate-700 font-bold">Skema:</strong> {research.skema || research.nama_skema}</p>}
                                     </div>
+                                    {(research.tahun || research.thn_pelaksanaan || research.thn_pelaksanaan_kegiatan) && (research.tahun || research.thn_pelaksanaan || research.thn_pelaksanaan_kegiatan) !== '-' && (
+                                        <div className="text-slate-400 text-[13px] font-medium mt-auto">
+                                            {research.tahun || research.thn_pelaksanaan || research.thn_pelaksanaan_kegiatan}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
                     ))
                 )}
             </div>
+            
+            {(Array.isArray(filteredResearches) && filteredResearches.length > 0 && totalCount > 0) && (
+                <div className="mt-6 text-center text-slate-500 font-medium">
+                    Menampilkan {filteredResearches.length} dari {totalCount} hasil
+                </div>
+            )}
         </div>
     );
 }

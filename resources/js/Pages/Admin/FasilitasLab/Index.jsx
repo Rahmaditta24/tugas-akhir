@@ -11,7 +11,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
     const [perPage, setPerPage] = useState(filters.perPage || 20);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
-    const [columnFilters, setColumnFilters] = useState(filters.filters || {});
+    const [columnFilters, setColumnFilters] = useState(filters.columns || {});
     const [toolsModal, setToolsModal] = useState({ show: false, title: '', items: [] });
 
     const sort = filters.sort || 'id';
@@ -233,27 +233,27 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                     <div className="overflow-x-auto">
                         <AdminTable
                             striped
-                            localFilterEnabled={false}
+                            columnFilterEnabled={true}
                             emptyText="Tidak ada data fasilitas laboratorium"
                             columns={[
                                 { key: 'no', title: 'No', className: 'w-16 text-center' },
-                                { key: 'nama_laboratorium', title: 'Nama Lab', className: 'min-w-[200px]', sortable: true, render: (v) => <div className="truncate" title={fmt(v)}>{display(v)}</div> },
-                                { key: 'institusi', title: 'Institusi', className: 'min-w-[180px]', sortable: true, render: (v) => <div className="truncate" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'nama_laboratorium', title: 'Nama Lab', className: 'min-w-[200px]', sortable: true, render: (v) => <div className="whitespace-normal leading-relaxed text-sm font-medium text-slate-700" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'institusi', title: 'Institusi', className: 'min-w-[180px] max-w-[250px]', sortable: true, render: (v) => <div className="whitespace-normal leading-relaxed text-sm font-medium text-slate-700" title={fmt(v)}>{display(v)}</div> },
                                 {
                                     key: 'nama_alat',
                                     title: 'Nama Alat',
-                                    className: 'min-w-[300px] py-4',
+                                    className: 'min-w-[300px] max-w-[350px] y-2',
                                     render: (v, row) => {
                                         const cleaned = fmt(v);
                                         if (!cleaned) return display(v);
-                                        const items = cleaned.split(/\r?\n|;\s*/).map(i => i.replace(/^\d+\.\s*/, '').trim()).filter(i => i !== '');
+                                        const items = cleaned.split(/\r?\n|;\s*|\|\s*/).map(i => i.replace(/^\d+\.\s*/, '').trim()).filter(i => i !== '');
                                         if (items.length === 0) return display(v);
 
                                         return (
                                             <div className="space-y-1">
                                                 <ul className="text-sm text-slate-600 space-y-1">
                                                     {items.slice(0, 4).map((item, i) => (
-                                                        <li key={i} className="truncate" title={item}>
+                                                        <li key={i} className="leading-tight" title={item}>
                                                             <span className="font-medium text-slate-400 mr-1.5">{items.length > 1 ? `${i + 1}.` : ''}</span>
                                                             {item}
                                                         </li>
@@ -274,8 +274,8 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                         );
                                     }
                                 },
-                                { key: 'total_jumlah_alat', title: 'Total Jumlah Alat', className: 'w-32 text-center', sortable: true, render: (v) => <Badge color="blue">{display(v === 0 ? '0' : v)}</Badge> },
-                                { key: 'kontak', title: 'Kontak', className: 'min-w-[140px]', render: (v) => display(v) },
+                                { key: 'total_jumlah_alat', title: 'Total Jumlah Alat', className: 'w-30 text-center', sortable: true, filterable: false, render: (v) => <Badge color="blue">{display(v === 0 ? '0' : v)}</Badge> },
+                                /*{ key: 'kontak', title: 'Kontak', className: 'min-w-[140px]', filterable: false, render: (v) => display(v) },*/
                                 { key: 'aksi', title: 'Aksi', className: 'w-24' },
                             ]}
                             data={tableData}

@@ -175,7 +175,8 @@ class FasilitasLabPageController extends Controller
                 'status_akses',
                 'kota',
                 'nama_alat',
-                'total_jumlah_alat'
+                'total_jumlah_alat',
+                'kontak'
             )
                 ->latest('id')
                 ->limit(50)

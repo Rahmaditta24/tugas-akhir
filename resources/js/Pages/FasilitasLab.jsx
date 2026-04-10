@@ -6,12 +6,14 @@ import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
 import StatisticsCards from '../Components/StatisticsCards';
+import ResearchModal from '../Components/ResearchModal';
 
 export default function FasilitasLab({ mapData = [], researches = [], stats = {}, title, isFiltered = false, filters: initialFilters = {}, filterOptions: serverFilterOptions = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
     const [filters, setFilters] = useState(initialFilters);
     const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
     const [currentStats, setCurrentStats] = useState(stats);
+    const [selectedLab, setSelectedLab] = useState(null);
 
     // Update currentStats when global stats from props change
     useEffect(() => {
@@ -119,7 +121,7 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}
-                            onItemClick={(id, bidang) => window.openResearchDetail && window.openResearchDetail(id, bidang)}
+                            onItemClick={setSelectedLab}
                             title="Daftar Fasilitas Lab"
                             isFiltered={isFiltered}
                             isFasilitasLab={true}
@@ -133,6 +135,20 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
                     </div>
                 </section>
             </div>
+
+            {selectedLab && (
+                <ResearchModal
+                    isOpen={!!selectedLab}
+                    data={{
+                        ...selectedLab,
+                        isFasilitasLab: true,
+                        currentDataType: 'fasilitas-lab',
+                        kampus_ptnbh: selectedLab.kampus_ptnbh || (filters.kampus_ptnbh ? 'PTNBH' : null),
+                        kategori_pt: selectedLab.kategori_pt || selectedLab.jenis_pt || selectedLab.ptn_pts || (filters.kampus_ptnbh ? 'PTNBH' : null),
+                    }}
+                    onClose={() => setSelectedLab(null)}
+                />
+            )}
         </MainLayout>
     );
 }

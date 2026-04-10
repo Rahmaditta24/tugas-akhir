@@ -1,18 +1,7 @@
 import React, { useState, useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import { titleCase } from '../Utils/format';
 
-function exportToExcel(rows, columns, filename) {
-    const header = columns.map((c) => c.label).join('\t');
-    const lines = rows.map((r) => columns.map((c) => r[c.key] ?? '').join('\t'));
-    const tsv = [header, ...lines].join('\n');
-    const blob = new Blob(['\uFEFF' + tsv], { type: 'text/tab-separated-values;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename + '.xls';
-    a.click();
-    URL.revokeObjectURL(url);
-}
 
 export default function PermasalahanDataTable({
     /** permasalahanStats[activeDataType] – array of {provinsi, nilai, satuan} */
@@ -66,52 +55,85 @@ export default function PermasalahanDataTable({
     const max = total ? Math.max(...values) : 0;
     const min = total ? Math.min(...values) : 0;
 
-    const colLabel = `${titleCase(activeDataType)} (${satuan || 'nilai'})`;
+    const colLabel = `${titleCase(activeDataType)} ${satuan ? `(${satuan})` : ''}`.toUpperCase();
     const exportCols = [
         { key: nameKey, label: tab === 'provinsi' ? 'Provinsi' : 'Kabupaten/Kota' },
         { key: 'nilai', label: colLabel },
     ];
 
+    const handleDownloadExcel = () => {
+        const excelColLabel = `${titleCase(activeDataType)}${satuan ? ` (${satuan.toLowerCase()})` : ''}`;
+
+        const dataToExport = filtered.map((row, index) => ({
+            No: index + 1,
+            [tab === 'provinsi' ? 'Provinsi' : 'Kabupaten/Kota']: titleCase(row[nameKey] || '-'),
+            [excelColLabel]: row.nilai ?? 0,
+        }));
+
+        const sheetName = tab === 'provinsi' ? 'Data Provinsi' : 'Data Kabupaten';
+
+        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+        XLSX.writeFile(workbook, `Data_${activeDataType.replace(/\s+/g, '_')}_${tab}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    };
+
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-md shadow-sm border border-gray-200 overflow-hidden mb-6">
             {/* Header */}
-            <div className="bg-[#3B82F6] px-6 py-3 flex items-center justify-center">
-                <h2 className="text-white font-bold text-sm tracking-wide">
+            <div className="bg-[#2563EB] py-3 flex items-center justify-center">
+                <h2 className="text-white font-bold text-[15px] tracking-wide">
                     Data {titleCase(activeDataType)}
                 </h2>
             </div>
 
             {/* Search + Buttons */}
-            <div className="px-6 py-4 border-b border-gray-100 flex flex-wrap gap-2 items-center">
-                <input
-                    type="text"
-                    placeholder="Cari wilayah atau nilai..."
-                    value={search}
-                    onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                    className="flex-1 min-w-[180px] border border-gray-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                />
+            <div className="bg-gray-50/50 px-4 py-3 border-b border-gray-200 flex flex-wrap gap-3 items-center">
+                <div className="relative flex-1 min-w-[250px]">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
+                        <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                        </svg>
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Cari wilayah atau nilai..."
+                        value={search}
+                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                </div>
                 <button
                     onClick={() => setPage(1)}
-                    className="px-3 py-1.5 bg-[#3B82F6] text-white text-sm rounded-md hover:bg-blue-600 transition-colors"
+                    className="inline-flex items-center px-4 py-2 bg-[#2563EB] border border-transparent rounded-md font-semibold text-white text-sm hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
                 >
+                    <svg className="h-4 w-4 mr-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                    </svg>
                     Search
                 </button>
                 <button
                     onClick={() => { setSearch(''); setPage(1); setSortDir('desc'); }}
-                    className="px-3 py-1.5 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors"
+                    className="inline-flex items-center px-4 py-2 bg-[#64748B] border border-transparent rounded-md font-semibold text-white text-sm hover:bg-slate-600 transition-colors shadow-sm"
                 >
                     Reset
                 </button>
                 <button
-                    onClick={() => exportToExcel(sorted, exportCols, `Data_${activeDataType}`)}
-                    className="px-3 py-1.5 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition-colors"
+                    onClick={handleDownloadExcel}
+                    className="inline-flex items-center px-4 py-2 bg-[#16A34A] border border-transparent rounded-md font-semibold text-white text-sm hover:bg-green-700 transition-colors shadow-sm"
                 >
+                    <svg className="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <path d="M12 18v-6"></path>
+                        <path d="M9 15l3 3 3-3"></path>
+                    </svg>
                     Excel
                 </button>
             </div>
 
             {/* Summary */}
-            <div className="px-6 py-3 text-xs text-gray-600 border-b border-gray-100 flex flex-wrap gap-x-6 gap-y-1">
+            <div className="px-6 py-4 text-[13px] text-gray-700 border-b border-gray-200 flex flex-wrap justify-center gap-x-6 gap-y-2">
                 <span>Total Data: <strong>{total}</strong></span>
                 <span>Rata-rata: <strong>{fmt(avg)} {satuan}</strong></span>
                 <span>Tertinggi: <strong>{fmt(max)} {satuan}</strong></span>
@@ -119,17 +141,17 @@ export default function PermasalahanDataTable({
             </div>
 
             {/* Tab Provinsi / Kab */}
-            <div className="px-6 pt-3 flex gap-6 text-sm border-b border-gray-100">
+            <div className="flex border-b border-gray-200 bg-white">
                 <button
                     onClick={() => { setTab('provinsi'); setPage(1); }}
-                    className={`pb-2 font-medium border-b-2 transition-colors ${tab === 'provinsi' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    className={`flex-1 text-center py-3 text-sm font-semibold border-b-2 transition-colors ${tab === 'provinsi' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                 >
                     Provinsi
                 </button>
                 {kabupatenRows.length > 0 && (
                     <button
                         onClick={() => { setTab('kabupaten'); setPage(1); }}
-                        className={`pb-2 font-medium border-b-2 transition-colors ${tab === 'kabupaten' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                        className={`flex-1 text-center py-3 text-sm font-semibold border-b-2 transition-colors ${tab === 'kabupaten' ? 'border-[#2563EB] text-[#2563EB]' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}
                     >
                         Kabupaten/Kota
                     </button>
@@ -137,27 +159,27 @@ export default function PermasalahanDataTable({
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto bg-[#F8FAFC]">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50 border-b border-gray-200">
+                    <thead className="bg-[#F8FAFC] border-b-2 border-slate-200 shadow-sm">
                         <tr>
-                            <th className="px-6 py-3 text-left font-semibold text-gray-600 w-12">No</th>
-                            <th className="px-6 py-3 text-left font-semibold text-gray-600">
-                                {tab === 'provinsi' ? 'Provinsi' : 'Kabupaten/Kota'}
+                            <th className="px-6 py-4 text-left font-bold tracking-wider text-gray-700 uppercase text-[12px] w-16">NO</th>
+                            <th className="px-6 py-4 text-left font-bold tracking-wider text-gray-700 uppercase text-[12px]">
+                                {tab === 'provinsi' ? 'PROVINSI' : 'KABUPATEN/KOTA'}
                                 <span
-                                    className="ml-1 cursor-pointer text-gray-400 hover:text-gray-600"
-                                    title="Sort by name"
+                                    className="ml-2 cursor-pointer text-gray-400 hover:text-gray-600 font-normal"
+                                    title="Urutkan"
                                 >
                                     ⇅
                                 </span>
                             </th>
                             <th
-                                className="px-6 py-3 text-right font-semibold text-gray-600 cursor-pointer select-none hover:text-blue-600"
+                                className="px-6 py-4 text-left font-bold tracking-wider text-gray-700 uppercase text-[12px] cursor-pointer select-none hover:text-[#2563EB]"
                                 onClick={() => setSortDir((d) => (d === 'desc' ? 'asc' : 'desc'))}
                             >
                                 {colLabel}
-                                <span className="ml-1 text-blue-500">
-                                    {sortDir === 'desc' ? '↓ Tertinggi' : '↑ Terendah'}
+                                <span className="ml-2 text-[#2563EB] font-normal">
+                                    {sortDir === 'desc' ? '↓ TERTINGGI' : '↑ TERENDAH'}
                                 </span>
                             </th>
                         </tr>
@@ -171,12 +193,12 @@ export default function PermasalahanDataTable({
                             </tr>
                         ) : (
                             paginated.map((row, idx) => (
-                                <tr key={idx} className="hover:bg-blue-50/40 transition-colors">
-                                    <td className="px-6 py-3 text-gray-500">{(safePage - 1) * perPage + idx + 1}</td>
-                                    <td className="px-6 py-3 text-blue-600 font-medium">
+                                <tr key={idx} className="bg-white border-b border-gray-100 hover:bg-slate-50 transition-colors">
+                                    <td className="px-6 py-4 text-gray-600 text-[13px]">{(safePage - 1) * perPage + idx + 1}</td>
+                                    <td className="px-6 py-4 text-[#334155] font-semibold text-[13.5px]">
                                         {row[nameKey] || '-'}
                                     </td>
-                                    <td className="px-6 py-3 text-right text-blue-600 font-medium">
+                                    <td className="px-6 py-4 text-[#2563EB] font-semibold text-[13.5px]">
                                         {fmt(row.nilai)}
                                     </td>
                                 </tr>

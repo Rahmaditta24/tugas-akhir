@@ -89,7 +89,7 @@ class PengabdianController extends Controller
 
     public function index(Request $request)
     {
-        $type = $request->get('type', 'multitahun');
+        $type = $request->get('type', 'batch');
 
         $query = Pengabdian::query();
         if ($type === 'kosabangsa') {
@@ -97,10 +97,9 @@ class PengabdianController extends Controller
                 $q->where('batch_type', 'kosabangsa')
                   ->orWhere('nama_skema', 'like', '%Kosabangsa%');
             });
-        } elseif ($type === 'batch') {
-            $query->whereIn('batch_type', ['batch_i', 'batch_ii', 'batch']);
         } else {
-            $query->whereIn('batch_type', ['multitahun', 'multitahun_lanjutan']);
+            // Include both old batch and multitahun types in the default tab
+            $query->whereIn('batch_type', ['batch_i', 'batch_ii', 'batch', 'multitahun', 'multitahun_lanjutan']);
         }
 
         // Apply global search
@@ -133,9 +132,13 @@ class PengabdianController extends Controller
         if ($perPage < 10) $perPage = 10;
         if ($perPage > 100) $perPage = 100;
 
+        // Whitelisted sorting
+        $allowedSorts = ['id', 'nama', 'nidn', 'nama_institusi', 'judul', 'prov_pt', 'kab_pt', 'thn_pelaksanaan_kegiatan', 'nama_skema'];
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
+        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
+
         $pengabdian = $query
-            ->orderByDesc('id')
-            ->orderByDesc('thn_pelaksanaan_kegiatan')
+            ->orderBy($sort, $direction)
             ->paginate($perPage)
             ->withQueryString();
 
@@ -152,8 +155,7 @@ class PengabdianController extends Controller
 
         $stats = [
             'total' => Pengabdian::count(),
-            'multitahun' => Pengabdian::whereIn('batch_type', ['multitahun', 'multitahun_lanjutan'])->count(),
-            'batch' => Pengabdian::whereIn('batch_type', ['batch_i', 'batch_ii', 'batch'])->count(),
+            'batch' => Pengabdian::whereIn('batch_type', ['batch_i', 'batch_ii', 'batch', 'multitahun', 'multitahun_lanjutan'])->count(),
             'kosabangsa' => Pengabdian::where(function($q) {
                 $q->where('batch_type', 'kosabangsa')
                   ->orWhere('nama_skema', 'like', '%Kosabangsa%');
@@ -169,6 +171,8 @@ class PengabdianController extends Controller
                 'type' => $type,
                 'perPage' => $perPage,
                 'columns' => $request->filters ?? [],
+                'sort' => $sort,
+                'direction' => $direction,
             ],
         ]);
     }
