@@ -75,20 +75,11 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
         try {
             console.log('Starting export with filters:', filters);
-            // Build query string that supports arrays
-            const queryParts = [];
-            Object.keys(filters).forEach(key => {
-                const value = filters[key];
-                if (Array.isArray(value)) {
-                    // For arrays, add each value with the same key
-                    value.forEach(v => queryParts.push(`${key}[]=${encodeURIComponent(v)}`));
-                } else if (value) {
-                    queryParts.push(`${key}=${encodeURIComponent(value)}`);
-                }
-            });
-            const queryString = queryParts.join('&');
+            // Get all current active search and filter parameters from URL
+            const queryString = new URLSearchParams(window.location.search).toString();
 
             const response = await fetch(`/api/penelitian/export?${queryString}`);
+
 
             if (!response.ok) {
                 const errorText = await response.text();

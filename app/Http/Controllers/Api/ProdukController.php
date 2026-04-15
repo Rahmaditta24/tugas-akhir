@@ -57,6 +57,53 @@ class ProdukController extends Controller
                 $query->search($request->search);
             }
 
+            if ($request->filled('queries')) {
+                $queries = json_decode($request->queries, true);
+                if (is_array($queries)) {
+                    $query->where(function ($q) use ($queries) {
+                        foreach ($queries as $index => $row) {
+                            $term = trim($row['term'] ?? '');
+                            if (empty($term)) continue;
+
+                            $field = $row['field'] ?? 'all';
+                            $operator = strtoupper($row['operator'] ?? 'AND');
+
+                            $applyCondition = function($queryObj) use ($term, $field) {
+                                if ($field === 'all') {
+                                    $queryObj->where(function($sub) use ($term) {
+                                        $sub->where('nama_produk', 'like', "%$term%")
+                                            ->orWhere('nama_inventor', 'like', "%$term%")
+                                            ->orWhere('institusi', 'like', "%$term%")
+                                            ->orWhere('bidang', 'like', "%$term%");
+                                    });
+                                } else {
+                                    $dbField = match($field) {
+                                        'title' => 'nama_produk',
+                                        'university' => 'institusi',
+                                        'researcher' => 'nama_inventor',
+                                        'field' => 'bidang',
+                                        default => 'nama_produk'
+                                    };
+                                    $queryObj->where($dbField, 'like', "%$term%");
+                                }
+                            };
+
+                            if ($index === 0) {
+                                $applyCondition($q);
+                            } else {
+                                if ($operator === 'OR') {
+                                    $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                } elseif ($operator === 'AND NOT') {
+                                    $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                } else {
+                                    $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
             return response()->stream(function () use ($query) {
                 echo '[';
                 $first = true;

@@ -141,16 +141,7 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
             position: 'top-right'
         });
         try {
-            const queryParts = [];
-            Object.keys(filters).forEach(key => {
-                const value = filters[key];
-                if (Array.isArray(value)) {
-                    value.forEach(v => queryParts.push(`${key}[]=${encodeURIComponent(v)}`));
-                } else if (value) {
-                    queryParts.push(`${key}=${encodeURIComponent(value)}`);
-                }
-            });
-            const queryString = queryParts.join('&');
+            const queryString = new URLSearchParams(window.location.search).toString();
 
             const response = await fetch(`/api/hilirisasi/export?${queryString}`);
             if (!response.ok) throw new Error('Gagal mengambil data');

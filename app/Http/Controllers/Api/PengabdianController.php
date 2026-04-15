@@ -88,6 +88,55 @@ class PengabdianController extends Controller
                 $query->search($request->search);
             }
 
+            if ($request->filled('queries')) {
+                $queries = json_decode($request->queries, true);
+                if (is_array($queries)) {
+                    $query->where(function ($q) use ($queries) {
+                        foreach ($queries as $index => $row) {
+                            $term = trim($row['term'] ?? '');
+                            if (empty($term)) continue;
+
+                            $field = $row['field'] ?? 'all';
+                            $operator = strtoupper($row['operator'] ?? 'AND');
+
+                            $applyCondition = function($queryObj) use ($term, $field) {
+                                if ($field === 'all') {
+                                    $queryObj->where(function($sub) use ($term) {
+                                        $sub->where('judul', 'like', "%$term%")
+                                            ->orWhere('nama', 'like', "%$term%")
+                                            ->orWhere('nama_institusi', 'like', "%$term%")
+                                            ->orWhere('bidang_fokus', 'like', "%$term%");
+                                    });
+                                } else {
+                                    $dbField = match($field) {
+                                        'title' => 'judul',
+                                        'university' => 'nama_institusi',
+                                        'researcher' => 'nama',
+                                        'field' => 'bidang_fokus',
+                                        'skema' => 'nama_skema',
+                                        'cluster' => 'klaster',
+                                        default => 'judul'
+                                    };
+                                    $queryObj->where($dbField, 'like', "%$term%");
+                                }
+                            };
+
+                            if ($index === 0) {
+                                $applyCondition($q);
+                            } else {
+                                if ($operator === 'OR') {
+                                    $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                } elseif ($operator === 'AND NOT') {
+                                    $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                } else {
+                                    $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
             return response()->stream(function () use ($query) {
                 echo '[';
                 $first = true;

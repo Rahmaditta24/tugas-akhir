@@ -147,18 +147,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         });
 
         try {
-            const queryParts = [];
-            const activeFilters = { ...filters };
-
-            Object.keys(activeFilters).forEach(key => {
-                const value = activeFilters[key];
-                if (Array.isArray(value)) {
-                    value.forEach(v => queryParts.push(`${key}[]=${encodeURIComponent(v)}`));
-                } else if (value) {
-                    queryParts.push(`${key}=${encodeURIComponent(value)}`);
-                }
-            });
-            const queryString = queryParts.join('&');
+            const queryString = new URLSearchParams(window.location.search).toString();
 
             const response = await fetch(`/api/pengabdian/export?${queryString}`);
             if (!response.ok) throw new Error('Gagal mengambil data');
