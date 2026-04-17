@@ -44,7 +44,7 @@ export const fmt = (v) => {
  * @param {string} fallback Nilai cadangan jika v kosong (default: '-')
  * @returns {string}
  */
-export const display = (v, fallback = 'null') => {
+export const display = (v, fallback = '-') => {
     const cleaned = fmt(v);
     return cleaned || fallback;
 };
@@ -74,6 +74,6 @@ export const titleCase = (v) => {
  */
 export const sentenceCase = (v) => {
     const s = fmt(v);
-    if (!s) return 'null';
+    if (!s) return '-';
     return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 };

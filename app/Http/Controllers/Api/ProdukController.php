@@ -109,15 +109,18 @@ class ProdukController extends Controller
                 $first = true;
 
                 $query->select(
-                    'institusi',
-                    'provinsi',
+                    'id',
                     'nama_produk',
-                    'deskripsi_produk',
-                    'tkt',
+                    'institusi',
                     'bidang',
+                    'tkt',
+                    'provinsi',
                     'nama_inventor',
                     'email_inventor',
-                    'nomor_paten'
+                    'nomor_paten',
+                    'latitude',
+                    'longitude',
+                    'deskripsi_produk'
                 )
                 ->orderBy('institusi')
                 ->orderBy('nama_produk')

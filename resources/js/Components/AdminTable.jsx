@@ -15,15 +15,18 @@ export default function AdminTable({
     columnFilterEnabled = false,
     filters = null, // External filter state
     onFilterChange = null, // External change handler
+    // --- Bulk selection ---
+    selectionEnabled = false,
+    selectedItemIds = [],
+    onSelectionChange = null,
 }) {
     const [query, setQuery] = useState('');
     const [internalFilterValues, setFilterValues] = useState({});
 
-    // Determine if we are in controlled mode
+    // Controlled vs uncontrolled filter mode
     const isControlled = !!onFilterChange;
     const filterValues = isControlled ? (filters || {}) : internalFilterValues;
 
-    // Handle filter change
     const handleFilterChange = (key, value) => {
         if (isControlled) {
             onFilterChange(key, value);
@@ -31,11 +34,36 @@ export default function AdminTable({
             setFilterValues((fv) => ({ ...fv, [key]: value }));
         }
     };
+
     const handleSort = (col) => {
         if (!onSort || !col.sortable) return;
         const nextDir = sort?.key === col.key && sort?.direction === 'asc' ? 'desc' : 'asc';
         onSort({ key: col.key, direction: nextDir });
     };
+
+    // --- Selection helpers ---
+    const allIds = useMemo(() => data.map((r) => r.id).filter(Boolean), [data]);
+    const allSelected = allIds.length > 0 && allIds.every((id) => selectedItemIds.includes(id));
+    const someSelected = allIds.some((id) => selectedItemIds.includes(id));
+
+    const toggleAll = () => {
+        if (!onSelectionChange) return;
+        if (allSelected) {
+            onSelectionChange(selectedItemIds.filter((id) => !allIds.includes(id)));
+        } else {
+            onSelectionChange([...new Set([...selectedItemIds, ...allIds])]);
+        }
+    };
+
+    const toggleRow = (id) => {
+        if (!onSelectionChange) return;
+        if (selectedItemIds.includes(id)) {
+            onSelectionChange(selectedItemIds.filter((i) => i !== id));
+        } else {
+            onSelectionChange([...selectedItemIds, id]);
+        }
+    };
+    // --- End selection helpers ---
 
     const visibleKeys = useMemo(() => (columns || []).map((c) => c.key), [columns]);
     const effectiveKeys = filterKeys && filterKeys.length > 0 ? filterKeys : visibleKeys;
@@ -53,15 +81,15 @@ export default function AdminTable({
     }, [data, query, localFilterEnabled, effectiveKeys]);
 
     const columnFilteredData = useMemo(() => {
-        // If controlled (server-side), we don't filter client-side
         if (isControlled) return filteredData;
-
         const keys = Object.keys(filterValues || {}).filter((k) => (filterValues[k] ?? '') !== '');
         if (!columnFilterEnabled || keys.length === 0) return filteredData;
         return (filteredData || []).filter((row) =>
             keys.every((k) => String(row?.[k] ?? '').toLowerCase().includes(String(filterValues[k]).toLowerCase()))
         );
     }, [filteredData, filterValues, columnFilterEnabled]);
+
+    const totalCols = columns.length + (selectionEnabled ? 1 : 0);
 
     return (
         <div className="overflow-x-auto">
@@ -82,6 +110,18 @@ export default function AdminTable({
             <table className={`min-w-full text-sm ${striped ? 'striped' : ''}`}>
                 <thead className="bg-slate-50/80 border-b border-slate-200">
                     <tr>
+                        {selectionEnabled && (
+                            <th className="px-4 py-3 w-10">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 rounded border-slate-300 cursor-pointer accent-blue-600"
+                                    checked={allSelected}
+                                    ref={(el) => { if (el) el.indeterminate = !allSelected && someSelected; }}
+                                    onChange={toggleAll}
+                                    title="Pilih semua di halaman ini"
+                                />
+                            </th>
+                        )}
                         {columns.map((col) => {
                             const isSorted = sort?.key === col.key;
                             const arrow = isSorted ? (sort.direction === 'asc' ? '▲' : '▼') : '';
@@ -103,10 +143,11 @@ export default function AdminTable({
                     </tr>
                     {columnFilterEnabled && (
                         <tr className="border-b border-slate-200/60">
+                            {selectionEnabled && <th className="px-4"><div className="h-8" /></th>}
                             {columns.map((col) => (
                                 <th key={`filter-${col.key}`} className={`px-4 pt-1 pb-4 leading-none ${col.className || ''}`}>
                                     {col.key === 'aksi' || col.key === 'no' || col.filterable === false ? (
-                                        <div className="h-8" /> // Maintain height even if empty
+                                        <div className="h-8" />
                                     ) : (
                                         <div className="relative group w-full">
                                             <input
@@ -131,25 +172,41 @@ export default function AdminTable({
                 <tbody>
                     {columnFilteredData.length === 0 && (
                         <tr>
-                            <td colSpan={columns.length} className="px-4 py-6 text-center text-slate-500">
+                            <td colSpan={totalCols} className="px-4 py-6 text-center text-slate-500">
                                 {emptyText}
                             </td>
                         </tr>
                     )}
-                    {columnFilteredData.map((row, idx) => (
-                        <tr key={row.id ?? idx} className="align-top">
-                            {columns.map((col) => {
-                                const val = row[col.key];
-                                return (
-                                    <td key={col.key} className={`px-4 py-3 text-slate-700 ${col.className || ''}`}>
-                                        {typeof col.render === 'function'
-                                            ? col.render(val, row)
-                                            : (React.isValidElement(val) ? val : display(val))}
+                    {columnFilteredData.map((row, idx) => {
+                        const isSelected = selectionEnabled && selectedItemIds.includes(row.id);
+                        return (
+                            <tr
+                                key={row.id ?? idx}
+                                className={`align-top transition-colors ${isSelected ? 'bg-blue-50/70' : ''}`}
+                            >
+                                {selectionEnabled && (
+                                    <td className="px-4 py-3 w-10">
+                                        <input
+                                            type="checkbox"
+                                            className="w-4 h-4 rounded border-slate-300 cursor-pointer accent-blue-600"
+                                            checked={isSelected}
+                                            onChange={() => toggleRow(row.id)}
+                                        />
                                     </td>
-                                );
-                            })}
-                        </tr>
-                    ))}
+                                )}
+                                {columns.map((col) => {
+                                    const val = row[col.key];
+                                    return (
+                                        <td key={col.key} className={`px-4 py-3 text-slate-700 ${col.className || ''}`}>
+                                            {typeof col.render === 'function'
+                                                ? col.render(val, row)
+                                                : (React.isValidElement(val) ? val : display(val))}
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        );
+                    })}
                 </tbody>
                 {footer}
             </table>

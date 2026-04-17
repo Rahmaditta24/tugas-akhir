@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Link, router } from '@inertiajs/react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
 import { fmt, display, titleCase } from '../../../Utils/format';
+import * as XLSX from 'xlsx';
+import toast from 'react-hot-toast';
 
 export default function Index({
     data = {},
@@ -22,6 +24,11 @@ export default function Index({
     const [activeTab, setActiveTab] = useState(filters.tab || 'provinsi');
     const [columnFilters, setColumnFilters] = useState(filters.columns || {});
     const [localColumnFilters, setLocalColumnFilters] = useState(filters.columns || {});
+    const [localStats, setLocalStats] = useState(stats || {});
+    const [isStatsLoading, setIsStatsLoading] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+    const fileInputRef = useRef(null);
+    const { flash, importErrors } = usePage().props;
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
 
@@ -40,6 +47,35 @@ export default function Index({
         }, 600);
         return () => clearTimeout(handler);
     }, [localColumnFilters]);
+
+    // Fetch research stats via AJAX if baseData is not statistik
+    useEffect(() => {
+        if (baseData !== 'statistik' && (!stats || Object.keys(stats).length === 0)) {
+            setIsStatsLoading(true);
+            const params = new URLSearchParams({ baseData, jenis, batch_type: batchType, search });
+            if (Object.keys(columnFilters).length > 0) {
+                Object.entries(columnFilters).forEach(([k, v]) => {
+                    if (v) params.append(`columns[${k}]`, v);
+                });
+            }
+
+            fetch(route('admin.permasalahan.stats') + '?' + params.toString())
+                .then(res => res.json())
+                .then(data => {
+                    setLocalStats(data);
+                    setIsStatsLoading(false);
+                })
+                .catch(err => {
+                    console.error("Stats fetch error:", err);
+                    setIsStatsLoading(false);
+                });
+        } else {
+            setLocalStats(stats);
+            setIsStatsLoading(false);
+        }
+    }, [baseData, jenis, batchType, search, columnFilters, stats]);
+
+
     const sumberDataMap = {
         sampah: 'Kementerian Lingkungan Hidup 2024',
         stunting: 'SSGI 2024 Kementerian Kesehatan',
@@ -176,6 +212,53 @@ export default function Index({
         });
     };
 
+    const handleExportCSV = () => {
+        const params = new URLSearchParams({ baseData, jenis, search, batch_type: batchType });
+        if (Object.keys(columnFilters).length > 0) {
+            Object.entries(columnFilters).forEach(([k, v]) => {
+                if (v) params.append(`columns[${k}]`, v);
+            });
+        }
+        window.location.href = route('admin.permasalahan.export-csv') + '?' + params.toString();
+    };
+
+    const handleImport = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setIsImporting(true);
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            try {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+                if (data.length === 0) {
+                    setIsImporting(false);
+                    return;
+                }
+                router.post(route('admin.permasalahan.import-excel'), {
+                    data: data, 
+                    type: activeTab, 
+                    tahun: new Date().getFullYear()
+                }, {
+                    onSuccess: () => {
+                        setIsImporting(false);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                    },
+                    onError: () => {
+                        setIsImporting(false);
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                setIsImporting(false);
+            }
+        };
+        reader.readAsBinaryString(file);
+    };
+
     const handleDelete = (id, type) => {
         if (!confirm('Yakin ingin menghapus data ini?')) return;
         router.delete(route('admin.permasalahan.destroy', id), {
@@ -198,13 +281,48 @@ export default function Index({
         <AdminLayout title="">
             <div className="space-y-4">
                 <PageHeader
-                    title={baseData === 'statistik' ? "Data Permasalahan" : "Data Permasalahan"}
+                    title="Data Permasalahan"
                     subtitle={baseData === 'statistik' ? "Daftar data statistik per wilayah" : "Daftar riset terkait kategori permasalahan"}
                     icon={<span className="text-xl">⚠️</span>}
+                    actions={(
+                        <div className="flex gap-2">
+                             <button
+                                onClick={handleExportCSV}
+                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
+                            >
+                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Export CSV
+                            </button>
+
+                            {/*<button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isImporting}
+                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm disabled:opacity-50"
+                            >
+                                {isImporting ? (
+                                    <span className="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                                ) : (
+                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
+                                    </svg>
+                                )}
+                                {isImporting ? 'Proses...' : 'Import Data'}
+                            </button>*/}
+                            <input
+                                type="file"
+                                accept=".csv, .xlsx, .xls"
+                                className="hidden"
+                                ref={fileInputRef}
+                                onChange={handleImport}
+                            />
+                        </div>
+                    )}
                 />
 
-                {/* Stats Cards (Only in Statistik mode) */}
-                {baseData === 'statistik' && (
+                {/* Stats Cards */}
+                {(baseData === 'statistik' || baseData === 'penelitian' || baseData === 'pengabdian' || baseData === 'hilirisasi') && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
                             <div className="flex items-center gap-4">
@@ -214,8 +332,10 @@ export default function Index({
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-slate-500 font-medium">Total Provinsi</p>
-                                    <p className="text-2xl font-bold text-slate-800">{(stats.totalProvinsi || 0).toLocaleString('id-ID')}</p>
+                                    <p className="text-sm text-slate-500 font-medium">{baseData === 'statistik' ? 'Total Provinsi' : 'Total Institusi'}</p>
+                                    <p className="text-2xl font-bold text-slate-800">
+                                        {isStatsLoading ? '...' : (baseData === 'statistik' ? (localStats.totalProvinsi || 0).toLocaleString('id-ID') : (localStats.totalInstitusi || 0).toLocaleString('id-ID'))}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -228,8 +348,10 @@ export default function Index({
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-slate-500 font-medium">Total Kabupaten</p>
-                                    <p className="text-2xl font-bold text-slate-800">{(stats.totalKabupaten || 0).toLocaleString('id-ID')}</p>
+                                    <p className="text-sm text-slate-500 font-medium">{baseData === 'statistik' ? 'Total Kabupaten' : 'Total Provinsi'}</p>
+                                    <p className="text-2xl font-bold text-slate-800">
+                                        {isStatsLoading ? '...' : (baseData === 'statistik' ? (localStats.totalKabupaten || 0).toLocaleString('id-ID') : (localStats.totalProvinsi || 0).toLocaleString('id-ID'))}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -243,7 +365,9 @@ export default function Index({
                                 </div>
                                 <div>
                                     <p className="text-sm text-slate-500 font-medium">Total Data</p>
-                                    <p className="text-2xl font-bold text-slate-800">{(stats.total || 0).toLocaleString('id-ID')}</p>
+                                    <p className="text-2xl font-bold text-slate-800">
+                                        {isStatsLoading ? '...' : (localStats.total || 0).toLocaleString('id-ID')}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -328,7 +452,7 @@ export default function Index({
                                     </select>
                                 </div>
 
-                                {jenis === 'Krisis Listrik' && (
+                                {jenis === 'Krisis Listrik' && baseData !== 'statistik' && (
                                     <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
                                         <button
                                             type="button"
@@ -464,7 +588,7 @@ export default function Index({
                                         { key: 'no', title: 'No', className: 'w-16 text-center' },
                                         { key: 'judul', title: 'Judul Riset', sortable: true, className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-sm leading-relaxed" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
                                         { key: 'peneliti', title: 'Peneliti / Pengusul', sortable: true, className: 'min-w-[180px]', render: (_, item) => getVal(item, 'peneliti') },
-                                        { key: 'institusi', title: 'Institusi', sortable: true, className: 'min-w-[200px]', render: (_, item) => <div className="truncate" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
+                                        { key: 'institusi', title: 'Institusi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <div className="truncate" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
                                         { key: 'provinsi', title: 'Provinsi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <Badge color="blue">{getVal(item, 'provinsi')}</Badge> },
                                         { key: 'tahun', title: 'Tahun', sortable: true, className: 'min-w-[160px] text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
                                     ]}
@@ -503,5 +627,4 @@ function Pagination({ data }) {
         </div>
     );
 }
-
 

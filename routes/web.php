@@ -46,18 +46,38 @@ Route::get('/admin', function () {
 // Admin authenticated routes
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Penelitian CRUD
+    Route::post('penelitian/import-excel', [\App\Http\Controllers\Admin\PenelitianController::class, 'importExcel'])->name('penelitian.import-excel');
+    Route::get('penelitian/export-csv', [\App\Http\Controllers\Admin\PenelitianController::class, 'exportCsv'])->name('penelitian.export-csv');
+    Route::get('penelitian/export-json', [\App\Http\Controllers\Admin\PenelitianController::class, 'exportJson'])->name('penelitian.export-json');
+    Route::post('penelitian/bulk-destroy', [\App\Http\Controllers\Admin\PenelitianController::class, 'bulkDestroy'])->name('penelitian.bulk-destroy');
     Route::resource('penelitian', \App\Http\Controllers\Admin\PenelitianController::class);
 
     // Pengabdian CRUD
+    Route::post('pengabdian/import-excel', [\App\Http\Controllers\Admin\PengabdianController::class, 'importExcel'])->name('pengabdian.import-excel');
+    Route::get('pengabdian/export-csv', [\App\Http\Controllers\Admin\PengabdianController::class, 'exportCsv'])->name('pengabdian.export-csv');
+    Route::get('pengabdian/export-json', [\App\Http\Controllers\Admin\PengabdianController::class, 'exportJson'])->name('pengabdian.export-json');
+    Route::post('pengabdian/bulk-destroy', [\App\Http\Controllers\Admin\PengabdianController::class, 'bulkDestroy'])->name('pengabdian.bulk-destroy');
     Route::resource('pengabdian', \App\Http\Controllers\Admin\PengabdianController::class);
 
     // Hilirisasi CRUD
+    Route::post('hilirisasi/import-excel', [\App\Http\Controllers\Admin\HilirisasiController::class, 'importExcel'])->name('hilirisasi.import-excel');
+    Route::get('hilirisasi/export-csv', [\App\Http\Controllers\Admin\HilirisasiController::class, 'exportCsv'])->name('hilirisasi.export-csv');
+    Route::get('hilirisasi/export-json', [\App\Http\Controllers\Admin\HilirisasiController::class, 'exportJson'])->name('hilirisasi.export-json');
+    Route::post('hilirisasi/bulk-destroy', [\App\Http\Controllers\Admin\HilirisasiController::class, 'bulkDestroy'])->name('hilirisasi.bulk-destroy');
     Route::resource('hilirisasi', \App\Http\Controllers\Admin\HilirisasiController::class);
 
     // Produk CRUD
+    Route::post('produk/import-excel', [\App\Http\Controllers\Admin\ProdukController::class, 'importExcel'])->name('produk.import-excel');
+    Route::get('produk/export-csv', [\App\Http\Controllers\Admin\ProdukController::class, 'exportCsv'])->name('produk.export-csv');
+    Route::get('produk/export-json', [\App\Http\Controllers\Admin\ProdukController::class, 'exportJson'])->name('produk.export-json');
+    Route::post('produk/bulk-destroy', [\App\Http\Controllers\Admin\ProdukController::class, 'bulkDestroy'])->name('produk.bulk-destroy');
     Route::resource('produk', \App\Http\Controllers\Admin\ProdukController::class);
 
     // Fasilitas Lab CRUD
+    Route::post('fasilitas-lab/import-excel', [\App\Http\Controllers\Admin\FasilitasLabController::class, 'importExcel'])->name('fasilitas-lab.import-excel');
+    Route::get('fasilitas-lab/export-csv', [\App\Http\Controllers\Admin\FasilitasLabController::class, 'exportCsv'])->name('fasilitas-lab.export-csv');
+    Route::get('fasilitas-lab/export-json', [\App\Http\Controllers\Admin\FasilitasLabController::class, 'exportJson'])->name('fasilitas-lab.export-json');
+    Route::post('fasilitas-lab/bulk-destroy', [\App\Http\Controllers\Admin\FasilitasLabController::class, 'bulkDestroy'])->name('fasilitas-lab.bulk-destroy');
     Route::resource('fasilitas-lab', \App\Http\Controllers\Admin\FasilitasLabController::class);
 
     // Permasalahan CRUD
@@ -66,6 +86,10 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('permasalahan', [\App\Http\Controllers\Admin\PermasalahanController::class, 'store'])->name('permasalahan.store');
     Route::get('permasalahan/{id}/edit', [\App\Http\Controllers\Admin\PermasalahanController::class, 'edit'])->name('permasalahan.edit');
     Route::put('permasalahan/{id}', [\App\Http\Controllers\Admin\PermasalahanController::class, 'update'])->name('permasalahan.update');
+    Route::get('permasalahan/export-json', [\App\Http\Controllers\Admin\PermasalahanController::class, 'exportJson'])->name('permasalahan.export-json');
+    Route::get('permasalahan/export-csv', [\App\Http\Controllers\Admin\PermasalahanController::class, 'exportCsv'])->name('permasalahan.export-csv');
+    Route::get('permasalahan/stats', [\App\Http\Controllers\Admin\PermasalahanController::class, 'getStats'])->name('permasalahan.stats');
+    Route::post('permasalahan/import-excel', [\App\Http\Controllers\Admin\PermasalahanController::class, 'importExcel'])->name('permasalahan.import-excel');
     Route::delete('permasalahan/{id}', [\App\Http\Controllers\Admin\PermasalahanController::class, 'destroy'])->name('permasalahan.destroy');
 
     // Import JSON -> DB (temporary endpoint, auth-protected)

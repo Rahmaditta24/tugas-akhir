@@ -82,8 +82,8 @@ class ProdukSeeder extends Seeder
                 'bidang' => $normalize($row['Bidang'] ?? null),
                 'nama_inventor' => $normalize($row['Nama Inventor (Tanpa Gelar)'] ?? null),
                 'email_inventor' => $normalize($row['Email Inventor'] ?? null),
-                'nomor_paten' => isset($row['Nomor dan Deskripsi Paten']) && $row['Nomor dan Deskripsi Paten'] !== 'NaN'
-                    ? $normalize($row['Nomor dan Deskripsi Paten'])
+                'nomor_paten' => isset($row['Nomor dan Deskripsi Paten']) && $row['Nomor dan Deskripsi Paten'] !== 'NaN' 
+                    ? trim(preg_split("/[;.\(\,\s]/", ($row['nomor_paten'] ?? $row['No Paten'] ?? $row['Nomor dan Deskripsi Paten']))[0]) 
                     : null,
                 'created_at' => $now,
                 'updated_at' => $now,

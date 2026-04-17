@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
-import { Link, router } from '@inertiajs/react';
+import React, { useState, useMemo, useRef } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
 import { fmt, display } from '../../../Utils/format';
+import * as XLSX from 'xlsx';
+import toast from 'react-hot-toast';
 
 export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
+    const { flash } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(filters.perPage || 20);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -14,6 +17,28 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
     const [columnFilters, setColumnFilters] = useState(filters.columns || {});
     const [toolsModal, setToolsModal] = useState({ show: false, title: '', items: [] });
 
+
+
+    // --- Bulk selection ---
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+
+    const handleBulkDelete = () => {
+        if (selectedIds.length === 0) return;
+        setShowBulkDeleteModal(true);
+    };
+
+    const confirmBulkDelete = () => {
+        router.post(route('admin.fasilitas-lab.bulk-destroy'), { ids: selectedIds }, {
+            onSuccess: () => {
+                setSelectedIds([]);
+                setShowBulkDeleteModal(false);
+            },
+            onError: () => {
+                setShowBulkDeleteModal(false);
+            }
+        });
+    };
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
 
@@ -28,6 +53,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
             sort,
             direction
         }, {
+            only: ['fasilitasLab'],
             preserveState: true,
             preserveScroll: true,
             replace: true,
@@ -43,6 +69,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
             sort: field,
             direction: nextDirection,
         }, {
+            only: ['fasilitasLab'],
             preserveState: true,
             preserveScroll: true,
             replace: true,
@@ -76,6 +103,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
             filters: columnFilters,
             perPage: next
         }, {
+            only: ['fasilitasLab'],
             preserveState: true,
             preserveScroll: true,
             replace: true,
@@ -97,7 +125,50 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
         });
     };
 
-    const tableData = React.useMemo(() => {
+    // --- Import / Export ---
+    const fileInputRef = useRef(null);
+    const [isImporting, setIsImporting] = useState(false);
+
+    const handleImport = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setIsImporting(true);
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            try {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+                router.post(route('admin.fasilitas-lab.import-excel'), { data: data }, {
+                    onSuccess: () => {
+                        setIsImporting(false);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                    },
+                    onError: () => {
+                        setIsImporting(false);
+                    }
+                });
+            } catch (err) {
+                setIsImporting(false);
+            }
+        };
+        reader.readAsBinaryString(file);
+    };
+
+    const handleExport = () => {
+        const params = new URLSearchParams();
+        if (search) params.set('search', search);
+        Object.entries(columnFilters).forEach(([k, v]) => v && params.append(`filters[${k}]`, v));
+        if (selectedIds.length > 0) {
+            params.append('ids', selectedIds.join(','));
+        }
+
+        window.location.href = `/admin/fasilitas-lab/export-csv?${params.toString()}`;
+    };
+
+    const tableData = useMemo(() => {
         if (!fasilitasLab?.data || !Array.isArray(fasilitasLab.data)) {
             return [];
         }
@@ -136,7 +207,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                 </div>
             ),
         }));
-    }, [fasilitasLab]);
+    }, [fasilitasLab, search, columnFilters, perPage, sort, direction]);
 
     return (
         <AdminLayout title="">
@@ -147,12 +218,29 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                     subtitle="Kelola data fasilitas laboratorium"
                     icon={<span className="text-xl">🧪</span>}
                     actions={(
-                        <Link
-                            href={route('admin.fasilitas-lab.create')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                        >
-                            + Tambah Data
-                        </Link>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleExport}
+                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
+                            >
+                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                {selectedIds.length > 0 ? `Export CSV (${selectedIds.length})` : 'Export CSV'}
+                            </button>
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isImporting}
+                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm disabled:opacity-50"
+                            >
+                                {isImporting ? (
+                                    <span className="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                                ) : (
+                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                )}
+                                {isImporting ? 'Proses...' : 'Import Data'}
+                            </button>
+                            <input type="file" ref={fileInputRef} onChange={handleImport} accept=".csv, .xlsx, .xls" className="hidden" />
+                            <Link href={route('admin.fasilitas-lab.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm">+ Tambah</Link>
+                        </div>
                     )}
                 />
 
@@ -189,7 +277,32 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                 </div>
 
                 {/* Search & Table */}
-                <div className="bg-white rounded-lg shadow-sm">
+                <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden relative">
+                    {/* Bulk Actions Bar */}
+                    {selectedIds.length > 0 && (
+                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-300">
+                            <div className="flex items-center gap-4 ml-2">
+                                <span className="text-sm font-semibold whitespace-nowrap">
+                                    {selectedIds.length} data terpilih
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={handleBulkDelete}
+                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    Hapus {selectedIds.length} Data
+                                </button>
+                                <button
+                                    onClick={() => setSelectedIds([])}
+                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-md transition-colors"
+                                >
+                                    Batal
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     <div className="p-6 border-b">
                         <form onSubmit={handleSearch} className="flex gap-3 items-center flex-wrap">
                             <input
@@ -234,6 +347,9 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                         <AdminTable
                             striped
                             columnFilterEnabled={true}
+                            selectionEnabled
+                            selectedItemIds={selectedIds}
+                            onSelectionChange={setSelectedIds}
                             emptyText="Tidak ada data fasilitas laboratorium"
                             columns={[
                                 { key: 'no', title: 'No', className: 'w-16 text-center' },
@@ -275,8 +391,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                     }
                                 },
                                 { key: 'total_jumlah_alat', title: 'Total Jumlah Alat', className: 'w-30 text-center', sortable: true, filterable: false, render: (v) => <Badge color="blue">{display(v === 0 ? '0' : v)}</Badge> },
-                                /*{ key: 'kontak', title: 'Kontak', className: 'min-w-[140px]', filterable: false, render: (v) => display(v) },*/
-                                { key: 'aksi', title: 'Aksi', className: 'w-24' },
+                                { key: 'aksi', title: 'Aksi', className: 'w-24 sticky right-0 bg-white/95 backdrop-blur-sm' },
                             ]}
                             data={tableData}
                             filters={columnFilters}
@@ -359,7 +474,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                 </div>
             )}
 
-            {/* Delete Modal */}
+            {/* Individual Delete Modal */}
             {showDeleteModal && (
                 <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[99] flex items-center justify-center p-4 animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
@@ -368,11 +483,30 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">Konfirmasi Hapus</h3>
-                        <p className="text-slate-600 mb-6 leading-relaxed text-sm">Apakah Anda yakin ingin menghapus data fasilitas ini? Tindakan ini akan menghapus data secara permanen dari server.</p>
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">Hapus Data?</h3>
+                        <p className="text-slate-600 mb-6 leading-relaxed text-sm">Apakah Anda yakin ingin menghapus data fasilitas ini? Tindakan ini tidak dapat dibatalkan.</p>
                         <div className="flex justify-end gap-3">
                             <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors">Batal</button>
                             <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm shadow-red-200">Hapus Data</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Delete Modal */}
+            {showBulkDeleteModal && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[99] flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
+                        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-900 mb-2 text-center">Hapus {selectedIds.length} Data?</h3>
+                        <p className="text-slate-600 mb-6 text-center leading-relaxed text-sm">Seluruh data fasilitas terpilih ({selectedIds.length} item) akan dihapus secara permanen.</p>
+                        <div className="flex gap-3">
+                            <button onClick={() => setShowBulkDeleteModal(false)} className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors">Batal</button>
+                            <button onClick={confirmBulkDelete} className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-200">Ya, Hapus Semua</button>
                         </div>
                     </div>
                 </div>

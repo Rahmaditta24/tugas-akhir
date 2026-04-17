@@ -1,19 +1,42 @@
-import React, { useState } from 'react';
-import { Link, router } from '@inertiajs/react';
+import React, { useState, useMemo, useRef } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
 import { fmt, display, titleCase } from '../../../Utils/format';
+import * as XLSX from 'xlsx';
 
-export default function Index({ hilirisasi, stats, filters }) {
+export default function Index({ hilirisasi, stats = {}, filters = {} }) {
+    const { flash } = usePage().props;
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
+    const [search, setSearch] = useState(filters.search || '');
 
     // State for filters
-    const [search, setSearch] = useState(filters.search || '');
     const [perPage, setPerPage] = useState(filters.perPage || 20);
     const [columnFilters, setColumnFilters] = useState(filters.columns || {});
+
+    // --- Bulk selection ---
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+
+    const handleBulkDelete = () => {
+        if (selectedIds.length === 0) return;
+        setShowBulkDeleteModal(true);
+    };
+
+    const confirmBulkDelete = () => {
+        router.post(route('admin.hilirisasi.bulk-destroy'), { ids: selectedIds }, {
+            onSuccess: () => {
+                setSelectedIds([]);
+                setShowBulkDeleteModal(false);
+            },
+            onError: () => {
+                setShowBulkDeleteModal(false);
+            }
+        });
+    };
 
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
@@ -33,6 +56,17 @@ export default function Index({ hilirisasi, stats, filters }) {
         });
     };
 
+    const confirmDelete = () => {
+        if (itemToDelete) {
+            router.delete(route('admin.hilirisasi.destroy', itemToDelete.id), {
+                onSuccess: () => {
+                    setShowDeleteModal(false);
+                    setItemToDelete(null);
+                }
+            });
+        }
+    };
+
     const handleSearchChange = (e) => {
         setSearch(e.target.value);
     };
@@ -48,6 +82,7 @@ export default function Index({ hilirisasi, stats, filters }) {
             direction,
             perPage
         }, {
+            only: ['hilirisasi'],
             preserveState: true,
             preserveScroll: true,
             replace: true,
@@ -64,6 +99,7 @@ export default function Index({ hilirisasi, stats, filters }) {
             direction,
             perPage: next
         }, {
+            only: ['hilirisasi'],
             preserveState: true,
             preserveScroll: true,
             replace: true,
@@ -90,15 +126,47 @@ export default function Index({ hilirisasi, stats, filters }) {
         setShowDeleteModal(true);
     };
 
-    const confirmDelete = () => {
-        if (itemToDelete) {
-            router.delete(route('admin.hilirisasi.destroy', itemToDelete.id), {
-                onSuccess: () => {
-                    setShowDeleteModal(false);
-                    setItemToDelete(null);
-                }
-            });
+    // --- Import / Export ---
+    const fileInputRef = useRef(null);
+    const [isImporting, setIsImporting] = useState(false);
+
+    const handleImport = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setIsImporting(true);
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            try {
+                const bstr = evt.target.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
+                const data = XLSX.utils.sheet_to_json(ws);
+                router.post(route('admin.hilirisasi.import-excel'), { data: data }, {
+                    onSuccess: () => {
+                        setIsImporting(false);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                    },
+                    onError: () => {
+                        setIsImporting(false);
+                    }
+                });
+            } catch (err) {
+                setIsImporting(false);
+            }
+        };
+        reader.readAsBinaryString(file);
+    };
+
+    const handleExport = () => {
+        const params = new URLSearchParams();
+        if (search) params.set('search', search);
+        Object.entries(columnFilters).forEach(([k, v]) => v && params.append(`filters[${k}]`, v));
+        if (selectedIds.length > 0) {
+            params.append('ids', selectedIds.join(','));
         }
+
+        window.location.href = `/admin/hilirisasi/export-csv?${params.toString()}`;
     };
 
     const normalizeDegrees = (str) => {
@@ -136,6 +204,43 @@ export default function Index({ hilirisasi, stats, filters }) {
         return [name, ...degrees].join(', ');
     };
 
+    const tableData = useMemo(() => {
+        return (hilirisasi.data || []).map((item, index) => ({
+            ...item,
+            no: (hilirisasi.from || 1) + index,
+            aksi: (
+                <div className="flex gap-2 justify-center">
+                    <Link
+                        href={route('admin.hilirisasi.edit', item.id)}
+                        data={{
+                            page: hilirisasi.current_page,
+                            search,
+                            filters: columnFilters,
+                            perPage,
+                            sort,
+                            direction
+                        }}
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        title="Edit"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </Link>
+                    <button
+                        onClick={() => handleDelete(item)}
+                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        title="Hapus"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            ),
+        }));
+    }, [hilirisasi, search, columnFilters, perPage, sort, direction]);
+
     return (
         <AdminLayout title="">
             <div className="space-y-6">
@@ -145,7 +250,29 @@ export default function Index({ hilirisasi, stats, filters }) {
                     subtitle="Kelola data hilirisasi riset"
                     icon={<span className="text-xl">🏭</span>}
                     actions={(
-                        <Link href={route('admin.hilirisasi.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">+ Tambah Data</Link>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleExport}
+                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
+                            >
+                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                {selectedIds.length > 0 ? `Export CSV (${selectedIds.length})` : 'Export CSV'}
+                            </button>
+                            <button
+                                onClick={() => fileInputRef.current?.click()}
+                                disabled={isImporting}
+                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm disabled:opacity-50"
+                            >
+                                {isImporting ? (
+                                    <span className="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                                ) : (
+                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                )}
+                                {isImporting ? 'Proses...' : 'Import Data'}
+                            </button>
+                            <input type="file" ref={fileInputRef} onChange={handleImport} accept=".csv, .xlsx, .xls" className="hidden" />
+                            <Link href={route('admin.hilirisasi.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm">+ Tambah</Link>
+                        </div>
                     )}
                 />
 
@@ -182,7 +309,32 @@ export default function Index({ hilirisasi, stats, filters }) {
                 </div>
 
                 {/* Search & Table */}
-                <div className="bg-white rounded-lg shadow-sm">
+                <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden relative">
+                    {/* Bulk Actions Bar */}
+                    {selectedIds.length > 0 && (
+                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-300">
+                            <div className="flex items-center gap-4 ml-2">
+                                <span className="text-sm font-semibold whitespace-nowrap">
+                                    {selectedIds.length} data terpilih
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={handleBulkDelete}
+                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    Hapus {selectedIds.length} Data
+                                </button>
+                                <button
+                                    onClick={() => setSelectedIds([])}
+                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-md transition-colors"
+                                >
+                                    Batal
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     {/* Search Bar */}
                     <div className="p-6 border-b">
                         <form onSubmit={handleSearch} className="flex gap-3 items-center flex-wrap">
@@ -217,12 +369,14 @@ export default function Index({ hilirisasi, stats, filters }) {
                             </div>
                         </form>
                     </div>
-
                     {/* Table */}
                     <AdminTable
                         striped
-                        localFilterEnabled={false} // Disable client-side filter
+                        localFilterEnabled={false}
                         columnFilterEnabled={true}
+                        selectionEnabled
+                        selectedItemIds={selectedIds}
+                        onSelectionChange={setSelectedIds}
                         filters={columnFilters}
                         onFilterChange={handleColumnFilterChange}
                         columns={[
@@ -244,48 +398,13 @@ export default function Index({ hilirisasi, stats, filters }) {
                                 key: 'tahun',
                                 title: 'Tahun',
                                 sortable: true,
-                                className: 'min-w-[160px] text-center',
+                                className: 'min-w-[120px] text-center',
                                 render: (v) => <Badge color="blue">{display(v)}</Badge>
                             },
                             { key: 'mitra', title: 'Mitra', className: 'min-w-[320px]', render: (v) => <div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={titleCase(v)}>{display(titleCase(v))}</div> },
-                            { key: 'aksi', title: 'Aksi', className: 'w-28' },
+                            { key: 'aksi', title: 'Aksi', className: 'w-28 sticky right-0 bg-white/95 backdrop-blur-sm' },
                         ]}
-                        data={(hilirisasi.data || []).map((item, index) => ({
-                            ...item,
-                            no: (hilirisasi.from || 1) + index,
-                            aksi: (
-                                <div className="flex gap-2 justify-center">
-                                    <Link
-                                        href={route('admin.hilirisasi.edit', item.id)}
-                                        data={{
-                                            page: hilirisasi.current_page,
-                                            search,
-                                            filters: columnFilters,
-                                            perPage,
-                                            sort,
-                                            direction
-                                        }}
-                                        className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                        title="Edit"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </Link>
-                                    <button
-                                        onClick={() => handleDelete(item)}
-                                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
-                                        title="Hapus"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            ),
-                        }))}
-                        sort={{ key: sort, direction }}
-                        onSort={({ key, direction }) => handleSort(key)}
+                        data={tableData}
                     />
 
                     {/* Pagination */}
@@ -316,26 +435,58 @@ export default function Index({ hilirisasi, stats, filters }) {
                 </div>
             </div>
 
-            {/* Delete Modal */}
+            {/* Individual Delete Modal */}
             {showDeleteModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                        <h3 className="text-lg font-semibold text-slate-800 mb-2">Konfirmasi Hapus</h3>
-                        <p className="text-slate-600 mb-6">
-                            Apakah Anda yakin ingin menghapus data hilirisasi ini?
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+                    <div className="bg-white rounded-xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-200">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-2 text-center">Hapus Data?</h3>
+                        <p className="text-slate-600 mb-8 text-center leading-relaxed">
+                            Data hilirisasi ini akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan.
                         </p>
-                        <div className="flex gap-3 justify-end">
+                        <div className="flex gap-3">
                             <button
                                 onClick={() => setShowDeleteModal(false)}
-                                className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                                className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={confirmDelete}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-200"
                             >
-                                Hapus
+                                Ya, Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bulk Delete Modal */}
+            {showBulkDeleteModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+                    <div className="bg-white rounded-xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-200">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 mb-2 text-center">Hapus {selectedIds.length} Data?</h3>
+                        <p className="text-slate-600 mb-8 text-center leading-relaxed">
+                            Seluruh data hilirisasi terpilih ({selectedIds.length} item) akan dihapus secara permanen.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowBulkDeleteModal(false)}
+                                className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={confirmBulkDelete}
+                                className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-200"
+                            >
+                                Ya, Hapus Semua
                             </button>
                         </div>
                     </div>

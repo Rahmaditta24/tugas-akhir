@@ -8,589 +8,526 @@ use App\Models\PermasalahanKabupaten;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 class PermasalahanController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request)
     {
-        $perPage = (int)$request->get('perPage', 20);
         $baseData = $request->get('baseData', 'statistik');
-        $jenis = $request->get('jenis');
-        $batch_type = $request->get('batch_type');
 
-        // Default 'jenis' for each mode to ensure we always show Overlaps correctly
-        if (!$jenis || $jenis === 'all') {
-            $jenis = 'Sampah';
+        if ($baseData === 'statistik') {
+            return $this->handleStatistikMode($request);
         }
 
-        // Default 'batch_type' for Pengabdian to match public dashboard
-        if ($baseData === 'pengabdian' && (!$batch_type || $batch_type === 'all')) {
-            $batch_type = 'Multitahun Lanjutan, Batch I & Batch II';
-            $request->merge(['batch_type' => $batch_type]);
-        }
+        return $this->handleResearchMode($request);
+    }
 
+    /**
+     * Handle JSON-based statistics mode.
+     */
+    private function handleStatistikMode(Request $request)
+    {
+        $perPage = (int)$request->get('perPage', 20);
+        $jenis = $request->get('jenis', 'Sampah');
+        if (!$jenis || $jenis === 'all') $jenis = 'Sampah';
+        
         $search = $request->get('search');
         $activeTab = $request->get('tab', 'provinsi');
+        $sort = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'asc');
 
-        // Smart default sorting: prioritize year descending for research data
-        $sort = $request->get('sort');
-        $direction = $request->get('direction');
+        $normalizedJenis = strtolower(str_replace(' ', '_', $jenis));
+        $baseDir = realpath(base_path('..'.DIRECTORY_SEPARATOR.'peta-bima'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'permasalahan'));
+        $rows = [];
+        $kabRows = [];
 
-        if (!$sort || $sort === 'id' || 
-            ($baseData === 'penelitian' && $sort === 'thn_pelaksanaan_kegiatan') ||
-            ($baseData === 'pengabdian' && $sort === 'thn_pelaksanaan') ||
-            ($baseData === 'hilirisasi' && ($sort === 'thn_pelaksanaan' || $sort === 'thn_pelaksanaan_kegiatan')) ||
-            ($baseData !== 'statistik' && !in_array($sort, ['id', 'judul', 'nama', 'nama_pengusul', 'institusi', 'perguruan_tinggi', 'tahun', 'thn_pelaksanaan', 'thn_pelaksanaan_kegiatan', 'provinsi']))
-        ) {
-            if ($baseData === 'penelitian') $sort = 'thn_pelaksanaan';
-            elseif ($baseData === 'pengabdian') $sort = 'thn_pelaksanaan_kegiatan';
-            elseif ($baseData === 'hilirisasi') $sort = 'tahun';
-            else $sort = 'id';
-            
-            // Default to Descending for years
-            if (!$direction || $request->get('sort') === 'id' || !$request->has('direction') || $sort !== $request->get('sort')) {
-                $direction = 'desc';
-            }
-        }
-        
-        $direction = $direction ?: 'desc';
-
-        // Mode 1: Raw Statistics (from JSON files)
-        if ($baseData === 'statistik') {
-            // Normalize jenis for JSON file mapping
-            $normalizedJenis = strtolower(str_replace(' ', '_', $jenis));
-
-            // default jenis to 'sampah' if not provided
-            if (!$request->has('jenis') || $jenis === 'all') {
-                $normalizedJenis = 'sampah';
-                $jenis = 'Sampah';
-            }
-
-            $baseDir = realpath(base_path('..'.DIRECTORY_SEPARATOR.'peta-bima'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'permasalahan'));
-            $rows = [];
-            $kabRows = [];
-
-            if ($normalizedJenis === 'sampah') {
-                $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-sampah.json';
-                if (is_file($path)) {
-                    $json = json_decode(file_get_contents($path), true);
-                    foreach (($json['Provinsi'] ?? []) as $r) {
-                        $rows[] = [
-                            'provinsi' => $r['Provinsi'] ?? '',
-                            'jenis_permasalahan' => 'sampah',
-                            'timbulan_tahunan_ton' => isset($r['Timbulan Sampah Tahunan(ton)']) ? (float)$r['Timbulan Sampah Tahunan(ton)'] : null,
-                        ];
-                    }
-                    foreach (($json['Kabupaten'] ?? []) as $r) {
-                        $kabRows[] = [
-                            'kabupaten_kota' => $r['Kabupaten/Kota'] ?? '',
-                            'provinsi' => $r['Provinsi'] ?? null,
-                            'jenis_permasalahan' => 'sampah',
-                            'timbulan_tahunan_ton' => isset($r['Timbulan Sampah Tahunan(ton)']) ? (float)$r['Timbulan Sampah Tahunan(ton)'] : null,
-                        ];
-                    }
-                }
-            } elseif ($normalizedJenis === 'stunting') {
-                $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-stunting.json';
-                if (is_file($path)) {
-                    $json = json_decode(file_get_contents($path), true);
-                    foreach (($json['Provinsi'] ?? []) as $r) {
-                        $rows[] = [
-                            'provinsi' => $r['Provinsi'] ?? '',
-                            'jenis_permasalahan' => 'stunting',
-                            'persentase' => isset($r['Persentase']) ? (float)$r['Persentase'] : null,
-                        ];
-                    }
-                    foreach (($json['Kabupaten'] ?? []) as $r) {
-                        $kabRows[] = [
-                            'kabupaten_kota' => $r['Kabupaten/Kota'] ?? '',
-                            'provinsi' => $r['Provinsi'] ?? null,
-                            'jenis_permasalahan' => 'stunting',
-                            'persentase' => isset($r['Persentase']) ? (float)$r['Persentase'] : null,
-                        ];
-                    }
-                }
-            } elseif ($normalizedJenis === 'gizi_buruk') {
-                $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-gizi-buruk.json';
-                if (is_file($path)) {
-                    $json = json_decode(file_get_contents($path), true);
-                    foreach (($json['Provinsi'] ?? []) as $r) {
-                        $rows[] = [
-                            'provinsi' => $r['Provinsi'] ?? '',
-                            'jenis_permasalahan' => 'gizi_buruk',
-                            'persentase' => isset($r['Persentase']) ? (float)$r['Persentase'] : null,
-                        ];
-                    }
-                    foreach (($json['Kabupaten'] ?? []) as $r) {
-                        $kabRows[] = [
-                            'kabupaten_kota' => $r['Kabupaten/Kota'] ?? '',
-                            'provinsi' => $r['Provinsi'] ?? null,
-                            'jenis_permasalahan' => 'gizi_buruk',
-                            'persentase' => isset($r['Persentase']) ? (float)$r['Persentase'] : null,
-                        ];
-                    }
-                }
-            } elseif ($normalizedJenis === 'krisis_listrik') {
-                $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-krisis-listrik.json';
-                if (is_file($path)) {
-                    $json = json_decode(file_get_contents($path), true);
-                    foreach (($json['Sheet1'] ?? []) as $r) {
-                        $rows[] = [
-                            'provinsi' => $r['Provinsi'] ?? '',
-                            'jenis_permasalahan' => 'krisis_listrik',
-                            'satuan_pln_provinsi' => $r['Satuan PLN/Provinsi'] ?? null,
-                            'saidi' => isset($r['SAIDI (Jam/Pelanggan)']) ? (float)$r['SAIDI (Jam/Pelanggan)'] : null,
-                            'saifi' => isset($r['SAIFI (Kali/Pelanggan)']) ? (float)$r['SAIFI (Kali/Pelanggan)'] : null,
-                        ];
-                    }
-                }
-            } elseif ($normalizedJenis === 'ketahanan_pangan') {
-                $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-ketahanan-pangan.json';
-                if (is_file($path)) {
-                    $json = json_decode(file_get_contents($path), true);
-                    foreach (($json['Provinsi'] ?? []) as $r) {
-                        $rows[] = [
-                            'provinsi' => $r['Provinsi'] ?? '',
-                            'jenis_permasalahan' => 'ketahanan_pangan',
-                            'ikp' => isset($r['IKP']) ? (float)$r['IKP'] : null,
-                        ];
-                    }
-                    foreach (($json['Kabupaten'] ?? []) as $r) {
-                        $kabRows[] = [
-                            'kabupaten_kota' => $r['Kabupaten/Kota'] ?? '',
-                            'provinsi' => $r['Provinsi'] ?? null,
-                            'jenis_permasalahan' => 'ketahanan_pangan',
-                            'ikp' => isset($r['IKP']) ? (float)$r['IKP'] : null,
-                        ];
-                    }
-                }
-            }
-
-            // Search filter by provinsi/jenis (prov tab) dan kabupaten/provinsi/jenis (kab tab)
-            if ($search) {
-                $needle = mb_strtolower($search);
-                $rows = array_values(array_filter($rows, function($row) use ($needle) {
-                    $hay = mb_strtolower(trim(($row['provinsi'] ?? '').' '.($row['jenis_permasalahan'] ?? '')));
-                    return strpos($hay, $needle) !== false;
-                }));
-                $kabRows = array_values(array_filter($kabRows, function($row) use ($needle) {
-                    $hay = mb_strtolower(trim(($row['kabupaten_kota'] ?? '').' '.($row['provinsi'] ?? '').' '.($row['jenis_permasalahan'] ?? '')));
-                    return strpos($hay, $needle) !== false;
-                }));
-            }
-
-            // Column filters dihilangkan sesuai permintaan
-
-            // Sorting
-            usort($rows, function($a, $b) use ($sort, $direction) {
-                // Aceh first
-                $ap = ($a['provinsi'] ?? '');
-                $bp = ($b['provinsi'] ?? '');
-                if ($ap === 'Aceh' && $bp !== 'Aceh') return -1;
-                if ($bp === 'Aceh' && $ap !== 'Aceh') return 1;
-                $va = $a[$sort] ?? ($a['provinsi'] ?? null);
-                $vb = $b[$sort] ?? ($b['provinsi'] ?? null);
-                if (is_numeric($va) && is_numeric($vb)) {
-                    $cmp = $va <=> $vb;
-                } else {
-                    $cmp = strcasecmp((string)$va, (string)$vb);
-                }
-                // Dalam mode statistik, default gunakan ascending agar Aceh di depan
-                $dir = 'asc';
-                if ($direction && in_array($direction, ['asc','desc'])) $dir = $direction;
-                return $dir === 'asc' ? $cmp : -$cmp;
-            });
-            usort($kabRows, function($a, $b) {
-                return strcasecmp((string)($a['kabupaten_kota'] ?? ''), (string)($b['kabupaten_kota'] ?? ''));
-            });
-
-            // Pagination
-            $page = (int)($request->get('provPage', $request->get('page', 1)));
-            $total = count($rows);
-            $slice = array_slice($rows, ($page - 1) * $perPage, $perPage);
-            $permasalahanProvinsi = new LengthAwarePaginator(
-                $slice, $total, $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]
-            );
-
-            // Kabupaten paginator dari JSON jika tersedia
-            $kabPage = (int)($request->get('kabPage', 1));
-            $totalKab = count($kabRows);
-            $sliceKab = array_slice($kabRows, ($kabPage - 1) * $perPage, $perPage);
-            $permasalahanKabupaten = new LengthAwarePaginator($sliceKab, $totalKab, $perPage, $kabPage, ['path' => $request->url(), 'query' => $request->query()]);
-
-            $stats = [
-                'totalProvinsi' => $total,
-                'totalKabupaten' => $totalKab,
-                'total' => $total + $totalKab,
-            ];
-
-            return Inertia::render('Admin/Permasalahan/Index', [
-                'permasalahanProvinsi' => $permasalahanProvinsi,
-                'permasalahanKabupaten' => $permasalahanKabupaten,
-                'stats' => $stats,
-                'filters' => [
-                    'search' => $search,
-                    'perPage' => $perPage,
-                    'sort' => $sort,
-                    'direction' => $direction,
-                    'baseData' => $baseData,
-                    'jenis' => $jenis,
-                    'tab' => $activeTab,
-                ],
-            ]);
-        }
-
-        // Mode 2: Research Overlay (The keyword matching view)
-        // Keywords mapping from Public controller for consistent counts (Case Match)
-        $keywordsMap = [
-            'Sampah' => [
-                'sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 
-                'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut',
-                'residu', 'biomassa', 'waste-to-energy', 'tPA', 'pengelolaan sampah', 'sampah kota'
-            ],
-            'Stunting' => [
-                'stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita', 'bayi', 'anak', 'ibu hamil', 
-                'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi', 'malnutrisi', 'pangan bergizi',
-                'pola makan', 'asupan gizi'
-            ],
-            'Gizi Buruk' => [
-                'gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus', 'vitamin', 'protein', 'karbo', 
-                'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan', 'gizi seimbang', 'beban ganda malnutrisi'
-            ],
-            'Krisis Listrik' => [
-                'listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit', 'pln', 'panel', 'solar', 
-                'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomatisasi', 'smart grid',
-                'elektrifikasi', 'energi terbarukan', 'transisi energi', 'panel surya', 'biofuel'
-            ],
-            'Ketahanan Pangan' => [
-                'pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 
-                'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani', 'swasembada',
-                'benih', 'bioteknologi pangan', 'smart farming', 'diversifikasi pangan', 'produksi pangan'
-            ],
+        $jsonMap = [
+            'sampah' => 'data-permasalahan-sampah.json',
+            'stunting' => 'data-permasalahan-stunting.json',
+            'gizi_buruk' => 'data-permasalahan-gizi-buruk.json',
+            'krisis_listrik' => 'data-permasalahan-krisis-listrik.json',
+            'ketahanan_pangan' => 'data-permasalahan-ketahanan-pangan.json',
         ];
 
-        $query = null;
-        if ($baseData === 'pengabdian') {
-            $query = \App\Models\Pengabdian::query();
-        } elseif ($baseData === 'hilirisasi') {
-            $query = \App\Models\Hilirisasi::query();
-        } else {
-            $query = \App\Models\Penelitian::query();
-            $baseData = 'penelitian';
+        $cacheKey = "permasalahan_json_{$normalizedJenis}";
+        $rawRows = Cache::remember($cacheKey, 3600, function() use ($baseDir, $jsonMap, $normalizedJenis) {
+            $rows = [];
+            $kabRows = [];
+            
+            if (isset($jsonMap[$normalizedJenis])) {
+                $path = $baseDir.DIRECTORY_SEPARATOR.$jsonMap[$normalizedJenis];
+                if (is_file($path)) {
+                    $json = json_decode(file_get_contents($path), true);
+                    
+                    // Provinsi Mapping
+                    $provData = $json['Provinsi'] ?? ($json['Sheet1'] ?? []);
+                    foreach ($provData as $r) {
+                        $rows[] = [
+                            'provinsi' => $r['Provinsi'] ?? '',
+                            'jenis_permasalahan' => $normalizedJenis,
+                            'timbulan_tahunan_ton' => $r['Timbulan Sampah Tahunan(ton)'] ?? null,
+                            'persentase' => $r['Persentase'] ?? null,
+                            'ikp' => $r['IKP'] ?? null,
+                            'saidi' => $r['SAIDI (Jam/Pelanggan)'] ?? null,
+                            'saifi' => $r['SAIFI (Kali/Pelanggan)'] ?? null,
+                            'satuan_pln_provinsi' => $r['Satuan PLN/Provinsi'] ?? null,
+                        ];
+                    }
+
+                    // Kabupaten Mapping
+                    foreach (($json['Kabupaten'] ?? []) as $r) {
+                        $kabRows[] = [
+                            'kabupaten_kota' => $r['Kabupaten/Kota'] ?? '',
+                            'provinsi' => $r['Provinsi'] ?? null,
+                            'jenis_permasalahan' => $normalizedJenis,
+                            'timbulan_tahunan_ton' => $r['Timbulan Sampah Tahunan(ton)'] ?? null,
+                            'persentase' => $r['Persentase'] ?? null,
+                            'ikp' => $r['IKP'] ?? null,
+                        ];
+                    }
+                }
+            }
+            return ['prov' => $rows, 'kab' => $kabRows];
+        });
+
+        $rows = $rawRows['prov'];
+        $kabRows = $rawRows['kab'];
+
+        if ($search) {
+            $needle = mb_strtolower($search);
+            $filterFn = function($row) use ($needle) {
+                $hay = mb_strtolower(trim(($row['provinsi'] ?? '').' '.($row['kabupaten_kota'] ?? '')));
+                return strpos($hay, $needle) !== false;
+            };
+            $rows = array_values(array_filter($rows, $filterFn));
+            $kabRows = array_values(array_filter($kabRows, $filterFn));
         }
+
+        // Sorting
+        $sortFn = function($a, $b) use ($sort, $direction) {
+            $va = $a[$sort] ?? $a['provinsi'];
+            $vb = $b[$sort] ?? $b['provinsi'];
+            $cmp = is_numeric($va) && is_numeric($vb) ? $va <=> $vb : strcasecmp((string)$va, (string)$vb);
+            return $direction === 'asc' ? $cmp : -$cmp;
+        };
+        usort($rows, $sortFn);
+        usort($kabRows, $sortFn);
+
+        $page = (int)$request->get('page', 1);
+        $provPaginator = new LengthAwarePaginator(array_slice($rows, ($page - 1) * $perPage, $perPage), count($rows), $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]);
+        $kabPaginator = new LengthAwarePaginator(array_slice($kabRows, ($page - 1) * $perPage, $perPage), count($kabRows), $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]);
+
+        return Inertia::render('Admin/Permasalahan/Index', [
+            'permasalahanProvinsi' => $provPaginator,
+            'permasalahanKabupaten' => $kabPaginator,
+            'stats' => ['totalProvinsi' => count($rows), 'totalKabupaten' => count($kabRows), 'total' => count($rows) + count($kabRows)],
+            'filters' => ['search' => $search, 'perPage' => $perPage, 'sort' => $sort, 'direction' => $direction, 'baseData' => 'statistik', 'jenis' => $jenis, 'tab' => $activeTab],
+        ]);
+    }
+
+    /**
+     * Handle Database-based research overlaps mode.
+     */
+    private function handleResearchMode(Request $request)
+    {
+        $perPage = (int)$request->get('perPage', 20);
+        $baseData = $request->get('baseData', 'penelitian');
+        $jenis = $request->get('jenis', 'Sampah');
+        $batch_type = $request->get('batch_type');
+        $search = $request->get('search');
+        $columnFilters = $request->get('columns', []);
+        $sort = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'desc');
+
+        if (!$jenis || $jenis === 'all') $jenis = 'Sampah';
+
+        $keywordsMap = [
+            'Sampah' => ['sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 'polusi', 'lingkungan'],
+            'Stunting' => ['stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita'],
+            'Gizi Buruk' => ['gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus'],
+            'Krisis Listrik' => ['listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit'],
+            'Ketahanan Pangan' => ['pangan', 'makanan', 'food', 'beras', 'pertanian'],
+        ];
+
+        $query = match($baseData) {
+            'pengabdian' => \App\Models\Pengabdian::query(),
+            'hilirisasi' => \App\Models\Hilirisasi::query(),
+            default => \App\Models\Penelitian::query()
+        };
 
         if (isset($keywordsMap[$jenis])) {
             $regex = implode('|', array_map('preg_quote', $keywordsMap[$jenis]));
             $query->where(function ($q) use ($regex, $baseData) {
                 $q->whereRaw("judul REGEXP ?", [$regex]);
-                // For Pengabdian, we follow public page and check bidang_fokus too
-                if ($baseData === 'pengabdian') {
-                    $q->orWhereRaw("bidang_fokus REGEXP ?", [$regex]);
-                }
+                if ($baseData === 'pengabdian') $q->orWhereRaw("bidang_fokus REGEXP ?", [$regex]);
             });
         }
 
-        // Apply Batch Type filter for Pengabdian (following Public Mapping logic)
-        if ($baseData === 'pengabdian' && $request->filled('batch_type')) {
-            $batch_types = (array)$request->batch_type;
-            if (in_array('Multitahun Lanjutan, Batch I & Batch II', $batch_types)) {
-                $batch_types = array_merge($batch_types, ['multitahun_lanjutan', 'batch_ii', 'batch_i']);
-            }
-            $query->whereIn('batch_type', $batch_types);
+        if ($baseData === 'pengabdian' && $batch_type) {
+            $bts = (array)$batch_type;
+            if (in_array('Multitahun Lanjutan, Batch I & Batch II', $bts)) $bts = array_merge($bts, ['multitahun_lanjutan', 'batch_ii', 'batch_i']);
+            $query->whereIn('batch_type', $bts);
         }
 
         if ($search) {
-            $query->where(function ($q) use ($search, $baseData) {
-                // Common fields
-                $q->where('judul', 'like', "%{$search}%");
-                
-                // Base data specific fields for global search
-                if ($baseData === 'penelitian') {
-                    $q->orWhere('nama', 'like', "%{$search}%")
-                      ->orWhere('institusi', 'like', "%{$search}%")
-                      ->orWhere('provinsi', 'like', "%{$search}%");
-                } elseif ($baseData === 'pengabdian') {
-                    $q->orWhere('nama', 'like', "%{$search}%")
-                      ->orWhere('nama_institusi', 'like', "%{$search}%")
-                      ->orWhere('prov_pt', 'like', "%{$search}%");
-                } elseif ($baseData === 'hilirisasi') {
-                    $q->orWhere('nama_pengusul', 'like', "%{$search}%")
-                      ->orWhere('perguruan_tinggi', 'like', "%{$search}%")
-                      ->orWhere('provinsi', 'like', "%{$search}%");
-                }
-            });
+            $query->where('judul', 'like', "%{$search}%");
         }
 
-        // Apply column filters
-        $columnFilters = $request->get('columns', []);
-        if (is_array($columnFilters) && count($columnFilters) > 0) {
+        if (is_array($columnFilters)) {
             foreach ($columnFilters as $col => $val) {
                 if (!$val) continue;
-                
-                $dbCol = $col;
-                if ($col === 'peneliti') {
-                    $dbCol = $baseData === 'penelitian' ? 'nama' : 'nama_pengusul';
-                } elseif ($col === 'institusi') {
-                    if ($baseData === 'penelitian') $dbCol = 'institusi';
-                    elseif ($baseData === 'pengabdian') $dbCol = 'nama_institusi';
-                    else $dbCol = 'perguruan_tinggi';
-                } elseif ($col === 'provinsi') {
-                    $dbCol = $baseData === 'pengabdian' ? 'prov_pt' : 'provinsi';
-                } elseif ($col === 'tahun') {
-                    if ($baseData === 'penelitian') $dbCol = 'thn_pelaksanaan';
-                    elseif ($baseData === 'pengabdian') $dbCol = 'thn_pelaksanaan_kegiatan';
-                    else $dbCol = 'tahun';
-                }
-                
+                $dbCol = match($col) {
+                    'peneliti' => $baseData === 'penelitian' ? 'nama' : 'nama_pengusul',
+                    'institusi' => match($baseData) { 'penelitian' => 'institusi', 'pengabdian' => 'nama_institusi', default => 'perguruan_tinggi' },
+                    'provinsi' => $baseData === 'pengabdian' ? 'prov_pt' : 'provinsi',
+                    'tahun' => match($baseData) { 'penelitian' => 'thn_pelaksanaan', 'pengabdian' => 'thn_pelaksanaan_kegiatan', default => 'tahun' },
+                    default => $col
+                };
                 $query->where($dbCol, 'like', "%{$val}%");
             }
         }
 
-        $results = $query->orderBy($sort, $direction)
-            ->paginate($perPage)
-            ->withQueryString();
+        $v = Cache::get('permasalahan_admin_v', 1);
+        $statsHash = md5(json_encode([$baseData, $jenis, $batch_type, $search, $columnFilters]));
+        
+        $total = Cache::remember("perm_adm_count_v{$v}_{$statsHash}", 3600, function() use ($query) {
+            return $query->count();
+        });
+
+        $results = new LengthAwarePaginator(
+            $query->orderBy($sort, $direction)->offset(($request->get('page', 1) - 1) * $perPage)->limit($perPage)->get(),
+            $total,
+            $perPage,
+            $request->get('page', 1),
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return Inertia::render('Admin/Permasalahan/Index', [
             'data' => $results,
             'filters' => [
-                'search' => $search,
-                'perPage' => $perPage,
-                'sort' => $sort,
-                'direction' => $direction,
-                'baseData' => $baseData,
-                'jenis' => $jenis,
-                'batch_type' => $request->get('batch_type'),
-                'listrikMode' => $request->get('listrikMode', 'SAIDI'),
-                'columns' => $columnFilters,
+                'search' => $search, 'perPage' => $perPage, 'sort' => $sort, 'direction' => $direction,
+                'baseData' => $baseData, 'jenis' => $jenis, 'batch_type' => $batch_type,
+                'listrikMode' => $request->get('listrikMode', 'SAIDI'), 'columns' => $columnFilters,
             ],
             'stats' => [],
         ]);
     }
 
-    public function create()
+    /**
+     * AJAX endpoint for statistics loading.
+     */
+    public function getStats(Request $request)
     {
-        return Inertia::render('Admin/Permasalahan/Create');
+        $baseData = $request->get('baseData', 'penelitian');
+        $jenis = $request->get('jenis', 'Sampah');
+        $batch_type = $request->get('batch_type');
+        $search = $request->get('search');
+        $columnFilters = $request->get('columns', []);
+
+        $v = Cache::get('permasalahan_admin_v', 1);
+        $statsHash = md5(json_encode(['fullStats', $baseData, $jenis, $batch_type, $search, $columnFilters]));
+
+        $data = Cache::remember("perm_adm_fullstats_v{$v}_{$statsHash}", 7200, function() use ($baseData, $jenis, $batch_type, $search, $columnFilters) {
+            $query = match($baseData) {
+                'pengabdian' => \App\Models\Pengabdian::query(),
+                'hilirisasi' => \App\Models\Hilirisasi::query(),
+                default => \App\Models\Penelitian::query()
+            };
+
+            $keywordsMap = [
+                'Sampah' => ['sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 'polusi', 'lingkungan'],
+                'Stunting' => ['stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita'],
+                'Gizi Buruk' => ['gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus'],
+                'Krisis Listrik' => ['listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit'],
+                'Ketahanan Pangan' => ['pangan', 'makanan', 'food', 'beras', 'pertanian'],
+            ];
+
+            if (isset($keywordsMap[$jenis])) {
+                $regex = implode('|', array_map('preg_quote', $keywordsMap[$jenis]));
+                $query->where(function ($q) use ($regex, $baseData) {
+                    $q->whereRaw("judul REGEXP ?", [$regex]);
+                    if ($baseData === 'pengabdian') $q->orWhereRaw("bidang_fokus REGEXP ?", [$regex]);
+                });
+            }
+
+            if ($baseData === 'pengabdian' && $batch_type) {
+                $bts = (array)$batch_type;
+                if (in_array('Multitahun Lanjutan, Batch I & Batch II', $bts)) $bts = array_merge($bts, ['multitahun_lanjutan', 'batch_ii', 'batch_i']);
+                $query->whereIn('batch_type', $bts);
+            }
+
+            if ($search) $query->where('judul', 'like', "%{$search}%");
+
+            if (is_array($columnFilters)) {
+                foreach ($columnFilters as $col => $val) {
+                    if (!$val) continue;
+                    $dbCol = match($col) {
+                        'peneliti' => $baseData === 'penelitian' ? 'nama' : 'nama_pengusul',
+                        'institusi' => match($baseData) { 'penelitian' => 'institusi', 'pengabdian' => 'nama_institusi', default => 'perguruan_tinggi' },
+                        'provinsi' => $baseData === 'pengabdian' ? 'prov_pt' : 'provinsi',
+                        'tahun' => match($baseData) { 'penelitian' => 'thn_pelaksanaan', 'pengabdian' => 'thn_pelaksanaan_kegiatan', default => 'tahun' },
+                        default => $col
+                    };
+                    $query->where($dbCol, 'like', "%{$val}%");
+                }
+            }
+
+            $distinctCol = match($baseData) { 'penelitian' => 'institusi', 'pengabdian' => 'nama_institusi', default => 'perguruan_tinggi' };
+            $provCol = ($baseData === 'pengabdian') ? 'prov_pt' : 'provinsi';
+
+            $res = $query->selectRaw("COUNT(*) as total, COUNT(DISTINCT {$distinctCol}) as totalInstitusi, COUNT(DISTINCT {$provCol}) as totalProvinsi")->first();
+
+            return [
+                'total' => (int)($res->total ?? 0),
+                'totalInstitusi' => (int)($res->totalInstitusi ?? 0),
+                'totalProvinsi' => (int)($res->totalProvinsi ?? 0),
+            ];
+        });
+
+        return response()->json($data);
     }
+
+    /**
+     * CSV Export implementation.
+     */
+    public function exportCsv(Request $request)
+    {
+        $baseData = $request->get('baseData', 'statistik');
+        $jenis = $request->get('jenis', 'Sampah');
+        $search = $request->get('search');
+        $columnFilters = $request->get('columns', []);
+
+        $safeJenis = strtolower(str_replace(' ', '_', $jenis));
+        $fileName = "permasalahan_{$baseData}_{$safeJenis}.csv";
+
+        $headers = [
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        ];
+
+        $callback = function() use ($baseData, $jenis, $search, $columnFilters) {
+            $file = fopen('php://output', 'w');
+            // Add UTF-8 BOM for Excel to recognize delimiter and encoding
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            if ($baseData === 'statistik') {
+                $normalizedJenis = strtolower(str_replace(' ', '_', $jenis));
+                $header = match($normalizedJenis) {
+                    'sampah' => ['Wilayah', 'Jenis', 'Timbulan Sampah Tahunan(ton)'],
+                    'krisis_listrik' => ['Wilayah', 'Jenis', 'Satuan PLN/Provinsi', 'SAIDI (Jam/Pelanggan)', 'SAIFI (Kali/Pelanggan)'],
+                    'ketahanan_pangan' => ['Wilayah', 'Jenis', 'IKP'],
+                    default => ['Wilayah', 'Jenis', 'Persentase']
+                };
+                
+                fputcsv($file, $header);
+
+                $baseDir = realpath(base_path('..'.DIRECTORY_SEPARATOR.'peta-bima'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'permasalahan'));
+                $jsonMap = [
+                    'sampah' => 'data-permasalahan-sampah.json',
+                    'stunting' => 'data-permasalahan-stunting.json',
+                    'gizi_buruk' => 'data-permasalahan-gizi-buruk.json',
+                    'krisis_listrik' => 'data-permasalahan-krisis-listrik.json',
+                    'ketahanan_pangan' => 'data-permasalahan-ketahanan-pangan.json',
+                ];
+
+                if (isset($jsonMap[$normalizedJenis])) {
+                    $path = $baseDir.DIRECTORY_SEPARATOR.$jsonMap[$normalizedJenis];
+                    if (is_file($path)) {
+                        $json = json_decode(file_get_contents($path), true);
+                        $provData = $json['Provinsi'] ?? ($json['Sheet1'] ?? []);
+                        foreach ($provData as $r) {
+                            $row = match($normalizedJenis) {
+                                'sampah' => [$r['Provinsi'] ?? '', 'Sampah', $r['Timbulan Sampah Tahunan(ton)'] ?? 0],
+                                'krisis_listrik' => [$r['Provinsi'] ?? '', 'Krisis Listrik', $r['Satuan PLN/Provinsi'] ?? '', $r['SAIDI (Jam/Pelanggan)'] ?? 0, $r['SAIFI (Kali/Pelanggan)'] ?? 0],
+                                'ketahanan_pangan' => [$r['Provinsi'] ?? '', 'Ketahanan Pangan', $r['IKP'] ?? 0],
+                                default => [$r['Provinsi'] ?? '', ucwords(str_replace('_', ' ', $normalizedJenis)), $r['Persentase'] ?? 0]
+                            };
+                            fputcsv($file, $row);
+                        }
+                    }
+                }
+            } else {
+                fputcsv($file, ['Judul', 'Peneliti/Pengusul', 'Institusi', 'Provinsi', 'Tahun', 'Tipe Data']);
+                
+                $query = match($baseData) {
+                    'pengabdian' => \App\Models\Pengabdian::query(),
+                    'hilirisasi' => \App\Models\Hilirisasi::query(),
+                    default => \App\Models\Penelitian::query()
+                };
+
+                $keywordsMap = [
+                    'Sampah' => ['sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 'polusi', 'lingkungan'],
+                    'Stunting' => ['stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita'],
+                    'Gizi Buruk' => ['gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus'],
+                    'Krisis Listrik' => ['listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit'],
+                    'Ketahanan Pangan' => ['pangan', 'makanan', 'food', 'beras', 'pertanian'],
+                ];
+
+                if ($jenis !== 'all' && isset($keywordsMap[$jenis])) {
+                    $regex = implode('|', array_map('preg_quote', $keywordsMap[$jenis]));
+                    $query->where(function ($q) use ($regex, $baseData) {
+                        $q->whereRaw("judul REGEXP ?", [$regex]);
+                        if ($baseData === 'pengabdian') $q->orWhereRaw("bidang_fokus REGEXP ?", [$regex]);
+                    });
+                }
+
+                if ($search) $query->where('judul', 'like', "%{$search}%");
+
+                $query->chunk(500, function($items) use ($file, $baseData) {
+                    foreach ($items as $item) {
+                        $judul = str_replace(["\r", "\n"], ' ', $item->judul);
+                        if ($baseData === 'penelitian') {
+                            fputcsv($file, [$judul, $item->nama, $item->institusi, $item->provinsi, $item->thn_pelaksanaan, 'Penelitian']);
+                        } elseif ($baseData === 'pengabdian') {
+                            fputcsv($file, [$judul, $item->nama, $item->nama_institusi, $item->prov_pt, $item->thn_pelaksanaan_kegiatan, 'Pengabdian']);
+                        } else {
+                            fputcsv($file, [$judul, $item->nama_pengusul, $item->perguruan_tinggi, $item->provinsi, $item->tahun, 'Hilirisasi']);
+                        }
+                    }
+                });
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function create() { return Inertia::render('Admin/Permasalahan/Create'); }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'type' => ['required', 'in:provinsi,kabupaten'],
-            'provinsi' => ['nullable', 'string', 'max:255'],
-            'kabupaten_kota' => ['nullable', 'string', 'max:255'],
-            'jenis_permasalahan' => ['required', 'string', 'max:255'],
-            'nilai' => ['nullable', 'numeric'],
-            'satuan' => ['nullable', 'string', 'max:50'],
-            'metrik' => ['nullable', 'string', 'max:255'],
-            'tahun' => ['nullable', 'integer'],
-        ]);
-
-        if ($validated['type'] === 'provinsi') {
-            PermasalahanProvinsi::create([
-                'provinsi' => $validated['provinsi'] ?? null,
-                'jenis_permasalahan' => $validated['jenis_permasalahan'],
-                'nilai' => $validated['nilai'] ?? null,
-                'satuan' => $validated['satuan'] ?? null,
-                'metrik' => $validated['metrik'] ?? null,
-                'tahun' => $validated['tahun'] ?? null,
-            ]);
-        } else {
-            PermasalahanKabupaten::create([
-                'kabupaten_kota' => $validated['kabupaten_kota'] ?? null,
-                'provinsi' => $validated['provinsi'] ?? null,
-                'jenis_permasalahan' => $validated['jenis_permasalahan'],
-                'nilai' => $validated['nilai'] ?? null,
-                'satuan' => $validated['satuan'] ?? null,
-                'tahun' => $validated['tahun'] ?? null,
-            ]);
-        }
-
-        return redirect()->route('admin.permasalahan.index')->with('success', 'Data permasalahan berhasil ditambahkan');
+        $v = $request->validate(['type' => 'required', 'provinsi' => 'nullable', 'kabupaten_kota' => 'nullable', 'jenis_permasalahan' => 'required', 'nilai' => 'nullable', 'satuan' => 'nullable', 'metrik' => 'nullable', 'tahun' => 'nullable']);
+        if ($v['type'] === 'provinsi') PermasalahanProvinsi::create($v);
+        else PermasalahanKabupaten::create($v);
+        return redirect()->route('admin.permasalahan.index')->with('success', 'Data ditambahkan');
     }
 
     public function edit(Request $request, $id)
     {
         $type = $request->get('type', 'provinsi');
-        $permasalahan = null;
-
-        if ($type === 'provinsi') {
-            $permasalahan = PermasalahanProvinsi::findOrFail($id);
-            $permasalahan->type = 'provinsi';
-        } else {
-            $permasalahan = PermasalahanKabupaten::findOrFail($id);
-            $permasalahan->type = 'kabupaten';
-        }
-
-        return Inertia::render('Admin/Permasalahan/Edit', [
-            'permasalahan' => $permasalahan,
-            'filters' => $request->only(['page', 'search', 'perPage', 'baseData', 'type', 'tab', 'jenis'])
-        ]);
+        $p = ($type === 'provinsi') ? PermasalahanProvinsi::findOrFail($id) : PermasalahanKabupaten::findOrFail($id);
+        $p->type = $type;
+        return Inertia::render('Admin/Permasalahan/Edit', ['permasalahan' => $p, 'filters' => $request->all()]);
     }
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'type' => ['required', 'in:provinsi,kabupaten'],
-            'provinsi' => ['nullable', 'string', 'max:255'],
-            'kabupaten_kota' => ['nullable', 'string', 'max:255'],
-            'jenis_permasalahan' => ['required', 'string', 'max:255'],
-            'nilai' => ['nullable', 'numeric'],
-            'satuan' => ['nullable', 'string', 'max:50'],
-            'metrik' => ['nullable', 'string', 'max:255'],
-            'tahun' => ['nullable', 'integer'],
-        ]);
+        $v = $request->validate(['type' => 'required', 'provinsi' => 'nullable', 'kabupaten_kota' => 'nullable', 'jenis_permasalahan' => 'required', 'nilai' => 'nullable', 'satuan' => 'nullable', 'metrik' => 'nullable', 'tahun' => 'nullable']);
+        $p = ($v['type'] === 'provinsi') ? PermasalahanProvinsi::findOrFail($id) : PermasalahanKabupaten::findOrFail($id);
+        $p->update($v);
+        return redirect()->route('admin.permasalahan.index')->with('success', 'Data diperbarui');
+    }
 
-        if ($validated['type'] === 'provinsi') {
-            $permasalahan = PermasalahanProvinsi::findOrFail($id);
-            $permasalahan->update([
-                'provinsi' => $validated['provinsi'] ?? null,
-                'jenis_permasalahan' => $validated['jenis_permasalahan'],
-                'nilai' => $validated['nilai'] ?? null,
-                'satuan' => $validated['satuan'] ?? null,
-                'metrik' => $validated['metrik'] ?? null,
-                'tahun' => $validated['tahun'] ?? null,
-            ]);
-        } else {
-            $permasalahan = PermasalahanKabupaten::findOrFail($id);
-            $permasalahan->update([
-                'kabupaten_kota' => $validated['kabupaten_kota'] ?? null,
-                'provinsi' => $validated['provinsi'] ?? null,
-                'jenis_permasalahan' => $validated['jenis_permasalahan'],
-                'nilai' => $validated['nilai'] ?? null,
-                'satuan' => $validated['satuan'] ?? null,
-                'tahun' => $validated['tahun'] ?? null,
-            ]);
+    public function importExcel(Request $request)
+    {
+        $data = $request->get('data', []);
+        $type = $request->get('type', 'provinsi');
+        $tahun = (int) ($request->get('tahun', date('Y')));
+        $imported = 0;
+        $errors = [];
+
+        if (empty($data)) {
+            return back()->with('error', 'Data import kosong atau tidak terbaca.');
         }
 
-        return redirect()->route('admin.permasalahan.index', $request->only(['page', 'search', 'perPage', 'baseData', 'type', 'tab', 'jenis']))
-            ->with('success', 'Data permasalahan berhasil diperbarui');
+        foreach ($data as $index => $row) {
+            $rowNum = $index + 1;
+            
+            // Normalize keys to handle case-sensitivity and spaces
+            $normalizedRow = [];
+            foreach ($row as $k => $v) {
+                // Remove spaces, slashes and lowercase for robust matching
+                $cleanKey = strtolower(str_replace([' ', '/', '_'], '', $k));
+                $normalizedRow[$cleanKey] = $v;
+            }
+
+            // Map aliases
+            $prov = $normalizedRow['provinsi'] ?? $normalizedRow['wilayah'] ?? '';
+            $kab = $normalizedRow['kabupatenkota'] ?? $normalizedRow['kabupaten'] ?? $normalizedRow['kota'] ?? '';
+            $nilai = $normalizedRow['nilai'] ?? $normalizedRow['timbulansampahtahunanton'] ?? $normalizedRow['persentase'] ?? $normalizedRow['ikp'] ?? null;
+            $jenis = $normalizedRow['jenispermasalahan'] ?? $normalizedRow['jenis'] ?? 'sampah';
+
+            // Validation logic
+            if ($type === 'provinsi' && empty($prov)) {
+                $errors[] = "Baris #{$rowNum}: Kolom 'Provinsi' wajib diisi."; continue;
+            }
+            if ($type === 'kabupaten' && empty($kab)) {
+                $errors[] = "Baris #{$rowNum}: Kolom 'Kabupaten/Kota' wajib diisi."; continue;
+            }
+            if ($nilai === null || $nilai === '') {
+                $errors[] = "Baris #{$rowNum}: Kolom 'Nilai' tidak boleh kosong."; continue;
+            }
+            if (!is_numeric($nilai)) {
+                $errors[] = "Baris #{$rowNum}: Kolom 'Nilai' harus berupa angka (ditemukan: '{$nilai}')."; continue;
+            }
+
+            // Proceed with updateOrCreate
+            if ($type === 'provinsi') {
+                PermasalahanProvinsi::updateOrCreate(
+                    ['provinsi' => $prov, 'jenis_permasalahan' => $jenis, 'tahun' => $tahun],
+                    ['nilai' => (float)$nilai, 'satuan' => $normalizedRow['satuan'] ?? '']
+                );
+            } else {
+                PermasalahanKabupaten::updateOrCreate(
+                    ['kabupaten_kota' => $kab, 'provinsi' => $prov ?: null, 'jenis_permasalahan' => $jenis, 'tahun' => $tahun],
+                    ['nilai' => (float)$nilai, 'satuan' => $normalizedRow['satuan'] ?? '']
+                );
+            }
+            $imported++;
+        }
+
+        if (count($errors) > 0) {
+            $msg = "Import selesai: {$imported} data berhasil, " . count($errors) . " baris gagal.";
+            $errorDetail = implode('; ', array_slice($errors, 0, 2));
+            return back()->with('error', $msg . " (" . $errorDetail . "...)");
+        }
+
+        return back()->with('success', "Import selesai: {$imported} data diperbarui.");
     }
 
     public function destroy(Request $request, $id)
     {
         $type = $request->get('type', 'provinsi');
-
-        if ($type === 'provinsi') {
-            $permasalahan = PermasalahanProvinsi::findOrFail($id);
-        } else {
-            $permasalahan = PermasalahanKabupaten::findOrFail($id);
-        }
-
-        $permasalahan->delete();
-
-        return back()->with('success', 'Data permasalahan berhasil dihapus');
+        $p = ($type === 'provinsi') ? PermasalahanProvinsi::findOrFail($id) : PermasalahanKabupaten::findOrFail($id);
+        $p->delete();
+        return back()->with('success', 'Data dihapus');
     }
 
     public function importFromFiles(Request $request)
     {
         $tahun = (int) ($request->get('tahun') ?? date('Y'));
         $baseDir = realpath(base_path('..'.DIRECTORY_SEPARATOR.'peta-bima'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'permasalahan'));
-
-        if (!$baseDir || !is_dir($baseDir)) {
-            return back()->with('error', 'Folder data permasalahan tidak ditemukan');
-        }
-
+        if (!$baseDir || !is_dir($baseDir)) return back()->with('error', 'Folder not found');
         $imported = 0;
 
-        // Helper closures
-        $upsertProv = function (string $provinsi, string $jenis, string $metrik, ?float $nilai, ?string $satuan) use ($tahun, &$imported) {
-            if ($provinsi === '' || $nilai === null) { return; }
-            PermasalahanProvinsi::updateOrCreate(
-                [
-                    'provinsi' => $provinsi,
-                    'jenis_permasalahan' => $jenis,
-                    'metrik' => $metrik,
-                    'tahun' => $tahun,
-                ],
-                [
-                    'nilai' => $nilai,
-                    'satuan' => $satuan,
-                ]
-            );
+        $upsertProv = function ($prov, $jenis, $metrik, $nilai, $satuan) use ($tahun, &$imported) {
+            if ($prov === '' || $nilai === null) return;
+            PermasalahanProvinsi::updateOrCreate(['provinsi' => $prov, 'jenis_permasalahan' => $jenis, 'metrik' => $metrik, 'tahun' => $tahun], ['nilai' => $nilai, 'satuan' => $satuan]);
             $imported++;
         };
 
-        $upsertKab = function (string $kab, ?string $prov, string $jenis, string $metrik, ?float $nilai, ?string $satuan) use ($tahun, &$imported) {
-            if ($kab === '' || $nilai === null) { return; }
-            PermasalahanKabupaten::updateOrCreate(
-                [
-                    'kabupaten_kota' => $kab,
-                    'provinsi' => $prov,
-                    'jenis_permasalahan' => $jenis,
-                    'tahun' => $tahun,
-                ],
-                [
-                    'nilai' => $nilai,
-                    'satuan' => $satuan,
-                ]
-            );
+        $upsertKab = function ($kab, $prov, $jenis, $nilai, $satuan) use ($tahun, &$imported) {
+            if ($kab === '' || $nilai === null) return;
+            PermasalahanKabupaten::updateOrCreate(['kabupaten_kota' => $kab, 'provinsi' => $prov, 'jenis_permasalahan' => $jenis, 'tahun' => $tahun], ['nilai' => $nilai, 'satuan' => $satuan]);
             $imported++;
         };
 
-        // 1) Gizi Buruk
-        $giziPath = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-gizi-buruk.json';
-        if (is_file($giziPath)) {
-            $json = json_decode(file_get_contents($giziPath), true);
-            if (isset($json['Provinsi']) && is_array($json['Provinsi'])) {
-                foreach ($json['Provinsi'] as $row) {
-                    $upsertProv($row['Provinsi'] ?? '', 'gizi_buruk', 'persentase', isset($row['Persentase']) ? (float)$row['Persentase'] : null, '%');
-                }
-            }
-            if (isset($json['Kabupaten']) && is_array($json['Kabupaten'])) {
-                foreach ($json['Kabupaten'] as $row) {
-                    $upsertKab($row['Kabupaten/Kota'] ?? '', null, 'gizi_buruk', 'persentase', isset($row['Persentase']) ? (float)$row['Persentase'] : null, '%');
-                }
+        $types = ['gizi-buruk' => ['gizi_buruk', 'Persentase', '%'], 'stunting' => ['stunting', 'Persentase', '%'], 'ketahanan-pangan' => ['ketahanan_pangan', 'IKP', 'indeks']];
+        foreach ($types as $f => $inf) {
+            $path = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-'.$f.'.json';
+            if (is_file($path)) {
+                $json = json_decode(file_get_contents($path), true);
+                foreach (($json['Provinsi'] ?? []) as $r) $upsertProv($r['Provinsi'] ?? '', $inf[0], 'persentase', $r[$inf[1]] ?? null, $inf[2]);
+                foreach (($json['Kabupaten'] ?? []) as $r) $upsertKab($r['Kabupaten/Kota'] ?? '', null, $inf[0], $r[$inf[1]] ?? null, $inf[2]);
             }
         }
-
-        // 2) Stunting
-        $stuntingPath = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-stunting.json';
-        if (is_file($stuntingPath)) {
-            $json = json_decode(file_get_contents($stuntingPath), true);
-            if (isset($json['Provinsi']) && is_array($json['Provinsi'])) {
-                foreach ($json['Provinsi'] as $row) {
-                    $upsertProv($row['Provinsi'] ?? '', 'stunting', 'persentase', isset($row['Persentase']) ? (float)$row['Persentase'] : null, '%');
-                }
-            }
-            if (isset($json['Kabupaten']) && is_array($json['Kabupaten'])) {
-                foreach ($json['Kabupaten'] as $row) {
-                    $upsertKab($row['Kabupaten/Kota'] ?? '', null, 'stunting', 'persentase', isset($row['Persentase']) ? (float)$row['Persentase'] : null, '%');
-                }
-            }
-        }
-
-        // 3) Ketahanan Pangan (IKP)
-        $panganPath = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-ketahanan-pangan.json';
-        if (is_file($panganPath)) {
-            $json = json_decode(file_get_contents($panganPath), true);
-            if (isset($json['Provinsi']) && is_array($json['Provinsi'])) {
-                foreach ($json['Provinsi'] as $row) {
-                    $upsertProv($row['Provinsi'] ?? '', 'ketahanan_pangan', 'IKP', isset($row['IKP']) ? (float)$row['IKP'] : null, 'indeks');
-                }
-            }
-            if (isset($json['Kabupaten']) && is_array($json['Kabupaten'])) {
-                foreach ($json['Kabupaten'] as $row) {
-                    $upsertKab($row['Kabupaten/Kota'] ?? '', null, 'ketahanan_pangan', 'IKP', isset($row['IKP']) ? (float)$row['IKP'] : null, 'indeks');
-                }
-            }
-        }
-
-        // 4) Krisis Listrik (SAIDI/SAIFI) – provinsi-level only pada file
-        $listrikPath = $baseDir.DIRECTORY_SEPARATOR.'data-permasalahan-krisis-listrik.json';
-        if (is_file($listrikPath)) {
-            $json = json_decode(file_get_contents($listrikPath), true);
-            if (isset($json['Sheet1']) && is_array($json['Sheet1'])) {
-                foreach ($json['Sheet1'] as $row) {
-                    $prov = trim((string)($row['Provinsi'] ?? ''));
-                    if ($prov === '') { continue; }
-                    $saidi = isset($row['SAIDI (Jam/Pelanggan)']) ? (float)$row['SAIDI (Jam/Pelanggan)'] : null;
-                    $saifi = isset($row['SAIFI (Kali/Pelanggan)']) ? (float)$row['SAIFI (Kali/Pelanggan)'] : null;
-                    if ($saidi !== null) { $upsertProv($prov, 'krisis_listrik', 'SAIDI', $saidi, 'Jam/Pelanggan'); }
-                    if ($saifi !== null) { $upsertProv($prov, 'krisis_listrik', 'SAIFI', $saifi, 'Kali/Pelanggan'); }
-                }
-            }
-        }
-
-        return back()->with('success', "Import selesai: {$imported} baris diperbarui/dibuat untuk tahun {$tahun}.");
+        return back()->with('success', "Import selesai: {$imported} baris diperbarui.");
     }
 }

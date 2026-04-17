@@ -13,22 +13,25 @@ use App\Models\PermasalahanKabupaten;
 use App\Models\RumusanMasalahCategory;
 use App\Models\RumusanMasalahStatement;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $stats = [
-            'penelitian' => Penelitian::count(),
-            'hilirisasi' => Hilirisasi::count(),
-            'pengabdian' => Pengabdian::count(),
-            'produk' => Produk::count(),
-            'fasilitas' => FasilitasLab::count(),
-            'permasalahan_prov' => PermasalahanProvinsi::count(),
-            'permasalahan_kab' => PermasalahanKabupaten::count(),
-            'rumusan_masalah_category' => RumusanMasalahCategory::count(),
-            'rumusan_masalah_statement' => RumusanMasalahStatement::count(),
-        ];
+        $stats = Cache::remember('admin_dashboard_stats', 600, function() {
+            return [
+                'penelitian' => Penelitian::count(),
+                'hilirisasi' => Hilirisasi::count(),
+                'pengabdian' => Pengabdian::count(),
+                'produk' => Produk::count(),
+                'fasilitas' => FasilitasLab::count(),
+                'permasalahan_prov' => PermasalahanProvinsi::count(),
+                'permasalahan_kab' => PermasalahanKabupaten::count(),
+                'rumusan_masalah_category' => RumusanMasalahCategory::count(),
+                'rumusan_masalah_statement' => RumusanMasalahStatement::count(),
+            ];
+        });
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => $stats,

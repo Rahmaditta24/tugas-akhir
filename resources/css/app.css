@@ -121,6 +121,15 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.25);
 }
 
+.admin-content-fade {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 .glass-border {
     border-color: rgba(255, 255, 255, 0.25) !important;
 }

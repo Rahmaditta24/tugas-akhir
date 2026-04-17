@@ -161,23 +161,29 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
             }
 
             const exportData = allData.map(item => ({
-                'Institusi': item.institusi || '-',
-                'Provinsi': item.provinsi || '-',
+                'ID': item.id,
                 'Nama Produk': item.nama_produk || '-',
-                'Deskripsi Produk': item.deskripsi_produk || '-',
-                'TKT': item.tkt || '-',
+                'Institusi': item.institusi || '-',
                 'Bidang': item.bidang || '-',
+                'TKT': item.tkt || '-',
+                'Provinsi': item.provinsi || '-',
                 'Nama Inventor': item.nama_inventor || '-',
                 'Email Inventor': item.email_inventor || '-',
-                'Nomor Paten': item.nomor_paten || '-',
+                'Nomor Paten': item.nomor_paten ? item.nomor_paten.split(/[;.\(\,\s ]/)[0].trim() : '-',
+                'Latitude': item.latitude,
+                'Longitude': item.longitude,
+                'Deskripsi': item.deskripsi_produk || '-',
             }));
 
             const ws = XLSX.utils.json_to_sheet(exportData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Produk');
+            
+            // Set standard column widths
             ws['!cols'] = [
-                { wch: 40 }, { wch: 20 }, { wch: 40 }, { wch: 60 },
-                { wch: 8 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, { wch: 20 },
+                { wch: 8 }, { wch: 40 }, { wch: 40 }, { wch: 20 },
+                { wch: 8 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, 
+                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 60 }
             ];
 
             const timestamp = new Date().toISOString().slice(0, 10);

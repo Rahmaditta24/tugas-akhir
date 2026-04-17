@@ -111,7 +111,7 @@ class FasilitasLabSeeder extends Seeder
                     'kategori_pt' => $normalize($item['Kategori PT'] ?? null),
                     'fakultas' => $normalize($item['Fakultas'] ?? null),
                     'departemen' => $normalize($item['Departemen'] ?? null),
-                    'nama_laboratorium' => $namaLab ? $toTitleCase($namaLab) : null,
+                    'nama_laboratorium' => $namaLab ?? null,
                     'jenis_laboratorium' => $normalize($item['Jenis Labolatorium'] ?? null),
                     'standar_akreditasi' => $normalize($item['Standar Akreditasi / Sertifikasi'] ?? null),
                     'jam_mulai' => $normalize($item['Jam Mulai Operasional'] ?? null),

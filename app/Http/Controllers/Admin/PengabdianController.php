@@ -134,37 +134,48 @@ class PengabdianController extends Controller
 
         // Whitelisted sorting
         $allowedSorts = ['id', 'nama', 'nidn', 'nama_institusi', 'judul', 'prov_pt', 'kab_pt', 'thn_pelaksanaan_kegiatan', 'nama_skema'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'thn_pelaksanaan_kegiatan';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
 
-        $pengabdian = $query
-            ->orderBy($sort, $direction)
-            ->paginate($perPage)
-            ->withQueryString();
+        // Cache Versioning
+        $v = Cache::get('pengabdian_admin_v', 1);
+        $cacheKey = 'pengabdian_admin_v' . $v . '_' . md5(json_encode($request->all()));
 
-        $pengabdian->getCollection()->transform(function ($item) {
-            $item->nama = $this->formatName($item->nama);
-            if (!empty($item->nama_pendamping)) {
-                $item->nama_pendamping = $this->formatName($item->nama_pendamping);
-            }
-            if (empty($item->kd_perguruan_tinggi)) {
-                $item->kd_perguruan_tinggi = '0';
-            }
-            return $item;
+        $data = Cache::remember($cacheKey, 600, function() use ($query, $perPage, $sort, $direction) {
+            $pengabdian = $query
+                ->orderBy($sort, $direction)
+                ->orderBy('nama', 'asc')
+                ->paginate($perPage)
+                ->withQueryString();
+
+            $pengabdian->getCollection()->transform(function ($item) {
+                $item->nama = $this->formatName($item->nama);
+                if (!empty($item->nama_pendamping)) {
+                    $item->nama_pendamping = $this->formatName($item->nama_pendamping);
+                }
+                if (empty($item->kd_perguruan_tinggi)) {
+                    $item->kd_perguruan_tinggi = '0';
+                }
+                return $item;
+            });
+
+            return $pengabdian;
         });
 
-        $stats = [
-            'total' => Pengabdian::count(),
-            'batch' => Pengabdian::whereIn('batch_type', ['batch_i', 'batch_ii', 'batch', 'multitahun', 'multitahun_lanjutan'])->count(),
-            'kosabangsa' => Pengabdian::where(function($q) {
-                $q->where('batch_type', 'kosabangsa')
-                  ->orWhere('nama_skema', 'like', '%Kosabangsa%');
-            })->count(),
-            'withCoordinates' => Pengabdian::whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count(),
-        ];
+        $stats = Cache::remember('pengabdian_admin_stats', 3600, function() {
+            return [
+                'total' => Pengabdian::count(),
+                'batch' => Pengabdian::whereIn('batch_type', ['batch_i', 'batch_ii', 'batch', 'multitahun', 'multitahun_lanjutan'])->count(),
+                'kosabangsa' => Pengabdian::where(function($q) {
+                    $q->where('batch_type', 'kosabangsa')
+                      ->orWhere('nama_skema', 'like', '%Kosabangsa%');
+                })->count(),
+                'withCoordinates' => Pengabdian::whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count(),
+            ];
+        });
 
         return Inertia::render('Admin/Pengabdian/Index', [
-            'pengabdian' => $pengabdian,
+            'pengabdian' => $data,
             'stats' => $stats,
             'filters' => [
                 'search' => $request->search,
@@ -236,7 +247,7 @@ class PengabdianController extends Controller
         ]);
 
         Pengabdian::create($validated);
-        $this->clearCache();
+        $this->clearModuleCache();
 
         return redirect()->route('admin.pengabdian.index', ['type' => $request->batch_type])
             ->with('success', 'Data pengabdian berhasil ditambahkan');
@@ -507,7 +518,7 @@ class PengabdianController extends Controller
 
         if (is_string($id) && str_starts_with($id, 'json_')) {
             Pengabdian::create($validated);
-            $this->clearCache();
+            $this->clearModuleCache();
             return redirect()->route('admin.pengabdian.index', array_merge(['type' => $request->batch_type], $request->only(['page', 'search', 'perPage', 'filters'])))
                 ->with('success', 'Data dari JSON berhasil disimpan ke database');
         }
@@ -517,7 +528,7 @@ class PengabdianController extends Controller
             $validated['ptn_pts'] = $this->isPTN($validated['nama_institusi']) ? 'PTN' : 'PTS';
         }
         $pengabdian->update($validated);
-        $this->clearCache();
+        $this->clearModuleCache();
 
         return redirect()->route('admin.pengabdian.index', array_merge(['type' => $request->batch_type], $request->only(['page', 'search', 'perPage', 'filters'])))
             ->with('success', 'Data pengabdian berhasil diperbarui');
@@ -526,18 +537,272 @@ class PengabdianController extends Controller
     public function destroy(Pengabdian $pengabdian)
     {
         $pengabdian->delete();
-        $this->clearCache();
+        $this->clearModuleCache();
         return back()->with('success', 'Data dihapus');
     }
 
-    private function clearCache()
+    public function bulkDestroy(Request $request)
     {
-        // Increment version to invalidate all hash-based cache keys in PengabdianPageController
-        $v = (int) Cache::get('pengabdian_cache_version', 0);
-        Cache::put('pengabdian_cache_version', $v + 1, 86400 * 30); // Valid for 30 days
+        $request->validate([
+            'ids'   => 'required|array|min:1',
+            'ids.*' => 'integer|exists:pengabdian,id',
+        ]);
+
+        $count = Pengabdian::whereIn('id', $request->ids)->delete();
+        $this->clearModuleCache();
+
+        return back()->with('success', "{$count} data pengabdian berhasil dihapus.");
+    }
+
+    public function exportCsv(Request $request)
+    {
+        set_time_limit(300);
+        ini_set('memory_limit', '512M');
+
+        $query = Pengabdian::select(
+            'id', 'nama', 'nidn', 'kd_perguruan_tinggi', 'nama_institusi', 'wilayah_lldikti',
+            'ptn_pts', 'kab_pt', 'prov_pt', 'klaster', 'judul', 'nama_singkat_skema',
+            'thn_pelaksanaan_kegiatan', 'urutan_thn_kegitan', 'nama_skema', 'bidang_fokus',
+            'prov_mitra', 'kab_mitra', 'batch_type', 'pt_latitude', 'pt_longitude',
+            'nama_pendamping', 'nidn_pendamping', 'kd_perguruan_tinggi_pendamping',
+            'institusi_pendamping', 'lldikti_wilayah_pendamping', 'jenis_wilayah_provinsi_mitra',
+            'bidang_teknologi_inovasi'
+        );
+
+        $type = $request->get('type', 'batch');
+        if ($type === 'kosabangsa') {
+            $query->where(function($q) {
+                $q->where('batch_type', 'kosabangsa')
+                  ->orWhere('nama_skema', 'like', '%Kosabangsa%');
+            });
+        } else {
+            $query->whereIn('batch_type', ['batch_i', 'batch_ii', 'batch', 'multitahun', 'multitahun_lanjutan']);
+        }
         
-        // Also clear static filter option caches
-        Cache::forget('filter_pengabdian_provinsi');
-        Cache::forget('filter_pengabdian_tahun');
+        if ($request->filled('ids')) {
+            $ids = explode(',', $request->ids);
+            $query->whereIn('id', $ids);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('nama_institusi', 'like', "%{$search}%")
+                  ->orWhere('judul', 'like', "%{$search}%")
+                  ->orWhere('prov_pt', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('filters')) {
+            foreach ($request->filters as $key => $value) {
+                if (!empty($value) && in_array($key, [
+                    'nama','nidn','nama_institusi','judul','prov_pt','kab_pt','ptn_pts',
+                    'nama_skema','nama_singkat_skema','bidang_fokus','thn_pelaksanaan_kegiatan','prov_mitra','kab_mitra',
+                ])) {
+                    $query->where($key, 'like', "%{$value}%");
+                }
+            }
+        }
+
+        $filterLabel = ($request->filled('search') || $request->filled('filters')) ? '_filtered' : '';
+        $filename = 'data-pengabdian-' . $type . $filterLabel . '_' . date('Y-m-d') . '.csv';
+
+        if ($type === 'kosabangsa') {
+            $columns = [
+                'ID', 'Nama', 'NIDN', 'KD Perguruan Tinggi', 'Institusi', 'Wilayah LLDIKTI', 
+                'PTN/PTS', 'Kab PT', 'Prov PT', 'Klaster', 'Judul', 'Nama Singkat Skema', 
+                'Tahun', 'Urutan Tahun Kegiatan', 'Nama Skema', 'Bidang Fokus', 
+                'Prov Mitra', 'Kab Mitra', 'Latitude', 'Longitude',
+                'Nama Pendamping', 'NIDN Pendamping', 'KD Perguruan Tinggi Pendamping', 
+                'Institusi Pendamping', 'LLDIKTI Wilayah Pendamping', 
+                'Jenis Wilayah Provinsi Mitra', 'Bidang Teknologi Inovasi'
+            ];
+        } else {
+            $columns = [
+                'ID', 'Nama', 'NIDN', 'KD Perguruan Tinggi', 'Institusi', 'Wilayah LLDIKTI', 
+                'PTN/PTS', 'Kab PT', 'Prov PT', 'Klaster', 'Judul', 'Nama Singkat Skema', 
+                'Tahun', 'Urutan Tahun Kegiatan', 'Nama Skema', 'Bidang Fokus', 
+                'Prov Mitra', 'Kab Mitra', 'Latitude', 'Longitude'
+            ];
+        }
+
+        $callback = function() use ($columns, $query, $type) {
+            $file = fopen('php://output', 'w');
+            fwrite($file, "\xEF\xBB\xBF");
+            fputcsv($file, $columns);
+
+            $query->orderBy('thn_pelaksanaan_kegiatan', 'desc')->chunk(1000, function($data) use($file, $type) {
+                foreach ($data as $row) {
+                    $rowData = [
+                        $row->id, $row->nama, $row->nidn, $row->kd_perguruan_tinggi,
+                        $row->nama_institusi, $row->wilayah_lldikti, $row->ptn_pts,
+                        $row->kab_pt, $row->prov_pt, $row->klaster, $row->judul,
+                        $row->nama_singkat_skema, $row->thn_pelaksanaan_kegiatan,
+                        $row->urutan_thn_kegitan, $row->nama_skema, $row->bidang_fokus,
+                        $row->prov_mitra, $row->kab_mitra, $row->pt_latitude, $row->pt_longitude
+                    ];
+                    
+                    if ($type === 'kosabangsa') {
+                        $rowData = array_merge($rowData, [
+                            $row->nama_pendamping, $row->nidn_pendamping, $row->kd_perguruan_tinggi_pendamping,
+                            $row->institusi_pendamping, $row->lldikti_wilayah_pendamping,
+                            $row->jenis_wilayah_provinsi_mitra, $row->bidang_teknologi_inovasi
+                        ]);
+                    }
+                    
+                    fputcsv($file, $rowData);
+                }
+            });
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Pragma'              => 'public',
+        ]);
+    }
+
+    public function exportJson(Request $request)
+    {
+        $query = Pengabdian::query();
+
+        if ($request->search) {
+            $query->where(function($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->search . '%')
+                  ->orWhere('judul', 'like', '%' . $request->search . '%')
+                  ->orWhere('nama_institusi', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($filters = $request->get('filters')) {
+             foreach ($filters as $key => $value) {
+                 if ($value) $query->where($key, 'like', '%' . $value . '%');
+             }
+        }
+
+        $data = $query->orderBy('thn_pelaksanaan_kegiatan', 'desc')->limit(50000)->get();
+        return response()->json($data);
+    }
+
+    public function importExcel(Request $request)
+    {
+        try {
+            $request->validate([
+                'data' => 'required|array',
+                'data.*' => 'array',
+            ]);
+
+            $imported = 0;
+            $updated = 0;
+            $errors = [];
+            $batch = [];
+
+            // Strict Header Validation (Tolak jika kolom tidak sesuai)
+            if (!empty($request->data)) {
+                $firstRow = $request->data[0];
+                $foundKeys = array_map(function($k) {
+                    return strtolower(str_replace([' ', '/', '_'], '', $k));
+                }, array_keys($firstRow));
+
+                $required = ['batchtype', 'nama', 'namainstitusi', 'judul', 'thnpelaksanaankegiatan'];
+                $missing = [];
+                foreach ($required as $req) {
+                    if (!in_array($req, $foundKeys)) {
+                        // Try to map alias if missing
+                        $aliases = [
+                            'namainstitusi' => ['institusi', 'perguruantinggi'],
+                            'thnpelaksanaankegiatan' => ['tahun']
+                        ];
+                        $foundAlias = false;
+                        if (isset($aliases[$req])) {
+                            foreach ($aliases[$req] as $alt) {
+                                if (in_array($alt, $foundKeys)) { $foundAlias = true; break; }
+                            }
+                        }
+                        if (!$foundAlias) $missing[] = $req;
+                    }
+                }
+
+                if (!empty($missing)) {
+                    return back()->with('error', 'Format file tidak sesuai! Mohon gunakan template yang benar. Kolom wajib yang hilang: ' . implode(', ', $missing));
+                }
+            }
+
+            foreach ($request->data as $index => $row) {
+                $rowNum = $index + 1;
+                $normalizedRow = [];
+                foreach ($row as $k => $v) {
+                    $cleanKey = strtolower(str_replace([' ', '/', '_'], '', $k));
+                    $normalizedRow[$cleanKey] = $v;
+                }
+
+                $id = $normalizedRow['id'] ?? null;
+                $nama = trim($normalizedRow['nama'] ?? $normalizedRow['peneliti'] ?? $normalizedRow['namapengusul'] ?? '');
+                $institusi = trim($normalizedRow['namainstitusi'] ?? $normalizedRow['institusi'] ?? $normalizedRow['perguruan_tinggi'] ?? '');
+                $judul = trim($normalizedRow['judul'] ?? $normalizedRow['judulpenelitian'] ?? $normalizedRow['judulberita'] ?? '');
+                $tahun = (int)($normalizedRow['thnpelaksanaankegiatan'] ?? $normalizedRow['tahun'] ?? date('Y'));
+
+                if (empty($nama)) { $errors[] = "Baris #{$rowNum}: Kolom 'Nama' wajib diisi."; continue; }
+                if (empty($judul)) { $errors[] = "Baris #{$rowNum}: Kolom 'Judul' wajib diisi."; continue; }
+                if (empty($institusi)) { $errors[] = "Baris #{$rowNum}: Kolom 'Institusi' wajib diisi."; continue; }
+
+                $data = [
+                    'nama' => $nama,
+                    'nidn' => $normalizedRow['nidn'] ?? null,
+                    'nama_institusi' => $institusi,
+                    'kd_perguruan_tinggi' => $normalizedRow['kdperguruan_tinggi'] ?? '0',
+                    'prov_pt' => $normalizedRow['provpt'] ?? $normalizedRow['provinsi'] ?? '-',
+                    'kab_pt' => $normalizedRow['kabpt'] ?? $normalizedRow['kabupaten'] ?? '-',
+                    'pt_latitude' => $normalizedRow['ptlatitude'] ?? $normalizedRow['latitude'] ?? -6.2,
+                    'pt_longitude' => $normalizedRow['ptlongitude'] ?? $normalizedRow['longitude'] ?? 106.8,
+                    'judul' => $judul,
+                    'nama_skema' => $normalizedRow['namaskema'] ?? $normalizedRow['skema'] ?? '-',
+                    'nama_singkat_skema' => $normalizedRow['namasingkatskema'] ?? '-',
+                    'thn_pelaksanaan_kegiatan' => $tahun,
+                    'bidang_fokus' => $normalizedRow['bidangfokus'] ?? '-',
+                    'prov_mitra' => $normalizedRow['provmitra'] ?? $normalizedRow['provinsimitra'] ?? '-',
+                    'kab_mitra' => $normalizedRow['kabmitra'] ?? $normalizedRow['kabupatenmitra'] ?? '-',
+                    'batch_type' => $normalizedRow['batchtype'] ?? 'batch',
+                ];
+
+                if ($id && Pengabdian::find($id)) {
+                    Pengabdian::where('id', $id)->update($data);
+                    $updated++;
+                } else {
+                    $batch[] = $data;
+                    $imported++;
+                }
+
+                if (count($batch) >= 100) {
+                    Pengabdian::insert($batch);
+                    $batch = [];
+                }
+            }
+
+            if (count($batch) > 0) Pengabdian::insert($batch);
+
+            $this->clearModuleCache();
+
+            $message = "Import selesai: {$imported} baru, {$updated} diperbarui.";
+            if (count($errors) > 0) {
+                $errorDetail = implode('; ', array_slice($errors, 0, 2));
+                return back()->with('error', $message . " (" . count($errors) . " baris gagal: " . $errorDetail . "...)");
+            }
+
+            return back()->with('success', $message);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan sistem saat import: ' . $e->getMessage());
+        }
+    }
+
+    private function clearModuleCache()
+    {
+        Cache::forget('pengabdian_admin_stats');
+        Cache::forget('admin_dashboard_stats');
+        $v = (int) Cache::get('pengabdian_admin_v', 1);
+        Cache::put('pengabdian_admin_v', $v + 1, 86400 * 30);
     }
 }
