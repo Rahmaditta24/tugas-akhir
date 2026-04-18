@@ -182,7 +182,9 @@ class PenelitianController extends Controller
                             'provinsi',
                             'kota',
                             'jenis_pt',
-                            'kategori_pt'
+                            'kategori_pt',
+                            'klaster',
+                            'institusi_pilihan'
                         ])
                     ) {
                         $query->where($key, 'like', "%{$value}%");
@@ -217,7 +219,32 @@ class PenelitianController extends Controller
                 ->withQueryString();
 
             $penelitian->getCollection()->transform(function ($item) {
+                // Formatting name
                 $item->nama = $this->formatName($item->nama);
+
+                // Self-healing rules for display consistency
+                $clean = function($v, $isNumeric = false) {
+                    if (is_string($v)) $v = ltrim(trim($v), "'");
+                    if ($v === null || $v === '') return $isNumeric ? '0' : '-';
+                    return $v;
+                };
+
+                $numericFields = ['nidn', 'nuptk', 'kode_pt'];
+                $textFields = ['institusi', 'provinsi', 'institusi_pilihan', 'skema', 'kota'];
+                $dropdownFields = ['jenis_pt', 'kategori_pt', 'klaster', 'bidang_fokus', 'tema_prioritas'];
+                
+                foreach ($numericFields as $f) {
+                    $item->$f = $clean($item->$f, true);
+                }
+                foreach ($textFields as $f) {
+                    $item->$f = $clean($item->$f, false);
+                }
+                foreach ($dropdownFields as $f) {
+                    // Jika data asli adalah '-' atau kosong, paksa jadi string kosong agar Select Tag pindah ke "-- Pilih --"
+                    $val = ltrim(trim($item->$f), "'");
+                    $item->$f = ($val === '' || $val === '-' || $val === null) ? '' : $val;
+                }
+
                 return $item;
             });
 
@@ -256,18 +283,38 @@ class PenelitianController extends Controller
         $request->merge([
             'pt_latitude' => is_string($request->pt_latitude) ? str_replace(',', '.', $request->pt_latitude) : $request->pt_latitude,
             'pt_longitude' => is_string($request->pt_longitude) ? str_replace(',', '.', $request->pt_longitude) : $request->pt_longitude,
-            'nidn' => is_string($request->nidn) ? ltrim(trim($request->nidn), "'") : $request->nidn,
-            'nuptk' => is_string($request->nuptk) ? ltrim(trim($request->nuptk), "'") : $request->nuptk,
+            'nidn' => $this->normalizeNumeric($request->nidn),
+            'nuptk' => $this->normalizeNumeric($request->nuptk),
+            'kode_pt' => $this->normalizeNumeric($request->kode_pt),
+            'kategori_pt' => empty($request->kategori_pt) ? '-' : $request->kategori_pt,
+            'institusi_pilihan' => empty($request->institusi_pilihan) ? '-' : $request->institusi_pilihan,
+            'klaster' => empty($request->klaster) ? '-' : $request->klaster,
+            'provinsi' => empty($request->provinsi) ? '-' : $request->provinsi,
+            'kota' => empty($request->kota) ? '-' : $request->kota,
+            'skema' => empty($request->skema) ? '-' : $request->skema,
+            'bidang_fokus' => empty($request->bidang_fokus) ? '-' : $request->bidang_fokus,
+            'tema_prioritas' => empty($request->tema_prioritas) ? '-' : $request->tema_prioritas,
         ]);
+
         $validated = $request->validate([
             'nama' => ['required', 'string', 'max:255'],
-            'institusi' => ['required', 'string', 'max:255'],
+            'nidn' => ['nullable', 'string'],
+            'nuptk' => ['nullable', 'string'],
+            'institusi' => ['required', 'string'],
+            'kode_pt' => ['required', 'string'],
+            'jenis_pt' => ['required', 'string'],
+            'kategori_pt' => ['required', 'string'],
+            'institusi_pilihan' => ['required', 'string'],
+            'klaster' => ['required', 'string'],
+            'provinsi' => ['required', 'string'],
+            'kota' => ['required', 'string'],
             'pt_latitude' => ['required', 'numeric'],
             'pt_longitude' => ['required', 'numeric'],
             'judul' => ['required', 'string'],
+            'skema' => ['required', 'string'],
             'thn_pelaksanaan' => ['required', 'integer'],
-            'bidang_fokus' => ['nullable', 'string', 'max:255'],
-            'tema_prioritas' => ['nullable', 'string', 'max:255'],
+            'bidang_fokus' => ['nullable', 'string'],
+            'tema_prioritas' => ['nullable', 'string'],
         ]);
 
         Penelitian::create($validated);
@@ -278,22 +325,55 @@ class PenelitianController extends Controller
     public function edit(Request $request, Penelitian $penelitian)
     {
         // Clean data from DB
-        $clean = fn($v) => is_string($v) ? ltrim(trim($v), "'") : $v;
-        $penelitian->nidn = $clean($penelitian->nidn);
-        $penelitian->nuptk = $clean($penelitian->nuptk);
-        $penelitian->nama = $clean($penelitian->nama);
-        $penelitian->judul = $clean($penelitian->judul);
-        $penelitian->institusi = $clean($penelitian->institusi);
-        $penelitian->kode_pt = $clean($penelitian->kode_pt);
-        $penelitian->provinsi = $clean($penelitian->provinsi);
+        $clean = function($v, $isNumeric = false) {
+            if (is_string($v)) {
+                $v = ltrim(trim($v), "'");
+            }
+            if ($v === null || $v === '') {
+                return $isNumeric ? '0' : '-';
+            }
+            return $v;
+        };
+
+        $numericFields = ['nidn', 'nuptk', 'kode_pt'];
+        $textFields = ['institusi', 'provinsi', 'institusi_pilihan', 'skema', 'kota'];
+        $dropdownFields = ['jenis_pt', 'kategori_pt', 'klaster', 'bidang_fokus', 'tema_prioritas'];
+        
+        foreach ($numericFields as $f) {
+            $penelitian->$f = $clean($penelitian->$f, true);
+        }
+        foreach ($textFields as $f) {
+            $penelitian->$f = $clean($penelitian->$f, false);
+        }
+        foreach ($dropdownFields as $f) {
+            $val = ltrim(trim($penelitian->$f), "'");
+            $penelitian->$f = ($val === '' || $val === '-' || $val === null) ? '' : $val;
+        }
+        
         return Inertia::render('Admin/Penelitian/Edit', [
-            'penelitian' => $penelitian,
-            'params' => $request->only(['page', 'search', 'perPage', 'filters'])
+            'item'    => $penelitian,
+            'filters' => $request->only(['page', 'search', 'perPage', 'filters'])
         ]);
     }
 
     public function update(Request $request, Penelitian $penelitian)
     {
+        $request->merge([
+            'pt_latitude' => is_string($request->pt_latitude) ? str_replace(',', '.', $request->pt_latitude) : $request->pt_latitude,
+            'pt_longitude' => is_string($request->pt_longitude) ? str_replace(',', '.', $request->pt_longitude) : $request->pt_longitude,
+            'nidn' => $this->normalizeNumeric($request->nidn),
+            'nuptk' => $this->normalizeNumeric($request->nuptk),
+            'kode_pt' => $this->normalizeNumeric($request->kode_pt),
+            'kategori_pt' => empty($request->kategori_pt) ? '-' : $request->kategori_pt,
+            'institusi_pilihan' => empty($request->institusi_pilihan) ? '-' : $request->institusi_pilihan,
+            'klaster' => empty($request->klaster) ? '-' : $request->klaster,
+            'provinsi' => empty($request->provinsi) ? '-' : $request->provinsi,
+            'kota' => empty($request->kota) ? '-' : $request->kota,
+            'skema' => empty($request->skema) ? '-' : $request->skema,
+            'bidang_fokus' => empty($request->bidang_fokus) ? '-' : $request->bidang_fokus,
+            'tema_prioritas' => empty($request->tema_prioritas) ? '-' : $request->tema_prioritas,
+        ]);
+        
         $penelitian->update($request->all());
         $this->clearModuleCache();
         return redirect()->route('admin.penelitian.index')->with('success', 'Data penelitian berhasil diperbarui');
@@ -312,6 +392,53 @@ class PenelitianController extends Controller
         $count = Penelitian::whereIn('id', $request->ids)->delete();
         $this->clearModuleCache();
         return back()->with('success', "{$count} data penelitian berhasil dihapus.");
+    }
+
+    public function bulkUpdate(Request $request)
+    {
+        $request->validate([
+            'items'       => 'required|array|min:1',
+            'items.*.id'  => 'required|integer|exists:penelitian,id',
+        ]);
+
+        $allowedFields = [
+            'nama', 'nidn', 'nuptk', 'institusi', 'kode_pt', 'jenis_pt', 'kategori_pt',
+            'klaster', 'institusi_pilihan', 'provinsi', 'kota',
+            'pt_latitude', 'pt_longitude', 'skema',
+            'thn_pelaksanaan', 'bidang_fokus', 'tema_prioritas',
+        ];
+
+        $count = 0;
+        foreach ($request->items as $item) {
+            $id = $item['id'] ?? null;
+            if (!$id) continue;
+
+            $updateData = [];
+            foreach ($item as $key => $value) {
+                if ($key === 'id') continue;
+                if (!in_array($key, $allowedFields)) continue;
+                
+                // Normalisasi NIDN/NUPTK/Kode PT
+                if (in_array($key, ['nidn', 'nuptk', 'kode_pt'])) {
+                    $updateData[$key] = $this->normalizeNumeric($value);
+                } elseif (in_array($key, ['pt_latitude', 'pt_longitude'])) {
+                    if ($value === null || $value === '') continue;
+                    $value = str_replace(',', '.', $value);
+                    if (!is_numeric($value)) continue;
+                    $updateData[$key] = (float)$value;
+                } else {
+                    $updateData[$key] = $value;
+                }
+            }
+
+            if (!empty($updateData)) {
+                Penelitian::where('id', $id)->update($updateData);
+                $count++;
+            }
+        }
+
+        $this->clearModuleCache();
+        return back()->with('success', "{$count} data penelitian berhasil diperbarui.");
     }
 
 
@@ -563,7 +690,8 @@ class PenelitianController extends Controller
                 $rowNum = $index + 1;
                 $normalizedRow = [];
                 foreach ($row as $k => $v) {
-                    $cleanKey = strtolower(str_replace([' ', '/', '_'], '', $k));
+                    // Buang semua karakter non-alfanumerik dari header (spasi, _, /, dsb)
+                    $cleanKey = strtolower(preg_replace('/[^a-z0-9]/', '', $k));
                     $normalizedRow[$cleanKey] = $v;
                 }
 
@@ -579,26 +707,41 @@ class PenelitianController extends Controller
 
                 $data = [
                     'nama' => $nama,
-                    'nidn' => $normalizedRow['nidn'] ?? null,
-                    'nuptk' => $normalizedRow['nuptk'] ?? null,
+                    'nidn' => $this->normalizeNumeric($normalizedRow['nidn'] ?? null),
+                    'nuptk' => $this->normalizeNumeric($normalizedRow['nuptk'] ?? null),
                     'institusi' => $institusi,
-                    'kode_pt' => $normalizedRow['kodept'] ?? 'IMPORT_EXCEL',
-                    'jenis_pt' => $normalizedRow['jenispt'] ?? 'Negeri/Swasta',
-                    'kategori_pt' => $normalizedRow['kategoript'] ?? '-',
-                    'klaster' => $normalizedRow['klaster'] ?? '-',
-                    'provinsi' => $normalizedRow['provinsi'] ?? '-',
-                    'kota' => $normalizedRow['kota'] ?? '-',
-                    'pt_latitude' => $normalizedRow['ptlatitude'] ?? $normalizedRow['latitude'] ?? -6.2,
-                    'pt_longitude' => $normalizedRow['ptlongitude'] ?? $normalizedRow['longitude'] ?? 106.8,
+                    'kode_pt' => $this->normalizeNumeric($normalizedRow['kodept'] ?? 'IMPORT_EXCEL'),
+                    'jenis_pt' => !empty($normalizedRow['jenispt']) ? $normalizedRow['jenispt'] : 'Negeri/Swasta',
+                    'kategori_pt' => !empty($normalizedRow['kategoript']) ? $normalizedRow['kategoript'] : '-',
+                    'institusi_pilihan' => !empty($normalizedRow['institusipilihan']) ? $normalizedRow['institusipilihan'] : (!empty($normalizedRow['institusipenerima']) ? $normalizedRow['institusipenerima'] : '-'),
+                    'klaster' => !empty($normalizedRow['klaster']) ? $normalizedRow['klaster'] : '-',
+                    'provinsi' => !empty($normalizedRow['provinsi']) ? $normalizedRow['provinsi'] : '-',
+                    'kota' => !empty($normalizedRow['kota']) ? $normalizedRow['kota'] : '-',
+                    'pt_latitude' => !empty($normalizedRow['ptlatitude']) ? $normalizedRow['ptlatitude'] : (!empty($normalizedRow['latitude']) ? $normalizedRow['latitude'] : -6.2),
+                    'pt_longitude' => !empty($normalizedRow['ptlongitude']) ? $normalizedRow['ptlongitude'] : (!empty($normalizedRow['longitude']) ? $normalizedRow['longitude'] : 106.8),
                     'judul' => $judul,
-                    'skema' => $normalizedRow['skema'] ?? '-',
+                    'skema' => !empty($normalizedRow['skema']) ? $normalizedRow['skema'] : '-',
                     'thn_pelaksanaan' => $tahun,
-                    'bidang_fokus' => $normalizedRow['bidangfokus'] ?? '',
-                    'tema_prioritas' => $normalizedRow['temaprioritas'] ?? '',
+                    'bidang_fokus' => !empty($normalizedRow['bidangfokus']) ? $normalizedRow['bidangfokus'] : (!empty($normalizedRow['bidangfokustugas']) ? $normalizedRow['bidangfokustugas'] : '-'),
+                    'tema_prioritas' => !empty($normalizedRow['temaprioritas']) ? $normalizedRow['temaprioritas'] : (!empty($normalizedRow['temaprioritastugas']) ? $normalizedRow['temaprioritastugas'] : '-'),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
 
-                if ($id && Penelitian::find($id)) {
-                    Penelitian::where('id', $id)->update($data);
+                // LOGIKA UPDATE:
+                // 1. Cari berdasarkan ID (jika ada di excel)
+                // 2. Jika ID kosong, cari berdasarkan Judul + Nama (Smart Match)
+                $existing = null;
+                if ($id) {
+                    $existing = Penelitian::find($id);
+                } else {
+                    $existing = Penelitian::where('judul', 'like', $judul)
+                                        ->where('nama', 'like', $nama)
+                                        ->first();
+                }
+
+                if ($existing) {
+                    $existing->update($data);
                     $updated++;
                 } else {
                     $batch[] = $data;
@@ -625,6 +768,17 @@ class PenelitianController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan sistem saat import: ' . $e->getMessage());
         }
+    }
+
+    private function normalizeNumeric($val)
+    {
+        if (empty($val) || trim($val) === '') return '0';
+        $val = trim($val);
+        // Jika mengandung E+ (scientific notation)
+        if (str_contains(strtoupper($val), 'E+')) {
+            return sprintf('%.0f', (float) $val);
+        }
+        return $val;
     }
 
     private function clearModuleCache()

@@ -1,14 +1,14 @@
-// resources/js/Pages/Admin/Penelitian/Index.jsx
 import React, { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
-import { fmt, display, sentenceCase } from '../../../Utils/format';
-
 import * as XLSX from 'xlsx';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
+import CampusSelect from '../../../Components/CampusSelect';
+import LocationSelect from '../../../Components/LocationSelect';
+import { fmt, display, sentenceCase, titleCase } from '../../../Utils/format';
 export default function Index({ penelitian, stats, filters }) {
     const { flash } = usePage().props;
 
@@ -19,6 +19,12 @@ export default function Index({ penelitian, stats, filters }) {
     const [itemToDelete, setItemToDelete] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+    const [showBulkUpdateModal, setShowBulkUpdateModal] = useState(false);
+    const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
+    const [itemsEdit, setItemsEdit] = useState([]);
+    const fileInputRef = React.useRef(null);
 
     const handleBulkDelete = () => {
         if (selectedIds.length === 0) return;
@@ -155,45 +161,171 @@ export default function Index({ penelitian, stats, filters }) {
 
     console.log('✅ Table data processed:', tableData);
 
-    const fileInputRef = React.useRef(null);
-    const [isImporting, setIsImporting] = useState(false);
+    const openBulkUpdateModal = () => {
+        if (selectedIds.length === 0) return;
+        const raw = penelitian?.data || [];
+        const prefilled = selectedIds.map(id => {
+            const found = raw.find(r => r.id === id);
+            return {
+                id,
+                nama: found?.nama || '',
+                nidn: found?.nidn || '',
+                nuptk: found?.nuptk || '',
+                institusi: found?.institusi || '',
+                kode_pt: found?.kode_pt || '',
+                jenis_pt: found?.jenis_pt || '',
+                kategori_pt: found?.kategori_pt || '',
+                klaster: found?.klaster || '',
+                institusi_pilihan: found?.institusi_pilihan || '',
+                provinsi: found?.provinsi || '',
+                kota: found?.kota || '',
+                pt_latitude: found?.pt_latitude || '',
+                pt_longitude: found?.pt_longitude || '',
+                judul: found?.judul || '',
+                skema: found?.skema || '',
+                thn_pelaksanaan: found?.thn_pelaksanaan || '',
+                bidang_fokus: found?.bidang_fokus || '',
+                tema_prioritas: found?.tema_prioritas || '',
+            };
+        });
+        setItemsEdit(prefilled);
+        setShowBulkUpdateModal(true);
+    };
+
+    const setItemField = (id, key, value) => {
+        setItemsEdit(prev => prev.map(item =>
+            item.id === id ? { ...item, [key]: value } : item
+        ));
+    };
+
+    const confirmBulkUpdate = (e) => {
+        e.preventDefault();
+        setIsBulkUpdating(true);
+        router.post(route('admin.penelitian.bulk-update'), { items: itemsEdit }, {
+            onSuccess: () => {
+                setShowBulkUpdateModal(false);
+                setSelectedIds([]);
+                setIsBulkUpdating(false);
+                toast.success(`${itemsEdit.length} data berhasil diperbarui.`);
+            },
+            onError: (errors) => {
+                setIsBulkUpdating(false);
+                const msg = Object.values(errors)[0] || 'Terjadi kesalahan.';
+                toast.error(msg);
+            }
+        });
+    };
+
+    const handleDownloadTemplate = () => {
+        const dummyData = [{
+            "nama": "RETNO MARTANTI ENDAH LESTARI",
+            "nidn": "425097604",
+            "nuptk": "6257754655230103",
+            "institusi": "Universitas Pakuan",
+            "pt_latitude": -6.5993984,
+            "pt_longitude": 106.8123668,
+            "kode_pt": "41004",
+            "jenis_pt": "Universitas",
+            "kategori_pt": "PTS",
+            "institusi_pilihan": "LLDIKTI Wilayah IV",
+            "klaster": "Kelompok PT Utama",
+            "provinsi": "Jawa Barat",
+            "kota": "Kota Bogor",
+            "judul": "Eksplorasi Tata Kelola Rantai Nilai Berbasis Blockchain Pada Komoditas Kopi",
+            "skema": "Penelitian Fundamental - Reguler",
+            "thn_pelaksanaan": 2025,
+            "bidang_fokus": "Sosial Humaniora",
+            "tema_prioritas": "Digitalisasi"
+        }];
+        const ws = XLSX.utils.json_to_sheet(dummyData);
+
+        // Paksa kolom B (NIDN), C (NUPTK), dan G (Kode PT) menjadi TEXT
+        // agar tidak berubah jadi scientific notation (7E+15) saat dibuka Excel
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+            ['B', 'C', 'G'].forEach(col => {
+                const cell = ws[col + (R + 1)];
+                if (cell) {
+                    cell.t = 's'; // Set type to 'string'
+                    cell.z = '@'; // Set format to 'text'
+                }
+            });
+        }
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Template_Penelitian");
+        XLSX.writeFile(wb, "Template_Import_Penelitian.xlsx");
+    };
 
     const handleImport = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        // 1. Validasi Tipe Data
+        const allowedExtensions = ['.xlsx', '.xls', '.csv'];
+        const fileExt = file.name.slice((file.name.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+        if (!allowedExtensions.includes('.' + fileExt)) {
+            toast.error('Gagal: Tipe data harus Excel (.xlsx, .xls) atau CSV.');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
+        // 2. Validasi Ukuran (Max 1MB)
+        if (file.size > 1024 * 1024) {
+            toast.error('Gagal: Ukuran file maksimal 1MB.');
+            if (fileInputRef.current) fileInputRef.current.value = '';
+            return;
+        }
+
         setIsImporting(true);
         const reader = new FileReader();
-
         reader.onload = async (evt) => {
             try {
                 const bstr = evt.target.result;
                 const wb = XLSX.read(bstr, { type: 'binary' });
-                const wsname = wb.SheetNames[0];
-                const ws = wb.Sheets[wsname];
+                const ws = wb.Sheets[wb.SheetNames[0]];
                 const data = XLSX.utils.sheet_to_json(ws);
 
                 if (data.length === 0) {
+                    toast.error('Gagal: File tidak berisi data.');
+                    setIsImporting(false);
+                    return;
+                }
+
+                // 3. Validasi Nama Kolom (Harus ada semua)
+                const requiredColumns = [
+                    'nama', 'nidn', 'nuptk', 'institusi', 'pt_latitude', 'pt_longitude',
+                    'kode_pt', 'jenis_pt', 'kategori_pt', 'institusi_pilihan', 'klaster',
+                    'provinsi', 'kota', 'judul', 'skema', 'thn_pelaksanaan', 'bidang_fokus',
+                    'tema_prioritas'
+                ];
+
+                const uploadedColumns = Object.keys(data[0]).map(k => k.toLowerCase().trim());
+                const missingColumns = requiredColumns.filter(col => !uploadedColumns.includes(col.toLowerCase()));
+
+                if (missingColumns.length > 0) {
+                    toast.error(`Gagal: Kolom tidak lengkap. Kurang kolom: ${missingColumns.join(', ')}`, { duration: 5000 });
                     setIsImporting(false);
                     if (fileInputRef.current) fileInputRef.current.value = '';
                     return;
                 }
 
-                router.post(route('admin.penelitian.import-excel'), { data: data }, {
+                router.post(route('admin.penelitian.import-excel'), { data }, {
                     onSuccess: () => {
                         setIsImporting(false);
+                        setShowImportModal(false);
+                        toast.success('Data penelitian berhasil diimport.');
                         if (fileInputRef.current) fileInputRef.current.value = '';
                     },
                     onError: (errors) => {
-                        console.error(errors);
                         setIsImporting(false);
+                        const msg = Object.values(errors)[0] || 'Terjadi kesalahan saat menyimpan data.';
+                        toast.error(`Gagal: ${msg}`);
                         if (fileInputRef.current) fileInputRef.current.value = '';
                     }
                 });
-            } catch (error) {
-                console.error(error);
+            } catch (err) {
                 setIsImporting(false);
-                if (fileInputRef.current) fileInputRef.current.value = '';
+                toast.error('Gagal: Terjadi kesalahan saat membaca file.');
             }
         };
         reader.readAsBinaryString(file);
@@ -210,13 +342,13 @@ export default function Index({ penelitian, stats, filters }) {
         if (selectedIds.length > 0) {
             params.set('ids', selectedIds.join(','));
         }
-
         const url = `/admin/penelitian/export-csv?${params.toString()}`;
         window.location.href = url;
     };
 
     return (
         <AdminLayout title="">
+            <Toaster position="top-right" />
             <PageHeader
                 title="Data Penelitian"
                 subtitle="Kelola data penelitian"
@@ -225,35 +357,28 @@ export default function Index({ penelitian, stats, filters }) {
                     <div className="flex gap-2">
                         <button
                             onClick={handleExportExcel}
-                            className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium"
+                            className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
                         >
-                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                             {selectedIds.length > 0 ? `Export CSV (${selectedIds.length})` : 'Export CSV'}
                         </button>
 
                         <button
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={() => setShowImportModal(true)}
                             disabled={isImporting}
-                            className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium disabled:opacity-50"
+                            className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm disabled:opacity-50"
                         >
                             {isImporting ? (
                                 <span className="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
                             ) : (
-                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" /></svg>
+                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                             )}
                             {isImporting ? 'Proses...' : 'Import Data'}
                         </button>
-                        <input
-                            type="file"
-                            accept=".csv, .xlsx, .xls"
-                            className="hidden"
-                            ref={fileInputRef}
-                            onChange={handleImport}
-                        />
 
                         <Link
                             href={route('admin.penelitian.create')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium ml-2"
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
                         >
                             + Tambah
                         </Link>
@@ -300,17 +425,24 @@ export default function Index({ penelitian, stats, filters }) {
                     </span>
                     <div className="flex items-center gap-3">
                         <button
+                            onClick={openBulkUpdateModal}
+                            className="flex items-center gap-1.5 px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-md transition-colors"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            Update {selectedIds.length} Data
+                        </button>
+                        <button
                             onClick={handleBulkDelete}
                             className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            Hapus {selectedIds.length} Data
+                            Hapus
                         </button>
                         <button
                             onClick={() => setSelectedIds([])}
                             className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-sm rounded-md transition-colors"
                         >
-                            ✕ Batal
+                            ✕
                         </button>
                     </div>
                 </div>
@@ -522,6 +654,236 @@ export default function Index({ penelitian, stats, filters }) {
                     </div>
                 </div>
             )}
+            {/* Bulk Update Modal */}
+            {showBulkUpdateModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl w-full max-w-4xl shadow-2xl flex flex-col" style={{ maxHeight: '90vh' }}>
+                        <div className="flex items-center justify-between px-6 py-4 border-b bg-amber-50 rounded-t-xl flex-shrink-0">
+                            <div>
+                                <h2 className="text-lg font-semibold text-slate-800">Bulk Update Data Penelitian</h2>
+                                <p className="text-xs text-slate-500 mt-1">Mengedit {itemsEdit.length} data sekaligus</p>
+                            </div>
+                            <button onClick={() => setShowBulkUpdateModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors p-2">✕</button>
+                        </div>
+                        <form onSubmit={confirmBulkUpdate} className="flex flex-col flex-1 min-h-0">
+                            <div className="overflow-y-auto flex-1 px-6 py-4 space-y-8 bg-slate-50/30">
+                                {itemsEdit.map((item, idx) => (
+                                    <div key={item.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                        {/* Card Header */}
+                                        <div className="px-4 py-3 bg-slate-50 border-b flex items-center gap-3">
+                                            <span className="w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">{idx + 1}</span>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-800 leading-none">{item.nama || 'Tanpa Nama'}</p>
+                                                <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-semibold">Data ID: #{item.id}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-5 space-y-6">
+                                            {/* Section 1: Peneliti */}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                <div className="md:col-span-1">
+                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Nama Peneliti</label>
+                                                    <input type="text" value={item.nama} onChange={e => setItemField(item.id, 'nama', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">NIDN</label>
+                                                    <input type="text" value={item.nidn} onChange={e => setItemField(item.id, 'nidn', e.target.value.replace(/\D/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">NUPTK</label>
+                                                    <input type="text" value={item.nuptk} onChange={e => setItemField(item.id, 'nuptk', e.target.value.replace(/\D/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                                                </div>
+                                            </div>
+
+                                            {/* Section 2: Institusi & Akademik */}
+                                            <div className="p-4 bg-blue-50/30 rounded-lg border border-blue-100 space-y-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div className="md:col-span-2">
+                                                        <CampusSelect
+                                                            label="Institusi"
+                                                            value={item.institusi}
+                                                            onChange={val => setItemField(item.id, 'institusi', val)}
+                                                            errors={{}}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kode PT</label>
+                                                        <input type="text" value={item.kode_pt} onChange={e => setItemField(item.id, 'kode_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Jenis PT</label>
+                                                        <select value={item.jenis_pt} onChange={e => setItemField(item.id, 'jenis_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400">
+                                                            <option value="">-- Pilih --</option>
+                                                            {['Akademi', 'Institut', 'Universitas', 'Politeknik', 'Sekolah Tinggi'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kategori PT</label>
+                                                        <select value={item.kategori_pt} onChange={e => setItemField(item.id, 'kategori_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                                            <option value="">-- Pilih --</option>
+                                                            {['PTN', 'PTS', 'PTNBH'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Klaster</label>
+                                                        <select value={item.klaster} onChange={e => setItemField(item.id, 'klaster', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                                            <option value="">-- Pilih --</option>
+                                                            {['Kelompok PT Binaan', 'Kelompok PT Madya', 'Kelompok PT Mandiri', 'Kelompok PT Pratama', 'Kelompok PT Utama'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div className="md:col-span-2">
+                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Institusi Pilihan (Target)</label>
+                                                        <input type="text" value={item.institusi_pilihan} onChange={e => setItemField(item.id, 'institusi_pilihan', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Section 3: Lokasi & Koordinat */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="md:col-span-2">
+                                                    <LocationSelect
+                                                        selectedProvince={item.provinsi}
+                                                        selectedRegency={item.kota}
+                                                        onProvinceChange={val => setItemField(item.id, 'provinsi', val)}
+                                                        onRegencyChange={val => setItemField(item.id, 'kota', val)}
+                                                        errors={{}}
+                                                        isRegencyOptional={true}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Latitude</label>
+                                                    <input type="text" value={item.pt_latitude} onChange={e => setItemField(item.id, 'pt_latitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="-6.2000" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Longitude</label>
+                                                    <input type="text" value={item.pt_longitude} onChange={e => setItemField(item.id, 'pt_longitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="106.8166" />
+                                                </div>
+                                            </div>
+
+                                            {/* Section 4: Data Penelitian */}
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Judul Penelitian</label>
+                                                    <textarea value={item.judul} onChange={e => setItemField(item.id, 'judul', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm h-24 resize-none leading-relaxed" />
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Skema</label>
+                                                        <input type="text" value={item.skema} onChange={e => setItemField(item.id, 'skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tahun Pelaksanaan</label>
+                                                        <input type="number" value={item.thn_pelaksanaan} onChange={e => setItemField(item.id, 'thn_pelaksanaan', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" min="2000" max="2099" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Bidang Fokus</label>
+                                                        <select value={item.bidang_fokus} onChange={e => setItemField(item.id, 'bidang_fokus', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                                            <option value="">-- Pilih --</option>
+                                                            {/* Daftar Standar */}
+                                                            {['Energi', 'Kesehatan', 'Pangan', 'TIK', 'Sosial Humaniora', 'Maritim', 'Transportasi', 'Pertahanan', 'Lingkungan'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                            {/* Tampilkan nilai lama jika tidak ada di daftar standar agar tidak kosong */}
+                                                            {item.bidang_fokus && !['Energi', 'Kesehatan', 'Pangan', 'TIK', 'Sosial Humaniora', 'Maritim', 'Transportasi', 'Pertahanan', 'Lingkungan'].includes(item.bidang_fokus) && (
+                                                                <option value={item.bidang_fokus}>{item.bidang_fokus}</option>
+                                                            )}
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tema Prioritas</label>
+                                                        <select value={item.tema_prioritas} onChange={e => setItemField(item.id, 'tema_prioritas', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                                            <option value="">-- Pilih --</option>
+                                                            {/* Daftar Standar */}
+                                                            {['Digitalisasi', 'Ekonomi Biru', 'Ekonomi Hijau', 'Hilirisasi', 'Kemandirian Kesehatan', 'Ketahanan Pangan', 'Mineral'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                            {/* Tampilkan nilai lama jika tidak ada di daftar standar agar tidak kosong */}
+                                                            {item.tema_prioritas && !['Digitalisasi', 'Ekonomi Biru', 'Ekonomi Hijau', 'Hilirisasi', 'Kemandirian Kesehatan', 'Ketahanan Pangan', 'Mineral'].includes(item.tema_prioritas) && (
+                                                                <option value={item.tema_prioritas}>{item.tema_prioritas}</option>
+                                                            )}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="px-6 py-4 border-t bg-white rounded-b-xl flex justify-between items-center">
+                                <span className="text-xs text-slate-400 font-semibold italic">* Pastikan semua data koordinat dan kategorisasi sudah benar sebelum menyimpan.</span>
+                                <div className="flex gap-3">
+                                    <button type="button" onClick={() => setShowBulkUpdateModal(false)} className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
+                                    <button type="submit" disabled={isBulkUpdating} className="px-8 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 shadow-md shadow-amber-200 disabled:opacity-50 transition-all flex items-center gap-2">
+                                        {isBulkUpdating ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                Menyimpan...
+                                            </>
+                                        ) : `Simpan ${itemsEdit.length} Data`}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Import Modal */}
+            {showImportModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center justify-between px-6 py-4 border-b bg-slate-50">
+                            <h2 className="text-lg font-semibold text-slate-800">Import Data Penelitian</h2>
+                            <button onClick={() => setShowImportModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">✕</button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                                <h3 className="text-sm font-bold text-blue-800 mb-1 flex items-center gap-2">
+                                    <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[11px]">1</span>
+                                    Download Template
+                                </h3>
+                                <p className="text-[11px] text-blue-600 mb-3 ml-7">Gunakan format kolom yang sesuai agar data terbaca sistem.</p>
+                                <button
+                                    onClick={handleDownloadTemplate}
+                                    className="ml-7 px-4 py-2 bg-white border border-blue-200 text-blue-700 rounded-md hover:bg-blue-50 transition-colors text-xs font-semibold flex items-center gap-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                    Download Excel
+                                </button>
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                    <span className="w-5 h-5 rounded-full bg-slate-500 text-white flex items-center justify-center text-[11px]">2</span>
+                                    Upload File
+                                </h3>
+                                <div
+                                    className="ml-7 border-2 border-dashed border-slate-200 rounded-lg p-8 hover:bg-slate-50 hover:border-blue-400 transition-all cursor-pointer text-center group"
+                                    onClick={() => !isImporting && fileInputRef.current?.click()}
+                                >
+                                    {isImporting ? (
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+                                            <p className="text-xs font-medium text-slate-600 font-bold">Sedang memproses data...</p>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors mb-3">
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" /></svg>
+                                            </div>
+                                            <p className="text-xs font-medium text-slate-600">Klik untuk memilih file</p>
+                                            <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">Excel (.xlsx, .xls) atau CSV</p>
+                                            <p className="text-[10px] text-red-500 mt-1 font-bold italic">Maksimal ukuran file: 1 MB</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Hidden Input for File Selection */}
+            <input
+                type="file"
+                accept=".csv, .xlsx, .xls"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleImport}
+            />
         </AdminLayout>
     );
 }

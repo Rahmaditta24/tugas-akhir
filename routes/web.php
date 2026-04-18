@@ -49,6 +49,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('penelitian/import-excel', [\App\Http\Controllers\Admin\PenelitianController::class, 'importExcel'])->name('penelitian.import-excel');
     Route::get('penelitian/export-csv', [\App\Http\Controllers\Admin\PenelitianController::class, 'exportCsv'])->name('penelitian.export-csv');
     Route::get('penelitian/export-json', [\App\Http\Controllers\Admin\PenelitianController::class, 'exportJson'])->name('penelitian.export-json');
+    Route::post('penelitian/bulk-update', [\App\Http\Controllers\Admin\PenelitianController::class, 'bulkUpdate'])->name('penelitian.bulk-update');
     Route::post('penelitian/bulk-destroy', [\App\Http\Controllers\Admin\PenelitianController::class, 'bulkDestroy'])->name('penelitian.bulk-destroy');
     Route::resource('penelitian', \App\Http\Controllers\Admin\PenelitianController::class);
 
