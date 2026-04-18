@@ -28,7 +28,6 @@ class Hilirisasi extends Model
 
     protected $casts = [
         'tahun' => 'integer',
-        'id_proposal' => 'integer',
         'pt_latitude' => 'float',
         'pt_longitude' => 'float',
     ];

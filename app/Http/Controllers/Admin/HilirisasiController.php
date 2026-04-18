@@ -132,6 +132,31 @@ class HilirisasiController extends Controller
 
             $hilirisasi->getCollection()->transform(function ($item) {
                 $item->nama_pengusul = $this->formatName($item->nama_pengusul);
+                
+                // Self-healing rules for display consistency
+                $clean = function($v, $isNumeric = false) {
+                    if (is_string($v)) $v = ltrim(trim($v), "'");
+                    if ($v === null || $v === '' || (is_numeric($v) && is_nan((float)$v)) || $v === 'NaN') {
+                        return $isNumeric ? 0 : 'tidak tersedia';
+                    }
+                    return $v;
+                };
+
+                $numericFields = ['tahun'];
+                $textFields = ['id_proposal', 'perguruan_tinggi', 'provinsi', 'mitra', 'luaran'];
+                $dropdownFields = ['direktorat', 'skema'];
+                
+                foreach ($numericFields as $f) {
+                    $item->$f = $clean($item->$f, true);
+                }
+                foreach ($textFields as $f) {
+                    $item->$f = $clean($item->$f, false);
+                }
+                foreach ($dropdownFields as $f) {
+                    $val = ltrim(trim($item->$f), "'");
+                    $item->$f = ($val === '' || $val === '-' || $val === null) ? '' : $val;
+                }
+
                 return $item;
             });
 
@@ -188,6 +213,29 @@ class HilirisasiController extends Controller
 
     public function edit(Request $request, Hilirisasi $hilirisasi)
     {
+        $clean = function($v, $isNumeric = false) {
+            if (is_string($v)) $v = ltrim(trim($v), "'");
+            if ($v === null || $v === '' || (is_numeric($v) && is_nan((float)$v)) || $v === 'NaN') {
+                return $isNumeric ? 0 : 'tidak tersedia';
+            }
+            return $v;
+        };
+
+        $numericFields = ['tahun'];
+        $textFields = ['id_proposal', 'perguruan_tinggi', 'provinsi', 'mitra', 'luaran'];
+        $dropdownFields = ['direktorat', 'skema'];
+        
+        foreach ($numericFields as $f) {
+            $hilirisasi->$f = $clean($hilirisasi->$f, true);
+        }
+        foreach ($textFields as $f) {
+            $hilirisasi->$f = $clean($hilirisasi->$f, false);
+        }
+        foreach ($dropdownFields as $f) {
+            $val = ltrim(trim($hilirisasi->$f), "'");
+            $hilirisasi->$f = ($val === '' || $val === '-' || $val === null) ? '' : $val;
+        }
+
         return Inertia::render('Admin/Hilirisasi/Edit', [
             'item' => $hilirisasi,
             'filters' => $request->only(['page', 'search', 'perPage', 'filters', 'sort', 'direction'])
@@ -196,6 +244,16 @@ class HilirisasiController extends Controller
 
     public function update(Request $request, Hilirisasi $hilirisasi)
     {
+        $request->merge([
+            'pt_latitude' => is_string($request->pt_latitude) ? str_replace(',', '.', $request->pt_latitude) : $request->pt_latitude,
+            'pt_longitude' => is_string($request->pt_longitude) ? str_replace(',', '.', $request->pt_longitude) : $request->pt_longitude,
+            'provinsi' => empty($request->provinsi) ? 'tidak tersedia' : $request->provinsi,
+            'mitra' => empty($request->mitra) ? 'tidak tersedia' : $request->mitra,
+            'skema' => empty($request->skema) ? 'tidak tersedia' : $request->skema,
+            'direktorat' => empty($request->direktorat) ? 'tidak tersedia' : $request->direktorat,
+            'luaran' => empty($request->luaran) ? 'tidak tersedia' : $request->luaran,
+        ]);
+
         $validated = $request->validate([
             'tahun' => ['required', 'numeric'],
             'id_proposal' => ['required'],
@@ -230,6 +288,60 @@ class HilirisasiController extends Controller
         Hilirisasi::whereIn('id', $request->ids)->delete();
         $this->clearModuleCache();
         return back()->with('success', count($request->ids) . ' data berhasil dihapus.');
+    }
+
+    public function bulkUpdate(Request $request)
+    {
+        $request->validate([
+            'items'       => 'required|array|min:1',
+            'items.*.id'  => 'required|integer|exists:hilirisasi,id',
+        ]);
+
+        $allowedFields = [
+            'tahun', 'id_proposal', 'judul', 'nama_pengusul', 'direktorat',
+            'perguruan_tinggi', 'pt_latitude', 'pt_longitude', 'provinsi',
+            'mitra', 'skema', 'luaran',
+        ];
+
+        $count = 0;
+        foreach ($request->items as $item) {
+            $id = $item['id'] ?? null;
+            if (!$id) continue;
+
+            $updateData = [];
+            foreach ($item as $key => $value) {
+                if ($key === 'id') continue;
+                if (!in_array($key, $allowedFields)) continue;
+
+                if (in_array($key, ['pt_latitude', 'pt_longitude'])) {
+                    if ($value === null || $value === '' || !is_numeric(str_replace(',', '.', $value))) {
+                        $updateData[$key] = 0;
+                    } else {
+                        $updateData[$key] = (float)str_replace(',', '.', $value);
+                    }
+                } else if ($key === 'tahun') {
+                    if ($value === null || $value === '' || !is_numeric($value)) {
+                        $updateData[$key] = 0;
+                    } else {
+                        $updateData[$key] = (int)$value;
+                    }
+                } else {
+                    // normalize empty to "tidak tersedia" for text fields
+                    if (in_array($key, ['id_proposal', 'provinsi', 'mitra', 'skema', 'direktorat', 'luaran'])) {
+                        if (empty($value) && $value !== '0') $value = 'tidak tersedia';
+                    }
+                    $updateData[$key] = $value;
+                }
+            }
+
+            if (!empty($updateData)) {
+                Hilirisasi::where('id', $id)->update($updateData);
+                $count++;
+            }
+        }
+
+        $this->clearModuleCache();
+        return back()->with('success', "{$count} data hilirisasi berhasil diperbarui.");
     }
 
     private function clearModuleCache()
@@ -401,14 +513,14 @@ class HilirisasiController extends Controller
                     'perguruan_tinggi' => $institusi,
                     'judul' => $judul,
                     'tahun' => $tahun,
-                    'direktorat' => $normalizedRow['direktorat'] ?? '-',
-                    'skema' => $normalizedRow['skema'] ?? '-',
-                    'mitra' => $normalizedRow['mitra'] ?? '-',
-                    'provinsi' => $normalizedRow['provinsi'] ?? '-',
+                    'direktorat' => $normalizedRow['direktorat'] ?? 'tidak tersedia',
+                    'skema' => $normalizedRow['skema'] ?? 'tidak tersedia',
+                    'mitra' => $normalizedRow['mitra'] ?? 'tidak tersedia',
+                    'provinsi' => $normalizedRow['provinsi'] ?? 'tidak tersedia',
                     'pt_latitude' => $normalizedRow['ptlatitude'] ?? $normalizedRow['latitude'] ?? -6.2,
                     'pt_longitude' => $normalizedRow['ptlongitude'] ?? $normalizedRow['longitude'] ?? 106.8,
-                    'id_proposal' => (isset($normalizedRow['idproposal']) && is_numeric($normalizedRow['idproposal'])) ? (int)$normalizedRow['idproposal'] : null,
-                    'luaran' => $normalizedRow['luaran'] ?? '-',
+                    'id_proposal' => $normalizedRow['idproposal'] ?? '0',
+                    'luaran' => $normalizedRow['luaran'] ?? 'tidak tersedia',
                 ];
 
                 if ($id && Hilirisasi::find($id)) {

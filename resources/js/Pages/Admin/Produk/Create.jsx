@@ -17,13 +17,14 @@ export default function Create() {
         nama_inventor: '',
         email_inventor: '',
         nomor_paten: '',
+        detail_paten: '',
         latitude: '',
         longitude: '',
     });
 
     useEffect(() => {
         // Fetch provinces from API
-        fetch('/api/admin/produk/provinces')
+        fetch('/admin/produk/provinces')
             .then(res => res.json())
             .then(data => {
                 setProvinces(data);
@@ -246,6 +247,19 @@ export default function Create() {
                                         placeholder="Nomor paten"
                                     />
                                     {errors.nomor_paten && <p className="mt-1 text-sm text-red-600">{errors.nomor_paten}</p>}
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Deskripsi Paten
+                                    </label>
+                                    <textarea
+                                        rows="3"
+                                        value={data.detail_paten}
+                                        onChange={e => setData('detail_paten', e.target.value)}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.detail_paten ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
+                                        placeholder="Detail atau deskripsi paten"
+                                    ></textarea>
+                                    {errors.detail_paten && <p className="mt-1 text-sm text-red-600">{errors.detail_paten}</p>}
                                 </div>
                             </div>
                         </div>

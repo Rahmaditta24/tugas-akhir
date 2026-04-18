@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { toast, Toaster } from 'react-hot-toast';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -6,6 +7,8 @@ import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
 import { fmt, display, titleCase } from '../../../Utils/format';
 import * as XLSX from 'xlsx';
+import ImportModal from '../../../Components/ImportModal';
+import BulkUpdateModal from '../../../Components/BulkUpdateModal';
 
 export default function Index({ hilirisasi, stats = {}, filters = {} }) {
     const { flash } = usePage().props;
@@ -20,6 +23,16 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
     // --- Bulk selection ---
     const [selectedIds, setSelectedIds] = useState([]);
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+    
+    // --- Bulk Update ---
+    const [showBulkUpdateModal, setShowBulkUpdateModal] = useState(false);
+    const [itemsEdit, setItemsEdit] = useState([]);
+    const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+    
+    // --- Import ---
+    const fileInputRef = useRef(null);
+    const [isImporting, setIsImporting] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     const handleBulkDelete = () => {
         if (selectedIds.length === 0) return;
@@ -126,36 +139,162 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
         setShowDeleteModal(true);
     };
 
-    // --- Import / Export ---
-    const fileInputRef = useRef(null);
-    const [isImporting, setIsImporting] = useState(false);
+    const handleDownloadTemplate = () => {
+        const dummyData = [{
+            "Tahun": 2022,
+            "ID Proposal": 2390,
+            "Judul": "Pengembangan Industri Minyak Atsiri Melalui Proses Fraksinasi Untuk Peningkatan Nilai Tambah Nilam Berbasis Pemberdayaan Petani Secara Berkelanjutan",
+            "Nama Pengusul": "SARIFAH NURJANAH",
+            "Direktorat": "DIKTI",
+            "Perguruan Tinggi": "Universitas Padjadjaran",
+            "pt_latitude": -6.9361447,
+            "pt_longitude": 107.7090265,
+            "provinsi": "jawa barat",
+            "Mitra": "Wakaf Lintang Nusawangi",
+            "Skema": "Adopsi iptek dan kepakaran oleh perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)",
+            "Luaran": "Mahasiswa melaksanakan program MBKM, Pendampingan Budidaya Nilam , Transfer teknologi fraksinasi dan kultur jaringan, Program Studi Berkerjasama dengan Mitra (PKS)"
+        }];
+        const ws = XLSX.utils.json_to_sheet(dummyData);
 
-    const handleImport = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+            ['B'].forEach(col => {
+                const cell = ws[col + (R + 1)]; // id_proposal as string usually better
+                if (cell) {
+                    cell.t = 's';
+                    cell.z = '@';
+                }
+            });
+        }
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Template_Hilirisasi");
+        XLSX.writeFile(wb, "Template_Import_Hilirisasi.xlsx");
+    };
+
+    const handleImport = async (file, onComplete) => {
+        // 1. Validasi Tipe Data
+        const allowedExtensions = ['.xlsx', '.xls', '.csv'];
+        const fileExt = file.name.slice((file.name.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+        if (!allowedExtensions.includes('.' + fileExt)) {
+            toast.error('Gagal: Tipe data harus Excel (.xlsx, .xls) atau CSV.');
+            if (onComplete) onComplete();
+            return;
+        }
+
+        // 2. Validasi Ukuran (Max 2MB untuk Hilirisasi agar lebih lega)
+        if (file.size > 2 * 1024 * 1024) {
+            toast.error('Gagal: Ukuran file maksimal 2MB.');
+            if (onComplete) onComplete();
+            return;
+        }
+
         setIsImporting(true);
         const reader = new FileReader();
         reader.onload = async (evt) => {
             try {
                 const bstr = evt.target.result;
                 const wb = XLSX.read(bstr, { type: 'binary' });
-                const wsname = wb.SheetNames[0];
-                const ws = wb.Sheets[wsname];
+                const ws = wb.Sheets[wb.SheetNames[0]];
                 const data = XLSX.utils.sheet_to_json(ws);
-                router.post(route('admin.hilirisasi.import-excel'), { data: data }, {
+
+                if (data.length === 0) {
+                    toast.error('Gagal: File tidak berisi data.');
+                    setIsImporting(false);
+                    if (onComplete) onComplete();
+                    return;
+                }
+
+                // 3. Validasi Nama Kolom (Harus ada kolom utama)
+                const requiredColumns = [
+                    'tahun', 'id_proposal', 'judul', 'nama_pengusul', 'direktorat',
+                    'perguruan_tinggi', 'pt_latitude', 'pt_longitude', 'provinsi',
+                    'mitra', 'skema', 'luaran'
+                ];
+
+                const firstRowKeys = Object.keys(data[0]).map(k => k.toLowerCase().replace(/\s+/g, '_').trim());
+                const missingColumns = requiredColumns.filter(col => {
+                    const normalizedCol = col.toLowerCase().replace(/\s+/g, '_');
+                    return !firstRowKeys.includes(normalizedCol) && 
+                           !firstRowKeys.includes(normalizedCol.replace('_', '')); // tolerance for idproposal
+                });
+
+                if (missingColumns.length > 0) {
+                    toast.error(`Gagal: Kolom tidak lengkap. Kurang kolom: ${missingColumns.join(', ')}`, { duration: 5000 });
+                    setIsImporting(false);
+                    if (onComplete) onComplete();
+                    return;
+                }
+
+                router.post(route('admin.hilirisasi.import-excel'), { data }, {
                     onSuccess: () => {
                         setIsImporting(false);
-                        if (fileInputRef.current) fileInputRef.current.value = '';
+                        setShowImportModal(false);
+                        toast.success('Data hilirisasi berhasil diimport.');
+                        if (onComplete) onComplete();
                     },
-                    onError: () => {
+                    onError: (errors) => {
                         setIsImporting(false);
+                        const msg = Object.values(errors)[0] || 'Terjadi kesalahan saat menyimpan data.';
+                        toast.error(`Gagal: ${msg}`);
+                        if (onComplete) onComplete();
                     }
                 });
             } catch (err) {
                 setIsImporting(false);
+                toast.error('Gagal: Terjadi kesalahan saat membaca file.');
+                if (onComplete) onComplete();
             }
         };
         reader.readAsBinaryString(file);
+    };
+
+    const openBulkUpdateModal = () => {
+        if (selectedIds.length === 0) return;
+        const raw = hilirisasi?.data || [];
+        const prefilled = selectedIds.map(id => {
+            const found = raw.find(r => r.id === id);
+            return {
+                id,
+                tahun: found?.tahun ?? 0,
+                id_proposal: found?.id_proposal ?? 0,
+                judul: found?.judul || '',
+                nama_pengusul: found?.nama_pengusul || '',
+                direktorat: found?.direktorat || '',
+                perguruan_tinggi: found?.perguruan_tinggi || '',
+                pt_latitude: found?.pt_latitude ?? 0,
+                pt_longitude: found?.pt_longitude ?? 0,
+                provinsi: found?.provinsi || '',
+                mitra: found?.mitra || '',
+                skema: found?.skema || '',
+                luaran: found?.luaran || '',
+            };
+        });
+        setItemsEdit(prefilled);
+        setShowBulkUpdateModal(true);
+    };
+
+    const setItemField = (id, key, value) => {
+        setItemsEdit(prev => prev.map(item =>
+            item.id === id ? { ...item, [key]: value } : item
+        ));
+    };
+
+    const confirmBulkUpdate = (e) => {
+        e.preventDefault();
+        setIsBulkUpdating(true);
+        router.post(route('admin.hilirisasi.bulk-update'), { items: itemsEdit }, {
+            onSuccess: () => {
+                setShowBulkUpdateModal(false);
+                setSelectedIds([]);
+                setIsBulkUpdating(false);
+                toast.success(`${itemsEdit.length} data hilirisasi berhasil diperbarui.`);
+            },
+            onError: (errors) => {
+                setIsBulkUpdating(false);
+                const msg = Object.values(errors)[0] || 'Terjadi kesalahan.';
+                toast.error(msg);
+            }
+        });
     };
 
     const handleExport = () => {
@@ -243,6 +382,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
 
     return (
         <AdminLayout title="">
+            <Toaster position="top-right" />
             <div className="space-y-6">
                 {/* Header */}
                 <PageHeader
@@ -259,18 +399,12 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                                 {selectedIds.length > 0 ? `Export CSV (${selectedIds.length})` : 'Export CSV'}
                             </button>
                             <button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isImporting}
-                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm disabled:opacity-50"
+                                onClick={() => setShowImportModal(true)}
+                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
                             >
-                                {isImporting ? (
-                                    <span className="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
-                                ) : (
-                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                )}
-                                {isImporting ? 'Proses...' : 'Import Data'}
+                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                Import Data
                             </button>
-                            <input type="file" ref={fileInputRef} onChange={handleImport} accept=".csv, .xlsx, .xls" className="hidden" />
                             <Link href={route('admin.hilirisasi.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm">+ Tambah</Link>
                         </div>
                     )}
@@ -319,6 +453,13 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                                 </span>
                             </div>
                             <div className="flex items-center gap-3">
+                                <button
+                                    onClick={openBulkUpdateModal}
+                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-md transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                    Update {selectedIds.length} Data
+                                </button>
                                 <button
                                     onClick={handleBulkDelete}
                                     className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors"
@@ -492,6 +633,98 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                     </div>
                 </div>
             )}
+            {/* Import Modal Component */}
+            <ImportModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onDownloadTemplate={handleDownloadTemplate}
+                onImport={handleImport}
+                isImporting={isImporting}
+                title="Import Data Hilirisasi"
+                moduleName="hilirisasi"
+            />
+
+            {/* Bulk Update Modal Component */}
+            <BulkUpdateModal 
+                isOpen={showBulkUpdateModal}
+                onClose={() => setShowBulkUpdateModal(false)}
+                items={itemsEdit}
+                onSave={confirmBulkUpdate}
+                isSaving={isBulkUpdating}
+                title="Bulk Update Data Hilirisasi"
+                renderItemForm={(item) => (
+                    <div className="grid grid-cols-1 gap-6">
+                        {/* Section 1: Profil */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Nama Pengusul</label>
+                                <input type="text" value={item.nama_pengusul} onChange={e => setItemField(item.id, 'nama_pengusul', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">ID Proposal</label>
+                                <input type="text" value={item.id_proposal} onChange={e => setItemField(item.id, 'id_proposal', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                            </div>
+                        </div>
+
+                        {/* Section 2: Institusi */}
+                        <div className="p-4 bg-sky-50/50 rounded-xl border border-sky-100/50">
+                            <h5 className="text-sm font-semibold text-sky-800 mb-3">Institusi</h5>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Perguruan Tinggi</label>
+                                    <input type="text" value={item.perguruan_tinggi} onChange={e => setItemField(item.id, 'perguruan_tinggi', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Section 3: Lokasi & Koordinat */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="md:col-span-2">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Provinsi</label>
+                                <input type="text" value={item.provinsi} onChange={e => setItemField(item.id, 'provinsi', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Latitude</label>
+                                <input type="text" value={item.pt_latitude} onChange={e => setItemField(item.id, 'pt_latitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="-6.2000" />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Longitude</label>
+                                <input type="text" value={item.pt_longitude} onChange={e => setItemField(item.id, 'pt_longitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="106.8166" />
+                            </div>
+                        </div>
+
+                        {/* Section 4: Data Hilirisasi */}
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Judul Hilirisasi</label>
+                                <textarea value={item.judul} onChange={e => setItemField(item.id, 'judul', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm h-24 resize-none leading-relaxed" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tahun</label>
+                                    <input type="number" value={item.tahun} onChange={e => setItemField(item.id, 'tahun', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" min="2000" max="2099" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Skema</label>
+                                    <input type="text" value={item.skema} onChange={e => setItemField(item.id, 'skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Direktorat</label>
+                                    <input type="text" value={item.direktorat} onChange={e => setItemField(item.id, 'direktorat', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Luaran</label>
+                                    <input type="text" value={item.luaran} onChange={e => setItemField(item.id, 'luaran', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Mitra</label>
+                                    <input type="text" value={item.mitra} onChange={e => setItemField(item.id, 'mitra', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            />
         </AdminLayout>
     );
 }

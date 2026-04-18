@@ -6,6 +6,8 @@ import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
 import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
+import ImportModal from '../../../Components/ImportModal';
+import BulkUpdateModal from '../../../Components/BulkUpdateModal';
 import CampusSelect from '../../../Components/CampusSelect';
 import LocationSelect from '../../../Components/LocationSelect';
 import { fmt, display, sentenceCase, titleCase } from '../../../Utils/format';
@@ -256,23 +258,20 @@ export default function Index({ penelitian, stats, filters }) {
         XLSX.writeFile(wb, "Template_Import_Penelitian.xlsx");
     };
 
-    const handleImport = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
+    const handleImport = async (file, onComplete) => {
         // 1. Validasi Tipe Data
         const allowedExtensions = ['.xlsx', '.xls', '.csv'];
         const fileExt = file.name.slice((file.name.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
         if (!allowedExtensions.includes('.' + fileExt)) {
             toast.error('Gagal: Tipe data harus Excel (.xlsx, .xls) atau CSV.');
-            if (fileInputRef.current) fileInputRef.current.value = '';
+            if (onComplete) onComplete();
             return;
         }
 
         // 2. Validasi Ukuran (Max 1MB)
         if (file.size > 1024 * 1024) {
             toast.error('Gagal: Ukuran file maksimal 1MB.');
-            if (fileInputRef.current) fileInputRef.current.value = '';
+            if (onComplete) onComplete();
             return;
         }
 
@@ -305,7 +304,7 @@ export default function Index({ penelitian, stats, filters }) {
                 if (missingColumns.length > 0) {
                     toast.error(`Gagal: Kolom tidak lengkap. Kurang kolom: ${missingColumns.join(', ')}`, { duration: 5000 });
                     setIsImporting(false);
-                    if (fileInputRef.current) fileInputRef.current.value = '';
+                    if (onComplete) onComplete();
                     return;
                 }
 
@@ -314,18 +313,19 @@ export default function Index({ penelitian, stats, filters }) {
                         setIsImporting(false);
                         setShowImportModal(false);
                         toast.success('Data penelitian berhasil diimport.');
-                        if (fileInputRef.current) fileInputRef.current.value = '';
+                        if (onComplete) onComplete();
                     },
                     onError: (errors) => {
                         setIsImporting(false);
                         const msg = Object.values(errors)[0] || 'Terjadi kesalahan saat menyimpan data.';
                         toast.error(`Gagal: ${msg}`);
-                        if (fileInputRef.current) fileInputRef.current.value = '';
+                        if (onComplete) onComplete();
                     }
                 });
             } catch (err) {
                 setIsImporting(false);
                 toast.error('Gagal: Terjadi kesalahan saat membaca file.');
+                if (onComplete) onComplete();
             }
         };
         reader.readAsBinaryString(file);
@@ -654,235 +654,146 @@ export default function Index({ penelitian, stats, filters }) {
                     </div>
                 </div>
             )}
-            {/* Bulk Update Modal */}
-            {showBulkUpdateModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl w-full max-w-4xl shadow-2xl flex flex-col" style={{ maxHeight: '90vh' }}>
-                        <div className="flex items-center justify-between px-6 py-4 border-b bg-amber-50 rounded-t-xl flex-shrink-0">
+            {/* Bulk Update Modal Component */}
+            <BulkUpdateModal
+                isOpen={showBulkUpdateModal}
+                onClose={() => setShowBulkUpdateModal(false)}
+                items={itemsEdit}
+                onSave={confirmBulkUpdate}
+                isSaving={isBulkUpdating}
+                title="Bulk Update Data Penelitian"
+                renderItemForm={(item) => (
+                    <div className="grid grid-cols-1 gap-6">
+                        {/* Section 1: Peneliti */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="md:col-span-1">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Nama Peneliti</label>
+                                <input type="text" value={item.nama} onChange={e => setItemField(item.id, 'nama', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                            </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-slate-800">Bulk Update Data Penelitian</h2>
-                                <p className="text-xs text-slate-500 mt-1">Mengedit {itemsEdit.length} data sekaligus</p>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">NIDN</label>
+                                <input type="text" value={item.nidn} onChange={e => setItemField(item.id, 'nidn', e.target.value.replace(/\D/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
                             </div>
-                            <button onClick={() => setShowBulkUpdateModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors p-2">✕</button>
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">NUPTK</label>
+                                <input type="text" value={item.nuptk} onChange={e => setItemField(item.id, 'nuptk', e.target.value.replace(/\D/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                            </div>
                         </div>
-                        <form onSubmit={confirmBulkUpdate} className="flex flex-col flex-1 min-h-0">
-                            <div className="overflow-y-auto flex-1 px-6 py-4 space-y-8 bg-slate-50/30">
-                                {itemsEdit.map((item, idx) => (
-                                    <div key={item.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                                        {/* Card Header */}
-                                        <div className="px-4 py-3 bg-slate-50 border-b flex items-center gap-3">
-                                            <span className="w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center text-xs font-bold shadow-sm">{idx + 1}</span>
-                                            <div>
-                                                <p className="text-sm font-bold text-slate-800 leading-none">{item.nama || 'Tanpa Nama'}</p>
-                                                <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wider font-semibold">Data ID: #{item.id}</p>
-                                            </div>
-                                        </div>
 
-                                        <div className="p-5 space-y-6">
-                                            {/* Section 1: Peneliti */}
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                <div className="md:col-span-1">
-                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Nama Peneliti</label>
-                                                    <input type="text" value={item.nama} onChange={e => setItemField(item.id, 'nama', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">NIDN</label>
-                                                    <input type="text" value={item.nidn} onChange={e => setItemField(item.id, 'nidn', e.target.value.replace(/\D/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">NUPTK</label>
-                                                    <input type="text" value={item.nuptk} onChange={e => setItemField(item.id, 'nuptk', e.target.value.replace(/\D/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
-                                                </div>
-                                            </div>
-
-                                            {/* Section 2: Institusi & Akademik */}
-                                            <div className="p-4 bg-blue-50/30 rounded-lg border border-blue-100 space-y-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div className="md:col-span-2">
-                                                        <CampusSelect
-                                                            label="Institusi"
-                                                            value={item.institusi}
-                                                            onChange={val => setItemField(item.id, 'institusi', val)}
-                                                            errors={{}}
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kode PT</label>
-                                                        <input type="text" value={item.kode_pt} onChange={e => setItemField(item.id, 'kode_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Jenis PT</label>
-                                                        <select value={item.jenis_pt} onChange={e => setItemField(item.id, 'jenis_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400">
-                                                            <option value="">-- Pilih --</option>
-                                                            {['Akademi', 'Institut', 'Universitas', 'Politeknik', 'Sekolah Tinggi'].map(v => <option key={v} value={v}>{v}</option>)}
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kategori PT</label>
-                                                        <select value={item.kategori_pt} onChange={e => setItemField(item.id, 'kategori_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-                                                            <option value="">-- Pilih --</option>
-                                                            {['PTN', 'PTS', 'PTNBH'].map(v => <option key={v} value={v}>{v}</option>)}
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Klaster</label>
-                                                        <select value={item.klaster} onChange={e => setItemField(item.id, 'klaster', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-                                                            <option value="">-- Pilih --</option>
-                                                            {['Kelompok PT Binaan', 'Kelompok PT Madya', 'Kelompok PT Mandiri', 'Kelompok PT Pratama', 'Kelompok PT Utama'].map(v => <option key={v} value={v}>{v}</option>)}
-                                                        </select>
-                                                    </div>
-                                                    <div className="md:col-span-2">
-                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Institusi Pilihan (Target)</label>
-                                                        <input type="text" value={item.institusi_pilihan} onChange={e => setItemField(item.id, 'institusi_pilihan', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Section 3: Lokasi & Koordinat */}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="md:col-span-2">
-                                                    <LocationSelect
-                                                        selectedProvince={item.provinsi}
-                                                        selectedRegency={item.kota}
-                                                        onProvinceChange={val => setItemField(item.id, 'provinsi', val)}
-                                                        onRegencyChange={val => setItemField(item.id, 'kota', val)}
-                                                        errors={{}}
-                                                        isRegencyOptional={true}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Latitude</label>
-                                                    <input type="text" value={item.pt_latitude} onChange={e => setItemField(item.id, 'pt_latitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="-6.2000" />
-                                                </div>
-                                                <div>
-                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Longitude</label>
-                                                    <input type="text" value={item.pt_longitude} onChange={e => setItemField(item.id, 'pt_longitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="106.8166" />
-                                                </div>
-                                            </div>
-
-                                            {/* Section 4: Data Penelitian */}
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Judul Penelitian</label>
-                                                    <textarea value={item.judul} onChange={e => setItemField(item.id, 'judul', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm h-24 resize-none leading-relaxed" />
-                                                </div>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Skema</label>
-                                                        <input type="text" value={item.skema} onChange={e => setItemField(item.id, 'skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tahun Pelaksanaan</label>
-                                                        <input type="number" value={item.thn_pelaksanaan} onChange={e => setItemField(item.id, 'thn_pelaksanaan', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" min="2000" max="2099" />
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Bidang Fokus</label>
-                                                        <select value={item.bidang_fokus} onChange={e => setItemField(item.id, 'bidang_fokus', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-                                                            <option value="">-- Pilih --</option>
-                                                            {/* Daftar Standar */}
-                                                            {['Energi', 'Kesehatan', 'Pangan', 'TIK', 'Sosial Humaniora', 'Maritim', 'Transportasi', 'Pertahanan', 'Lingkungan'].map(v => <option key={v} value={v}>{v}</option>)}
-                                                            {/* Tampilkan nilai lama jika tidak ada di daftar standar agar tidak kosong */}
-                                                            {item.bidang_fokus && !['Energi', 'Kesehatan', 'Pangan', 'TIK', 'Sosial Humaniora', 'Maritim', 'Transportasi', 'Pertahanan', 'Lingkungan'].includes(item.bidang_fokus) && (
-                                                                <option value={item.bidang_fokus}>{item.bidang_fokus}</option>
-                                                            )}
-                                                        </select>
-                                                    </div>
-                                                    <div>
-                                                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tema Prioritas</label>
-                                                        <select value={item.tema_prioritas} onChange={e => setItemField(item.id, 'tema_prioritas', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-                                                            <option value="">-- Pilih --</option>
-                                                            {/* Daftar Standar */}
-                                                            {['Digitalisasi', 'Ekonomi Biru', 'Ekonomi Hijau', 'Hilirisasi', 'Kemandirian Kesehatan', 'Ketahanan Pangan', 'Mineral'].map(v => <option key={v} value={v}>{v}</option>)}
-                                                            {/* Tampilkan nilai lama jika tidak ada di daftar standar agar tidak kosong */}
-                                                            {item.tema_prioritas && !['Digitalisasi', 'Ekonomi Biru', 'Ekonomi Hijau', 'Hilirisasi', 'Kemandirian Kesehatan', 'Ketahanan Pangan', 'Mineral'].includes(item.tema_prioritas) && (
-                                                                <option value={item.tema_prioritas}>{item.tema_prioritas}</option>
-                                                            )}
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="px-6 py-4 border-t bg-white rounded-b-xl flex justify-between items-center">
-                                <span className="text-xs text-slate-400 font-semibold italic">* Pastikan semua data koordinat dan kategorisasi sudah benar sebelum menyimpan.</span>
-                                <div className="flex gap-3">
-                                    <button type="button" onClick={() => setShowBulkUpdateModal(false)} className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-200 transition-all">Batal</button>
-                                    <button type="submit" disabled={isBulkUpdating} className="px-8 py-2.5 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 shadow-md shadow-amber-200 disabled:opacity-50 transition-all flex items-center gap-2">
-                                        {isBulkUpdating ? (
-                                            <>
-                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                Menyimpan...
-                                            </>
-                                        ) : `Simpan ${itemsEdit.length} Data`}
-                                    </button>
+                        {/* Section 2: Institusi & Akademik */}
+                        <div className="p-4 bg-blue-50/30 rounded-lg border border-blue-100 space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <CampusSelect
+                                        label="Institusi"
+                                        value={item.institusi}
+                                        onChange={val => setItemField(item.id, 'institusi', val)}
+                                        errors={{}}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kode PT</label>
+                                    <input type="text" value={item.kode_pt} onChange={e => setItemField(item.id, 'kode_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Jenis PT</label>
+                                    <select value={item.jenis_pt} onChange={e => setItemField(item.id, 'jenis_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400">
+                                        <option value="">-- Pilih --</option>
+                                        {['Akademi', 'Institut', 'Universitas', 'Politeknik', 'Sekolah Tinggi'].map(v => <option key={v} value={v}>{v}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kategori PT</label>
+                                    <select value={item.kategori_pt} onChange={e => setItemField(item.id, 'kategori_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                        <option value="">-- Pilih --</option>
+                                        {['PTN', 'PTS', 'PTNBH'].map(v => <option key={v} value={v}>{v}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Klaster</label>
+                                    <select value={item.klaster} onChange={e => setItemField(item.id, 'klaster', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                        <option value="">-- Pilih --</option>
+                                        {['Kelompok PT Binaan', 'Kelompok PT Madya', 'Kelompok PT Mandiri', 'Kelompok PT Pratama', 'Kelompok PT Utama'].map(v => <option key={v} value={v}>{v}</option>)}
+                                    </select>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Institusi Pilihan (Target)</label>
+                                    <input type="text" value={item.institusi_pilihan} onChange={e => setItemField(item.id, 'institusi_pilihan', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
                                 </div>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-            {/* Import Modal */}
-            {showImportModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="flex items-center justify-between px-6 py-4 border-b bg-slate-50">
-                            <h2 className="text-lg font-semibold text-slate-800">Import Data Penelitian</h2>
-                            <button onClick={() => setShowImportModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">✕</button>
                         </div>
-                        <div className="p-6 space-y-6">
-                            <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                                <h3 className="text-sm font-bold text-blue-800 mb-1 flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-blue-500 text-white flex items-center justify-center text-[11px]">1</span>
-                                    Download Template
-                                </h3>
-                                <p className="text-[11px] text-blue-600 mb-3 ml-7">Gunakan format kolom yang sesuai agar data terbaca sistem.</p>
-                                <button
-                                    onClick={handleDownloadTemplate}
-                                    className="ml-7 px-4 py-2 bg-white border border-blue-200 text-blue-700 rounded-md hover:bg-blue-50 transition-colors text-xs font-semibold flex items-center gap-2"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                    Download Excel
-                                </button>
+
+                        {/* Section 3: Lokasi & Koordinat */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="md:col-span-2">
+                                <LocationSelect
+                                    selectedProvince={item.provinsi}
+                                    selectedRegency={item.kota}
+                                    onProvinceChange={val => setItemField(item.id, 'provinsi', val)}
+                                    onRegencyChange={val => setItemField(item.id, 'kota', val)}
+                                    errors={{}}
+                                    isRegencyOptional={true}
+                                />
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-slate-500 text-white flex items-center justify-center text-[11px]">2</span>
-                                    Upload File
-                                </h3>
-                                <div
-                                    className="ml-7 border-2 border-dashed border-slate-200 rounded-lg p-8 hover:bg-slate-50 hover:border-blue-400 transition-all cursor-pointer text-center group"
-                                    onClick={() => !isImporting && fileInputRef.current?.click()}
-                                >
-                                    {isImporting ? (
-                                        <div className="flex flex-col items-center">
-                                            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></div>
-                                            <p className="text-xs font-medium text-slate-600 font-bold">Sedang memproses data...</p>
-                                        </div>
-                                    ) : (
-                                        <div className="flex flex-col items-center">
-                                            <div className="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors mb-3">
-                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" /></svg>
-                                            </div>
-                                            <p className="text-xs font-medium text-slate-600">Klik untuk memilih file</p>
-                                            <p className="text-[10px] text-slate-400 mt-1 uppercase font-bold tracking-wider">Excel (.xlsx, .xls) atau CSV</p>
-                                            <p className="text-[10px] text-red-500 mt-1 font-bold italic">Maksimal ukuran file: 1 MB</p>
-                                        </div>
-                                    )}
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Latitude</label>
+                                <input type="text" value={item.pt_latitude} onChange={e => setItemField(item.id, 'pt_latitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="-6.2000" />
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Longitude</label>
+                                <input type="text" value={item.pt_longitude} onChange={e => setItemField(item.id, 'pt_longitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="106.8166" />
+                            </div>
+                        </div>
+
+                        {/* Section 4: Data Penelitian */}
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Judul Penelitian</label>
+                                <textarea value={item.judul} onChange={e => setItemField(item.id, 'judul', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm h-24 resize-none leading-relaxed" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Skema</label>
+                                    <input type="text" value={item.skema} onChange={e => setItemField(item.id, 'skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tahun Pelaksanaan</label>
+                                    <input type="number" value={item.thn_pelaksanaan} onChange={e => setItemField(item.id, 'thn_pelaksanaan', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" min="2000" max="2099" />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Bidang Fokus</label>
+                                    <select value={item.bidang_fokus} onChange={e => setItemField(item.id, 'bidang_fokus', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                        <option value="">-- Pilih --</option>
+                                        {['Energi', 'Kesehatan', 'Pangan', 'TIK', 'Sosial Humaniora', 'Maritim', 'Transportasi', 'Pertahanan', 'Lingkungan'].map(v => <option key={v} value={v}>{v}</option>)}
+                                        {item.bidang_fokus && !['Energi', 'Kesehatan', 'Pangan', 'TIK', 'Sosial Humaniora', 'Maritim', 'Transportasi', 'Pertahanan', 'Lingkungan'].includes(item.bidang_fokus) && (
+                                            <option value={item.bidang_fokus}>{item.bidang_fokus}</option>
+                                        )}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tema Prioritas</label>
+                                    <select value={item.tema_prioritas} onChange={e => setItemField(item.id, 'tema_prioritas', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
+                                        <option value="">-- Pilih --</option>
+                                        {['Digitalisasi', 'Ekonomi Biru', 'Ekonomi Hijau', 'Hilirisasi', 'Kemandirian Kesehatan', 'Ketahanan Pangan', 'Mineral'].map(v => <option key={v} value={v}>{v}</option>)}
+                                        {item.tema_prioritas && !['Digitalisasi', 'Ekonomi Biru', 'Ekonomi Hijau', 'Hilirisasi', 'Kemandirian Kesehatan', 'Ketahanan Pangan', 'Mineral'].includes(item.tema_prioritas) && (
+                                            <option value={item.tema_prioritas}>{item.tema_prioritas}</option>
+                                        )}
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-            {/* Hidden Input for File Selection */}
-            <input
-                type="file"
-                accept=".csv, .xlsx, .xls"
-                className="hidden"
-                ref={fileInputRef}
-                onChange={handleImport}
+                )}
+            />
+            {/* Import Modal Component */}
+            <ImportModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onDownloadTemplate={handleDownloadTemplate}
+                onImport={handleImport}
+                isImporting={isImporting}
+                title="Import Data Penelitian"
+                moduleName="penelitian"
             />
         </AdminLayout>
     );

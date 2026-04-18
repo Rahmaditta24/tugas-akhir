@@ -65,6 +65,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('hilirisasi/export-csv', [\App\Http\Controllers\Admin\HilirisasiController::class, 'exportCsv'])->name('hilirisasi.export-csv');
     Route::get('hilirisasi/export-json', [\App\Http\Controllers\Admin\HilirisasiController::class, 'exportJson'])->name('hilirisasi.export-json');
     Route::post('hilirisasi/bulk-destroy', [\App\Http\Controllers\Admin\HilirisasiController::class, 'bulkDestroy'])->name('hilirisasi.bulk-destroy');
+    Route::post('hilirisasi/bulk-update', [\App\Http\Controllers\Admin\HilirisasiController::class, 'bulkUpdate'])->name('hilirisasi.bulk-update');
     Route::resource('hilirisasi', \App\Http\Controllers\Admin\HilirisasiController::class);
 
     // Produk CRUD
@@ -72,6 +73,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('produk/export-csv', [\App\Http\Controllers\Admin\ProdukController::class, 'exportCsv'])->name('produk.export-csv');
     Route::get('produk/export-json', [\App\Http\Controllers\Admin\ProdukController::class, 'exportJson'])->name('produk.export-json');
     Route::post('produk/bulk-destroy', [\App\Http\Controllers\Admin\ProdukController::class, 'bulkDestroy'])->name('produk.bulk-destroy');
+    Route::post('produk/bulk-update', [\App\Http\Controllers\Admin\ProdukController::class, 'bulkUpdate'])->name('produk.bulk-update');
+    Route::get('produk/provinces', [\App\Http\Controllers\Admin\ProdukController::class, 'getProvinces'])->name('produk.provinces');
     Route::resource('produk', \App\Http\Controllers\Admin\ProdukController::class);
 
     // Fasilitas Lab CRUD

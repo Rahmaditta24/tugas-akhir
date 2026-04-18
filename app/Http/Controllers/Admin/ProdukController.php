@@ -21,6 +21,7 @@ class ProdukController extends Controller
                 $q->where('nama_produk', 'like', "%{$search}%")
                     ->orWhere('institusi', 'like', "%{$search}%")
                     ->orWhere('nomor_paten', 'like', "%{$search}%")
+                    ->orWhere('detail_paten', 'like', "%{$search}%")
                     ->orWhere('bidang', 'like', "%{$search}%");
             });
         }
@@ -29,7 +30,7 @@ class ProdukController extends Controller
         $filters = $request->input('filters', []);
         if (is_array($filters)) {
             foreach ($filters as $column => $value) {
-                if (!empty($value) && in_array($column, ['nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten'])) {
+                if (!empty($value) && in_array($column, ['nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten', 'detail_paten'])) {
                     $query->where($column, 'like', "%{$value}%");
                 }
             }
@@ -38,7 +39,7 @@ class ProdukController extends Controller
         $perPage = $request->input('perPage', 20);
 
         // Whitelisted sorting
-        $allowedSorts = ['id', 'nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten'];
+        $allowedSorts = ['id', 'nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten', 'detail_paten'];
         $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'nama_produk';
         $direction = $request->get('direction') === 'desc' ? 'desc' : 'asc'; // default asc for names
 
@@ -57,10 +58,23 @@ class ProdukController extends Controller
                 if (isset($item->nama_inventor)) {
                     $item->nama_inventor = $this->formatName($item->nama_inventor);
                 }
-                if (isset($item->nomor_paten)) {
-                    // Hanya ambil bagian kode/nomor saja
-                    $item->nomor_paten = trim(preg_split("/[;.\(\,]/", $item->nomor_paten)[0]);
-                }
+                
+                // Self-healing for empty states
+                $clean = function($v, $isNumeric = false) {
+                    if (is_string($v)) $v = ltrim(trim($v), "'");
+                    if ($v === null || $v === '' || (is_numeric($v) && is_nan((float)$v)) || $v === 'NaN') {
+                        return $isNumeric ? 0 : 'tidak tersedia';
+                    }
+                    return $v;
+                };
+
+                $item->provinsi = $clean($item->provinsi);
+                $item->bidang = $clean($item->bidang);
+                $item->nomor_paten = $clean($item->nomor_paten);
+                $item->detail_paten = $clean($item->detail_paten);
+                $item->deskripsi_produk = $clean($item->deskripsi_produk);
+                $item->email_inventor = ($item->email_inventor === 'NaN' || !$item->email_inventor) ? 'tidak tersedia' : $item->email_inventor;
+
                 return $item;
             });
 
@@ -109,9 +123,12 @@ class ProdukController extends Controller
             'nama_inventor' => ['required', 'string', 'max:255'],
             'email_inventor' => ['nullable', 'email', 'max:255'],
             'nomor_paten' => ['nullable', 'string', 'max:255'],
+            'detail_paten' => ['nullable', 'string'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
         ]);
+
+        $validated['provinsi'] = trim(str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower(trim($validated['provinsi'])))));
 
         Produk::create($validated);
         $this->clearModuleCache();
@@ -140,9 +157,12 @@ class ProdukController extends Controller
             'nama_inventor' => ['required', 'string', 'max:255'],
             'email_inventor' => ['nullable', 'email', 'max:255'],
             'nomor_paten' => ['nullable', 'string', 'max:255'],
+            'detail_paten' => ['nullable', 'string'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
         ]);
+
+        $validated['provinsi'] = trim(str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower(trim($validated['provinsi'])))));
 
         $produk->update($validated);
         $this->clearModuleCache();
@@ -162,6 +182,30 @@ class ProdukController extends Controller
         $count = Produk::whereIn('id', $request->ids)->delete();
         $this->clearModuleCache();
         return back()->with('success', "{$count} data produk berhasil dihapus.");
+    }
+
+    public function bulkUpdate(Request $request)
+    {
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.id' => 'required|exists:produk,id',
+        ]);
+
+        $count = 0;
+        foreach ($request->items as $itemData) {
+            $produk = Produk::find($itemData['id']);
+            if ($produk) {
+                // Standardize province if present in update
+                if (isset($itemData['provinsi'])) {
+                    $itemData['provinsi'] = trim(str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower(trim($itemData['provinsi'])))));
+                }
+                $produk->update($itemData);
+                $count++;
+            }
+        }
+
+        $this->clearModuleCache();
+        return back()->with('success', "{$count} data produk berhasil diperbarui.");
     }
 
     private function formatName($name)
@@ -248,6 +292,7 @@ class ProdukController extends Controller
             'nama_inventor',
             'email_inventor',
             'nomor_paten',
+            'detail_paten',
             'latitude',
             'longitude',
             'deskripsi_produk'
@@ -278,7 +323,7 @@ class ProdukController extends Controller
         $filterLabel = ($request->filled('search') || $request->filled('filters')) ? '_filtered' : '';
         $filename = 'data-produk' . $filterLabel . '_' . date('Y-m-d') . '.csv';
 
-        $columns = ['ID', 'Nama Produk', 'Institusi', 'Bidang', 'TKT', 'Provinsi', 'Nama Inventor', 'Email Inventor', 'Nomor Paten', 'Latitude', 'Longitude', 'Deskripsi'];
+        $columns = ['ID', 'Nama Produk', 'Institusi', 'Bidang', 'TKT', 'Provinsi', 'Nama Inventor', 'Email Inventor', 'Nomor Paten', 'Deskripsi Paten', 'Latitude', 'Longitude', 'Deskripsi'];
 
         $callback = function () use ($columns, $query) {
             $file = fopen('php://output', 'w');
@@ -303,7 +348,8 @@ class ProdukController extends Controller
                         $row->provinsi,
                         $row->nama_inventor,
                         $row->email_inventor,
-                        $nomor_paten,
+                        $row->nomor_paten,
+                        $row->detail_paten,
                         $row->latitude,
                         $row->longitude,
                         $deskripsi
@@ -365,21 +411,12 @@ class ProdukController extends Controller
                     return strtolower(str_replace([' ', '/', '_'], '', $k));
                 }, array_keys($firstRow));
 
-                $required = ['namaproduk', 'institusi'];
+                $required = ['institusi', 'namaproduksiapinvestasi'];
                 $missing = [];
                 foreach ($required as $req) {
-                     if (!in_array($req, $foundKeys)) {
-                         // Check aliases
-                         $aliases = [
-                             'namaproduk' => ['nama', 'produk'],
-                             'institusi' => ['namainstitusi', 'perguruantinggi'],
-                         ];
-                         $foundAlias = false;
-                         if (isset($aliases[$req])) {
-                             foreach ($aliases[$req] as $alt) { if (in_array($alt, $foundKeys)) { $foundAlias = true; break; } }
-                         }
-                         if (!$foundAlias) $missing[] = $req;
-                     }
+                      if (!in_array($req, $foundKeys)) {
+                         $missing[] = $req === 'namaproduksiapinvestasi' ? 'Nama Produk Siap Investasi' : 'Institusi';
+                      }
                 }
                 if (!empty($missing)) {
                     return back()->with('error', 'Format file tidak sesuai! Kolom wajib tidak ditemukan: ' . implode(', ', $missing));
@@ -394,34 +431,45 @@ class ProdukController extends Controller
                     $normalizedRow[$cleanKey] = $v;
                 }
 
-                $id = $normalizedRow['id'] ?? null;
-                $namaProduk = trim($normalizedRow['namaproduk'] ?? $normalizedRow['namaproduksiapinvestasi'] ?? '');
-                $institusi = trim($normalizedRow['institusi'] ?? $normalizedRow['namainstitusi'] ?? $normalizedRow['perguruan_tinggi'] ?? '');
+                $namaProduk = trim($normalizedRow['namaproduksiapinvestasi'] ?? $normalizedRow['namaproduk'] ?? '');
+                $institusi = trim($normalizedRow['institusi'] ?? $normalizedRow['namainstitusi'] ?? '');
                 
-                if (empty($namaProduk)) { $errors[] = "Baris #{$rowNum}: Kolom 'Nama Produk' wajib diisi."; continue; }
-                if (empty($institusi)) { $errors[] = "Baris #{$rowNum}: Kolom 'Institusi' wajib diisi."; continue; }
+                if (empty($namaProduk) || empty($institusi)) continue;
+
+                // Smart splitting for combined patent fields
+                $rawPaten = trim($normalizedRow['nomordandeskripsipaten'] ?? '');
+                $nomorPaten = trim($normalizedRow['nomorpaten'] ?? '');
+                $detailPaten = trim($normalizedRow['deskripsipaten'] ?? $normalizedRow['deskripsiprodukpaten'] ?? $normalizedRow['detailpaten'] ?? '');
+
+                if ($rawPaten && empty($nomorPaten) && empty($detailPaten)) {
+                    if (preg_match('/^(.*?)\.\s*(Diskripsi|Deskripsi):\s*(.*)$/i', $rawPaten, $matches)) {
+                        $nomorPaten = trim($matches[1]);
+                        $detailPaten = trim($matches[3]);
+                    } elseif (preg_match('/^(.*?),\s*(.*)$/', $rawPaten, $matches)) {
+                        $nomorPaten = trim($matches[1]);
+                        $detailPaten = trim($matches[2]);
+                    } else {
+                        $nomorPaten = $rawPaten;
+                    }
+                }
 
                 $data = [
                     'nama_produk' => $namaProduk,
                     'institusi' => $institusi,
-                    'bidang' => trim($normalizedRow['bidang'] ?? '-'),
-                    'tkt' => (int) ($normalizedRow['tkt'] ?? $normalizedRow['tingkatkesiapterapanteknologitkt'] ?? 1),
-                    'provinsi' => $normalizedRow['provinsi'] ?? '-',
-                    'nama_inventor' => $normalizedRow['namainventor'] ?? $normalizedRow['inventor'] ?? $normalizedRow['namainventortanpagelar'] ?? '-',
-                    'email_inventor' => $normalizedRow['emailinventor'] ?? $normalizedRow['email'] ?? null,
-                    'nomor_paten' => $normalizedRow['nomorpaten'] ?? $normalizedRow['nopaten'] ?? $normalizedRow['nomordandeskripsipaten'] ?? null,
-                    'latitude' => $normalizedRow['latitude'] ?? -6.2,
-                    'longitude' => $normalizedRow['longitude'] ?? 106.8,
-                    'deskripsi_produk' => $normalizedRow['deskripsiproduk'] ?? $normalizedRow['deskripsi'] ?? '-',
+                    'latitude' => (float) ($normalizedRow['latitude'] ?? -6.2),
+                    'longitude' => (float) ($normalizedRow['longitude'] ?? 106.8),
+                    'provinsi' => trim(str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower(trim($normalizedRow['provinsi'] ?? 'tidak tersedia'))))),
+                    'deskripsi_produk' => trim($normalizedRow['deskripsiproduk'] ?? 'tidak tersedia'),
+                    'tkt' => (int) ($normalizedRow['tingkatkesiapterapanteknologitkt'] ?? $normalizedRow['tkt'] ?? 1),
+                    'bidang' => trim($normalizedRow['bidang'] ?? 'tidak tersedia'),
+                    'nama_inventor' => trim($normalizedRow['namainventortanpagelar'] ?? $normalizedRow['namainventor'] ?? 'tidak tersedia'),
+                    'email_inventor' => trim($normalizedRow['emailinventor'] ?? 'tidak tersedia'),
+                    'nomor_paten' => $nomorPaten ?: 'tidak tersedia',
+                    'detail_paten' => $detailPaten ?: 'tidak tersedia',
                 ];
 
-                if ($id && Produk::find($id)) {
-                    Produk::where('id', $id)->update($data);
-                    $updated++;
-                } else {
-                    $batch[] = $data;
-                    $imported++;
-                }
+                $batch[] = $data;
+                $imported++;
 
                 if (count($batch) >= 100) {
                     Produk::insert($batch);
