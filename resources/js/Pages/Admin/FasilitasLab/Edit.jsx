@@ -8,23 +8,22 @@ export default function Edit({ item, filters }) {
     const formatNumbered = (text) => {
         if (!text) return '';
         const items = text.split(/\r?\n|;/).map(i => i.replace(/^\d+[\.\)]\s*/, '').trim()).filter(i => i !== '');
-        if (items.length <= 1) return items.join('');
         return items.map((item, i) => `${i + 1}. ${item}`).join('\n');
     };
 
     const { data, setData, put, processing, errors } = useForm({
-        kode_universitas: item?.kode_universitas || 'null',
-        institusi: item?.institusi || 'null',
-        kategori_pt: item?.kategori_pt || 'null',
-        nama_laboratorium: item?.nama_laboratorium || 'null',
-        provinsi: item?.provinsi || 'null',
-        kota: item?.kota || 'null',
-        latitude: item?.latitude || 'null',
-        longitude: item?.longitude || 'null',
-        total_jumlah_alat: item?.total_jumlah_alat || 'null',
-        nama_alat: formatNumbered(item?.nama_alat || 'null'),
-        deskripsi_alat: formatNumbered(item?.deskripsi_alat || 'null'),
-        kontak: item?.kontak || 'null',
+        kode_universitas: item?.kode_universitas === 'null' ? '' : (item?.kode_universitas || ''),
+        institusi: item?.institusi === 'null' ? '' : (item?.institusi || ''),
+        kategori_pt: item?.kategori_pt === 'null' ? '' : (item?.kategori_pt || ''),
+        nama_laboratorium: item?.nama_laboratorium === 'null' ? '' : (item?.nama_laboratorium || ''),
+        provinsi: item?.provinsi === 'null' ? '' : (item?.provinsi || ''),
+        kota: item?.kota === 'null' ? '' : (item?.kota || ''),
+        latitude: item?.latitude === 'null' ? '' : (item?.latitude || ''),
+        longitude: item?.longitude === 'null' ? '' : (item?.longitude || ''),
+        total_jumlah_alat: item?.total_jumlah_alat === 'null' ? '' : (item?.total_jumlah_alat || ''),
+        nama_alat: formatNumbered(item?.nama_alat === 'null' ? '' : (item?.nama_alat || '')),
+        deskripsi_alat: formatNumbered(item?.deskripsi_alat === 'null' ? '' : (item?.deskripsi_alat || '')),
+        kontak: item?.kontak === 'null' ? '' : (item?.kontak || ''),
     });
 
     const handleSubmit = (e) => {
@@ -196,15 +195,14 @@ export default function Edit({ item, filters }) {
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Deskripsi Alat <span className="text-red-500">*</span>
+                                        Deskripsi Alat
                                     </label>
                                     <textarea
                                         value={data.deskripsi_alat}
                                         onChange={e => setData('deskripsi_alat', e.target.value)}
                                         rows="6"
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.deskripsi_alat ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        placeholder="Deskripsi lengkap untuk setiap alat..."
-                                        required
+                                        placeholder="Tidak ada deskripsinya"
                                     />
                                     {errors.deskripsi_alat && <p className="mt-1 text-sm text-red-600">{errors.deskripsi_alat}</p>}
                                 </div>

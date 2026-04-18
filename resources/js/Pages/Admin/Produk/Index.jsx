@@ -172,19 +172,20 @@ export default function Index({ produk, stats = {}, filters = {} }) {
 
     const handleDownloadTemplate = () => {
         const dummyData = [{
-            "Institusi": "Universitas Negeri Yogyakarta",
-            "Latitude": -7.7737395,
-            "Longitude": 110.3862511,
-            "Provinsi": "Di Yogyakarta",
-            "Nama Produk Siap Investasi": "Metode Isolasi dan Karakterisasi Bakteri Indigenous Pendegradasi Limbah Pewarna Batik",
-            "Deskripsi Produk": "Contoh deskripsi produk...",
-            "TIngkat Kesiapterapan Teknologi (TKT)": 6,
-            "Bidang": "Limbah",
-            "Nama Inventor (Tanpa Gelar)": "Suhartini",
-            "Email Inventor": "suhartini@uny.ac.id",
-            "Nomor Paten": "S00202409180",
-            "Deskripsi Paten": "Dalam invensi ini, diajukan metode untuk isolasi dan karakterisasi bakteri indigenous..."
+            "Institusi": "Universitas Brawijaya",
+            "Latitude": "-7,952465",
+            "Longitude": "112,613677",
+            "Provinsi": "Jawa Timur",
+            "Nama Produk Siap Investasi": "BioFerment Kakao Pro Mesin Fermentasi Kakao Otomatis Skala UMKM",
+            "Deskripsi Produk": "BioFerment Kakao Pro adalah mesin fermentasi kakao berbasis mikrokontroler yang mampu mengontrol suhu dan kelembaban secara otomatis. Dirancang untuk petani dan UMKM kakao di Sulawesi, mesin ini menghasilkan biji kakao fermentasi berkualitas ekspor dengan konsistensi tinggi.",
+            "Tingkat Kesiapterapan Teknologi (TKT)": 7,
+            "Bidang": "Pangan",
+            "Nama Inventor (Tanpa Gelar)": "Ahmad Fauzi Ramadhan",
+            "Email Inventor": "a.fauzi@unhas.ac.id",
+            "Nomor Paten": "S00202401023",
+            "Deskripsi Paten": "Dalam invensi ini, diajukan mesin fermentasi kakao otomatis dengan sistem kontrol suhu berbasis mikrokontroler ATmega328, dilengkapi sensor DHT22."
         }];
+
         const ws = XLSX.utils.json_to_sheet(dummyData);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Template_Produk");
@@ -213,28 +214,13 @@ export default function Index({ produk, stats = {}, filters = {} }) {
         const reader = new FileReader();
         reader.onload = async (evt) => {
             try {
-                const bstr = evt.target.result;
-                const wb = XLSX.read(bstr, { type: 'binary' });
+                const dataArray = new Uint8Array(evt.target.result);
+                const wb = XLSX.read(dataArray, { type: 'array' });
                 const ws = wb.Sheets[wb.SheetNames[0]];
                 const data = XLSX.utils.sheet_to_json(ws);
 
                 if (data.length === 0) {
                     toast.error('Gagal: File tidak berisi data.');
-                    setIsImporting(false);
-                    if (onComplete) onComplete();
-                    return;
-                }
-
-                // 3. Validasi Kolom
-                const required = ['institusi', 'namaproduksiapinvestasi'];
-                const firstRowKeys = Object.keys(data[0]).map(k => k.toLowerCase().replace(/\s+/g, '').trim());
-                
-                const missing = [];
-                if (!firstRowKeys.includes('institusi')) missing.push('Institusi');
-                if (!firstRowKeys.includes('namaproduksiapinvestasi')) missing.push('Nama Produk Siap Investasi');
-
-                if (missing.length > 0) {
-                    toast.error(`Gagal: Kolom tidak lengkap. Kurang kolom: ${missing.join(', ')}`, { duration: 5000 });
                     setIsImporting(false);
                     if (onComplete) onComplete();
                     return;
@@ -255,12 +241,13 @@ export default function Index({ produk, stats = {}, filters = {} }) {
                     }
                 });
             } catch (err) {
+                console.error('Import error:', err);
                 setIsImporting(false);
                 toast.error('Gagal: Terjadi kesalahan saat membaca file.');
                 if (onComplete) onComplete();
             }
         };
-        reader.readAsBinaryString(file);
+        reader.readAsArrayBuffer(file);
     };
 
     const handleExport = () => {
@@ -347,32 +334,32 @@ export default function Index({ produk, stats = {}, filters = {} }) {
                 />
 
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-sm text-slate-600">Total Produk</p>
-                                <p className="text-2xl font-bold text-slate-800">{(stats.total || 0).toLocaleString('id-ID')}</p>
+                                <p className="text-[10px] sm:text-sm font-bold text-slate-500 uppercase tracking-wider">Total Produk</p>
+                                <p className="text-xl sm:text-2xl font-bold text-slate-800">{(stats.total || 0).toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-sm text-slate-600">Dengan Koordinat</p>
-                                <p className="text-2xl font-bold text-slate-800">{(stats.withCoordinates || 0).toLocaleString('id-ID')}</p>
+                                <p className="text-[10px] sm:text-sm font-bold text-slate-500 uppercase tracking-wider">Dengan Koordinat</p>
+                                <p className="text-xl sm:text-2xl font-bold text-slate-800">{(stats.withCoordinates || 0).toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
@@ -382,30 +369,30 @@ export default function Index({ produk, stats = {}, filters = {} }) {
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden relative">
                     {/* Bulk Actions Bar */}
                     {selectedIds.length > 0 && (
-                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-300">
+                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg animate-in slide-in-from-top duration-300">
                             <div className="flex items-center gap-4 ml-2">
                                 <span className="text-sm font-semibold whitespace-nowrap">
                                     {selectedIds.length} data terpilih
                                 </span>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
                                 <button
                                     onClick={openBulkUpdateModal}
-                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-md transition-colors"
+                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                     Update {selectedIds.length} Data
                                 </button>
                                 <button
                                     onClick={handleBulkDelete}
-                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors"
+                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     Hapus {selectedIds.length} Data
                                 </button>
                                 <button
                                     onClick={() => setSelectedIds([])}
-                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-md transition-colors"
+                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
                                 >
                                     Batal
                                 </button>
@@ -424,24 +411,24 @@ export default function Index({ produk, stats = {}, filters = {} }) {
                             />
                             <button
                                 type="submit"
-                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                className="px-4 sm:px-6 py-1.5 sm:py-2 bg-blue-600 text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 transition-colors"
                             >
                                 Cari
                             </button>
                             {(search || Object.values(columnFilters).some(v => v)) && (
                                 <Link
                                     href={route('admin.produk.index')}
-                                    className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors font-medium"
+                                    className="px-4 sm:px-6 py-1.5 sm:py-2 bg-slate-200 text-slate-700 text-sm sm:text-base rounded-lg hover:bg-slate-300 transition-colors"
                                 >
                                     Reset
                                 </Link>
                             )}
                             <div className="ml-auto flex items-center gap-2">
-                                <span className="text-sm text-slate-600">Per halaman</span>
+                                <span className="text-sm text-slate-600 hidden sm:inline">Per halaman</span>
                                 <select
                                     value={perPage}
                                     onChange={handlePerPageChange}
-                                    className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                    className="px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                                 >
                                     <option value={10}>10</option>
                                     <option value={20}>20</option>
@@ -478,25 +465,31 @@ export default function Index({ produk, stats = {}, filters = {} }) {
 
                     {/* Pagination */}
                     {produk.last_page > 1 && (
-                        <div className="px-6 py-4 border-t border-slate-200/60">
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm text-slate-600">
+                        <div className="px-4 sm:px-6 py-4 border-t border-slate-200/60">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="text-sm text-slate-600 text-center sm:text-left">
                                     Menampilkan {produk.from?.toLocaleString('id-ID')} - {produk.to?.toLocaleString('id-ID')} dari {produk.total?.toLocaleString('id-ID')} data
                                 </div>
-                                <div className="flex gap-2">
-                                    {produk.links.map((link, index) => (
-                                        <Link
-                                            key={index}
-                                            href={link.url || '#'}
-                                            className={`px-3 py-1 rounded ${link.active
-                                                ? 'bg-blue-600 text-white'
-                                                : link.url
-                                                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                }`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
+                                <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+                                    {produk.links.map((link, index) => {
+                                        let label = link.label;
+                                        if (label.includes('Previous')) label = '&laquo;';
+                                        if (label.includes('Next')) label = '&raquo;';
+
+                                        return (
+                                            <Link
+                                                key={index}
+                                                href={link.url || '#'}
+                                                className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded transition-colors ${link.active
+                                                    ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                                                    : link.url
+                                                        ? 'bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-100'
+                                                        : 'bg-white text-slate-300 border border-slate-100 cursor-not-allowed pointer-events-none'
+                                                    }`}
+                                                dangerouslySetInnerHTML={{ __html: label }}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>

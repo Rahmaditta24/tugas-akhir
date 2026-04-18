@@ -9,6 +9,8 @@ import { fmt, display, titleCase } from '../../../Utils/format';
 import * as XLSX from 'xlsx';
 import ImportModal from '../../../Components/ImportModal';
 import BulkUpdateModal from '../../../Components/BulkUpdateModal';
+import CampusSelect from '../../../Components/CampusSelect';
+import LocationSelect from '../../../Components/LocationSelect';
 
 export default function Index({ hilirisasi, stats = {}, filters = {} }) {
     const { flash } = usePage().props;
@@ -240,12 +242,13 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                     }
                 });
             } catch (err) {
+                console.error('Import error:', err);
                 setIsImporting(false);
                 toast.error('Gagal: Terjadi kesalahan saat membaca file.');
                 if (onComplete) onComplete();
             }
         };
-        reader.readAsBinaryString(file);
+        reader.readAsArrayBuffer(file);
     };
 
     const openBulkUpdateModal = () => {
@@ -411,32 +414,32 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                 />
 
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-sm text-slate-600">Total Hilirisasi</p>
-                                <p className="text-2xl font-bold text-slate-800">{(stats?.total ?? 0).toLocaleString('id-ID')}</p>
+                                <p className="text-[10px] sm:text-sm font-bold text-slate-500 uppercase tracking-wider">Total Hilirisasi</p>
+                                <p className="text-xl sm:text-2xl font-bold text-slate-800">{(stats?.total ?? 0).toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <p className="text-sm text-slate-600">Dengan Koordinat</p>
-                                <p className="text-2xl font-bold text-slate-800">{(stats?.withCoordinates ?? 0).toLocaleString('id-ID')}</p>
+                                <p className="text-[10px] sm:text-sm font-bold text-slate-500 uppercase tracking-wider">Dengan Koordinat</p>
+                                <p className="text-xl sm:text-2xl font-bold text-slate-800">{(stats?.withCoordinates ?? 0).toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
@@ -446,30 +449,30 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden relative">
                     {/* Bulk Actions Bar */}
                     {selectedIds.length > 0 && (
-                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-300">
+                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg animate-in slide-in-from-top duration-300">
                             <div className="flex items-center gap-4 ml-2">
                                 <span className="text-sm font-semibold whitespace-nowrap">
                                     {selectedIds.length} data terpilih
                                 </span>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
                                 <button
                                     onClick={openBulkUpdateModal}
-                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-md transition-colors"
+                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                                     Update {selectedIds.length} Data
                                 </button>
                                 <button
                                     onClick={handleBulkDelete}
-                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors"
+                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     Hapus {selectedIds.length} Data
                                 </button>
                                 <button
                                     onClick={() => setSelectedIds([])}
-                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-md transition-colors"
+                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
                                 >
                                     Batal
                                 </button>
@@ -488,21 +491,21 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                             />
                             <button
                                 type="submit"
-                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                className="px-4 sm:px-6 py-1.5 sm:py-2 bg-blue-600 text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 transition-colors"
                             >
                                 Cari
                             </button>
                             {(search || Object.values(columnFilters).some(v => v)) && (
                                 <Link
                                     href={route('admin.hilirisasi.index')}
-                                    className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                                    className="px-4 sm:px-6 py-1.5 sm:py-2 bg-slate-200 text-slate-700 text-sm sm:text-base rounded-lg hover:bg-slate-300 transition-colors"
                                 >
                                     Reset
                                 </Link>
                             )}
                             <div className="ml-auto flex items-center gap-2">
-                                <span className="text-sm text-slate-600">Per halaman</span>
-                                <select value={perPage} onChange={handlePerPageChange} className="px-3 py-2 border border-slate-300 rounded-lg">
+                                <span className="text-sm text-slate-600 hidden sm:inline">Per halaman</span>
+                                <select value={perPage} onChange={handlePerPageChange} className="px-2 py-1.5 border border-slate-300 rounded-lg text-xs sm:text-sm">
                                     <option value={20}>20</option>
                                     <option value={50}>50</option>
                                     <option value={100}>100</option>
@@ -550,25 +553,31 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
 
                     {/* Pagination */}
                     {hilirisasi.last_page > 1 && (
-                        <div className="px-6 py-4 border-t border-slate-200/60">
-                            <div className="flex items-center justify-between">
-                                <div className="text-sm text-slate-600">
+                        <div className="px-4 sm:px-6 py-4 border-t border-slate-200/60">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="text-sm text-slate-600 text-center sm:text-left">
                                     Menampilkan {hilirisasi.from?.toLocaleString('id-ID')} - {hilirisasi.to?.toLocaleString('id-ID')} dari {hilirisasi.total?.toLocaleString('id-ID')} data
                                 </div>
-                                <div className="flex gap-2">
-                                    {hilirisasi.links.map((link, index) => (
-                                        <Link
-                                            key={index}
-                                            href={link.url || '#'}
-                                            className={`px-3 py-1 rounded text-sm ${link.active
-                                                ? 'bg-blue-600 text-white font-semibold'
-                                                : link.url
-                                                    ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                }`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
+                                <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+                                    {hilirisasi.links.map((link, index) => {
+                                        let label = link.label;
+                                        if (label.includes('Previous')) label = '&laquo;';
+                                        if (label.includes('Next')) label = '&raquo;';
+
+                                        return (
+                                            <Link
+                                                key={index}
+                                                href={link.url || '#'}
+                                                className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded transition-colors ${link.active
+                                                    ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                                                    : link.url
+                                                        ? 'bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-100'
+                                                        : 'bg-white text-slate-300 border border-slate-100 cursor-not-allowed pointer-events-none'
+                                                    }`}
+                                                dangerouslySetInnerHTML={{ __html: label }}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -671,8 +680,13 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                             <h5 className="text-sm font-semibold text-sky-800 mb-3">Institusi</h5>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="md:col-span-2">
-                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Perguruan Tinggi</label>
-                                    <input type="text" value={item.perguruan_tinggi} onChange={e => setItemField(item.id, 'perguruan_tinggi', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                    <CampusSelect
+                                        label="Perguruan Tinggi"
+                                        name="perguruan_tinggi"
+                                        value={item.perguruan_tinggi}
+                                        onChange={val => setItemField(item.id, 'perguruan_tinggi', val)}
+                                        className="text-sm"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -680,8 +694,13 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                         {/* Section 3: Lokasi & Koordinat */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="md:col-span-2">
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Provinsi</label>
-                                <input type="text" value={item.provinsi} onChange={e => setItemField(item.id, 'provinsi', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                <LocationSelect
+                                    selectedProvince={item.provinsi}
+                                    selectedRegency=""
+                                    onProvinceChange={val => setItemField(item.id, 'provinsi', val)}
+                                    onRegencyChange={() => { }}
+                                    hideRegency={true}
+                                />
                             </div>
                             <div>
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Latitude</label>
@@ -706,11 +725,64 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Skema</label>
-                                    <input type="text" value={item.skema} onChange={e => setItemField(item.id, 'skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                    <select
+                                        value={item.skema}
+                                        onChange={e => setItemField(item.id, 'skema', e.target.value)}
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                    >
+                                        <option value="">-- Pilih Skema --</option>
+                                        <option value="A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi">A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi</option>
+                                        <option value="A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI">A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI</option>
+                                        <option value="A3: Pengembangan produk inovasi bersama DUDI">A3: Pengembangan produk inovasi bersama DUDI</option>
+                                        <option value="A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering">A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering</option>
+                                        <option value="B1: Penyelesaian persoalan yang ada di masyarakat">B1: Penyelesaian persoalan yang ada di masyarakat</option>
+                                        <option value="B2: Penyelesaian persoalan yang ada di Institusi Pemerintah">B2: Penyelesaian persoalan yang ada di Institusi Pemerintah</option>
+                                        <option value="Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)">Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah</option>
+                                        <option value="Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)">Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi</option>
+                                        <option value="Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra">Adopsi atau difusi, hilirisasi, komersialisasi produk</option>
+                                        <option value="Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI">Pembentukan atau penguatan research and innovation center</option>
+                                        <option value="Penerapan rencana bisnis and business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen">Penerapan rencana bisnis dan BMC Startup</option>
+                                        <option value="Dorongan Teknologi - Tim Pakar/Pengkaji">Dorongan Teknologi - Tim Pakar/Pengkaji</option>
+                                        <option value="Ajakan Industri PT - 1 Tahun">Ajakan Industri PT - 1 Tahun</option>
+                                        <option value="Ajakan Industri PT - 2 Tahun">Ajakan Industri PT - 2 Tahun</option>
+                                        <option value="Ajakan Industri PT - 3 Tahun">Ajakan Industri PT - 3 Tahun</option>
+                                        <option value="Hilirisasi Inovasi Komersial">Hilirisasi Inovasi Komersial</option>
+                                        <option value="Hilirisasi Inovasi Sosial">Hilirisasi Inovasi Sosial</option>
+                                        {item.skema && ![
+                                            "A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi",
+                                            "A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI",
+                                            "A3: Pengembangan produk inovasi bersama DUDI",
+                                            "A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering",
+                                            "B1: Penyelesaian persoalan yang ada di masyarakat",
+                                            "B2: Penyelesaian persoalan yang ada di Institusi Pemerintah",
+                                            "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)",
+                                            "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)",
+                                            "Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra",
+                                            "Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI",
+                                            "Penerapan rencana bisnis and business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen",
+                                            "Dorongan Teknologi - Tim Pakar/Pengkaji",
+                                            "Ajakan Industri PT - 1 Tahun",
+                                            "Ajakan Industri PT - 2 Tahun",
+                                            "Ajakan Industri PT - 3 Tahun",
+                                            "Hilirisasi Inovasi Komersial",
+                                            "Hilirisasi Inovasi Sosial"
+                                        ].includes(item.skema) && (
+                                                <option value={item.skema}>{item.skema}</option>
+                                            )}
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Direktorat</label>
-                                    <input type="text" value={item.direktorat} onChange={e => setItemField(item.id, 'direktorat', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
+                                    <select
+                                        value={item.direktorat}
+                                        onChange={e => setItemField(item.id, 'direktorat', e.target.value)}
+                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                                    >
+                                        <option value="">-- Pilih Direktorat --</option>
+                                        <option value="DIKSI">DIKSI</option>
+                                        <option value="DIKTI">DIKTI</option>
+                                        <option value="Direktorat Hilirisasi dan Kemitraan">Direktorat Hilirisasi dan Kemitraan</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Luaran</label>

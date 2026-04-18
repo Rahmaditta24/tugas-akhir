@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -6,8 +6,11 @@ import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
 import { fmt, display } from '../../../Utils/format';
 import * as XLSX from 'xlsx';
-import toast from 'react-hot-toast';
-
+import toast, { Toaster } from 'react-hot-toast';
+import ImportModal from '../../../Components/ImportModal';
+import BulkUpdateModal from '../../../Components/BulkUpdateModal';
+import CampusSelect from '../../../Components/CampusSelect';
+import LocationSelect from '../../../Components/LocationSelect';
 export default function Index({ pengabdian, stats = {}, filters = {} }) {
     const { flash } = usePage().props;
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -112,37 +115,216 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
         });
     };
 
-    // --- Import / Export ---
-    const fileInputRef = useRef(null);
+    // --- Bulk Update ---
+    const [showBulkUpdateModal, setShowBulkUpdateModal] = useState(false);
+    const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+    const [itemsEdit, setItemsEdit] = useState([]);
+
+    const setItemField = (id, key, value) => {
+        setItemsEdit(prev => prev.map(item =>
+            item.id === id ? { ...item, [key]: value } : item
+        ));
+    };
+
+    const openBulkUpdateModal = () => {
+        if (selectedIds.length === 0) return;
+        const raw = pengabdian?.data || [];
+        const prefilled = selectedIds.map(id => {
+            const found = raw.find(r => r.id === id);
+            return {
+                id,
+                batch_type: found?.batch_type || (filters.type || 'batch'),
+                nama: found?.nama || '',
+                nidn: found?.nidn || '',
+                nama_institusi: found?.nama_institusi || '',
+                pt_latitude: found?.pt_latitude || '',
+                pt_longitude: found?.pt_longitude || '',
+                kd_perguruan_tinggi: found?.kd_perguruan_tinggi || '',
+                wilayah_lldikti: found?.wilayah_lldikti || '',
+                ptn_pts: found?.ptn_pts || '',
+                kab_pt: found?.kab_pt || '',
+                prov_pt: found?.prov_pt || '',
+                klaster: found?.klaster || '',
+                judul: found?.judul || '',
+                nama_singkat_skema: found?.nama_singkat_skema || '',
+                thn_pelaksanaan_kegiatan: found?.thn_pelaksanaan_kegiatan || '',
+                urutan_thn_kegitan: found?.urutan_thn_kegitan || '',
+                nama_skema: found?.nama_skema || '',
+                bidang_fokus: found?.bidang_fokus || '',
+                prov_mitra: found?.prov_mitra || '',
+                kab_mitra: found?.kab_mitra || '',
+                nama_pendamping: found?.nama_pendamping || '',
+                nidn_pendamping: found?.nidn_pendamping || '',
+                kd_perguruan_tinggi_pendamping: found?.kd_perguruan_tinggi_pendamping || '',
+                institusi_pendamping: found?.institusi_pendamping || '',
+                lldikti_wilayah_pendamping: found?.lldikti_wilayah_pendamping || '',
+                jenis_wilayah_provinsi_mitra: found?.jenis_wilayah_provinsi_mitra || '',
+                bidang_teknologi_inovasi: found?.bidang_teknologi_inovasi || '',
+            };
+        });
+        setItemsEdit(prefilled);
+        setShowBulkUpdateModal(true);
+    };
+
+    const confirmBulkUpdate = (e) => {
+        e.preventDefault();
+        setIsBulkUpdating(true);
+        router.post(route('admin.pengabdian.bulk-update'), { items: itemsEdit }, {
+            onSuccess: () => {
+                setShowBulkUpdateModal(false);
+                setSelectedIds([]);
+                setIsBulkUpdating(false);
+                toast.success(`${itemsEdit.length} data pengabdian berhasil diperbarui.`);
+            },
+            onError: (errors) => {
+                setIsBulkUpdating(false);
+                const msg = Object.values(errors)[0] || 'Terjadi kesalahan.';
+                toast.error(msg);
+            }
+        });
+    };
+
+    // --- Import Modal ---
+    const [showImportModal, setShowImportModal] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
 
-    const handleImport = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+    const handleImport = async (file, onComplete) => {
+        const allowedExtensions = ['.xlsx', '.xls', '.csv'];
+        const fileExt = file.name.slice((file.name.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
+        if (!allowedExtensions.includes('.' + fileExt)) {
+            toast.error('Gagal: Tipe data harus Excel (.xlsx, .xls) atau CSV.');
+            if (onComplete) onComplete();
+            return;
+        }
+
+        if (file.size > 1024 * 1024) {
+            toast.error('Gagal: Ukuran file maksimal 1MB.');
+            if (onComplete) onComplete();
+            return;
+        }
+
         setIsImporting(true);
         const reader = new FileReader();
         reader.onload = async (evt) => {
             try {
                 const bstr = evt.target.result;
                 const wb = XLSX.read(bstr, { type: 'binary' });
-                const wsname = wb.SheetNames[0];
-                const ws = wb.Sheets[wsname];
+                const ws = wb.Sheets[wb.SheetNames[0]];
                 const data = XLSX.utils.sheet_to_json(ws);
-                router.post(route('admin.pengabdian.import-excel'), { data: data }, {
+
+                if (data.length === 0) {
+                    toast.error('Gagal: File tidak berisi data.');
+                    setIsImporting(false);
+                    return;
+                }
+
+                const requiredColumns = ['batchtype', 'nama', 'namainstitusi', 'judul', 'thnpelaksanaankegiatan'];
+                const uploadedColumns = Object.keys(data[0]).map(k => k.toLowerCase().replace(/[\s\/_]/g, ''));
+                
+                // Allow aliases just like backend
+                const aliases = {
+                    'namainstitusi': ['institusi', 'perguruantinggi'],
+                    'thnpelaksanaankegiatan': ['tahun']
+                };
+
+                const missingColumns = [];
+                for (const req of requiredColumns) {
+                    if (!uploadedColumns.includes(req)) {
+                        let foundAlias = false;
+                        if (aliases[req]) {
+                            for (const alt of aliases[req]) {
+                                if (uploadedColumns.includes(alt)) {
+                                    foundAlias = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!foundAlias) missingColumns.push(req);
+                    }
+                }
+
+                if (missingColumns.length > 0) {
+                    toast.error(`Gagal: Kolom tidak lengkap. Kurang kolom: ${missingColumns.join(', ')}`, { duration: 5000 });
+                    setIsImporting(false);
+                    if (onComplete) onComplete();
+                    return;
+                }
+
+                router.post(route('admin.pengabdian.import-excel'), { data }, {
                     onSuccess: () => {
                         setIsImporting(false);
-                        if (fileInputRef.current) fileInputRef.current.value = '';
+                        setShowImportModal(false);
+                        toast.success('Data pengabdian berhasil diimport.');
+                        if (onComplete) onComplete();
                     },
-                    onError: () => {
+                    onError: (errors) => {
                         setIsImporting(false);
+                        const msg = Object.values(errors)[0] || 'Terjadi kesalahan saat menyimpan data.';
+                        toast.error(`Gagal: ${msg}`);
+                        if (onComplete) onComplete();
                     }
                 });
             } catch (err) {
-                toast.error('Gagal membaca file.');
+                console.error('Import error:', err);
                 setIsImporting(false);
+                toast.error('Gagal: Terjadi kesalahan saat membaca file.');
+                if (onComplete) onComplete();
             }
         };
-        reader.readAsBinaryString(file);
+        reader.readAsArrayBuffer(file);
+    };
+
+    const handleDownloadTemplate = () => {
+        let dummyData = [];
+        let fileName = 'Template_Pengabdian.xlsx';
+
+        const baseRow = {
+            "batch_type": "multitahun",
+            "nama": "HARIS",
+            "nidn": "1208038902",
+            "nama_institusi": "Universitas Negeri Makassar",
+            "pt_latitude": -5.168843,
+            "pt_longitude": 119.4360638,
+            "kd_perguruan_tinggi": "1036",
+            "wilayah_lldikti": "9",
+            "ptn/pts": "PTN",
+            "Kab PT": "Kota Makassar",
+            "Prov PT": "Sulawesi Selatan",
+            "klaster": "Kelompok PT Mandiri",
+            "judul": "Peningkatan Softskill Literasi Digital dan Budidaya Toga masyarakat Desa Mallongi-longi Melalui PMM di Kabupaten Pinrang",
+            "nama_singkat_skema": "PMM",
+            "thn_pelaksanaan_kegiatan": 2025,
+            "urutan_thn_kegitan": "Tahun ke-1",
+            "nama_skema": "Pemberdayaan Masyarakat oleh Mahasiswa",
+            "bidang_fokus": "Sosial Humaniora",
+            "prov_mitra": "Sulawesi Selatan",
+            "kab_mitra": "Kab. Pinrang",
+        };
+
+        if (filters.type === 'kosabangsa') {
+            dummyData = [{
+                ...baseRow,
+                "batch_type": "kosabangsa",
+                "nama_skema": "Kosabangsa",
+                "nama_singkat_skema": "Kosabangsa",
+                "nama_pendamping": "SITTI RAHMA",
+                "nidn_pendamping": "0012345678",
+                "kd_perguruan_tinggi_pendamping": "1099",
+                "institusi_pendamping": "Universitas Hasanuddin",
+                "lldikti_wilayah_pendamping": "9",
+                "jenis_wilayah_provinsi_mitra": "Pedesaan",
+                "bidang_teknologi_inovasi": "Pertanian dan Pangan",
+            }];
+            fileName = "Template_Import_Kosabangsa.xlsx";
+        } else {
+            dummyData = [baseRow];
+            fileName = "Template_Import_Batch.xlsx";
+        }
+
+        const ws = XLSX.utils.json_to_sheet(dummyData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Template_Pengabdian");
+        XLSX.writeFile(wb, fileName);
     };
 
     const handleExport = () => {
@@ -191,6 +373,7 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
 
     return (
         <AdminLayout title="">
+            <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
             <div className="space-y-6 max-w-full">
                 {/* Header */}
                 <PageHeader
@@ -207,57 +390,51 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                                 {selectedIds.length > 0 ? `Export CSV (${selectedIds.length})` : 'Export CSV'}
                             </button>
                             <button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isImporting}
-                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm disabled:opacity-50"
+                                onClick={() => setShowImportModal(true)}
+                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm flex-shrink-0"
                             >
-                                {isImporting ? (
-                                    <span className="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
-                                ) : (
-                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                )}
-                                {isImporting ? 'Proses...' : 'Import Data'}
+                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                Import Data
                             </button>
-                            <input type="file" ref={fileInputRef} onChange={handleImport} accept=".csv, .xlsx, .xls" className="hidden" />
                             <Link href={route('admin.pengabdian.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm">+ Tambah</Link>
                         </div>
                     )}
                 />
 
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                                <span className="text-xl">📦</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <span className="text-lg sm:text-xl">📦</span>
                             </div>
                             <div>
-                                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider">Multitahun, Batch I & II</p>
-                                <p className="text-2xl font-black text-slate-800">{stats.batch?.toLocaleString('id-ID')}</p>
+                                <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">Multitahun, Batch I & II</p>
+                                <p className="text-xl sm:text-2xl font-black text-slate-800">{stats.batch?.toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                                <span className="text-xl">🤝</span>
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <span className="text-lg sm:text-xl">🤝</span>
                             </div>
                             <div>
-                                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider">Kosabangsa</p>
-                                <p className="text-2xl font-black text-slate-800">{stats.kosabangsa?.toLocaleString('id-ID')}</p>
+                                <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">Kosabangsa</p>
+                                <p className="text-xl sm:text-2xl font-black text-slate-800">{stats.kosabangsa?.toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                <span className="text-xl">📊</span>
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <span className="text-lg sm:text-xl">📊</span>
                             </div>
                             <div>
-                                <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider">Total Semua</p>
-                                <p className="text-2xl font-black text-slate-800">{stats.total?.toLocaleString('id-ID')}</p>
+                                <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider">Total Semua</p>
+                                <p className="text-xl sm:text-2xl font-black text-slate-800">{stats.total?.toLocaleString('id-ID')}</p>
                             </div>
                         </div>
                     </div>
@@ -267,23 +444,30 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden relative">
                     {/* Bulk Actions Bar */}
                     {selectedIds.length > 0 && (
-                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex items-center justify-between shadow-lg animate-in slide-in-from-top duration-300">
+                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg animate-in slide-in-from-top duration-300">
                             <div className="flex items-center gap-4 ml-2">
                                 <span className="text-sm font-semibold whitespace-nowrap">
                                     {selectedIds.length} data terpilih
                                 </span>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
+                                <button
+                                    onClick={openBulkUpdateModal}
+                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                    Update {selectedIds.length} Data
+                                </button>
                                 <button
                                     onClick={handleBulkDelete}
-                                    className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors"
+                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
                                 >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     Hapus {selectedIds.length} Data
                                 </button>
                                 <button
                                     onClick={() => setSelectedIds([])}
-                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-md transition-colors"
+                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
                                 >
                                     Batal
                                 </button>
@@ -333,24 +517,24 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                             </div>
                             <button
                                 type="submit"
-                                className="px-8 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                                className="px-4 sm:px-8 py-1.5 sm:py-2 bg-blue-600 text-white text-sm sm:text-base font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
                             >
                                 Cari
                             </button>
                             {(filters.search || Object.values(columnFilters || {}).some(v => v)) && (
                                 <Link
                                     href={route('admin.pengabdian.index', { type: filters.type })}
-                                    className="px-6 py-2 bg-slate-200 text-slate-700 font-medium rounded-lg hover:bg-slate-300 transition-colors"
+                                    className="px-4 sm:px-6 py-1.5 sm:py-2 bg-slate-200 text-slate-700 text-sm sm:text-base font-medium rounded-lg hover:bg-slate-300 transition-colors"
                                 >
                                     Reset
                                 </Link>
                             )}
                             <div className="ml-auto flex items-center gap-2">
-                                <span className="text-sm text-slate-600">Per halaman</span>
+                                <span className="text-sm text-slate-600 hidden sm:inline">Per halaman</span>
                                 <select
                                     value={perPage}
                                     onChange={handlePerPageChange}
-                                    className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                    className="px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
                                 >
                                     <option value={20}>20</option>
                                     <option value={50}>50</option>
@@ -386,25 +570,31 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
 
                     {/* Pagination */}
                     {pengabdian.last_page > 1 && (
-                        <div className="px-6 py-4 border-t border-slate-200/60">
-                            <div className="flex items-center justify-between">
+                        <div className="px-4 sm:px-6 py-4 border-t border-slate-200/60">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
                                 <div className="text-sm text-slate-600">
                                     Menampilkan {pengabdian.from?.toLocaleString('id-ID')} - {pengabdian.to?.toLocaleString('id-ID')} dari {pengabdian.total?.toLocaleString('id-ID')} data
                                 </div>
-                                <div className="flex gap-2">
-                                    {pengabdian.links.map((link, index) => (
-                                        <Link
-                                            key={index}
-                                            href={link.url || '#'}
-                                            className={`px-3 py-1 rounded ${link.active
-                                                ? 'bg-blue-600 text-white'
-                                                : link.url
-                                                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                }`}
-                                            dangerouslySetInnerHTML={{ __html: link.label }}
-                                        />
-                                    ))}
+                                <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+                                    {pengabdian.links.map((link, index) => {
+                                        let label = link.label;
+                                        if (label.includes('Previous')) label = '&laquo;';
+                                        if (label.includes('Next')) label = '&raquo;';
+
+                                        return (
+                                            <Link
+                                                key={index}
+                                                href={link.url || '#'}
+                                                className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded transition-colors ${link.active
+                                                    ? 'bg-blue-600 text-white shadow-sm'
+                                                    : link.url
+                                                        ? 'bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-100'
+                                                        : 'bg-white text-slate-300 border border-slate-100 cursor-not-allowed pointer-events-none'
+                                                    }`}
+                                                dangerouslySetInnerHTML={{ __html: label }}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -469,6 +659,229 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                     </div>
                 </div>
             )}
+            {/* Import Modal */}
+            <ImportModal
+                isOpen={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onImport={handleImport}
+                isImporting={isImporting}
+                onDownloadTemplate={handleDownloadTemplate}
+                title={`Import Data Pengabdian (${filters.type === 'kosabangsa' ? 'Kosabangsa' : 'Batch/Multitahun'})`}
+            />
+
+            {/* Bulk Update Modal */}
+            <BulkUpdateModal
+                isOpen={showBulkUpdateModal}
+                onClose={() => setShowBulkUpdateModal(false)}
+                items={itemsEdit}
+                onSave={confirmBulkUpdate}
+                isSaving={isBulkUpdating}
+                title={`Update ${itemsEdit.length} Data Pengabdian`}
+                renderItemForm={(item) => {
+                    const isKosabangsa = item.batch_type === 'kosabangsa' || filters.type === 'kosabangsa';
+                    const f = (key) => item[key] || '';
+                    const inp = (key, opts = {}) => (
+                        <input
+                            type={opts.type || 'text'}
+                            value={f(key)}
+                            onChange={e => setItemField(item.id, key, opts.numeric ? e.target.value.replace(/\D/g, '') : e.target.value)}
+                            className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder={opts.placeholder || ''}
+                        />
+                    );
+                    return (
+                        <div className="space-y-5">
+                            {/* Section: Jenis Batch */}
+                            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Klasifikasi Data</p>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Jenis Batch / Program</label>
+                                        <select value={f('batch_type')} onChange={e => setItemField(item.id, 'batch_type', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
+                                            <option value="batch">Multitahun, Batch I & Batch II</option>
+                                            <option value="kosabangsa">Kosabangsa</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">NIDN</label>
+                                        {inp('nidn', { numeric: true, placeholder: 'Nomor NIDN' })}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section: Institusi & Pengusul */}
+                            <div className="border border-slate-200 rounded-xl overflow-hidden">
+                                <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                                    <span>🏫</span><p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Institusi & Pengusul</p>
+                                </div>
+                                <div className="p-4 space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nama Ketua Pengusul</label>
+                                        {inp('nama')}
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Nama Institusi</label>
+                                        {inp('nama_institusi')}
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kode PT</label>
+                                            {inp('kd_perguruan_tinggi', { numeric: true })}
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">LLDIKTI</label>
+                                            {inp('wilayah_lldikti')}
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">PTN/PTS</label>
+                                            <select value={f('ptn_pts')} onChange={e => setItemField(item.id, 'ptn_pts', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
+                                                <option value="">-- Pilih --</option>
+                                                <option value="PTN">PTN</option>
+                                                <option value="PTS">PTS</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="col-span-2">
+                                            <LocationSelect
+                                                selectedProvince={f('prov_pt')}
+                                                selectedRegency={f('kab_pt')}
+                                                onProvinceChange={val => setItemField(item.id, 'prov_pt', val)}
+                                                onRegencyChange={val => setItemField(item.id, 'kab_pt', val)}
+                                                provinceErrorKey="prov_pt"
+                                                regencyErrorKey="kab_pt"
+                                                showRequiredIndicator={false}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Klaster</label>
+                                        {inp('klaster')}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section: Detail Pelaksanaan */}
+                            <div className="border border-slate-200 rounded-xl overflow-hidden">
+                                <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                                    <span>📜</span><p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Detail Pelaksanaan</p>
+                                </div>
+                                <div className="p-4 space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Judul Pengabdian</label>
+                                        <textarea value={f('judul')} onChange={e => setItemField(item.id, 'judul', e.target.value)} rows="3" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {!isKosabangsa && (
+                                            <>
+                                                <div>
+                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nama Skema</label>
+                                                    <select value={f('nama_skema')} onChange={e => setItemField(item.id, 'nama_skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
+                                                        <option value="">-- Pilih --</option>
+                                                        {['KBM','PDB','PKM','PM-UPUD','PMM','PMP','PUK','PW','Pemberdayaan Desa Binaan','Pemberdayaan Kemitraan Masyarakat','Pemberdayaan Masyarakat oleh Mahasiswa','Pengabdian Masyarakat Pemula','Program Kemitraan Masyarakat Stimulusi'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                        {f('nama_skema') && !['KBM','PDB','PKM','PM-UPUD','PMM','PMP','PUK','PW','Pemberdayaan Desa Binaan','Pemberdayaan Kemitraan Masyarakat','Pemberdayaan Masyarakat oleh Mahasiswa','Pengabdian Masyarakat Pemula','Program Kemitraan Masyarakat Stimulusi','Kosabangsa'].includes(f('nama_skema')) && <option value={f('nama_skema')}>{f('nama_skema')}</option>}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Singkatan Skema</label>
+                                                    <select value={f('nama_singkat_skema')} onChange={e => setItemField(item.id, 'nama_singkat_skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
+                                                        <option value="">-- Pilih --</option>
+                                                        {['KBM','PDB','PKM','PM-UPUD','PMM','PMP','PUK','PW'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                        {f('nama_singkat_skema') && !['KBM','PDB','PKM','PM-UPUD','PMM','PMP','PUK','PW'].includes(f('nama_singkat_skema')) && <option value={f('nama_singkat_skema')}>{f('nama_singkat_skema')}</option>}
+                                                    </select>
+                                                </div>
+                                            </>
+                                        )}
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Tahun Pelaksanaan</label>
+                                            <input type="number" value={f('thn_pelaksanaan_kegiatan')} onChange={e => setItemField(item.id, 'thn_pelaksanaan_kegiatan', e.target.value)} placeholder="2025" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Urutan Tahun</label>
+                                            {inp('urutan_thn_kegitan', { placeholder: 'Tahun ke-1' })}
+                                        </div>
+                                        <div className={isKosabangsa ? '' : 'col-span-2'}>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Bidang Fokus</label>
+                                            {inp('bidang_fokus', { placeholder: 'Bidang fokus pengabdian' })}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section: Kosabangsa */}
+                            {isKosabangsa && (
+                                <div className="border border-blue-100 bg-blue-50/40 rounded-xl overflow-hidden">
+                                    <div className="px-4 py-2.5 bg-blue-50 border-b border-blue-100 flex items-center gap-2">
+                                        <span>🎓</span><p className="text-[11px] font-bold text-blue-600 uppercase tracking-widest">Informasi Pendamping (Kosabangsa)</p>
+                                    </div>
+                                    <div className="p-4 grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nama Pendamping</label>
+                                            {inp('nama_pendamping')}
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">NIDN Pendamping</label>
+                                            {inp('nidn_pendamping', { numeric: true })}
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Institusi Pendamping</label>
+                                            {inp('institusi_pendamping')}
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kode PT Pendamping</label>
+                                            {inp('kd_perguruan_tinggi_pendamping')}
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">LLDIKTI Pendamping</label>
+                                            {inp('lldikti_wilayah_pendamping')}
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Jenis Wilayah Mitra</label>
+                                            {inp('jenis_wilayah_provinsi_mitra')}
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Bidang Teknologi Inovasi</label>
+                                            {inp('bidang_teknologi_inovasi')}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Section: Mitra & Koordinat */}
+                            <div className="border border-slate-200 rounded-xl overflow-hidden">
+                                <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+                                    <span>📍</span><p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Mitra & Koordinat</p>
+                                </div>
+                                <div className="p-4 space-y-4">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="col-span-2">
+                                            <LocationSelect
+                                                selectedProvince={f('prov_mitra')}
+                                                selectedRegency={f('kab_mitra')}
+                                                onProvinceChange={val => setItemField(item.id, 'prov_mitra', val)}
+                                                onRegencyChange={val => setItemField(item.id, 'kab_mitra', val)}
+                                                provinceErrorKey="prov_mitra"
+                                                regencyErrorKey="kab_mitra"
+                                                showRequiredIndicator={false}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Latitude</label>
+                                            <input type="text" value={f('pt_latitude')} onChange={e => setItemField(item.id, 'pt_latitude', e.target.value.replace(',', '.'))} placeholder="-5.168843" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Longitude</label>
+                                            <input type="text" value={f('pt_longitude')} onChange={e => setItemField(item.id, 'pt_longitude', e.target.value.replace(',', '.'))} placeholder="119.436063" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }}
+            />
         </AdminLayout>
     );
 }

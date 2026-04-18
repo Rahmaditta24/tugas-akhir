@@ -122,27 +122,26 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
 
                     {/* Header Page */}
                     <div className="flex justify-between items-center mb-6 px-1">
-                        <h2 className="text-xl font-bold text-gray-900">Kategori</h2>
+                        <h2 className="text-lg sm:text-xl font-bold text-gray-900">Kategori</h2>
                         <button
                             onClick={openCreateModal}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-lg shadow-sm transition-colors duration-200 text-sm"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 sm:py-2 px-3 sm:px-5 rounded-lg shadow-sm transition-colors duration-200 text-xs sm:text-sm"
                         >
                             Tambah Kategori
                         </button>
                     </div>
 
                     {/* Grid Layout */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                         {categories.map((category) => (
-                            <div key={category.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-center group">
-
+                            <div key={category.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-6 relative hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-center group">
                                 {/* Kebab Menu (Options) */}
-                                <div className="absolute top-4 right-4 z-10">
+                                <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
                                     <button
                                         onClick={(e) => { e.stopPropagation(); toggleMenu(category.id); }}
                                         className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-50 focus:outline-none"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
                                         </svg>
                                     </button>
@@ -169,7 +168,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                 </div>
 
                                 {/* Icon Image */}
-                                <div className="mb-4 w-24 h-24 flex items-center justify-center">
+                                <div className="mb-2 sm:mb-4 w-12 h-12 sm:w-24 sm:h-24 flex items-center justify-center">
                                     {category.image ? (
                                         <img
                                             key={category.image}
@@ -178,8 +177,8 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                             className="max-w-full max-h-full object-contain drop-shadow-sm"
                                         />
                                     ) : (
-                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <div className="w-10 h-10 sm:w-16 sm:h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-8 sm:w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
                                         </div>
@@ -187,19 +186,19 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                 </div>
 
                                 {/* Content Info */}
-                                <div className="w-full text-left mt-2">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-1">
+                                <div className="w-full text-center sm:text-left mt-1 sm:mt-2">
+                                    <h3 className="text-sm sm:text-xl font-bold text-gray-900 mb-0.5 sm:mb-1 truncate">
                                         {category.order_number}. {category.name}
                                     </h3>
-                                    <p className="text-sm text-gray-500 mb-4 font-medium">
+                                    <p className="text-[10px] sm:text-sm text-gray-500 mb-2 sm:mb-4 font-medium">
                                         {category.statements_count?.toLocaleString('id-ID')} Statements
                                     </p>
 
                                     <Link
                                         href={route('admin.rumusan-masalah.category.statements.index', category.slug)}
-                                        className="inline-flex items-center text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-1.5 rounded-full text-xs font-bold transition-colors duration-200"
+                                        className="inline-flex items-center text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-colors duration-200"
                                     >
-                                        View Detail <span className="ml-1">→</span>
+                                        View Detail <span className="ml-1 hidden sm:inline">→</span>
                                     </Link>
                                 </div>
                             </div>

@@ -323,12 +323,13 @@ export default function Index({ penelitian, stats, filters }) {
                     }
                 });
             } catch (err) {
+                console.error('Import error:', err);
                 setIsImporting(false);
                 toast.error('Gagal: Terjadi kesalahan saat membaca file.');
                 if (onComplete) onComplete();
             }
         };
-        reader.readAsBinaryString(file);
+        reader.readAsArrayBuffer(file);
     };
 
     const handleExportExcel = () => {
@@ -387,69 +388,71 @@ export default function Index({ penelitian, stats, filters }) {
             />
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-50 rounded-lg">
-                            <span className="text-2xl">🔬</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6">
+                <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-slate-100">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                            <span className="text-xl sm:text-2xl">🔬</span>
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600">Total Penelitian</p>
-                            <p className="text-2xl font-bold text-slate-900">
+                            <p className="text-xs sm:text-sm font-medium text-slate-500 uppercase tracking-wider">Total Penelitian</p>
+                            <p className="text-xl sm:text-2xl font-bold text-slate-900">
                                 {stats?.total?.toLocaleString('id-ID') || 0}
                             </p>
                         </div>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
                         <div>
-                            <p className="text-sm text-slate-600">Dengan Koordinat</p>
-                            <p className="text-2xl font-bold text-slate-800">{stats?.withCoordinates?.toLocaleString('id-ID') || 0}</p>
+                            <p className="text-xs sm:text-sm font-medium text-slate-500 uppercase tracking-wider">Dengan Koordinat</p>
+                            <p className="text-xl sm:text-2xl font-bold text-slate-800">{stats?.withCoordinates?.toLocaleString('id-ID') || 0}</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Bulk Action Bar — only visible when items are selected */}
-            {selectedIds.length > 0 && (
-                <div className="mb-4 px-4 py-3 bg-blue-600 text-white rounded-lg flex items-center justify-between shadow-md">
-                    <span className="font-medium text-sm">
-                        ☑ <strong>{selectedIds.length}</strong> baris dipilih
-                    </span>
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={openBulkUpdateModal}
-                            className="flex items-center gap-1.5 px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium rounded-md transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                            Update {selectedIds.length} Data
-                        </button>
-                        <button
-                            onClick={handleBulkDelete}
-                            className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-md transition-colors"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                            Hapus
-                        </button>
-                        <button
-                            onClick={() => setSelectedIds([])}
-                            className="px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white text-sm rounded-md transition-colors"
-                        >
-                            ✕
-                        </button>
-                    </div>
-                </div>
-            )}
-
             {/* Search & Table */}
-            <div className="bg-white rounded-lg shadow-sm">
+            <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden relative">
+                {/* Bulk Action Bar — only visible when items are selected */}
+                {selectedIds.length > 0 && (
+                    <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg animate-in slide-in-from-top duration-300">
+                        <div className="flex items-center gap-4 ml-2">
+                            <span className="text-sm font-semibold whitespace-nowrap">
+                                {selectedIds.length} data terpilih
+                            </span>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
+                            <button
+                                onClick={openBulkUpdateModal}
+                                className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                Update {selectedIds.length} Data
+                            </button>
+                            <button
+                                onClick={handleBulkDelete}
+                                className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                Hapus {selectedIds.length} Data
+                            </button>
+                            <button
+                                onClick={() => setSelectedIds([])}
+                                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 <div className="p-6 border-b">
                     <form onSubmit={handleSearch} className="flex gap-3 items-center flex-wrap">
                         <input
@@ -461,7 +464,7 @@ export default function Index({ penelitian, stats, filters }) {
                         />
                         <button
                             type="submit"
-                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            className="px-4 sm:px-6 py-1.5 sm:py-2 bg-blue-600 text-white text-sm sm:text-base rounded-lg hover:bg-blue-700 transition-colors"
                         >
                             Cari
                         </button>
@@ -469,18 +472,18 @@ export default function Index({ penelitian, stats, filters }) {
                         {(search || Object.values(columnFilters).some(v => v)) && (
                             <Link
                                 href={route('admin.penelitian.index')}
-                                className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
+                                className="px-4 sm:px-6 py-1.5 sm:py-2 bg-slate-200 text-slate-700 text-sm sm:text-base rounded-lg hover:bg-slate-300 transition-colors"
                             >
                                 Reset
                             </Link>
                         )}
 
                         <div className="ml-auto flex items-center gap-2">
-                            <span className="text-sm text-slate-600">Per halaman</span>
+                            <span className="text-sm text-slate-600 hidden sm:inline">Per halaman</span>
                             <select
                                 value={perPage}
                                 onChange={handlePerPageChange}
-                                className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                             >
                                 <option value={20}>20</option>
                                 <option value={50}>50</option>
@@ -583,25 +586,32 @@ export default function Index({ penelitian, stats, filters }) {
 
                 {/* Pagination */}
                 {penelitian?.last_page > 1 && (
-                    <div className="px-6 py-4 border-t border-slate-200">
-                        <div className="flex items-center justify-between">
-                            <p className="text-sm text-slate-600">
+                    <div className="px-4 sm:px-6 py-4 border-t border-slate-200">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p className="text-sm text-slate-600 text-center sm:text-left">
                                 Menampilkan {penelitian.from?.toLocaleString('id-ID')} - {penelitian.to?.toLocaleString('id-ID')} dari {penelitian.total?.toLocaleString('id-ID')} data
                             </p>
-                            <div className="flex gap-2">
-                                {penelitian.links.map((link, index) => (
-                                    <Link
-                                        key={index}
-                                        href={link.url || '#'}
-                                        className={`px-3 py-1 rounded text-sm ${link.active
-                                            ? 'bg-blue-600 text-white font-semibold'
-                                            : link.url
-                                                ? 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                                                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                            }`}
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                ))}
+                            <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+                                {penelitian.links.map((link, index) => {
+                                    // Handle labels for mobile
+                                    let label = link.label;
+                                    if (label.includes('Previous')) label = '&laquo;';
+                                    if (label.includes('Next')) label = '&raquo;';
+
+                                    return (
+                                        <Link
+                                            key={index}
+                                            href={link.url || '#'}
+                                            className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded transition-colors ${link.active
+                                                ? 'bg-blue-600 text-white font-semibold shadow-sm'
+                                                : link.url
+                                                    ? 'bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-100'
+                                                    : 'bg-white text-slate-300 border border-slate-100 cursor-not-allowed pointer-events-none'
+                                                }`}
+                                            dangerouslySetInnerHTML={{ __html: label }}
+                                        />
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>

@@ -16,20 +16,20 @@ export default function Login({ errors, status }) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-0">
             <div className="w-full max-w-md">
                 {/* Logos */}
-                <div className="flex flex-wrap items-center justify-center gap-4 mb-6 opacity-90">
-                    <img src="/assets/images/logo/Ditjen%20Risbang.png" alt="Ditjen Risbang" className="h-16 object-contain max-w-[640px]" />
+                <div className="flex flex-wrap items-center justify-center gap-4 mb-4 sm:mb-6 opacity-90">
+                    <img src="/assets/images/logo/Ditjen%20Risbang.png" alt="Ditjen Risbang" className="h-12 sm:h-16 object-contain max-w-full" />
                 </div>
                 {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-slate-800 mb-2">Dashboard Admin</h1>
-                    <p className="text-slate-600">Pemetaan Riset Berdampak</p>
+                <div className="text-center mb-6 sm:mb-8">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-1 sm:mb-2">Dashboard Admin</h1>
+                    <p className="text-sm sm:text-base text-slate-600">Pemetaan Riset Berdampak</p>
                 </div>
 
                 {/* Login Form */}
-                <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-8">
+                <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-6 sm:p-8">
                     {/* <h2 className="text-xl font-semibold text-slate-800 mb-6">Masuk ke Admin Panel</h2> */}
 
                     {/* Status sukses (e.g. setelah reset password) */}
@@ -43,8 +43,8 @@ export default function Login({ errors, status }) {
                     )}
 
                     {/* Email Field */}
-                    <div className="mb-4">
-                        <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+                    <div className="mb-4 text-left">
+                        <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                             Email
                         </label>
                         <input
@@ -52,11 +52,11 @@ export default function Login({ errors, status }) {
                             type="email"
                             value={data.email}
                             onChange={e => setData('email', e.target.value)}
-                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors?.email
+                            className={`w-full px-4 py-2 text-base border rounded-lg focus:outline-none focus:ring-2 ${errors?.email
                                 ? 'border-red-500 focus:ring-red-500'
                                 : 'border-slate-300 focus:ring-blue-500'
                                 }`}
-                            placeholder="admin@example.com"
+                            placeholder="Email admin"
                             required
                             autoFocus
                         />
@@ -66,8 +66,8 @@ export default function Login({ errors, status }) {
                     </div>
 
                     {/* Password Field */}
-                    <div className="mb-4">
-                        <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+                    <div className="mb-4 text-left">
+                        <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                             Password
                         </label>
                         <div className="relative">
@@ -76,11 +76,11 @@ export default function Login({ errors, status }) {
                                 type={showPassword ? 'text' : 'password'}
                                 value={data.password}
                                 onChange={e => setData('password', e.target.value)}
-                                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 pr-10 ${errors?.password
+                                className={`w-full px-4 py-2 text-base border rounded-lg focus:outline-none focus:ring-2 pr-10 ${errors?.password
                                     ? 'border-red-500 focus:ring-red-500'
                                     : 'border-slate-300 focus:ring-blue-500'
                                     }`}
-                                placeholder="password"
+                                placeholder="Password"
                                 required
                             />
                             <button
@@ -105,15 +105,15 @@ export default function Login({ errors, status }) {
                         )}
                     </div>
 
-                    <div className="mb-6">
-                        <label className="flex items-center">
+                    <div className="mb-6 text-left">
+                        <label className="flex items-center cursor-pointer group">
                             <input
                                 type="checkbox"
                                 checked={data.remember}
                                 onChange={e => setData('remember', e.target.checked)}
-                                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-2 focus:ring-blue-500"
+                                className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-2 focus:ring-blue-500 transition-all"
                             />
-                            <span className="ml-2 text-sm text-slate-700">Ingat saya</span>
+                            <span className="ml-2 text-sm text-slate-700 group-hover:text-blue-600 transition-colors">Ingat saya</span>
                         </label>
                     </div>
 
@@ -121,9 +121,9 @@ export default function Login({ errors, status }) {
                     <button
                         type="submit"
                         disabled={processing}
-                        className={`w-full py-2.5 px-4 rounded-lg font-medium text-white transition-colors ${processing
+                        className={`w-full py-3 px-4 rounded-lg font-bold text-white shadow-lg transition-all active:scale-[0.98] ${processing
                             ? 'bg-slate-400 cursor-not-allowed'
-                            : 'bg-blue-600 hover:bg-blue-700'
+                            : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20'
                             }`}
                     >
                         {processing ? (

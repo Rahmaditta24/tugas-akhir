@@ -66,7 +66,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
                 <title>{title}</title>
             </Head>
             {/* Top Navbar */}
-            <header className="bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-200/60 sticky top-0 z-40">
+            <header className="bg-white border-b border-slate-200/60 sticky top-0 z-40 shadow-sm">
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Left: Logo & Menu Toggle */}
@@ -175,7 +175,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
                 {/* Overlay for mobile */}
                 {isSidebarOpen && (
                     <div
-                        className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+                        className="fixed inset-0 bg-opacity-50 z-20 lg:hidden"
                         onClick={() => setIsSidebarOpen(false)}
                     ></div>
                 )}

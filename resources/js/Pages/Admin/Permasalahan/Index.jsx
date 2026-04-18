@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
 import { fmt, display, titleCase } from '../../../Utils/format';
-import * as XLSX from 'xlsx';
-import toast from 'react-hot-toast';
 
 export default function Index({
     data = {},
@@ -26,9 +24,7 @@ export default function Index({
     const [localColumnFilters, setLocalColumnFilters] = useState(filters.columns || {});
     const [localStats, setLocalStats] = useState(stats || {});
     const [isStatsLoading, setIsStatsLoading] = useState(false);
-    const [isImporting, setIsImporting] = useState(false);
-    const fileInputRef = useRef(null);
-    const { flash, importErrors } = usePage().props;
+    const { flash } = usePage().props;
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
 
@@ -36,7 +32,7 @@ export default function Index({
     useEffect(() => {
         const handler = setTimeout(() => {
             const hasChanged = JSON.stringify(localColumnFilters) !== JSON.stringify(columnFilters);
-            
+
             if (hasChanged) {
                 setColumnFilters(localColumnFilters);
                 router.get(route('admin.permasalahan.index'), {
@@ -48,32 +44,11 @@ export default function Index({
         return () => clearTimeout(handler);
     }, [localColumnFilters]);
 
-    // Fetch research stats via AJAX if baseData is not statistik
+    // Local stats handling
     useEffect(() => {
-        if (baseData !== 'statistik' && (!stats || Object.keys(stats).length === 0)) {
-            setIsStatsLoading(true);
-            const params = new URLSearchParams({ baseData, jenis, batch_type: batchType, search });
-            if (Object.keys(columnFilters).length > 0) {
-                Object.entries(columnFilters).forEach(([k, v]) => {
-                    if (v) params.append(`columns[${k}]`, v);
-                });
-            }
-
-            fetch(route('admin.permasalahan.stats') + '?' + params.toString())
-                .then(res => res.json())
-                .then(data => {
-                    setLocalStats(data);
-                    setIsStatsLoading(false);
-                })
-                .catch(err => {
-                    console.error("Stats fetch error:", err);
-                    setIsStatsLoading(false);
-                });
-        } else {
-            setLocalStats(stats);
-            setIsStatsLoading(false);
-        }
-    }, [baseData, jenis, batchType, search, columnFilters, stats]);
+        setLocalStats(stats);
+        setIsStatsLoading(false);
+    }, [stats]);
 
 
     const sumberDataMap = {
@@ -222,42 +197,6 @@ export default function Index({
         window.location.href = route('admin.permasalahan.export-csv') + '?' + params.toString();
     };
 
-    const handleImport = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        setIsImporting(true);
-        const reader = new FileReader();
-        reader.onload = async (evt) => {
-            try {
-                const bstr = evt.target.result;
-                const wb = XLSX.read(bstr, { type: 'binary' });
-                const wsname = wb.SheetNames[0];
-                const ws = wb.Sheets[wsname];
-                const data = XLSX.utils.sheet_to_json(ws);
-                if (data.length === 0) {
-                    setIsImporting(false);
-                    return;
-                }
-                router.post(route('admin.permasalahan.import-excel'), {
-                    data: data, 
-                    type: activeTab, 
-                    tahun: new Date().getFullYear()
-                }, {
-                    onSuccess: () => {
-                        setIsImporting(false);
-                        if (fileInputRef.current) fileInputRef.current.value = '';
-                    },
-                    onError: () => {
-                        setIsImporting(false);
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-                setIsImporting(false);
-            }
-        };
-        reader.readAsBinaryString(file);
-    };
 
     const handleDelete = (id, type) => {
         if (!confirm('Yakin ingin menghapus data ini?')) return;
@@ -286,7 +225,7 @@ export default function Index({
                     icon={<span className="text-xl">⚠️</span>}
                     actions={(
                         <div className="flex gap-2">
-                             <button
+                            <button
                                 onClick={handleExportCSV}
                                 className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
                             >
@@ -295,77 +234,55 @@ export default function Index({
                                 </svg>
                                 Export CSV
                             </button>
-
-                            {/*<button
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isImporting}
-                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm disabled:opacity-50"
-                            >
-                                {isImporting ? (
-                                    <span className="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
-                                ) : (
-                                    <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12" />
-                                    </svg>
-                                )}
-                                {isImporting ? 'Proses...' : 'Import Data'}
-                            </button>*/}
-                            <input
-                                type="file"
-                                accept=".csv, .xlsx, .xls"
-                                className="hidden"
-                                ref={fileInputRef}
-                                onChange={handleImport}
-                            />
                         </div>
                     )}
                 />
 
                 {/* Stats Cards */}
                 {(baseData === 'statistik' || baseData === 'penelitian' || baseData === 'pengabdian' || baseData === 'hilirisasi') && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h18M3 12h18M3 19h18" />
                                     </svg>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-slate-500 font-medium">{baseData === 'statistik' ? 'Total Provinsi' : 'Total Institusi'}</p>
-                                    <p className="text-2xl font-bold text-slate-800">
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider truncate">{baseData === 'statistik' ? 'Total Provinsi' : 'Total Institusi'}</p>
+                                    <p className="text-xl sm:text-2xl font-black text-slate-800">
                                         {isStatsLoading ? '...' : (baseData === 'statistik' ? (localStats.totalProvinsi || 0).toLocaleString('id-ID') : (localStats.totalInstitusi || 0).toLocaleString('id-ID'))}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-lg flex items-center justify-center">
+                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-slate-500 font-medium">{baseData === 'statistik' ? 'Total Kabupaten' : 'Total Provinsi'}</p>
-                                    <p className="text-2xl font-bold text-slate-800">
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider truncate">{baseData === 'statistik' ? 'Total Kabupaten' : 'Total Provinsi'}</p>
+                                    <p className="text-xl sm:text-2xl font-black text-slate-800">
                                         {isStatsLoading ? '...' : (baseData === 'statistik' ? (localStats.totalKabupaten || 0).toLocaleString('id-ID') : (localStats.totalProvinsi || 0).toLocaleString('id-ID'))}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                                    <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 rounded-lg flex items-center justify-center">
+                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
                                     </svg>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-slate-500 font-medium">Total Data</p>
-                                    <p className="text-2xl font-bold text-slate-800">
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider truncate">Total Data</p>
+                                    <p className="text-xl sm:text-2xl font-black text-slate-800">
                                         {isStatsLoading ? '...' : (localStats.total || 0).toLocaleString('id-ID')}
                                     </p>
                                 </div>
@@ -375,41 +292,45 @@ export default function Index({
                 )}
 
                 <div className="bg-white rounded-lg shadow-sm">
-                    <div className="p-4 border-b border-slate-200/60">
+                    <div className="p-4 sm:p-6 border-b border-slate-200/60">
                         <form onSubmit={handleSearch} className="space-y-4">
                             {/* Row 1: Search and Main Actions */}
-                            <div className="flex gap-2 items-end">
-                                <div className="flex-1">
-                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">{baseData === 'statistik' ? 'Cari Provinsi / Jenis' : 'Cari Riset'}</label>
+                            <div className="flex flex-col sm:flex-row gap-3 items-end">
+                                <div className="w-full flex-1">
+                                    <label className="block text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                                        {baseData === 'statistik' ? 'Cari Provinsi / Jenis' : 'Cari Riset'}
+                                    </label>
                                     <input
                                         value={search}
                                         onChange={(e) => setSearch(e.target.value)}
                                         placeholder={baseData === 'statistik' ? 'Cari provinsi atau jenis...' : 'Cari judul, peneliti / pengusul...'}
-                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                        className="w-full px-4 py-1.5 sm:py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                     />
                                 </div>
-                                <button type="submit" className="px-5 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm">
-                                    Cari
-                                </button>
-                                {(filters.search || filters.batch_type || Object.values(columnFilters).some(v => v)) && (
-                                    <Link
-                                        href={route('admin.permasalahan.index', { baseData, jenis })}
-                                        onClick={() => setBatchType('')}
-                                        className="px-5 py-1.5 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 font-medium transition-colors text-sm"
-                                    >
-                                        Reset
-                                    </Link>
-                                )}
+                                <div className="flex gap-2 w-full sm:w-auto">
+                                    <button type="submit" className="flex-1 sm:flex-none px-5 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold text-sm transition-all active:scale-95 shadow-sm shadow-blue-100">
+                                        Cari
+                                    </button>
+                                    {(filters.search || filters.batch_type || Object.values(columnFilters).some(v => v)) && (
+                                        <Link
+                                            href={route('admin.permasalahan.index', { baseData, jenis })}
+                                            onClick={() => setBatchType('')}
+                                            className="flex-1 sm:flex-none px-5 py-1.5 sm:py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-bold transition-colors text-sm text-center"
+                                        >
+                                            Reset
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Row 2: Secondary Filters */}
-                            <div className="flex gap-4 items-end flex-wrap border-t border-slate-100 pt-3">
-                                <div className="w-[180px]">
-                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Base Data</label>
+                            <div className="flex gap-4 items-end flex-wrap border-t border-slate-100 pt-4">
+                                <div className="w-fit min-w-[140px] sm:min-w-[200px]">
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Base Data</label>
                                     <select
                                         value={baseData}
                                         onChange={handleBaseDataChange}
-                                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
                                     >
                                         <option value="statistik">Data Statistik (Raw)</option>
                                         <option value="penelitian">Data Penelitian</option>
@@ -417,10 +338,10 @@ export default function Index({
                                         <option value="hilirisasi">Data Hilirisasi</option>
                                     </select>
                                 </div>
-                                
+
                                 {baseData === 'pengabdian' && (
-                                    <div className="w-[180px]">
-                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Jenis Pengabdian</label>
+                                    <div className="w-fit min-w-[140px] sm:min-w-[200px]">
+                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Jenis Pengabdian</label>
                                         <select
                                             value={batchType}
                                             onChange={(e) => {
@@ -429,7 +350,7 @@ export default function Index({
                                                     search, perPage, baseData, jenis, batch_type: e.target.value, sort, direction, tab: activeTab
                                                 }, { preserveState: true, replace: true });
                                             }}
-                                            className="w-full px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                                            className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
                                         >
                                             <option value="Multitahun Lanjutan, Batch I & Batch II">Multitahun Lanjutan, Batch I & Batch II</option>
                                             <option value="Kosabangsa">Kosabangsa</option>
@@ -437,12 +358,12 @@ export default function Index({
                                     </div>
                                 )}
 
-                                <div className="w-[180px]">
-                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Tipe Permasalahan</label>
+                                <div className="w-fit min-w-[140px] sm:min-w-[180px]">
+                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tipe Permasalahan</label>
                                     <select
                                         value={jenis}
                                         onChange={handleJenisChange}
-                                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
                                     >
                                         <option value="Sampah">Sampah</option>
                                         <option value="Stunting">Stunting</option>
@@ -471,12 +392,12 @@ export default function Index({
                                     </div>
                                 )}
 
-                                <div className="w-[120px] ml-auto">
-                                    <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Per halaman</label>
+                                <div className="w-fit sm:ml-auto flex items-center gap-2">
+                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">Per halaman</span>
                                     <select
                                         value={perPage}
                                         onChange={handlePerPageChange}
-                                        className="w-full px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm"
+                                        className="w-fit px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
                                     >
                                         <option value={20}>20</option>
                                         <option value={50}>50</option>
@@ -493,13 +414,13 @@ export default function Index({
                             <div className="flex gap-1 bg-slate-100 p-1 rounded-lg w-fit mb-6">
                                 <button
                                     onClick={() => handleTabChange('provinsi')}
-                                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'provinsi' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${activeTab === 'provinsi' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                 >
                                     Provinsi
                                 </button>
                                 <button
                                     onClick={() => handleTabChange('kabupaten')}
-                                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'kabupaten' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${activeTab === 'kabupaten' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                 >
                                     Kabupaten/Kota
                                 </button>
@@ -536,8 +457,8 @@ export default function Index({
                                             }
                                             data={permasalahanProvinsi.data || []}
                                         />
-                                        <div className="mt-3 text-sm text-slate-600">
-                                            <span className="font-semibold">Sumber Data:</span> {sumberText}
+                                        <div className="mt-3 text-sm text-slate-600 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                            <span className="font-bold text-slate-700">Sumber Data:</span> {sumberText}
                                         </div>
                                         <Pagination data={permasalahanProvinsi} />
                                     </>
@@ -568,8 +489,8 @@ export default function Index({
                                             }
                                             data={permasalahanKabupaten.data || []}
                                         />
-                                        <div className="mt-3 text-sm text-slate-600">
-                                            <span className="font-semibold">Sumber Data:</span> {sumberText}
+                                        <div className="mt-3 text-sm text-slate-600 p-2 bg-slate-50 rounded-lg border border-slate-100">
+                                            <span className="font-bold text-slate-700">Sumber Data:</span> {sumberText}
                                         </div>
                                         <Pagination data={permasalahanKabupaten} />
                                     </>
@@ -585,12 +506,12 @@ export default function Index({
                                     onFilterChange={handleColumnFilterChange}
                                     sort={{ key: filters.sort, direction: filters.direction }}
                                     columns={[
-                                        { key: 'no', title: 'No', className: 'w-16 text-center' },
-                                        { key: 'judul', title: 'Judul Riset', sortable: true, className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-sm leading-relaxed" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
-                                        { key: 'peneliti', title: 'Peneliti / Pengusul', sortable: true, className: 'min-w-[180px]', render: (_, item) => getVal(item, 'peneliti') },
-                                        { key: 'institusi', title: 'Institusi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <div className="truncate" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
+                                        { key: 'no', title: 'No', className: 'w-12 text-center' },
+                                        { key: 'judul', title: 'Judul Riset', sortable: true, className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-xs sm:text-sm leading-relaxed" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
+                                        { key: 'peneliti', title: 'Peneliti / Pengusul', sortable: true, className: 'min-w-[180px]', render: (_, item) => <div className="text-xs sm:text-sm">{getVal(item, 'peneliti')}</div> },
+                                        { key: 'institusi', title: 'Institusi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <div className="truncate text-xs sm:text-sm" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
                                         { key: 'provinsi', title: 'Provinsi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <Badge color="blue">{getVal(item, 'provinsi')}</Badge> },
-                                        { key: 'tahun', title: 'Tahun', sortable: true, className: 'min-w-[160px] text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
+                                        { key: 'tahun', title: 'Tahun', sortable: true, className: 'min-w-[100px] text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
                                     ]}
                                     data={(data.data || []).map((item, index) => ({
                                         ...item,
@@ -611,18 +532,25 @@ export default function Index({
 function Pagination({ data }) {
     if ((data.last_page || 1) <= 1) return null;
     return (
-        <div className="pt-6 flex items-center justify-between">
-            <div className="text-sm text-slate-600">Menampilkan {data.from?.toLocaleString('id-ID')} - {data.to?.toLocaleString('id-ID')} dari {data.total?.toLocaleString('id-ID')} data</div>
-            <div className="flex gap-2">
-                {(data.links || []).map((link, index) => (
-                    <Link
-                        key={index}
-                        href={link.url || '#'}
-                        className={`px-3 py-1 rounded text-sm ${link.active ? 'bg-blue-600 text-white font-semibold' : link.url ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-slate-50 text-slate-400 cursor-not-allowed'}`}
-                        dangerouslySetInnerHTML={{ __html: link.label }}
-                        preserveScroll={true}
-                    />
-                ))}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-slate-600 text-center sm:text-left">
+                Menampilkan {data.from?.toLocaleString('id-ID')} - {data.to?.toLocaleString('id-ID')} dari {data.total?.toLocaleString('id-ID')} data
+            </div>
+            <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+                {(data.links || []).map((link, index) => {
+                    let label = link.label;
+                    if (label.includes('Previous')) label = '&laquo;';
+                    if (label.includes('Next')) label = '&raquo;';
+                    return (
+                        <Link
+                            key={index}
+                            href={link.url || '#'}
+                            className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded transition-colors ${link.active ? 'bg-blue-600 text-white font-semibold shadow-sm' : link.url ? 'bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-100' : 'bg-white text-slate-300 border border-slate-100 cursor-not-allowed pointer-events-none'}`}
+                            dangerouslySetInnerHTML={{ __html: label }}
+                            preserveScroll={true}
+                        />
+                    );
+                })}
             </div>
         </div>
     );

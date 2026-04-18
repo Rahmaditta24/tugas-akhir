@@ -45,8 +45,8 @@ class FasilitasLabController extends Controller
 
         // Whitelisted sorting and pagination
         $allowedSorts = ['id', 'nama_laboratorium', 'institusi', 'provinsi', 'total_jumlah_alat'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'nama_laboratorium';
-        $direction = $request->get('direction') === 'desc' ? 'desc' : 'asc';
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
+        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
         $perPage = (int) $request->get('perPage', 20);
         if ($perPage < 10) { $perPage = 10; }
         if ($perPage > 100) { $perPage = 100; }
@@ -105,6 +105,9 @@ class FasilitasLabController extends Controller
             'kontak' => ['nullable', 'string', 'max:50'],
         ]);
 
+        $validated['nama_alat'] = $this->formatNumbered($validated['nama_alat'] ?? null);
+        $validated['deskripsi_alat'] = $this->formatNumbered($validated['deskripsi_alat'] ?? null);
+
         FasilitasLab::create($validated);
         $this->clearModuleCache();
         return redirect()->route('admin.fasilitas-lab.index')->with('success', 'Data fasilitas lab berhasil ditambahkan');
@@ -116,6 +119,28 @@ class FasilitasLabController extends Controller
             'item' => $fasilitasLab,
             'filters' => $request->only(['page', 'search', 'perPage', 'filters', 'sort', 'direction'])
         ]);
+    }
+
+    private function formatNumbered($text) {
+        if (empty($text) || strtolower($text) === 'null') return null;
+        $items = preg_split('/[\r\n;\|]+/', $text);
+        
+        $cleaned = [];
+        foreach ($items as $item) {
+            $item = preg_replace('/^\d+[\.\)]\s*/', '', trim($item));
+            if ($item !== '') {
+                $cleaned[] = $item;
+            }
+        }
+        
+        if (count($cleaned) === 0) return null;
+        
+        $numbered = [];
+        foreach ($cleaned as $i => $item) {
+            $numbered[] = ($i + 1) . ". " . $item;
+        }
+        
+        return implode("\n", $numbered);
     }
 
     public function update(Request $request, FasilitasLab $fasilitasLab)
@@ -135,6 +160,9 @@ class FasilitasLabController extends Controller
             'kontak' => ['nullable', 'string', 'max:50'],
         ]);
 
+        $validated['nama_alat'] = $this->formatNumbered($validated['nama_alat'] ?? null);
+        $validated['deskripsi_alat'] = $this->formatNumbered($validated['deskripsi_alat'] ?? null);
+
         $fasilitasLab->update($validated);
         $this->clearModuleCache();
         return redirect()->route('admin.fasilitas-lab.index', $request->only(['page', 'search', 'perPage', 'filters', 'sort', 'direction']))
@@ -146,6 +174,51 @@ class FasilitasLabController extends Controller
         $fasilitasLab->delete();
         $this->clearModuleCache();
         return back()->with('success', 'Data dihapus');
+    }
+
+    public function bulkUpdate(Request $request)
+    {
+        $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.id' => 'required|exists:fasilitas_lab,id'
+        ]);
+
+        $count = 0;
+        foreach ($request->items as $itemData) {
+            $fasilitasLab = FasilitasLab::find($itemData['id']);
+            if ($fasilitasLab) {
+                // Standardize province if present
+                if (isset($itemData['provinsi'])) {
+                    $val = trim($itemData['provinsi']);
+                    $val = str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower($val)));
+                    $itemData['provinsi'] = $val;
+                }
+                if (isset($itemData['nama_alat'])) {
+                    $itemData['nama_alat'] = $this->formatNumbered($itemData['nama_alat']);
+                }
+                if (isset($itemData['deskripsi_alat'])) {
+                    $itemData['deskripsi_alat'] = $this->formatNumbered($itemData['deskripsi_alat']);
+                }
+                $fasilitasLab->update($itemData);
+                $count++;
+            }
+        }
+
+        $this->clearModuleCache();
+        return back()->with('success', "{$count} data fasilitas lab berhasil diperbarui.");
+    }
+
+    public function getProvinces()
+    {
+        return response()->json([
+            'Aceh', 'Sumatera Utara', 'Sumatera Barat', 'Riau', 'Kepulauan Riau',
+            'Jambi', 'Sumatera Selatan', 'Bengkulu', 'Lampung', 'Kepulauan Bangka Belitung',
+            'Banten', 'DKI Jakarta', 'Jawa Barat', 'Jawa Tengah', 'DI Yogyakarta',
+            'Jawa Timur', 'Bali', 'Nusa Tenggara Barat', 'Nusa Tenggara Timur',
+            'Kalimantan Barat', 'Kalimantan Tengah', 'Kalimantan Selatan', 'Kalimantan Timur', 'Kalimantan Utara',
+            'Sulawesi Utara', 'Gorontalo', 'Sulawesi Tengah', 'Sulawesi Barat', 'Sulawesi Selatan', 'Sulawesi Tenggara',
+            'Maluku', 'Maluku Utara', 'Papua', 'Papua Barat', 'Papua Barat Daya', 'Papua Selatan', 'Papua Tengah', 'Papua Pegunungan'
+        ]);
     }
 
     public function bulkDestroy(Request $request)
@@ -205,11 +278,25 @@ class FasilitasLabController extends Controller
 
             $query->orderBy('nama_laboratorium', 'asc')->chunk(1000, function($data) use($file) {
                 foreach ($data as $row) {
+                    $clean = function($val) {
+                        if ($val === null) return '';
+                        return str_replace(["\r", "\n"], ' ', (string)$val);
+                    };
+
                     fputcsv($file, [
-                        $row->id, $row->nama_laboratorium, $row->institusi,
-                        $row->kode_universitas, $row->kategori_pt, $row->provinsi,
-                        $row->kota, $row->total_jumlah_alat, $row->nama_alat,
-                        $row->kontak, $row->latitude, $row->longitude, $row->deskripsi_alat
+                        $row->id, 
+                        $clean($row->nama_laboratorium), 
+                        $clean($row->institusi),
+                        $clean($row->kode_universitas), 
+                        $clean($row->kategori_pt), 
+                        $clean($row->provinsi),
+                        $clean($row->kota), 
+                        $row->total_jumlah_alat, 
+                        $clean($row->nama_alat),
+                        $clean($row->kontak), 
+                        $row->latitude, 
+                        $row->longitude, 
+                        $clean($row->deskripsi_alat)
                     ]);
                 }
             });
@@ -283,13 +370,13 @@ class FasilitasLabController extends Controller
                 'institusi' => $institusi,
                 'kode_universitas' => $normalizedRow['kodeuniversitas'] ?? $normalizedRow['kodept'] ?? null,
                 'kategori_pt' => $normalizedRow['kategoript'] ?? '-',
-                'provinsi' => $normalizedRow['provinsi'] ?? '-',
+                'provinsi' => trim(str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower(trim($normalizedRow['provinsi'] ?? 'tidak tersedia'))))),
                 'kota' => $normalizedRow['kota'] ?? '-',
                 'total_jumlah_alat' => (int)($normalizedRow['totaljumlahalat'] ?? $normalizedRow['jumlahalat'] ?? 0),
                 'nama_alat' => $normalizedRow['namaalat'] ?? null,
                 'kontak' => $normalizedRow['kontak'] ?? null,
-                'latitude' => $normalizedRow['latitude'] ?? -6.2,
-                'longitude' => $normalizedRow['longitude'] ?? 106.8,
+                'latitude' => (float)($normalizedRow['latitude'] ?? -6.2),
+                'longitude' => (float)($normalizedRow['longitude'] ?? 106.8),
                 'deskripsi_alat' => $normalizedRow['deskripsialat'] ?? $normalizedRow['deskripsi'] ?? null,
             ];
 

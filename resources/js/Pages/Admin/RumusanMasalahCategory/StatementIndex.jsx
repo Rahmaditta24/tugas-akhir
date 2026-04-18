@@ -97,46 +97,48 @@ export default function StatementIndex({ category, statements }) {
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 bg-white border-b border-gray-200">
 
-                            <div className="flex justify-between items-center mb-6">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900">{category.order_number}. {category.name}</h2>
-                                    <p className="text-gray-500 text-sm mt-1">Daftar statement pada kategori ini.</p>
+                                    <h2 className="text-lg sm:text-2xl font-bold text-gray-900 leading-tight">
+                                        {category.order_number}. {category.name}
+                                    </h2>
+                                    <p className="text-gray-500 text-xs sm:text-sm mt-1">Daftar statement pada kategori ini.</p>
                                 </div>
                                 <button
                                     onClick={openCreateModal}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded shadow-sm transition-colors text-sm"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-4 rounded-lg shadow-sm transition-all text-xs sm:text-sm whitespace-nowrap active:scale-95"
                                 >
                                     Tambah Statement
                                 </button>
                             </div>
 
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto -mx-6 sm:mx-0">
                                 <table className="min-w-full text-left text-sm whitespace-nowrap">
-                                    <thead className="uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
+                                    <thead className="uppercase tracking-wider border-b border-gray-100 bg-gray-50/50 text-[10px] sm:text-xs">
                                         <tr>
-                                            <th scope="col" className="px-6 py-4 font-semibold text-gray-700">Nomor</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold text-gray-700">Judul</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold text-gray-700">Deskripsi</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold text-gray-700">Dibuat</th>
-                                            <th scope="col" className="px-6 py-4 font-semibold text-gray-700 text-center">Actions</th>
+                                            <th scope="col" className="px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-700">Nomor</th>
+                                            <th scope="col" className="px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-700">Judul</th>
+                                            <th scope="col" className="px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-700">Deskripsi</th>
+                                            <th scope="col" className="px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-700">Dibuat</th>
+                                            <th scope="col" className="px-4 sm:px-6 py-3 sm:py-4 font-semibold text-gray-700 text-center">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
                                         {statements.map((statement) => (
                                             <tr key={statement.id} className="hover:bg-gray-50 transition-colors">
-                                                <td className="px-6 py-4 font-medium text-gray-900">
+                                                <td className="px-4 sm:px-6 py-3 sm:py-4 font-medium text-gray-900">
                                                     {statement.full_number}
                                                 </td>
-                                                <td className="px-6 py-4 font-medium text-gray-900 max-w-xs truncate" title={statement.title}>
+                                                <td className="px-4 sm:px-6 py-3 sm:py-4 font-medium text-gray-900 max-w-[150px] sm:max-w-xs truncate" title={statement.title}>
                                                     {statement.title}
                                                 </td>
-                                                <td className="px-6 py-4 text-gray-500 max-w-md truncate" title={statement.description}>
+                                                <td className="px-4 sm:px-6 py-3 sm:py-4 text-gray-500 max-w-[200px] sm:max-w-md truncate" title={statement.description}>
                                                     {statement.description || '-'}
                                                 </td>
-                                                <td className="px-6 py-4 text-gray-500">
+                                                <td className="px-4 sm:px-6 py-3 sm:py-4 text-gray-500 text-xs">
                                                     {statement.created_at}
                                                 </td>
-                                                <td className="px-6 py-4 text-center">
+                                                <td className="px-4 sm:px-6 py-3 sm:py-4 text-center">
                                                     <div className="flex items-center justify-center space-x-2">
                                                         <button
                                                             className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"

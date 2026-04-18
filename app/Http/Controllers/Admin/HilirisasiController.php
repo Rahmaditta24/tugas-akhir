@@ -79,13 +79,31 @@ class HilirisasiController extends Controller
         return $formatted;
     }
 
+    private function formatProvinsi($name)
+    {
+        if (empty($name) || strtolower($name) === 'tidak tersedia') return 'tidak tersedia';
+        $name = trim($name);
+        if ($name === '') return 'tidak tersedia';
+
+        // Convert to Title Case
+        $formatted = mb_convert_case($name, MB_CASE_TITLE, "UTF-8");
+
+        // Special Fixes
+        $fixes = [
+            'Dki Jakarta' => 'DKI Jakarta',
+            'Di Yogyakarta' => 'DI Yogyakarta',
+        ];
+
+        return $fixes[$formatted] ?? $formatted;
+    }
+
     public function index(Request $request)
     {
         $query = Hilirisasi::query();
 
         // Whitelisted sorting and pagination
         $allowedSorts = ['id', 'judul', 'id_proposal', 'nama_pengusul', 'perguruan_tinggi', 'tahun', 'direktorat', 'provinsi', 'skema'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'tahun';
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
         $perPage = (int) $request->get('perPage', 20);
         if ($perPage < 10) { $perPage = 10; }
@@ -206,6 +224,8 @@ class HilirisasiController extends Controller
             'luaran' => ['required', 'string'],
         ]);
 
+        $validated['provinsi'] = $this->formatProvinsi($validated['provinsi'] ?? '');
+
         Hilirisasi::create($validated);
         $this->clearModuleCache();
         return redirect()->route('admin.hilirisasi.index')->with('success', 'Data hilirisasi berhasil ditambahkan');
@@ -269,6 +289,8 @@ class HilirisasiController extends Controller
             'luaran' => ['required', 'string'],
         ]);
 
+        $validated['provinsi'] = $this->formatProvinsi($validated['provinsi'] ?? '');
+
         $hilirisasi->update($validated);
         $this->clearModuleCache();
         return redirect()->route('admin.hilirisasi.index', $request->only(['page', 'search', 'perPage', 'filters', 'sort', 'direction']))
@@ -325,6 +347,8 @@ class HilirisasiController extends Controller
                     } else {
                         $updateData[$key] = (int)$value;
                     }
+                } else if ($key === 'provinsi') {
+                    $updateData[$key] = $this->formatProvinsi($value);
                 } else {
                     // normalize empty to "tidak tersedia" for text fields
                     if (in_array($key, ['id_proposal', 'provinsi', 'mitra', 'skema', 'direktorat', 'luaran'])) {
@@ -399,11 +423,25 @@ class HilirisasiController extends Controller
 
             $query->orderBy('tahun', 'desc')->chunk(1000, function($data) use($file) {
                 foreach ($data as $row) {
+                    $clean = function($val) {
+                        if ($val === null) return '';
+                        return str_replace(["\r", "\n"], ' ', (string)$val);
+                    };
+                    
                     fputcsv($file, [
-                        $row->id, $row->tahun, $row->id_proposal, $row->judul,
-                        $row->nama_pengusul, $row->direktorat, $row->perguruan_tinggi,
-                        $row->provinsi, $row->mitra, $row->skema, $row->luaran,
-                        $row->pt_latitude, $row->pt_longitude
+                        $row->id, 
+                        $row->tahun, 
+                        $clean($row->id_proposal), 
+                        $clean($row->judul),
+                        $clean($row->nama_pengusul), 
+                        $clean($row->direktorat), 
+                        $clean($row->perguruan_tinggi),
+                        $clean($row->provinsi), 
+                        $clean($row->mitra), 
+                        $clean($row->skema), 
+                        $clean($row->luaran),
+                        $row->pt_latitude, 
+                        $row->pt_longitude
                     ]);
                 }
             });
@@ -516,7 +554,7 @@ class HilirisasiController extends Controller
                     'direktorat' => $normalizedRow['direktorat'] ?? 'tidak tersedia',
                     'skema' => $normalizedRow['skema'] ?? 'tidak tersedia',
                     'mitra' => $normalizedRow['mitra'] ?? 'tidak tersedia',
-                    'provinsi' => $normalizedRow['provinsi'] ?? 'tidak tersedia',
+                    'provinsi' => $this->formatProvinsi($normalizedRow['provinsi'] ?? 'tidak tersedia'),
                     'pt_latitude' => $normalizedRow['ptlatitude'] ?? $normalizedRow['latitude'] ?? -6.2,
                     'pt_longitude' => $normalizedRow['ptlongitude'] ?? $normalizedRow['longitude'] ?? 106.8,
                     'id_proposal' => $normalizedRow['idproposal'] ?? '0',
@@ -538,6 +576,8 @@ class HilirisasiController extends Controller
             }
 
             if (count($batch) > 0) Hilirisasi::insert($batch);
+
+            $this->clearModuleCache();
 
             $message = "Import selesai: {$imported} baru, {$updated} diperbarui.";
             if (count($errors) > 0) {

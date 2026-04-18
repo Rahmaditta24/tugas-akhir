@@ -40,8 +40,8 @@ class ProdukController extends Controller
 
         // Whitelisted sorting
         $allowedSorts = ['id', 'nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten', 'detail_paten'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'nama_produk';
-        $direction = $request->get('direction') === 'desc' ? 'desc' : 'asc'; // default asc for names
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
+        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
 
         // Cache Versioning
         $v = Cache::get('produk_admin_v', 1);
@@ -68,7 +68,7 @@ class ProdukController extends Controller
                     return $v;
                 };
 
-                $item->provinsi = $clean($item->provinsi);
+                $item->provinsi = $this->formatProvinsi($clean($item->provinsi));
                 $item->bidang = $clean($item->bidang);
                 $item->nomor_paten = $clean($item->nomor_paten);
                 $item->detail_paten = $clean($item->detail_paten);
@@ -128,7 +128,7 @@ class ProdukController extends Controller
             'longitude' => ['required', 'numeric', 'between:-180,180'],
         ]);
 
-        $validated['provinsi'] = trim(str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower(trim($validated['provinsi'])))));
+        $validated['provinsi'] = $this->formatProvinsi($validated['provinsi'] ?? '');
 
         Produk::create($validated);
         $this->clearModuleCache();
@@ -323,37 +323,58 @@ class ProdukController extends Controller
         $filterLabel = ($request->filled('search') || $request->filled('filters')) ? '_filtered' : '';
         $filename = 'data-produk' . $filterLabel . '_' . date('Y-m-d') . '.csv';
 
-        $columns = ['ID', 'Nama Produk', 'Institusi', 'Bidang', 'TKT', 'Provinsi', 'Nama Inventor', 'Email Inventor', 'Nomor Paten', 'Deskripsi Paten', 'Latitude', 'Longitude', 'Deskripsi'];
+        // Defined columns in exact match to fputcsv order
+        $columns = [
+            'ID', 
+            'Nama Produk', 
+            'Deskripsi Produk', 
+            'Bidang', 
+            'TKT', 
+            'Institusi', 
+            'Provinsi', 
+            'Nama Inventor', 
+            'Email Inventor', 
+            'Nomor Paten', 
+            'Deskripsi Paten', 
+            'Latitude', 
+            'Longitude'
+        ];
 
         $callback = function () use ($columns, $query) {
             $file = fopen('php://output', 'w');
+            
+            // Add UTF-8 BOM
             fwrite($file, "\xEF\xBB\xBF");
-            fputcsv($file, $columns);
+            
+            // Use Semicolon (;) for Indonesian Excel compatibility
+            fputcsv($file, $columns, ';');
 
             $query->orderBy('nama_produk', 'asc')->chunk(1000, function ($data) use ($file) {
                 foreach ($data as $row) {
-                    // Clean Nomor Paten to show only the number
-                    $nomor_paten = trim(preg_split("/[;.\(\,\s]/", $row->nomor_paten ?? '')[0]);
+                    $clean = function($val) {
+                        if ($val === null) return '';
+                        return trim(str_replace(["\r", "\n", ";"], ' ', (string)$val));
+                    };
 
-                    // Clean newlines from description and patent number to prevent breaking CSV rows
-                    $nomor_paten = preg_replace("/\r|\n/", " ", $nomor_paten);
-                    $deskripsi = preg_replace("/\r|\n/", " ", $row->deskripsi_produk ?? '');
+                    // Format Lat/Long with comma for Indonesian Excel 
+                    $lat = str_replace('.', ',', (string)$row->latitude);
+                    $lng = str_replace('.', ',', (string)$row->longitude);
 
                     fputcsv($file, [
                         $row->id,
-                        $row->nama_produk,
-                        $row->institusi,
-                        $row->bidang,
+                        $clean($row->nama_produk),
+                        $clean($row->deskripsi_produk),
+                        $clean($row->bidang),
                         $row->tkt,
-                        $row->provinsi,
-                        $row->nama_inventor,
-                        $row->email_inventor,
-                        $row->nomor_paten,
-                        $row->detail_paten,
-                        $row->latitude,
-                        $row->longitude,
-                        $deskripsi
-                    ]);
+                        $clean($row->institusi),
+                        $clean($row->provinsi),
+                        $clean($row->nama_inventor),
+                        $clean($row->email_inventor),
+                        $clean($row->nomor_paten),
+                        $clean($row->detail_paten),
+                        $lat,
+                        $lng
+                    ], ';');
                 }
             });
             fclose($file);
@@ -406,66 +427,79 @@ class ProdukController extends Controller
 
             // Strict Header Validation
             if (!empty($request->data)) {
-                $firstRow = $request->data[0];
-                $foundKeys = array_map(function($k) {
-                    return strtolower(str_replace([' ', '/', '_'], '', $k));
-                }, array_keys($firstRow));
-
-                $required = ['institusi', 'namaproduksiapinvestasi'];
-                $missing = [];
-                foreach ($required as $req) {
-                      if (!in_array($req, $foundKeys)) {
-                         $missing[] = $req === 'namaproduksiapinvestasi' ? 'Nama Produk Siap Investasi' : 'Institusi';
-                      }
-                }
-                if (!empty($missing)) {
-                    return back()->with('error', 'Format file tidak sesuai! Kolom wajib tidak ditemukan: ' . implode(', ', $missing));
-                }
             }
 
             foreach ($request->data as $index => $row) {
                 $rowNum = $index + 1;
                 $normalizedRow = [];
                 foreach ($row as $k => $v) {
-                    $cleanKey = strtolower(str_replace([' ', '/', '_'], '', $k));
+                    $cleanKey = strtolower(preg_replace('/[^a-z0-9]/', '', (string)$k));
                     $normalizedRow[$cleanKey] = $v;
                 }
 
-                $namaProduk = trim($normalizedRow['namaproduksiapinvestasi'] ?? $normalizedRow['namaproduk'] ?? '');
-                $institusi = trim($normalizedRow['institusi'] ?? $normalizedRow['namainstitusi'] ?? '');
-                
-                if (empty($namaProduk) || empty($institusi)) continue;
+                $namaProduk = '';
+                $institusi = '';
+                $latRaw = '';
+                $lngRaw = '';
+                $provRaw = 'tidak tersedia';
+                $deskProdukRaw = 'tidak tersedia';
+                $tktRaw = 1;
+                $bidangRaw = 'tidak tersedia';
+                $inventorRaw = 'tidak tersedia';
+                $emailRaw = 'tidak tersedia';
+                $nomorPatenRaw = '';
+                $detailPatenRaw = '';
 
-                // Smart splitting for combined patent fields
-                $rawPaten = trim($normalizedRow['nomordandeskripsipaten'] ?? '');
-                $nomorPaten = trim($normalizedRow['nomorpaten'] ?? '');
-                $detailPaten = trim($normalizedRow['deskripsipaten'] ?? $normalizedRow['deskripsiprodukpaten'] ?? $normalizedRow['detailpaten'] ?? '');
-
-                if ($rawPaten && empty($nomorPaten) && empty($detailPaten)) {
-                    if (preg_match('/^(.*?)\.\s*(Diskripsi|Deskripsi):\s*(.*)$/i', $rawPaten, $matches)) {
-                        $nomorPaten = trim($matches[1]);
-                        $detailPaten = trim($matches[3]);
-                    } elseif (preg_match('/^(.*?),\s*(.*)$/', $rawPaten, $matches)) {
-                        $nomorPaten = trim($matches[1]);
-                        $detailPaten = trim($matches[2]);
-                    } else {
-                        $nomorPaten = $rawPaten;
+                // Broad keyword matching for each field
+                foreach ($normalizedRow as $slug => $val) {
+                    // Nama Produk
+                    if (str_contains($slug, 'namaproduk') || str_contains($slug, 'investasi') || str_contains($slug, 'produk')) {
+                        if (empty($namaProduk)) $namaProduk = trim((string)$val);
                     }
+                    // Institusi
+                    if (str_contains($slug, 'institusi') || str_contains($slug, 'universitas') || str_contains($slug, 'perguruan')) {
+                        if (empty($institusi)) $institusi = trim((string)$val);
+                    }
+                    // Coordinates
+                    if (str_contains($slug, 'latitude') || $slug === 'lat') $latRaw = $val;
+                    if (str_contains($slug, 'longitude') || $slug === 'lng' || $slug === 'long') $lngRaw = $val;
+                    // Other fields
+                    if (str_contains($slug, 'provinsi')) $provRaw = $val;
+                    if (str_contains($slug, 'deskripsiproduk') || $slug === 'deskripsi') $deskProdukRaw = $val;
+                    if (str_contains($slug, 'tkt') || str_contains($slug, 'tingkatkesiap')) $tktRaw = $val;
+                    if (str_contains($slug, 'bidang')) $bidangRaw = $val;
+                    if (str_contains($slug, 'namainventor') || str_contains($slug, 'inventor')) $inventorRaw = $val;
+                    if (str_contains($slug, 'email')) $emailRaw = $val;
+                    if (str_contains($slug, 'nomorpaten') || $slug === 'nopat') $nomorPatenRaw = $val;
+                    if (str_contains($slug, 'deskripsipaten') || str_contains($slug, 'detailpaten') || str_contains($slug, 'isipaten')) $detailPatenRaw = $val;
                 }
+                
+                if (empty($namaProduk) || empty($institusi)) {
+                    $keysFound = implode(', ', array_keys($normalizedRow));
+                    $missing = empty($namaProduk) ? 'Nama Produk' : 'Institusi';
+                    $errors[] = "Baris #{$rowNum}: Kolom '{$missing}' tidak ditemukan. Header terdeteksi: [{$keysFound}]";
+                    continue;
+                }
+                // Smart coordinate parsing (handles comma or dot)
+                $parseCoord = function($val, $default) {
+                    if (empty($val)) return $default;
+                    $val = str_replace(',', '.', (string)$val);
+                    return (float) $val;
+                };
 
                 $data = [
                     'nama_produk' => $namaProduk,
                     'institusi' => $institusi,
-                    'latitude' => (float) ($normalizedRow['latitude'] ?? -6.2),
-                    'longitude' => (float) ($normalizedRow['longitude'] ?? 106.8),
-                    'provinsi' => trim(str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower(trim($normalizedRow['provinsi'] ?? 'tidak tersedia'))))),
-                    'deskripsi_produk' => trim($normalizedRow['deskripsiproduk'] ?? 'tidak tersedia'),
-                    'tkt' => (int) ($normalizedRow['tingkatkesiapterapanteknologitkt'] ?? $normalizedRow['tkt'] ?? 1),
-                    'bidang' => trim($normalizedRow['bidang'] ?? 'tidak tersedia'),
-                    'nama_inventor' => trim($normalizedRow['namainventortanpagelar'] ?? $normalizedRow['namainventor'] ?? 'tidak tersedia'),
-                    'email_inventor' => trim($normalizedRow['emailinventor'] ?? 'tidak tersedia'),
-                    'nomor_paten' => $nomorPaten ?: 'tidak tersedia',
-                    'detail_paten' => $detailPaten ?: 'tidak tersedia',
+                    'latitude' => $parseCoord($latRaw, -6.2),
+                    'longitude' => $parseCoord($lngRaw, 106.8),
+                    'provinsi' => $this->formatProvinsi($provRaw),
+                    'deskripsi_produk' => trim($deskProdukRaw),
+                    'tkt' => (int) $tktRaw,
+                    'bidang' => trim($bidangRaw),
+                    'nama_inventor' => trim($inventorRaw),
+                    'email_inventor' => trim($emailRaw),
+                    'nomor_paten' => $nomorPatenRaw ?: 'tidak tersedia',
+                    'detail_paten' => $detailPatenRaw ?: 'tidak tersedia',
                 ];
 
                 $batch[] = $data;
@@ -491,6 +525,21 @@ class ProdukController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan sistem saat import: ' . $e->getMessage());
         }
+    }
+
+    private function formatProvinsi($name)
+    {
+        if (empty($name) || strtolower($name) === 'tidak tersedia' || strtolower($name) === 'null') return 'tidak tersedia';
+        $name = trim($name);
+        if ($name === '') return 'tidak tersedia';
+
+        $formatted = mb_convert_case($name, MB_CASE_TITLE, "UTF-8");
+        $fixes = [
+            'Dki Jakarta' => 'DKI Jakarta',
+            'Di Yogyakarta' => 'DI Yogyakarta',
+        ];
+
+        return $fixes[$formatted] ?? $formatted;
     }
 
     public function getProvinces()

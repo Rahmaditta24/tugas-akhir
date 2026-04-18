@@ -192,15 +192,24 @@ class PermasalahanController extends Controller
         }
 
         $v = Cache::get('permasalahan_admin_v', 1);
-        $statsHash = md5(json_encode([$baseData, $jenis, $batch_type, $search, $columnFilters]));
+        $statsHash = md5(json_encode(['fullStats', $baseData, $jenis, $batch_type, $search, $columnFilters]));
         
-        $total = Cache::remember("perm_adm_count_v{$v}_{$statsHash}", 3600, function() use ($query) {
-            return $query->count();
+        $stats = Cache::remember("perm_adm_fullstats_v{$v}_{$statsHash}", 3600, function() use ($query, $baseData) {
+            $q = clone $query;
+            $distinctCol = match($baseData) { 'penelitian' => 'institusi', 'pengabdian' => 'nama_institusi', default => 'perguruan_tinggi' };
+            $provCol = ($baseData === 'pengabdian') ? 'prov_pt' : 'provinsi';
+            
+            $res = $q->selectRaw("COUNT(*) as total, COUNT(DISTINCT {$distinctCol}) as totalInstitusi, COUNT(DISTINCT {$provCol}) as totalProvinsi")->first();
+            return [
+                'total' => (int)($res->total ?? 0),
+                'totalInstitusi' => (int)($res->totalInstitusi ?? 0),
+                'totalProvinsi' => (int)($res->totalProvinsi ?? 0),
+            ];
         });
 
         $results = new LengthAwarePaginator(
             $query->orderBy($sort, $direction)->offset(($request->get('page', 1) - 1) * $perPage)->limit($perPage)->get(),
-            $total,
+            $stats['total'],
             $perPage,
             $request->get('page', 1),
             ['path' => $request->url(), 'query' => $request->query()]
@@ -213,7 +222,7 @@ class PermasalahanController extends Controller
                 'baseData' => $baseData, 'jenis' => $jenis, 'batch_type' => $batch_type,
                 'listrikMode' => $request->get('listrikMode', 'SAIDI'), 'columns' => $columnFilters,
             ],
-            'stats' => [],
+            'stats' => $stats,
         ]);
     }
 
@@ -406,6 +415,7 @@ class PermasalahanController extends Controller
         $v = $request->validate(['type' => 'required', 'provinsi' => 'nullable', 'kabupaten_kota' => 'nullable', 'jenis_permasalahan' => 'required', 'nilai' => 'nullable', 'satuan' => 'nullable', 'metrik' => 'nullable', 'tahun' => 'nullable']);
         if ($v['type'] === 'provinsi') PermasalahanProvinsi::create($v);
         else PermasalahanKabupaten::create($v);
+        $this->clearModuleCache();
         return redirect()->route('admin.permasalahan.index')->with('success', 'Data ditambahkan');
     }
 
@@ -422,6 +432,7 @@ class PermasalahanController extends Controller
         $v = $request->validate(['type' => 'required', 'provinsi' => 'nullable', 'kabupaten_kota' => 'nullable', 'jenis_permasalahan' => 'required', 'nilai' => 'nullable', 'satuan' => 'nullable', 'metrik' => 'nullable', 'tahun' => 'nullable']);
         $p = ($v['type'] === 'provinsi') ? PermasalahanProvinsi::findOrFail($id) : PermasalahanKabupaten::findOrFail($id);
         $p->update($v);
+        $this->clearModuleCache();
         return redirect()->route('admin.permasalahan.index')->with('success', 'Data diperbarui');
     }
 
@@ -483,6 +494,8 @@ class PermasalahanController extends Controller
             $imported++;
         }
 
+        $this->clearModuleCache();
+
         if (count($errors) > 0) {
             $msg = "Import selesai: {$imported} data berhasil, " . count($errors) . " baris gagal.";
             $errorDetail = implode('; ', array_slice($errors, 0, 2));
@@ -497,6 +510,7 @@ class PermasalahanController extends Controller
         $type = $request->get('type', 'provinsi');
         $p = ($type === 'provinsi') ? PermasalahanProvinsi::findOrFail($id) : PermasalahanKabupaten::findOrFail($id);
         $p->delete();
+        $this->clearModuleCache();
         return back()->with('success', 'Data dihapus');
     }
 
@@ -529,5 +543,20 @@ class PermasalahanController extends Controller
             }
         }
         return back()->with('success', "Import selesai: {$imported} baris diperbarui.");
+    }
+
+    private function clearModuleCache()
+    {
+        $v = (int) Cache::get('permasalahan_admin_v', 1);
+        Cache::put('permasalahan_admin_v', $v + 1, 86400 * 30);
+        
+        // Also clear JSON cache if relevant
+        $jenisList = ['sampah', 'stunting', 'gizi_buruk', 'krisis_listrik', 'ketahanan_pangan'];
+        foreach ($jenisList as $j) {
+            Cache::forget("permasalahan_json_{$j}");
+            Cache::forget("perm_adm_fullstats_v{$v}_{$j}"); // although hash might vary
+        }
+        
+        Cache::forget('admin_dashboard_stats');
     }
 }

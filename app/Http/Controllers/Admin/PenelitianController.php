@@ -144,6 +144,21 @@ class PenelitianController extends Controller
         return $formatted;
     }
 
+    private function formatProvinsi($name)
+    {
+        if (empty($name) || strtolower($name) === 'tidak tersedia') return 'tidak tersedia';
+        $name = trim($name);
+        if ($name === '') return 'tidak tersedia';
+
+        $formatted = mb_convert_case($name, MB_CASE_TITLE, "UTF-8");
+        $fixes = [
+            'Dki Jakarta' => 'DKI Jakarta',
+            'Di Yogyakarta' => 'DI Yogyakarta',
+        ];
+
+        return $fixes[$formatted] ?? $formatted;
+    }
+
     public function index(Request $request)
     {
         $query = Penelitian::query();
@@ -204,7 +219,7 @@ class PenelitianController extends Controller
 
         // Whitelisted sorting and pagination
         $allowedSorts = ['id', 'nama', 'nidn', 'institusi', 'judul', 'skema', 'thn_pelaksanaan', 'bidang_fokus', 'tema_prioritas', 'provinsi'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'thn_pelaksanaan';
+        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
 
         // Cache Versioning for instant invalidation
@@ -314,8 +329,10 @@ class PenelitianController extends Controller
             'skema' => ['required', 'string'],
             'thn_pelaksanaan' => ['required', 'integer'],
             'bidang_fokus' => ['nullable', 'string'],
-            'tema_prioritas' => ['nullable', 'string'],
+            'tema_prioritas' => 'nullable|string',
         ]);
+
+        $validated['provinsi'] = $this->formatProvinsi($validated['provinsi'] ?? '');
 
         Penelitian::create($validated);
         $this->clearModuleCache();
@@ -367,7 +384,7 @@ class PenelitianController extends Controller
             'kategori_pt' => empty($request->kategori_pt) ? '-' : $request->kategori_pt,
             'institusi_pilihan' => empty($request->institusi_pilihan) ? '-' : $request->institusi_pilihan,
             'klaster' => empty($request->klaster) ? '-' : $request->klaster,
-            'provinsi' => empty($request->provinsi) ? '-' : $request->provinsi,
+            'provinsi' => $this->formatProvinsi($request->provinsi ?? '-'),
             'kota' => empty($request->kota) ? '-' : $request->kota,
             'skema' => empty($request->skema) ? '-' : $request->skema,
             'bidang_fokus' => empty($request->bidang_fokus) ? '-' : $request->bidang_fokus,
@@ -421,11 +438,20 @@ class PenelitianController extends Controller
                 // Normalisasi NIDN/NUPTK/Kode PT
                 if (in_array($key, ['nidn', 'nuptk', 'kode_pt'])) {
                     $updateData[$key] = $this->normalizeNumeric($value);
-                } elseif (in_array($key, ['pt_latitude', 'pt_longitude'])) {
-                    if ($value === null || $value === '') continue;
-                    $value = str_replace(',', '.', $value);
-                    if (!is_numeric($value)) continue;
-                    $updateData[$key] = (float)$value;
+                } else if (in_array($key, ['pt_latitude', 'pt_longitude'])) {
+                    if ($value === null || $value === '' || !is_numeric(str_replace(',', '.', $value))) {
+                        $updateData[$key] = 0;
+                    } else {
+                        $updateData[$key] = (float)str_replace(',', '.', $value);
+                    }
+                } else if ($key === 'thn_pelaksanaan') {
+                    if ($value === null || $value === '' || !is_numeric($value)) {
+                        $updateData[$key] = 0;
+                    } else {
+                        $updateData[$key] = (int)$value;
+                    }
+                } else if ($key === 'provinsi') {
+                    $updateData[$key] = $this->formatProvinsi($value);
                 } else {
                     $updateData[$key] = $value;
                 }
@@ -537,24 +563,29 @@ class PenelitianController extends Controller
 
             $query->orderBy('thn_pelaksanaan', 'desc')->chunk(1000, function ($data) use ($file) {
                 foreach ($data as $row) {
+                    $clean = function($val) {
+                        if ($val === null) return '';
+                        return str_replace(["\r", "\n"], ' ', (string)$val);
+                    };
+
                     fputcsv($file, [
                         $row->id,
-                        $row->nama,
-                        $row->nidn,
-                        $row->nuptk,
-                        $row->institusi,
-                        $row->jenis_pt,
-                        $row->kategori_pt,
-                        $row->klaster,
-                        $row->provinsi,
-                        $row->kota,
+                        $clean($row->nama),
+                        $clean($row->nidn),
+                        $clean($row->nuptk),
+                        $clean($row->institusi),
+                        $clean($row->jenis_pt),
+                        $clean($row->kategori_pt),
+                        $clean($row->klaster),
+                        $clean($row->provinsi),
+                        $clean($row->kota),
                         $row->pt_latitude,
                         $row->pt_longitude,
-                        $row->judul,
-                        $row->skema,
+                        $clean($row->judul),
+                        $clean($row->skema),
                         $row->thn_pelaksanaan,
-                        $row->bidang_fokus,
-                        $row->tema_prioritas
+                        $clean($row->bidang_fokus),
+                        $clean($row->tema_prioritas)
                     ]);
                 }
             });
@@ -715,7 +746,7 @@ class PenelitianController extends Controller
                     'kategori_pt' => !empty($normalizedRow['kategoript']) ? $normalizedRow['kategoript'] : '-',
                     'institusi_pilihan' => !empty($normalizedRow['institusipilihan']) ? $normalizedRow['institusipilihan'] : (!empty($normalizedRow['institusipenerima']) ? $normalizedRow['institusipenerima'] : '-'),
                     'klaster' => !empty($normalizedRow['klaster']) ? $normalizedRow['klaster'] : '-',
-                    'provinsi' => !empty($normalizedRow['provinsi']) ? $normalizedRow['provinsi'] : '-',
+                    'provinsi' => $this->formatProvinsi($normalizedRow['provinsi'] ?? 'tidak tersedia'),
                     'kota' => !empty($normalizedRow['kota']) ? $normalizedRow['kota'] : '-',
                     'pt_latitude' => !empty($normalizedRow['ptlatitude']) ? $normalizedRow['ptlatitude'] : (!empty($normalizedRow['latitude']) ? $normalizedRow['latitude'] : -6.2),
                     'pt_longitude' => !empty($normalizedRow['ptlongitude']) ? $normalizedRow['ptlongitude'] : (!empty($normalizedRow['longitude']) ? $normalizedRow['longitude'] : 106.8),

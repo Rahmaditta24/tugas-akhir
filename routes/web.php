@@ -58,6 +58,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('pengabdian/export-csv', [\App\Http\Controllers\Admin\PengabdianController::class, 'exportCsv'])->name('pengabdian.export-csv');
     Route::get('pengabdian/export-json', [\App\Http\Controllers\Admin\PengabdianController::class, 'exportJson'])->name('pengabdian.export-json');
     Route::post('pengabdian/bulk-destroy', [\App\Http\Controllers\Admin\PengabdianController::class, 'bulkDestroy'])->name('pengabdian.bulk-destroy');
+    Route::post('pengabdian/bulk-update', [\App\Http\Controllers\Admin\PengabdianController::class, 'bulkUpdate'])->name('pengabdian.bulk-update');
     Route::resource('pengabdian', \App\Http\Controllers\Admin\PengabdianController::class);
 
     // Hilirisasi CRUD
@@ -82,6 +83,8 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('fasilitas-lab/export-csv', [\App\Http\Controllers\Admin\FasilitasLabController::class, 'exportCsv'])->name('fasilitas-lab.export-csv');
     Route::get('fasilitas-lab/export-json', [\App\Http\Controllers\Admin\FasilitasLabController::class, 'exportJson'])->name('fasilitas-lab.export-json');
     Route::post('fasilitas-lab/bulk-destroy', [\App\Http\Controllers\Admin\FasilitasLabController::class, 'bulkDestroy'])->name('fasilitas-lab.bulk-destroy');
+    Route::post('fasilitas-lab/bulk-update', [\App\Http\Controllers\Admin\FasilitasLabController::class, 'bulkUpdate'])->name('fasilitas-lab.bulk-update');
+    Route::get('fasilitas-lab/provinces', [\App\Http\Controllers\Admin\FasilitasLabController::class, 'getProvinces'])->name('fasilitas-lab.provinces');
     Route::resource('fasilitas-lab', \App\Http\Controllers\Admin\FasilitasLabController::class);
 
     // Permasalahan CRUD

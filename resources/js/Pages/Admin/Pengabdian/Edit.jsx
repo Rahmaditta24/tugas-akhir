@@ -197,7 +197,7 @@ export default function Edit({ item, filters }) {
                                                 onChange={e => setData('ptn_pts', e.target.value)}
                                                 className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-white"
                                             >
-                                                <option value="">-ilih-</option>
+                                                <option value="">---Pilih---</option>
                                                 <option value="PTN">PTN</option>
                                                 <option value="PTS">PTS</option>
                                             </select>
