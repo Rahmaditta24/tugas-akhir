@@ -41,7 +41,7 @@ class PermasalahanController extends Controller
         $direction = $request->get('direction', 'asc');
 
         $normalizedJenis = strtolower(str_replace(' ', '_', $jenis));
-        $baseDir = realpath(base_path('..'.DIRECTORY_SEPARATOR.'peta-bima'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'permasalahan'));
+        $baseDir = realpath(base_path('database/data'));
         $rows = [];
         $kabRows = [];
 
