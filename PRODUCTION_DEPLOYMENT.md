@@ -1,18 +1,86 @@
 # 🚀 Production Deployment Checklist
 
 ## Problem Summary
-- Production code LAMA masih pakai `www.emsifa.com` (HTTP)
-- Local code BARU sudah pakai `emsifa.github.io` (HTTPS)
-- Error: `cURL error 7: Failed to connect to www.emsifa.com port 80`
+- ❌ Original API `emsifa.github.io` redirects to `www.emsifa.com`
+- ❌ Production firewall blocks all external connections
+- ❌ Error: `cURL error 7: Failed to connect to www.emsifa.com port 80`
+- ✅ **SOLUTION**: Use local provinces data instead of external API
 
-## Solution
-Deploy code terbaru ke production + clear cache
+## Architecture Fix
+- Before: Try external API → redirect → firewall blocks → 500 error
+- After: Use `storage/provinces.json` directly → no external calls needed
+
+---
+
+## Hosting Information
+- **Hosting**: DomCloud
+- **Firewall**: Active (blocks all external outgoing connections by default)
+- **Plan**: Free/Basic (outgoing connections require paid plan upgrade)
+- **Solution**: Using local data, no external API calls needed
 
 ---
 
 ## Step-by-Step Deployment
 
 ### **Step 1: SSH ke Production Server**
+```bash
+ssh user@peta-bima.osk.dom.my.id
+cd /home/peta-bima/public_html
+```
+
+### **Step 2: Pull Latest Code (sudah include fix untuk local data)**
+```bash
+git pull origin main
+
+# Verify code pulled
+git log --oneline -1
+```
+
+### **Step 3: Clear All Caches**
+```bash
+# CRITICAL: Clear cache yang lama
+rm -rf bootstrap/cache/*
+rm -rf storage/framework/views/*
+
+# Laravel cache commands
+php artisan cache:clear
+php artisan cache:flush
+php artisan config:clear
+php artisan view:clear
+php artisan route:clear
+```
+
+### **Step 4: Regenerate Optimized Files**
+```bash
+php artisan optimize:clear
+php artisan optimize
+```
+
+### **Step 5: Verify**
+```bash
+# Check provinces data exists and loaded
+php artisan tinker
+>>> collect(json_decode(file_get_contents(storage_path('provinces.json')), true))->count()
+>>> exit
+
+# Test website
+curl https://peta-bima.osk.dom.my.id
+```
+
+---
+
+## Quick Deploy Command (Copy-Paste)
+```bash
+cd /home/peta-bima/public_html && \
+git pull origin main && \
+rm -rf bootstrap/cache/* storage/framework/views/* && \
+php artisan cache:clear && \
+php artisan optimize:clear && \
+php artisan optimize && \
+echo "✅ Deployment successful!"
+```
+
+---
 ```bash
 ssh user@peta-bima.osk.dom.my.id
 # atau
