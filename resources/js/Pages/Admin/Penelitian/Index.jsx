@@ -20,6 +20,7 @@ export default function Index({ penelitian, stats, filters }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [itemToDelete, setItemToDelete] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
+    const [isAllSelectedGlobal, setIsAllSelectedGlobal] = useState(false);
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
     const [showBulkUpdateModal, setShowBulkUpdateModal] = useState(false);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
@@ -34,9 +35,16 @@ export default function Index({ penelitian, stats, filters }) {
     };
 
     const confirmBulkDelete = () => {
-        router.post(route('admin.penelitian.bulk-destroy'), { ids: selectedIds }, {
+        const payload = {
+            ids: isAllSelectedGlobal ? 'all' : selectedIds,
+            search: isAllSelectedGlobal ? search : undefined,
+            filters: isAllSelectedGlobal ? columnFilters : undefined
+        };
+
+        router.post(route('admin.penelitian.bulk-destroy'), payload, {
             onSuccess: () => {
                 setSelectedIds([]);
+                setIsAllSelectedGlobal(false);
                 setShowBulkDeleteModal(false);
             },
             onError: () => {
@@ -140,20 +148,20 @@ export default function Index({ penelitian, stats, filters }) {
                             filters: columnFilters,
                             perPage
                         }}
-                        className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        className="p-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-all active:scale-95"
                         title="Edit"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        <svg className="w-6 h-6 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                     </Link>
                     <button
                         onClick={() => handleDelete(item)}
-                        className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                        className="p-1 text-red-600 hover:bg-red-50 rounded-lg transition-all active:scale-95"
                         title="Hapus"
                     >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <svg className="w-6 h-6 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                     </button>
                 </div>
@@ -216,6 +224,24 @@ export default function Index({ penelitian, stats, filters }) {
                 toast.error(msg);
             }
         });
+    };
+
+    const handleExportExcel = () => {
+        const params = new URLSearchParams();
+
+        if (selectedIds.length > 0 && !isAllSelectedGlobal) {
+            params.append('ids', selectedIds.join(','));
+        } else if (isAllSelectedGlobal) {
+            params.append('ids', 'all');
+        }
+
+        if (search) params.append('search', search);
+
+        Object.entries(columnFilters).forEach(([key, value]) => {
+            if (value) params.append(`filters[${key}]`, value);
+        });
+
+        window.open(route('admin.penelitian.export-csv') + '?' + params.toString());
     };
 
     const handleDownloadTemplate = () => {
@@ -332,20 +358,7 @@ export default function Index({ penelitian, stats, filters }) {
         reader.readAsArrayBuffer(file);
     };
 
-    const handleExportExcel = () => {
-        const params = new URLSearchParams();
-        if (search) params.set('search', search);
-        if (Object.keys(columnFilters).length > 0) {
-            Object.entries(columnFilters).forEach(([k, v]) => {
-                if (v) params.set(`filters[${k}]`, v);
-            });
-        }
-        if (selectedIds.length > 0) {
-            params.set('ids', selectedIds.join(','));
-        }
-        const url = `/admin/penelitian/export-csv?${params.toString()}`;
-        window.location.href = url;
-    };
+
 
     return (
         <AdminLayout title="">
@@ -355,33 +368,47 @@ export default function Index({ penelitian, stats, filters }) {
                 subtitle="Kelola data penelitian"
                 icon={<span className="text-xl">🔬</span>}
                 actions={(
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <button
                             onClick={handleExportExcel}
-                            className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
+                            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all active:scale-95 text-xs sm:text-sm font-bold shadow-sm"
+                            title="Export Data"
                         >
-                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                            {selectedIds.length > 0 ? `Export CSV (${selectedIds.length})` : 'Export CSV'}
+                            <svg className="w-6 h-6 sm:w-5 sm:h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            <span className="hidden sm:inline">
+                                {selectedIds.length > 0 ? `Export Terpilih (${selectedIds.length})` : 'Export Data'}
+                            </span>
+                            {selectedIds.length > 0 && <span className="sm:hidden">{selectedIds.length}</span>}
                         </button>
 
                         <button
                             onClick={() => setShowImportModal(true)}
                             disabled={isImporting}
-                            className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm disabled:opacity-50"
+                            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all active:scale-95 text-xs sm:text-sm font-bold shadow-sm disabled:opacity-50"
+                            title="Import Data"
                         >
                             {isImporting ? (
-                                <span className="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
+                                <span className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
                             ) : (
-                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                <svg className="w-6 h-6 sm:w-5 sm:h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
                             )}
-                            {isImporting ? 'Proses...' : 'Import Data'}
+                            <span className="hidden sm:inline">{isImporting ? 'Proses...' : 'Import Data'}</span>
+                            {!isImporting && <span className="sm:hidden">Import</span>}
                         </button>
 
                         <Link
                             href={route('admin.penelitian.create')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
+                            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all active:scale-95 text-xs sm:text-sm font-bold shadow-sm"
                         >
-                            + Tambah
+                            <svg className="w-6 h-6 sm:w-5 sm:h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span className="hidden sm:inline">Tambah Data</span>
+                            <span className="sm:hidden">Tambah</span>
                         </Link>
                     </div>
                 )}
@@ -420,36 +447,65 @@ export default function Index({ penelitian, stats, filters }) {
 
             {/* Search & Table */}
             <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden relative">
-                {/* Bulk Action Bar — only visible when items are selected */}
+                {/* Bulk Actions Bar */}
                 {selectedIds.length > 0 && (
-                    <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg animate-in slide-in-from-top duration-300">
-                        <div className="flex items-center gap-4 ml-2">
-                            <span className="text-sm font-semibold whitespace-nowrap">
-                                {selectedIds.length} data terpilih
-                            </span>
+                    <div className="bg-blue-600/95 backdrop-blur-md px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-300 relative z-10 border-b border-white/10">
+                        <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                            <div className="flex items-center gap-3 self-start sm:self-center">
+                                <div className="bg-white text-blue-600 text-xs sm:text-sm font-black h-8 sm:h-10 px-3 sm:px-4 flex items-center justify-center rounded-xl shadow-lg border-2 border-white">
+                                    {isAllSelectedGlobal ? penelitian.total : selectedIds.length}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-wider">
+                                        Data Terpilih
+                                    </span>
+                                    {isAllSelectedGlobal ? (
+                                        <span className="text-[10px] text-blue-50 font-bold uppercase tracking-wider opacity-80">
+                                            Seluruh Halaman
+                                        </span>
+                                    ) : (
+                                        <span className="text-[10px] text-blue-50 font-medium whitespace-nowrap opacity-80 text-xs sm:text-[10px]">Aksi massal tersedia</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="h-8 w-px bg-white/20 hidden md:block"></div>
+
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                {!isAllSelectedGlobal && (
+                                    <button
+                                        onClick={openBulkUpdateModal}
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-2 text-xs font-bold text-white hover:bg-white/20 transition-all border border-white/20 shadow-sm flex-1 sm:flex-none active:scale-95"
+                                        title="Update massal"
+                                    >
+                                        <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span className="hidden sm:inline">Update</span>
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleBulkDelete}
+                                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-xs font-bold text-white hover:bg-red-600 transition-all shadow-lg border border-red-400/30 flex-1 sm:flex-none active:scale-95"
+                                    title="Hapus massal"
+                                >
+                                    <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    <span className="hidden sm:inline">Hapus</span>
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
-                            <button
-                                onClick={openBulkUpdateModal}
-                                className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                Update {selectedIds.length} Data
-                            </button>
-                            <button
-                                onClick={handleBulkDelete}
-                                className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                Hapus {selectedIds.length} Data
-                            </button>
-                            <button
-                                onClick={() => setSelectedIds([])}
-                                className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
-                            >
-                                Batal
-                            </button>
-                        </div>
+
+                        <button
+                            onClick={() => {
+                                setSelectedIds([]);
+                                setIsAllSelectedGlobal(false);
+                            }}
+                            className="w-full sm:w-auto text-xs font-bold text-blue-50 hover:text-white transition-all bg-white/10 py-2.5 px-4 rounded-xl border border-white/10 hover:bg-white/20 active:scale-95"
+                        >
+                            Batal Seleksi
+                        </button>
                     </div>
                 )}
 
@@ -500,6 +556,8 @@ export default function Index({ penelitian, stats, filters }) {
                         selectionEnabled
                         selectedItemIds={selectedIds}
                         onSelectionChange={setSelectedIds}
+                        isAllSelectedGlobal={isAllSelectedGlobal}
+                        onSelectAllGlobal={setIsAllSelectedGlobal}
                         sort={{ key: filters.sort, direction: filters.direction }}
                         emptyText="Tidak ada data penelitian"
                         columns={[
@@ -513,14 +571,12 @@ export default function Index({ penelitian, stats, filters }) {
                                 key: 'nama',
                                 title: 'Peneliti',
                                 sortable: true,
-                                sortable: true,
                                 className: 'min-w-[180px]',
                                 render: (v) => display(v)
                             },
                             {
                                 key: 'judul',
                                 title: 'Judul',
-                                sortable: true,
                                 sortable: true,
                                 className: 'min-w-[420px]',
                                 render: (v) => (
@@ -534,8 +590,6 @@ export default function Index({ penelitian, stats, filters }) {
                                 title: 'Institusi',
                                 sortable: true,
                                 className: 'min-w-[200px]',
-                                sortable: true,
-                                className: 'min-w-[200px]',
                                 render: (v) => (
                                     <div className="max-w-md line-clamp-2 whitespace-normal leading-snug" title={fmt(v)}>
                                         {display(v)}
@@ -546,7 +600,6 @@ export default function Index({ penelitian, stats, filters }) {
                                 key: 'provinsi',
                                 title: 'Provinsi',
                                 sortable: true,
-                                sortable: true,
                                 className: 'min-w-[140px]',
                                 render: (v) => (
                                     <Badge color="slate">{display(v)}</Badge>
@@ -555,8 +608,6 @@ export default function Index({ penelitian, stats, filters }) {
                             {
                                 key: 'thn_pelaksanaan',
                                 title: 'Tahun',
-                                sortable: true,
-                                className: 'min-w-[160px] text-center',
                                 sortable: true,
                                 className: 'min-w-[160px] text-center',
                                 render: (v) => <Badge color="blue">{display(v)}</Badge>
@@ -627,7 +678,7 @@ export default function Index({ penelitian, stats, filters }) {
 
             {/* Single Delete Modal */}
             {showDeleteModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-slate-900/25 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-lg p-6 max-w-md w-full">
                         <h3 className="text-lg font-semibold text-slate-900 mb-4">Konfirmasi Hapus</h3>
                         <p className="text-slate-600 mb-6">Apakah Anda yakin ingin menghapus data penelitian ini?</p>
@@ -647,16 +698,18 @@ export default function Index({ penelitian, stats, filters }) {
 
             {/* Bulk Delete Modal */}
             {showBulkDeleteModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-slate-900/25 backdrop-blur-[2px] z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-xl">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
                                 <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                             </div>
-                            <h3 className="text-lg font-semibold text-slate-900">Hapus {selectedIds.length} Data?</h3>
+                            <h3 className="text-lg font-semibold text-slate-900 text-center">
+                                Hapus {isAllSelectedGlobal ? penelitian.total?.toLocaleString('id-ID') : selectedIds.length} Data?
+                            </h3>
                         </div>
-                        <p className="text-slate-600 mb-6">
-                            Tindakan ini akan menghapus <strong>{selectedIds.length} data penelitian</strong> secara permanen dan tidak dapat dikembalikan.
+                        <p className="text-slate-600 mb-6 text-center">
+                            Tindakan ini akan menghapus <strong>{isAllSelectedGlobal ? penelitian.total?.toLocaleString('id-ID') : selectedIds.length} data penelitian</strong> secara permanen dan tidak dapat dikembalikan.
                         </p>
                         <div className="flex justify-end gap-3">
                             <button

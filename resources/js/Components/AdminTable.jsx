@@ -4,8 +4,9 @@ import { display } from '../Utils/format';
 export default function AdminTable({
     columns = [], // [{ key, title, className, sortable }]
     data = [],
-    sort = null, // { key, direction: 'asc'|'desc' }
-    onSort = null,
+    sort = null, // string matching column.key
+    direction = null, // 'asc' | 'desc'
+    onSort = null, // returns just the column.key string
     footer = null, // optional JSX
     striped = false,
     emptyText = 'Tidak ada data',
@@ -19,6 +20,10 @@ export default function AdminTable({
     selectionEnabled = false,
     selectedItemIds = [],
     onSelectionChange = null,
+    totalItems = 0,
+    isAllSelectedGlobal = false,
+    onSelectAllGlobal = null,
+    onClearSelection = null,
 }) {
     const [query, setQuery] = useState('');
     const [internalFilterValues, setFilterValues] = useState({});
@@ -37,8 +42,7 @@ export default function AdminTable({
 
     const handleSort = (col) => {
         if (!onSort || !col.sortable) return;
-        const nextDir = sort?.key === col.key && sort?.direction === 'asc' ? 'desc' : 'asc';
-        onSort({ key: col.key, direction: nextDir });
+        onSort(col.key);
     };
 
     // --- Selection helpers ---
@@ -107,6 +111,33 @@ export default function AdminTable({
                     )}
                 </div>
             )}
+            {selectionEnabled && allSelected && totalItems > data.length && !isAllSelectedGlobal && (
+                <div className="bg-blue-50/80 p-2.5 text-center text-xs sm:text-sm border-b border-blue-100 italic transition-all animate-in fade-in slide-in-from-top-1">
+                    Semua {data.length} data di halaman ini terpilih. 
+                    <button 
+                        type="button"
+                        onClick={onSelectAllGlobal} 
+                        className="ml-1.5 text-blue-600 font-bold hover:underline"
+                    >
+                        Pilih semua {totalItems.toLocaleString('id-ID')} data yang cocok
+                    </button>
+                </div>
+            )}
+            {selectionEnabled && isAllSelectedGlobal && (
+                <div className="bg-blue-600 p-2.5 text-center text-xs sm:text-sm text-white border-b border-blue-700 font-medium transition-all animate-in fade-in">
+                    <span className="flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        Semua {totalItems.toLocaleString('id-ID')} data telah terpilih
+                        <button 
+                            type="button"
+                            onClick={onClearSelection} 
+                            className="ml-3 text-white border border-white/40 px-3 py-0.5 rounded-full hover:bg-white/10 transition-colors text-xs font-bold"
+                        >
+                            Batal
+                        </button>
+                    </span>
+                </div>
+            )}
             <table className={`min-w-full text-sm ${striped ? 'striped' : ''}`}>
                 <thead className="bg-slate-50/80 border-b border-slate-200">
                     <tr>
@@ -123,20 +154,34 @@ export default function AdminTable({
                             </th>
                         )}
                         {columns.map((col) => {
-                            const isSorted = sort?.key === col.key;
-                            const arrow = isSorted ? (sort.direction === 'asc' ? '▲' : '▼') : '';
+                            const isSorted = sort === col.key;
+                            const sortIcon = (
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path 
+                                        className={`transition-colors ${isSorted && direction === 'asc' ? 'text-blue-600' : 'text-slate-300 group-hover:text-slate-400'}`}
+                                        strokeLinecap="round" strokeLinejoin="round" 
+                                        strokeWidth={isSorted && direction === 'asc' ? 2.5 : 2} 
+                                        d="M8 10l4-4 4 4" 
+                                    />
+                                    <path 
+                                        className={`transition-colors ${isSorted && direction === 'desc' ? 'text-blue-600' : 'text-slate-300 group-hover:text-slate-400'}`}
+                                        strokeLinecap="round" strokeLinejoin="round" 
+                                        strokeWidth={isSorted && direction === 'desc' ? 2.5 : 2} 
+                                        d="M8 14l4 4 4-4" 
+                                    />
+                                </svg>
+                            );
+
                             return (
                                 <th
                                     key={col.key}
-                                    className={`text-left px-4 py-3 whitespace-nowrap select-none ${col.className || ''} ${col.sortable ? 'cursor-pointer' : ''}`}
+                                    className={`text-left px-4 py-3 whitespace-nowrap select-none group ${col.className || ''} ${col.sortable ? 'cursor-pointer hover:bg-slate-100/50' : ''}`}
                                     onClick={() => handleSort(col)}
                                 >
-                                    <span className="inline-flex items-center gap-1 text-slate-700">
-                                        {col.title}
-                                        {col.sortable && (
-                                            <span className="text-[10px] text-slate-400">{arrow}</span>
-                                        )}
-                                    </span>
+                                    <div className="flex items-center gap-1 text-slate-700">
+                                        <span className={col.sortable ? 'font-medium' : ''}>{col.title}</span>
+                                        {col.sortable && sortIcon}
+                                    </div>
                                 </th>
                             );
                         })}

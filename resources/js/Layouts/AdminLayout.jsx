@@ -175,7 +175,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
                 {/* Overlay for mobile */}
                 {isSidebarOpen && (
                     <div
-                        className="fixed inset-0 bg-opacity-50 z-20 lg:hidden"
+                        className="fixed inset-0 bg-slate-900/25 backdrop-blur-[2px] z-20 lg:hidden"
                         onClick={() => setIsSidebarOpen(false)}
                     ></div>
                 )}

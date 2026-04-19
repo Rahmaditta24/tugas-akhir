@@ -339,22 +339,42 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                     subtitle="Kelola data fasilitas laboratorium"
                     icon={<span className="text-xl">🧪</span>}
                     actions={(
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                             <button
                                 onClick={handleExport}
-                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
+                                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all active:scale-95 text-xs sm:text-sm font-bold shadow-sm"
+                                title="Export CSV"
                             >
-                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                {selectedIds.length > 0 ? `Export CSV (${selectedIds.length})` : 'Export CSV'}
+                                <svg className="w-6 h-6 sm:w-5 sm:h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                <span className="hidden sm:inline">
+                                    {selectedIds.length > 0 ? `Export Terpilih (${selectedIds.length})` : 'Export Data'}
+                                </span>
+                                {selectedIds.length > 0 && <span className="sm:hidden">{selectedIds.length}</span>}
                             </button>
+
                             <button
                                 onClick={() => setShowImportModal(true)}
-                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
+                                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-all active:scale-95 text-xs sm:text-sm font-bold shadow-sm"
+                                title="Import Data"
                             >
-                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                Import Data
+                                <svg className="w-6 h-6 sm:w-5 sm:h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                <span className="hidden sm:inline">Import Data</span>
                             </button>
-                            <Link href={route('admin.fasilitas-lab.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm">+ Tambah</Link>
+
+                            <Link 
+                                href={route('admin.fasilitas-lab.create')} 
+                                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all active:scale-95 text-xs sm:text-sm font-bold shadow-sm"
+                            >
+                                <svg className="w-6 h-6 sm:w-5 sm:h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span className="hidden sm:inline">Tambah Data</span>
+                                <span className="sm:hidden">Tambah</span>
+                            </Link>
                         </div>
                     )}
                 />
@@ -394,34 +414,52 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden relative">
                     {/* Bulk Actions Bar */}
                     {selectedIds.length > 0 && (
-                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg animate-in slide-in-from-top duration-300">
-                            <div className="flex items-center gap-4 ml-2">
-                                <span className="text-sm font-semibold whitespace-nowrap">
-                                    {selectedIds.length} data terpilih
-                                </span>
+                        <div className="bg-blue-600 px-4 sm:px-6 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-300">
+                            <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-white text-blue-600 text-xs sm:text-sm font-black h-8 sm:h-10 px-3 sm:px-4 flex items-center justify-center rounded-xl shadow-sm border-2 border-blue-100">
+                                        {selectedIds.length}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-wider">
+                                            Data Terpilih
+                                        </span>
+                                        <span className="text-[10px] text-blue-100 font-medium">Aksi massal tersedia</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="h-8 w-px bg-blue-500/50 hidden md:block"></div>
+                                
+                                <div className="flex items-center gap-2 ml-auto sm:ml-0">
+                                    <button
+                                        onClick={openBulkUpdateModal}
+                                        className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-3 sm:px-4 py-2 text-xs font-bold text-white hover:bg-white/20 transition-all border border-white/20 shadow-sm active:scale-95"
+                                        title="Update massal"
+                                    >
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                        <span className="hidden sm:inline">Update</span>
+                                    </button>
+                                    <button
+                                        onClick={handleBulkDelete}
+                                        className="inline-flex items-center gap-2 rounded-xl bg-red-500 px-3 sm:px-4 py-2 text-xs font-bold text-white hover:bg-red-600 transition-all shadow-sm border border-red-400/30 active:scale-95"
+                                        title="Hapus massal"
+                                    >
+                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <span className="hidden sm:inline">Hapus</span>
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
-                                <button
-                                    onClick={openBulkUpdateModal}
-                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                    Update {selectedIds.length} Data
-                                </button>
-                                <button
-                                    onClick={handleBulkDelete}
-                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    Hapus {selectedIds.length} Data
-                                </button>
-                                <button
-                                    onClick={() => setSelectedIds([])}
-                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
-                                >
-                                    Batal
-                                </button>
-                            </div>
+                            
+                            <button
+                                onClick={() => setSelectedIds([])}
+                                className="w-full sm:w-auto text-xs font-bold text-blue-100 hover:text-white transition-colors bg-blue-700/40 py-2.5 px-4 rounded-xl border border-blue-500/50 hover:bg-blue-700/60 active:scale-95"
+                            >
+                                Batal Seleksi
+                            </button>
                         </div>
                     )}
                     <div className="p-6 border-b">
@@ -625,7 +663,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                         <p className="text-slate-600 mb-6 leading-relaxed text-sm">Apakah Anda yakin ingin menghapus data fasilitas ini? Tindakan ini tidak dapat dibatalkan.</p>
                         <div className="flex justify-end gap-3">
                             <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors">Batal</button>
-                            <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors shadow-sm shadow-red-200">Hapus Data</button>
+                            <button onClick={confirmDelete} className="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 transition-colors">Hapus Data</button>
                         </div>
                     </div>
                 </div>
@@ -644,7 +682,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                         <p className="text-slate-600 mb-6 text-center leading-relaxed text-sm">Seluruh data fasilitas terpilih ({selectedIds.length} item) akan dihapus secara permanen.</p>
                         <div className="flex gap-3">
                             <button onClick={() => setShowBulkDeleteModal(false)} className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors">Batal</button>
-                            <button onClick={confirmBulkDelete} className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-200">Ya, Hapus Semua</button>
+                            <button onClick={confirmBulkDelete} className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95">Ya, Hapus Semua</button>
                         </div>
                     </div>
                 </div>

@@ -585,14 +585,38 @@ class PengabdianController extends Controller
 
     public function bulkDestroy(Request $request)
     {
-        $request->validate([
-            'ids'   => 'required|array|min:1',
-            'ids.*' => 'integer|exists:pengabdian,id',
-        ]);
+        if ($request->ids === 'all') {
+            $query = Pengabdian::query();
+            if ($request->filled('type')) {
+                $query->where('type', $request->type);
+            }
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('nidn', 'like', "%{$search}%")
+                        ->orWhere('judul', 'like', "%{$search}%")
+                        ->orWhere('nama_institusi', 'like', "%{$search}%")
+                        ->orWhere('prov_mitra', 'like', "%{$search}%")
+                        ->orWhere('skema', 'like', "%{$search}%");
+                });
+            }
+            if ($request->filled('filters')) {
+                foreach ($request->filters as $key => $value) {
+                    if (!empty($value)) {
+                        $query->where($key, 'like', "%{$value}%");
+                    }
+                }
+            }
+            $count = $query->delete();
+        } else {
+            $request->validate([
+                'ids'   => 'required|array|min:1',
+            ]);
+            $count = Pengabdian::whereIn('id', $request->ids)->delete();
+        }
 
-        $count = Pengabdian::whereIn('id', $request->ids)->delete();
         $this->clearModuleCache();
-
         return back()->with('success', "{$count} data pengabdian berhasil dihapus.");
     }
 
@@ -666,7 +690,7 @@ class PengabdianController extends Controller
             $query->whereIn('batch_type', ['batch_i', 'batch_ii', 'batch', 'multitahun', 'multitahun_lanjutan']);
         }
         
-        if ($request->filled('ids')) {
+        if ($request->filled('ids') && $request->ids !== 'all') {
             $ids = explode(',', $request->ids);
             $query->whereIn('id', $ids);
         }

@@ -407,8 +407,34 @@ class PenelitianController extends Controller
 
     public function bulkDestroy(Request $request)
     {
-        $request->validate(['ids' => 'required|array']);
-        $count = Penelitian::whereIn('id', $request->ids)->delete();
+        if ($request->ids === 'all') {
+            $query = Penelitian::query();
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('institusi', 'like', "%{$search}%")
+                        ->orWhere('judul', 'like', "%{$search}%")
+                        ->orWhere('provinsi', 'like', "%{$search}%")
+                        ->orWhere('skema', 'like', "%{$search}%")
+                        ->orWhere('bidang_fokus', 'like', "%{$search}%")
+                        ->orWhere('tema_prioritas', 'like', "%{$search}%")
+                        ->orWhere('thn_pelaksanaan', 'like', "%{$search}%");
+                });
+            }
+            if ($request->filled('filters')) {
+                foreach ($request->filters as $key => $value) {
+                    if (!empty($value)) {
+                        $query->where($key, 'like', "%{$value}%");
+                    }
+                }
+            }
+            $count = $query->delete();
+        } else {
+            $request->validate(['ids' => 'required|array']);
+            $count = Penelitian::whereIn('id', $request->ids)->delete();
+        }
+        
         $this->clearModuleCache();
         return back()->with('success', "{$count} data penelitian berhasil dihapus.");
     }
@@ -498,7 +524,7 @@ class PenelitianController extends Controller
             'tema_prioritas'
         );
 
-        if ($request->filled('ids')) {
+        if ($request->filled('ids') && $request->ids !== 'all') {
             $ids = explode(',', $request->ids);
             $query->whereIn('id', $ids);
         }
@@ -724,7 +750,7 @@ class PenelitianController extends Controller
                 $normalizedRow = [];
                 foreach ($row as $k => $v) {
                     // Buang semua karakter non-alfanumerik dari header (spasi, _, /, dsb)
-                    $cleanKey = strtolower(preg_replace('/[^a-z0-9]/', '', $k));
+                    $cleanKey = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $k));
                     $normalizedRow[$cleanKey] = $v;
                 }
 

@@ -178,8 +178,28 @@ class ProdukController extends Controller
 
     public function bulkDestroy(Request $request)
     {
-        $request->validate(['ids' => 'required|array']);
-        $count = Produk::whereIn('id', $request->ids)->delete();
+        if ($request->ids === 'all') {
+            $query = Produk::query();
+            if ($request->filled('search')) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('nama_produk', 'like', '%' . $request->search . '%')
+                        ->orWhere('institusi', 'like', '%' . $request->search . '%')
+                        ->orWhere('bidang', 'like', '%' . $request->search . '%');
+                });
+            }
+            if ($request->filled('filters')) {
+                foreach ($request->filters as $key => $value) {
+                    if ($value) {
+                        $query->where($key, 'like', '%' . $value . '%');
+                    }
+                }
+            }
+            $count = $query->delete();
+        } else {
+            $request->validate(['ids' => 'required|array']);
+            $count = Produk::whereIn('id', $request->ids)->delete();
+        }
+
         $this->clearModuleCache();
         return back()->with('success', "{$count} data produk berhasil dihapus.");
     }
@@ -298,7 +318,7 @@ class ProdukController extends Controller
             'deskripsi_produk'
         );
 
-        if ($request->filled('ids')) {
+        if ($request->filled('ids') && $request->ids !== 'all') {
             $ids = explode(',', $request->ids);
             $query->whereIn('id', $ids);
         }
@@ -433,7 +453,7 @@ class ProdukController extends Controller
                 $rowNum = $index + 1;
                 $normalizedRow = [];
                 foreach ($row as $k => $v) {
-                    $cleanKey = strtolower(preg_replace('/[^a-z0-9]/', '', (string)$k));
+                    $cleanKey = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', (string)$k));
                     $normalizedRow[$cleanKey] = $v;
                 }
 

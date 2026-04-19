@@ -199,7 +199,7 @@ export default function StatementIndex({ category, statements }) {
                             </button>
                             <button
                                 onClick={confirmDelete}
-                                className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors focus:ring-4 focus:ring-red-300 shadow-lg shadow-red-500/30"
+                                className="px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors focus:ring-4 focus:ring-red-300"
                             >
                                 Hapus
                             </button>

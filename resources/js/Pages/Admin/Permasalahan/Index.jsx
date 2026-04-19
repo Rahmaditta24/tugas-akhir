@@ -19,11 +19,8 @@ export default function Index({
     const [jenis, setJenis] = useState(filters.jenis || 'Sampah');
     const [batchType, setBatchType] = useState(filters.batch_type || (filters.baseData === 'pengabdian' ? 'Multitahun Lanjutan, Batch I & Batch II' : ''));
     const [listrikMode, setListrikMode] = useState(filters.listrikMode || 'SAIDI');
-    const [activeTab, setActiveTab] = useState(filters.tab || 'provinsi');
-    const [columnFilters, setColumnFilters] = useState(filters.columns || {});
-    const [localColumnFilters, setLocalColumnFilters] = useState(filters.columns || {});
-    const [localStats, setLocalStats] = useState(stats || {});
-    const [isStatsLoading, setIsStatsLoading] = useState(false);
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [isAllSelectedGlobal, setIsAllSelectedGlobal] = useState(false);
     const { flash } = usePage().props;
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
@@ -202,6 +199,21 @@ export default function Index({
         });
     };
 
+    const handleBulkDelete = () => {
+        if (!confirm(`Yakin ingin menghapus ${isAllSelectedGlobal ? 'seluruh' : selectedIds.length} data terpilih?`)) return;
+        
+        const payload = isAllSelectedGlobal 
+            ? { ids: 'all', search, baseData, jenis, batch_type: batchType, columns: columnFilters, tab: activeTab } 
+            : { ids: selectedIds, baseData, tab: activeTab };
+
+        router.post(route('admin.permasalahan.bulk-destroy'), payload, {
+            onSuccess: () => {
+                setSelectedIds([]);
+                setIsAllSelectedGlobal(false);
+            }
+        });
+    };
+
     const getVal = (item, key) => {
         if (key === 'judul') return display(item.judul);
         if (key === 'peneliti') return display(item.nama || item.nama_pengusul || item.peneliti);
@@ -224,7 +236,7 @@ export default function Index({
                                 onClick={handleExportCSV}
                                 className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center text-sm font-bold shadow-sm active:scale-95"
                             >
-                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 sm:w-4 sm:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
                                 Export CSV
@@ -237,8 +249,8 @@ export default function Index({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
-                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <svg className="h-6 w-6 sm:h-5 sm:w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                             </div>
@@ -253,8 +265,8 @@ export default function Index({
 
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
-                                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <svg className="h-6 w-6 sm:h-5 sm:w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
                                 </svg>
                             </div>
@@ -269,8 +281,8 @@ export default function Index({
 
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
-                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <svg className="h-6 w-6 sm:h-5 sm:w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6m2 0h2a2 2 0 002-2v-3a2 2 0 00-2-2h-2m-2 0H5" />
                                 </svg>
                             </div>
@@ -406,6 +418,53 @@ export default function Index({
                         </form>
                     </div>
 
+                    {/* Bulk Actions Bar */}
+                    {selectedIds.length > 0 && (
+                        <div className="bg-blue-600 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-300 relative z-10">
+                            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                                <div className="flex items-center gap-3 self-start sm:self-center">
+                                    <div className="bg-white text-blue-600 text-xs font-black h-8 px-3 flex items-center justify-center rounded-lg shadow-sm">
+                                        {isAllSelectedGlobal ? (baseData === 'statistik' ? (activeTab === 'provinsi' ? permasalahanProvinsi.total : permasalahanKabupaten.total) : data.total) : selectedIds.length}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-black text-white leading-tight whitespace-nowrap">
+                                            Data Terpilih
+                                        </span>
+                                        {isAllSelectedGlobal && (
+                                            <span className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">
+                                                Seluruh Halaman
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                <div className="h-8 w-px bg-blue-500/50 hidden sm:block"></div>
+                                
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                    <button
+                                        onClick={handleBulkDelete}
+                                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-xs font-bold text-white hover:bg-red-600 transition-all shadow-sm border border-red-400/30 flex-1 sm:flex-none"
+                                    >
+                                        <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <button
+                                onClick={() => {
+                                    setSelectedIds([]);
+                                    setIsAllSelectedGlobal(false);
+                                }}
+                                className="w-full sm:w-auto text-xs font-bold text-blue-100 hover:text-white transition-colors bg-blue-700/40 py-2 px-4 rounded-lg border border-blue-500/50 hover:bg-blue-700/60"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    )}
+
                     <div className="p-6">
                         {baseData === 'statistik' && (
                             <div className="flex gap-2 bg-slate-100 p-1.5 rounded-2xl w-fit mb-8 shadow-inner">
@@ -430,6 +489,16 @@ export default function Index({
                                     <>
                                         <AdminTable
                                             striped
+                                            selectionEnabled={true}
+                                            selectedItemIds={selectedIds}
+                                            onSelectionChange={setSelectedIds}
+                                            totalItems={permasalahanProvinsi.total}
+                                            isAllSelectedGlobal={isAllSelectedGlobal}
+                                            onSelectAllGlobal={() => setIsAllSelectedGlobal(true)}
+                                            onClearSelection={() => {
+                                                setSelectedIds([]);
+                                                setIsAllSelectedGlobal(false);
+                                            }}
                                             columns={
                                                 normalizedJenis === 'sampah' ? [
                                                     { key: 'provinsi', title: 'Provinsi', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
@@ -451,7 +520,7 @@ export default function Index({
                                                     { key: 'persentase', title: 'Persentase', render: (v) => <span className="font-black text-slate-800">{display(v)}%</span> },
                                                 ]
                                             }
-                                            data={permasalahanProvinsi.data || []}
+                                            data={(permasalahanProvinsi.data || []).map(r => ({ ...r, id: r.id || r.provinsi }))}
                                         />
                                         <div className="mt-6 text-xs text-slate-400 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
                                             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
@@ -463,6 +532,16 @@ export default function Index({
                                     <>
                                         <AdminTable
                                             striped
+                                            selectionEnabled={true}
+                                            selectedItemIds={selectedIds}
+                                            onSelectionChange={setSelectedIds}
+                                            totalItems={permasalahanKabupaten.total}
+                                            isAllSelectedGlobal={isAllSelectedGlobal}
+                                            onSelectAllGlobal={() => setIsAllSelectedGlobal(true)}
+                                            onClearSelection={() => {
+                                                setSelectedIds([]);
+                                                setIsAllSelectedGlobal(false);
+                                            }}
                                             columns={
                                                 normalizedJenis === 'sampah' ? [
                                                     { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
@@ -488,7 +567,7 @@ export default function Index({
                                                     { key: 'persentase', title: 'Persentase', render: (v) => <span className="font-black text-slate-800">{display(v)}%</span> },
                                                 ]
                                             }
-                                            data={permasalahanKabupaten.data || []}
+                                            data={(permasalahanKabupaten.data || []).map(r => ({ ...r, id: r.id || r.kabupaten_kota }))}
                                         />
                                         <div className="mt-6 text-xs text-slate-400 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
                                             <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
@@ -502,10 +581,26 @@ export default function Index({
                             <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <AdminTable
                                     striped
+                                    selectionEnabled={true}
+                                    selectedItemIds={selectedIds}
+                                    onSelectionChange={setSelectedIds}
+                                    totalItems={data.total}
+                                    isAllSelectedGlobal={isAllSelectedGlobal}
+                                    onSelectAllGlobal={() => setIsAllSelectedGlobal(true)}
+                                    onClearSelection={() => {
+                                        setSelectedIds([]);
+                                        setIsAllSelectedGlobal(false);
+                                    }}
                                     columnFilterEnabled={true}
                                     filters={localColumnFilters}
                                     onFilterChange={handleColumnFilterChange}
                                     sort={{ key: filters.sort, direction: filters.direction }}
+                                    onSort={(key) => {
+                                        const nextDir = sort === key && direction === 'asc' ? 'desc' : 'asc';
+                                        router.get(route('admin.permasalahan.index'), {
+                                            search, perPage, baseData, jenis, batch_type: batchType, sort: key, direction: nextDir, tab: activeTab, columns: columnFilters
+                                        }, { preserveState: true, replace: true });
+                                    }}
                                     columns={[
                                         { key: 'no', title: 'No', className: 'w-16 text-center' },
                                         { key: 'judul', title: 'Judul Riset', sortable: true, className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-sm leading-relaxed font-bold text-slate-800" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },

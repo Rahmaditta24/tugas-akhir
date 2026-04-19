@@ -21,6 +21,7 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
 
     // --- Bulk selection ---
     const [selectedIds, setSelectedIds] = useState([]);
+    const [isAllSelectedGlobal, setIsAllSelectedGlobal] = useState(false);
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
     const handleBulkDelete = () => {
@@ -29,13 +30,20 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
     };
 
     const confirmBulkDelete = () => {
-        router.post(route('admin.pengabdian.bulk-destroy'), { ids: selectedIds }, {
+        const payload = isAllSelectedGlobal
+            ? { ids: 'all', search, filters: columnFilters, type: filters.type }
+            : { ids: selectedIds };
+
+        router.post(route('admin.pengabdian.bulk-destroy'), payload, {
             onSuccess: () => {
                 setSelectedIds([]);
+                setIsAllSelectedGlobal(false);
                 setShowBulkDeleteModal(false);
+                toast.success('Data pengabdian berhasil dihapus.');
             },
             onError: () => {
                 setShowBulkDeleteModal(false);
+                toast.error('Gagal menghapus data.');
             }
         });
     };
@@ -220,7 +228,7 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
 
                 const requiredColumns = ['batchtype', 'nama', 'namainstitusi', 'judul', 'thnpelaksanaankegiatan'];
                 const uploadedColumns = Object.keys(data[0]).map(k => k.toLowerCase().replace(/[\s\/_]/g, ''));
-                
+
                 // Allow aliases just like backend
                 const aliases = {
                     'namainstitusi': ['institusi', 'perguruantinggi'],
@@ -331,7 +339,10 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
         const params = new URLSearchParams({ type: filters.type || 'batch' });
         if (search) params.set('search', search);
         Object.entries(columnFilters).forEach(([k, v]) => v && params.append(`filters[${k}]`, v));
-        if (selectedIds.length > 0) {
+
+        if (isAllSelectedGlobal) {
+            params.append('ids', 'all');
+        } else if (selectedIds.length > 0) {
             params.append('ids', selectedIds.join(','));
         }
 
@@ -381,22 +392,32 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                     subtitle="Kelola data pengabdian masyarakat"
                     icon={<span className="text-xl">🤝</span>}
                     actions={(
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                             <button
                                 onClick={handleExport}
-                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
+                                className="px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm active:scale-95"
                             >
-                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                {selectedIds.length > 0 ? `Export CSV (${selectedIds.length})` : 'Export CSV'}
+                                <svg className="w-5 h-5 sm:w-4 sm:h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                <span className="hidden xs:inline">{selectedIds.length > 0 ? `Export Terpilih (${selectedIds.length})` : 'Export Semua'}</span>
+                                <span className="xs:hidden">{selectedIds.length > 0 ? `(${selectedIds.length})` : 'Export'}</span>
                             </button>
                             <button
                                 onClick={() => setShowImportModal(true)}
-                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm flex-shrink-0"
+                                className="px-3 sm:px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm active:scale-95"
                             >
-                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                Import Data
+                                <svg className="w-5 h-5 sm:w-4 sm:h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                                <span className="hidden xs:inline">Import Data</span>
+                                <span className="xs:hidden">Import</span>
                             </button>
-                            <Link href={route('admin.pengabdian.create')} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm">+ Tambah</Link>
+                            <Link
+                                href={route('admin.pengabdian.create')}
+                                className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center text-xs sm:text-sm font-bold shadow-sm active:scale-95"
+                            >
+                                <svg className="w-5 h-5 sm:w-4 sm:h-4 sm:mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span className="hidden sm:inline">Tambah Data</span>
+                            </Link>
                         </div>
                     )}
                 />
@@ -442,50 +463,17 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
 
                 {/* Main Content Card */}
                 <div className="bg-white rounded-lg shadow-sm border border-slate-100 overflow-hidden relative">
-                    {/* Bulk Actions Bar */}
-                    {selectedIds.length > 0 && (
-                        <div className="absolute top-0 left-0 right-0 z-20 bg-blue-600 text-white p-3 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg animate-in slide-in-from-top duration-300">
-                            <div className="flex items-center gap-4 ml-2">
-                                <span className="text-sm font-semibold whitespace-nowrap">
-                                    {selectedIds.length} data terpilih
-                                </span>
-                            </div>
-                            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 sm:gap-3">
-                                <button
-                                    onClick={openBulkUpdateModal}
-                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                    Update {selectedIds.length} Data
-                                </button>
-                                <button
-                                    onClick={handleBulkDelete}
-                                    className="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                    Hapus {selectedIds.length} Data
-                                </button>
-                                <button
-                                    onClick={() => setSelectedIds([])}
-                                    className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs sm:text-sm font-medium rounded-md transition-colors"
-                                >
-                                    Batal
-                                </button>
-                            </div>
-                        </div>
-                    )}
+
 
                     {/* Mode Tabs: Multitahun / Batch / Kosabangsa */}
                     <div className="flex border-b overflow-x-auto">
                         <button
                             onClick={() => handleTypeChange('batch')}
                             className={`px-8 py-4 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${(filters.type || 'batch') === 'batch'
-                            className={`px-8 py-4 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${(filters.type || 'batch') === 'batch'
                                 ? 'border-amber-600 text-amber-600 bg-amber-50/50'
                                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                                 }`}
                         >
-                            📦 Multitahun, Batch I & Batch II
                             📦 Multitahun, Batch I & Batch II
                         </button>
                         <button
@@ -498,6 +486,63 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                             🤝 Kosabangsa
                         </button>
                     </div>
+                    {/* Bulk Actions Bar */}
+                    {selectedIds.length > 0 && (
+                        <div className="bg-blue-600 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-top duration-300 relative z-10">
+                            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto">
+                                <div className="flex items-center gap-3 self-start sm:self-center">
+                                    <div className="bg-white text-blue-600 text-xs font-black h-8 px-3 flex items-center justify-center rounded-lg shadow-sm">
+                                        {isAllSelectedGlobal ? pengabdian.total : selectedIds.length}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-black text-white leading-tight whitespace-nowrap">
+                                            Data Terpilih
+                                        </span>
+                                        {isAllSelectedGlobal && (
+                                            <span className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">
+                                                Seluruh Halaman
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="h-8 w-px bg-blue-500/50 hidden sm:block"></div>
+
+                                <div className="flex items-center gap-2 w-full sm:w-auto">
+                                    {!isAllSelectedGlobal && (
+                                        <button
+                                            onClick={openBulkUpdateModal}
+                                            className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-500/50 px-4 py-2 text-xs font-bold text-white hover:bg-blue-500 transition-all border border-blue-400/30 shadow-sm flex-1 sm:flex-none"
+                                        >
+                                            <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                            Update
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={handleBulkDelete}
+                                        className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-xs font-bold text-white hover:bg-red-600 transition-all shadow-sm border border-red-400/30 flex-1 sm:flex-none"
+                                    >
+                                        <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => {
+                                    setSelectedIds([]);
+                                    setIsAllSelectedGlobal(false);
+                                }}
+                                className="w-full sm:w-auto text-xs font-bold text-blue-100 hover:text-white transition-colors bg-blue-700/40 py-2 px-4 rounded-lg border border-blue-500/50 hover:bg-blue-700/60"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    )}
 
 
                     {/* Search Bar */}
@@ -567,6 +612,13 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                             data={tableData}
                             filters={columnFilters}
                             onFilterChange={handleColumnFilterChange}
+                            totalItems={pengabdian.total}
+                            isAllSelectedGlobal={isAllSelectedGlobal}
+                            onSelectAllGlobal={() => setIsAllSelectedGlobal(true)}
+                            onClearSelection={() => {
+                                setSelectedIds([]);
+                                setIsAllSelectedGlobal(false);
+                            }}
                         />
                     </div>
 
@@ -606,7 +658,7 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
 
             {/* Individual Delete Modal */}
             {showDeleteModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+                <div className="fixed inset-0 bg-slate-900/25 backdrop-blur-[2px] flex items-center justify-center z-[60] p-4">
                     <div className="bg-white rounded-xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-200">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
@@ -624,7 +676,7 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                             </button>
                             <button
                                 onClick={confirmDelete}
-                                className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-200"
+                                className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95"
                             >
                                 Ya, Hapus
                             </button>
@@ -635,14 +687,14 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
 
             {/* Bulk Delete Modal */}
             {showBulkDeleteModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+                <div className="fixed inset-0 bg-slate-900/25 backdrop-blur-[2px] flex items-center justify-center z-[60] p-4">
                     <div className="bg-white rounded-xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in duration-200">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </div>
-                        <h3 className="text-xl font-bold text-slate-800 mb-2 text-center">Hapus {selectedIds.length} Data?</h3>
+                        <h3 className="text-xl font-bold text-slate-800 mb-2 text-center">Hapus {isAllSelectedGlobal ? pengabdian.total.toLocaleString('id-ID') : selectedIds.length} Data?</h3>
                         <p className="text-slate-600 mb-8 text-center leading-relaxed">
-                            Seluruh data pengabdian terpilih ({selectedIds.length} item) akan dihapus secara permanen.
+                            Seluruh data pengabdian terpilih ({isAllSelectedGlobal ? pengabdian.total.toLocaleString('id-ID') : selectedIds.length} item) akan dihapus secara permanen.
                         </p>
                         <div className="flex gap-3">
                             <button
@@ -653,7 +705,7 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                             </button>
                             <button
                                 onClick={confirmBulkDelete}
-                                className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95 shadow-lg shadow-red-200"
+                                className="flex-1 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all active:scale-95"
                             >
                                 Ya, Hapus Semua
                             </button>
@@ -780,16 +832,16 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                                                     <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nama Skema</label>
                                                     <select value={f('nama_skema')} onChange={e => setItemField(item.id, 'nama_skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
                                                         <option value="">-- Pilih --</option>
-                                                        {['KBM','PDB','PKM','PM-UPUD','PMM','PMP','PUK','PW','Pemberdayaan Desa Binaan','Pemberdayaan Kemitraan Masyarakat','Pemberdayaan Masyarakat oleh Mahasiswa','Pengabdian Masyarakat Pemula','Program Kemitraan Masyarakat Stimulusi'].map(v => <option key={v} value={v}>{v}</option>)}
-                                                        {f('nama_skema') && !['KBM','PDB','PKM','PM-UPUD','PMM','PMP','PUK','PW','Pemberdayaan Desa Binaan','Pemberdayaan Kemitraan Masyarakat','Pemberdayaan Masyarakat oleh Mahasiswa','Pengabdian Masyarakat Pemula','Program Kemitraan Masyarakat Stimulusi','Kosabangsa'].includes(f('nama_skema')) && <option value={f('nama_skema')}>{f('nama_skema')}</option>}
+                                                        {['KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW', 'Pemberdayaan Desa Binaan', 'Pemberdayaan Kemitraan Masyarakat', 'Pemberdayaan Masyarakat oleh Mahasiswa', 'Pengabdian Masyarakat Pemula', 'Program Kemitraan Masyarakat Stimulusi'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                        {f('nama_skema') && !['KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW', 'Pemberdayaan Desa Binaan', 'Pemberdayaan Kemitraan Masyarakat', 'Pemberdayaan Masyarakat oleh Mahasiswa', 'Pengabdian Masyarakat Pemula', 'Program Kemitraan Masyarakat Stimulusi', 'Kosabangsa'].includes(f('nama_skema')) && <option value={f('nama_skema')}>{f('nama_skema')}</option>}
                                                     </select>
                                                 </div>
                                                 <div>
                                                     <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Singkatan Skema</label>
                                                     <select value={f('nama_singkat_skema')} onChange={e => setItemField(item.id, 'nama_singkat_skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
                                                         <option value="">-- Pilih --</option>
-                                                        {['KBM','PDB','PKM','PM-UPUD','PMM','PMP','PUK','PW'].map(v => <option key={v} value={v}>{v}</option>)}
-                                                        {f('nama_singkat_skema') && !['KBM','PDB','PKM','PM-UPUD','PMM','PMP','PUK','PW'].includes(f('nama_singkat_skema')) && <option value={f('nama_singkat_skema')}>{f('nama_singkat_skema')}</option>}
+                                                        {['KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW'].map(v => <option key={v} value={v}>{v}</option>)}
+                                                        {f('nama_singkat_skema') && !['KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW'].includes(f('nama_singkat_skema')) && <option value={f('nama_singkat_skema')}>{f('nama_singkat_skema')}</option>}
                                                     </select>
                                                 </div>
                                             </>

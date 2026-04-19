@@ -589,6 +589,64 @@ class PermasalahanController extends Controller
         return back()->with('success', "Import selesai: {$imported} data diperbarui.");
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $baseData = $request->get('baseData');
+        $count = 0;
+
+        if ($baseData === 'statistik') {
+            $type = $request->get('tab', 'provinsi'); // Use tab to determine which table
+            $model = $type === 'provinsi' ? PermasalahanProvinsi::class : PermasalahanKabupaten::class;
+            
+            if ($request->ids === 'all') {
+                $count = $model::query()->delete();
+            } else {
+                $request->validate(['ids' => 'required|array']);
+                $count = $model::whereIn('id', $request->ids)->delete();
+            }
+        } else {
+            $model = match($baseData) {
+                'pengabdian' => \App\Models\Pengabdian::class,
+                'hilirisasi' => \App\Models\Hilirisasi::class,
+                default => \App\Models\Penelitian::class
+            };
+
+            if ($request->ids === 'all') {
+                $query = $model::query();
+                
+                // Re-apply keywords mapping if needed or just use current search/filters
+                $search = $request->get('search');
+                $columnFilters = $request->get('columns', []);
+                
+                if ($search) {
+                    $query->where('judul', 'like', "%{$search}%");
+                }
+                
+                if (is_array($columnFilters)) {
+                    foreach ($columnFilters as $col => $val) {
+                        if (!$val) continue;
+                        $dbCol = match($col) {
+                            'peneliti' => $baseData === 'penelitian' ? 'nama' : 'nama_pengusul',
+                            'institusi' => match($baseData) { 'penelitian' => 'institusi', 'pengabdian' => 'nama_institusi', default => 'perguruan_tinggi' },
+                            'provinsi' => $baseData === 'pengabdian' ? 'prov_pt' : 'provinsi',
+                            'tahun' => match($baseData) { 'penelitian' => 'thn_pelaksanaan', 'pengabdian' => 'thn_pelaksanaan_kegiatan', default => 'tahun' },
+                            default => $col
+                        };
+                        $query->where($dbCol, 'like', "%{$val}%");
+                    }
+                }
+                
+                $count = $query->delete();
+            } else {
+                $request->validate(['ids' => 'required|array']);
+                $count = $model::whereIn('id', $request->ids)->delete();
+            }
+        }
+
+        $this->clearModuleCache();
+        return back()->with('success', "{$count} data berhasil dihapus.");
+    }
+
     public function destroy(Request $request, $id)
     {
         $type = $request->get('type', 'provinsi');

@@ -306,10 +306,33 @@ class HilirisasiController extends Controller
 
     public function bulkDestroy(Request $request)
     {
-        $request->validate(['ids' => 'required|array']);
-        Hilirisasi::whereIn('id', $request->ids)->delete();
+        if ($request->ids === 'all') {
+            $query = Hilirisasi::query();
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('judul', 'like', "%{$search}%")
+                        ->orWhere('id_proposal', 'like', "%{$search}%")
+                        ->orWhere('nama_pengusul', 'like', "%{$search}%")
+                        ->orWhere('perguruan_tinggi', 'like', "%{$search}%")
+                        ->orWhere('mitra', 'like', "%{$search}%");
+                });
+            }
+            if ($request->filled('filters')) {
+                foreach ($request->filters as $key => $value) {
+                    if (!empty($value)) {
+                        $query->where($key, 'like', "%{$value}%");
+                    }
+                }
+            }
+            $count = $query->delete();
+        } else {
+            $request->validate(['ids' => 'required|array']);
+            $count = Hilirisasi::whereIn('id', $request->ids)->delete();
+        }
+
         $this->clearModuleCache();
-        return back()->with('success', count($request->ids) . ' data berhasil dihapus.');
+        return back()->with('success', "{$count} data hilirisasi berhasil dihapus.");
     }
 
     public function bulkUpdate(Request $request)
@@ -389,7 +412,7 @@ class HilirisasiController extends Controller
             'mitra', 'skema', 'luaran'
         );
 
-        if ($request->filled('ids')) {
+        if ($request->filled('ids') && $request->ids !== 'all') {
             $ids = explode(',', $request->ids);
             $query->whereIn('id', $ids);
         }
