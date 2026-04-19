@@ -158,20 +158,7 @@ class ProdukPageController extends Controller
                     ->values();
             }),
             'provinsi' => Cache::remember('global_provinces_list', 86400, function() {
-                try {
-                    $response = Http::timeout(10)->retry(2, 1000)->get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
-                    if ($response->successful()) {
-                        return collect($response->json())
-                            ->map(fn($p) => str()->title($p['name']))
-                            ->sort()
-                            ->values()
-                            ->all();
-                    }
-                } catch (\Exception $e) {
-                    \Log::warning('Failed to fetch provinces', ['error' => $e->getMessage()]);
-                }
-                
-                // Fallback to local data
+                // Use local data directly - more reliable for production
                 $path = storage_path('provinces.json');
                 if (file_exists($path)) {
                     $data = json_decode(file_get_contents($path), true);

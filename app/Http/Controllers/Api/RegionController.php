@@ -12,18 +12,22 @@ class RegionController extends Controller
     public function provinces()
     {
         return Cache::remember('provinces', 86400, function () {
-            try {
-                // Use GitHub Pages version for better reliability/CORS bypass on server side
-                $response = Http::timeout(10)->retry(2, 1000)->get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
-                
-                if ($response->successful()) {
-                    return $response->json();
+            // Try API only in development/local
+            if (app()->environment('local')) {
+                try {
+                    $response = Http::timeout(10)->retry(2, 1000)->withOptions([
+                        'allow_redirects' => false
+                    ])->get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
+                    
+                    if ($response->successful()) {
+                        return $response->json();
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to fetch provinces from API', ['error' => $e->getMessage()]);
                 }
-            } catch (\Exception $e) {
-                \Log::warning('Failed to fetch provinces from API', ['error' => $e->getMessage()]);
             }
             
-            // Fallback to local data if API fails
+            // Always use local data (more reliable)
             return $this->getLocalProvinces();
         });
     }
