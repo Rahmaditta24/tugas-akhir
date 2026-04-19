@@ -7,6 +7,7 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
 class PengabdianPageController extends Controller
@@ -196,15 +197,16 @@ class PengabdianPageController extends Controller
 
         // Get filter options (cached)
         $filterOptions = [
-            'provinsi' => Cache::remember('filter_pengabdian_provinsi_' . $v, 7200, function() {
-                return DB::table('pengabdian')
-                    ->select('prov_pt')
-                    ->whereNotNull('prov_pt')
-                    ->distinct()
-                    ->orderBy('prov_pt')
-                    ->pluck('prov_pt')
-                    ->filter()
-                    ->values();
+            'provinsi' => Cache::remember('global_provinces_list', 86400, function() {
+                $response = Http::get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
+                if ($response->successful()) {
+                    return collect($response->json())
+                        ->map(fn($p) => str()->title($p['name']))
+                        ->sort()
+                        ->values()
+                        ->all();
+                }
+                return [];
             }),
             'tahun' => Cache::remember('filter_pengabdian_tahun_' . $v, 7200, function() {
                 return DB::table('pengabdian')

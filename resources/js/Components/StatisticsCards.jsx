@@ -33,7 +33,7 @@ function AnimatedCounter({ value, duration = 300 }) {
     return <span>{displayValue.toLocaleString('en-US')}</span>;
 }
 
-export default function StatisticsCards({ stats, labels = {} }) {
+function StatisticsCards({ stats, labels = {} }) {
     const defaultLabels = {
         totalResearch: 'Total Penelitian',
         totalUniversities: 'Total Perguruan Tinggi',
@@ -106,13 +106,13 @@ export default function StatisticsCards({ stats, labels = {} }) {
             {activeCards.map((card, index) => (
                 <div
                     key={index}
-                    className="text-white rounded-lg shadow-lg h-24 bg-no-repeat bg-cover"
+                    className="text-white rounded-lg shadow-lg h-24 bg-no-repeat bg-cover overflow-hidden"
                     style={card.bgStyle}
                 >
-                    <div className="flex h-full rounded-lg">
-                        <div className="py-5 px-5 flex flex-col gap-1">
-                            <p className="text-md font-medium">{card.title}</p>
-                            <p className="text-3xl font-bold drop-shadow-sm">
+                    <div className="flex h-full w-full bg-black/10 hover:bg-black/0 transition-colors duration-300">
+                        <div className="py-5 px-5 flex flex-col gap-1 justify-center">
+                            <p className="text-sm font-medium uppercase tracking-wider text-white/90">{card.title}</p>
+                            <p className="text-3xl font-bold drop-shadow-md">
                                 <AnimatedCounter value={card.value} duration={300} />
                             </p>
                         </div>
@@ -122,3 +122,5 @@ export default function StatisticsCards({ stats, labels = {} }) {
         </div>
     );
 }
+
+export default React.memo(StatisticsCards);

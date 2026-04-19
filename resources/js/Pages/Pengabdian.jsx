@@ -42,7 +42,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     const filterOptions = {
         dataType: ['Multitahun, Batch I & Batch II', 'Kosabangsa'],
         skema: filters.dataType === 'Kosabangsa' ? ['Kosabangsa'] : allSkemas,
-        provinsi: serverFilterOptions.provinsi || ['Jawa Barat', 'Jawa Timur', 'DKI Jakarta'],
+        provinsi: serverFilterOptions.provinsi || [],
         tahun: serverFilterOptions.tahun || ['2020', '2021', '2022', '2023', '2024', '2025', '2026'],
     };
 

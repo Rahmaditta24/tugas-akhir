@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Produk;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Inertia\Inertia;
 
 class ProdukController extends Controller
 {
@@ -544,48 +544,18 @@ class ProdukController extends Controller
 
     public function getProvinces()
     {
-        // Daftar provinsi dari script-produk.js yang valid untuk data produk
-        $provinces = [
-            'Aceh',
-            'Sumatera Utara',
-            'Sumatera Barat',
-            'Riau',
-            'Kepulauan Riau',
-            'Jambi',
-            'Sumatera Selatan',
-            'Bengkulu',
-            'Lampung',
-            'Kepulauan Bangka Belitung',
-            'Banten',
-            'DKI Jakarta',
-            'Jawa Barat',
-            'Jawa Tengah',
-            'DI Yogyakarta',
-            'Jawa Timur',
-            'Bali',
-            'Nusa Tenggara Barat',
-            'Nusa Tenggara Timur',
-            'Kalimantan Barat',
-            'Kalimantan Tengah',
-            'Kalimantan Selatan',
-            'Kalimantan Timur',
-            'Kalimantan Utara',
-            'Sulawesi Utara',
-            'Gorontalo',
-            'Sulawesi Tengah',
-            'Sulawesi Barat',
-            'Sulawesi Selatan',
-            'Maluku',
-            'Maluku Utara',
-            'Papua',
-            'Papua Barat',
-            'Papua Barat Daya',
-            'Papua Selatan',
-            'Papua Tengah',
-            'Papua Pegunungan'
-        ];
+        $provinces = Cache::remember('provinces', 86400, function () {
+            $response = Http::get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
+            return $response->json();
+        });
 
-        return response()->json($provinces);
+        // Ambil hanya nama provinsi, diurutkan alfabetis
+        $names = collect($provinces)
+            ->pluck('name')
+            ->map(fn($name) => ucwords(strtolower($name)))
+            ->sort()
+            ->values();
+
+        return response()->json($names);
     }
-
 }

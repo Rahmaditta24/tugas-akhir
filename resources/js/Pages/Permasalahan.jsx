@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
+import axios from 'axios';
 import MainLayout from '../Layouts/MainLayout';
 import NavigationTabs from '../Components/NavigationTabs';
 import PermasalahanMap from '../Components/PermasalahanMap';
@@ -34,6 +35,14 @@ export default function Permasalahan({
     const [legendData, setLegendData] = useState({ min: 0, max: 1, satuan: '', activeDataType: filters.dataType });
     const [selectedMetrik, setSelectedMetrik] = useState('saidi');
     const [selectedResearch, setSelectedResearch] = useState(null);
+    const [provinces, setProvinces] = useState([]);
+
+    // Fetch provinces from API (Emsifa via backend, cached)
+    useEffect(() => {
+        axios.get('/api/provinces')
+            .then(res => setProvinces(res.data.map(p => p.name)))
+            .catch(() => {});
+    }, []);
 
     // Sync state with props
     useEffect(() => {
@@ -48,10 +57,15 @@ export default function Permasalahan({
 
     // Dynamic filter options based on bubbleType
     const filterOptions = {
-        dataType: jenisPermasalahan.length ? jenisPermasalahan : ['Sampah', 'Air', 'Udara', 'Tanah'],
+        dataType: jenisPermasalahan.length ? jenisPermasalahan : ['Sampah', 'Stunting', 'Gizi Buruk', 'Krisis Listrik', 'Ketahanan Pangan'],
         bubbleType: ['Penelitian', 'Pengabdian', 'Hilirisasi'],
         ...(allFilterOptions[filters.bubbleType] || {})
     };
+
+    // Ensure provinces are available if the controller didn't provide them (fallback)
+    if (!filterOptions.provinsi || filterOptions.provinsi.length === 0) {
+        filterOptions.provinsi = provinces;
+    }
 
     // Dynamic filter fields based on bubbleType
     const filterFields = [
@@ -190,7 +204,6 @@ export default function Permasalahan({
                     stats={stats}
                 />
 
-                {/* Metric selector for Krisis Listrik */}
                 <MapControls
                     onSearch={handleSearch}
                     onDisplayModeChange={() => { }}
@@ -233,7 +246,7 @@ export default function Permasalahan({
                         {filters.bubbleType === 'Hilirisasi' && filters.skema && ` (${Array.isArray(filters.skema) ? filters.skema.join(', ') : filters.skema})`}
                     </p>
                 </div>
-                <div className="text-gray-700">
+                <div className="text-gray-700 font-medium">
                     <span className="font-bold text-gray-900">Sumber Data:</span> {
                         filters.dataType === 'Sampah' ? 'Kementerian Lingkungan Hidup 2024' :
                             filters.dataType === 'Stunting' ? 'SSGI 2024 Kementerian Kesehatan' :
@@ -283,18 +296,16 @@ export default function Permasalahan({
                     </div>
                 </section>
 
-                {/* Research list */}
                 <div className="mt-4">
                     <ResearchList
                         researches={researches}
                         totalCount={stats?.totalResearch || 0}
-                        isFiltered={researches.length > 0}
+                        isFiltered={isFiltered}
                         isPermasalahanPage={true}
                         onItemClick={(research) => setSelectedResearch({ ...research, bubbleType: research.bubbleType || filters.bubbleType || 'Penelitian' })}
                     />
                 </div>
 
-                {/* Data table: province & kabupaten */}
                 <div className="mt-4">
                     <PermasalahanDataTable
                         rows={permasalahanStats[filters.dataType] || []}
@@ -315,5 +326,3 @@ export default function Permasalahan({
         </MainLayout>
     );
 }
-
-

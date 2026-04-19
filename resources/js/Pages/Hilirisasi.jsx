@@ -29,11 +29,11 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
         setSearchTerm(initialFilters.search || '');
     }, [initialFilters]);
 
-    // Mock options for Hilirisasi
+    // Filter options from server (provinces come from backend via DB query)
     const filterOptions = {
         direktorat: serverFilterOptions.direktorat || ['Direktorat A', 'Direktorat B'],
         skema: serverFilterOptions.skema || ['Skema A', 'Skema B'],
-        provinsi: serverFilterOptions.provinsi || ['Jawa Barat', 'Jawa Timur', 'DKI Jakarta'],
+        provinsi: serverFilterOptions.provinsi || [],
         tahun: serverFilterOptions.tahun || ['2020', '2021', '2022', '2023', '2024'],
     };
 

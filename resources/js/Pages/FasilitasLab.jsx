@@ -26,10 +26,10 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
         setSearchTerm(initialFilters.search || '');
     }, [initialFilters]);
 
-    // Options for Fasilitas Lab
+    // Filter options from server (provinces come from backend via DB query)
     const filterOptions = {
         kampus_ptnbh: serverFilterOptions.kampus_ptnbh || ['Universitas Indonesia', 'Institut Teknologi Bandung'],
-        provinsi: serverFilterOptions.provinsi || ['Jawa Barat', 'Jawa Timur', 'DKI Jakarta'],
+        provinsi: serverFilterOptions.provinsi || [],
     };
 
     const filterFields = [

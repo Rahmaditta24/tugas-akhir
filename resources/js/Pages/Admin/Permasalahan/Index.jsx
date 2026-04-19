@@ -32,7 +32,6 @@ export default function Index({
     useEffect(() => {
         const handler = setTimeout(() => {
             const hasChanged = JSON.stringify(localColumnFilters) !== JSON.stringify(columnFilters);
-
             if (hasChanged) {
                 setColumnFilters(localColumnFilters);
                 router.get(route('admin.permasalahan.index'), {
@@ -49,7 +48,6 @@ export default function Index({
         setLocalStats(stats);
         setIsStatsLoading(false);
     }, [stats]);
-
 
     const sumberDataMap = {
         sampah: 'Kementerian Lingkungan Hidup 2024',
@@ -129,7 +127,6 @@ export default function Index({
         });
     };
 
-
     const handleJenisChange = (e) => {
         const val = e.target.value;
         setJenis(val);
@@ -197,7 +194,6 @@ export default function Index({
         window.location.href = route('admin.permasalahan.export-csv') + '?' + params.toString();
     };
 
-
     const handleDelete = (id, type) => {
         if (!confirm('Yakin ingin menghapus data ini?')) return;
         router.delete(route('admin.permasalahan.destroy', id), {
@@ -206,7 +202,6 @@ export default function Index({
         });
     };
 
-    // Helper to get formatted value (standardizing column names)
     const getVal = (item, key) => {
         if (key === 'judul') return display(item.judul);
         if (key === 'peneliti') return display(item.nama || item.nama_pengusul || item.peneliti);
@@ -217,7 +212,7 @@ export default function Index({
     };
 
     return (
-        <AdminLayout title="">
+        <AdminLayout title="Permasalahan">
             <div className="space-y-4">
                 <PageHeader
                     title="Data Permasalahan"
@@ -227,7 +222,7 @@ export default function Index({
                         <div className="flex gap-2">
                             <button
                                 onClick={handleExportCSV}
-                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
+                                className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center text-sm font-bold shadow-sm active:scale-95"
                             >
                                 <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -239,83 +234,85 @@ export default function Index({
                 />
 
                 {/* Stats Cards */}
-                {(baseData === 'statistik' || baseData === 'penelitian' || baseData === 'pengabdian' || baseData === 'hilirisasi') && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
-                        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 sm:gap-4">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h18M3 12h18M3 19h18" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider truncate">{baseData === 'statistik' ? 'Total Provinsi' : 'Total Institusi'}</p>
-                                    <p className="text-xl sm:text-2xl font-black text-slate-800">
-                                        {isStatsLoading ? '...' : (baseData === 'statistik' ? (localStats.totalProvinsi || 0).toLocaleString('id-ID') : (localStats.totalInstitusi || 0).toLocaleString('id-ID'))}
-                                    </p>
-                                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
                             </div>
-                        </div>
-
-                        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 sm:gap-4">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider truncate">{baseData === 'statistik' ? 'Total Kabupaten' : 'Total Provinsi'}</p>
-                                    <p className="text-xl sm:text-2xl font-black text-slate-800">
-                                        {isStatsLoading ? '...' : (baseData === 'statistik' ? (localStats.totalKabupaten || 0).toLocaleString('id-ID') : (localStats.totalProvinsi || 0).toLocaleString('id-ID'))}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-100">
-                            <div className="flex items-center gap-3 sm:gap-4">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                                    <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
-                                    </svg>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold tracking-wider truncate">Total Data</p>
-                                    <p className="text-xl sm:text-2xl font-black text-slate-800">
-                                        {isStatsLoading ? '...' : (localStats.total || 0).toLocaleString('id-ID')}
-                                    </p>
-                                </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest truncate">{baseData === 'statistik' ? 'Total Provinsi' : 'Total Institusi'}</p>
+                                <p className="text-2xl font-black text-slate-800">
+                                    {isStatsLoading ? '...' : (baseData === 'statistik' ? (localStats.totalProvinsi || 0).toLocaleString('id-ID') : (localStats.totalInstitusi || 0).toLocaleString('id-ID'))}
+                                </p>
                             </div>
                         </div>
                     </div>
-                )}
 
-                <div className="bg-white rounded-lg shadow-sm">
-                    <div className="p-4 sm:p-6 border-b border-slate-200/60">
-                        <form onSubmit={handleSearch} className="space-y-4">
-                            {/* Row 1: Search and Main Actions */}
-                            <div className="flex flex-col sm:flex-row gap-3 items-end">
-                                <div className="w-full flex-1">
-                                    <label className="block text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                                        {baseData === 'statistik' ? 'Cari Provinsi / Jenis' : 'Cari Riset'}
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+                                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                                </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest truncate">{baseData === 'statistik' ? 'Total Kabupaten' : 'Total Provinsi'}</p>
+                                <p className="text-2xl font-black text-slate-800">
+                                    {isStatsLoading ? '...' : (baseData === 'statistik' ? (localStats.totalKabupaten || 0).toLocaleString('id-ID') : (localStats.totalProvinsi || 0).toLocaleString('id-ID'))}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0h6m2 0h2a2 2 0 002-2v-3a2 2 0 00-2-2h-2m-2 0H5" />
+                                </svg>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest truncate">Total Data</p>
+                                <p className="text-2xl font-black text-slate-800">
+                                    {isStatsLoading ? '...' : (localStats.total || 0).toLocaleString('id-ID')}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-100">
+                    <div className="p-6 border-b border-slate-100 bg-slate-50/30">
+                        <form onSubmit={handleSearch} className="space-y-6">
+                            <div className="flex flex-col sm:flex-row gap-4 items-end">
+                                <div className="flex-1 w-full">
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">
+                                        {baseData === 'statistik' ? 'Cari Wilayah / Jenis' : 'Cari Judul / Peneliti'}
                                     </label>
-                                    <input
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                        placeholder={baseData === 'statistik' ? 'Cari provinsi atau jenis...' : 'Cari judul, peneliti / pengusul...'}
-                                        className="w-full px-4 py-1.5 sm:py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                                    />
+                                    <div className="relative group">
+                                        <input
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            placeholder={baseData === 'statistik' ? 'Ketik nama provinsi atau jenis...' : 'Ketik judul atau nama pengusul...'}
+                                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm group-hover:border-slate-300"
+                                        />
+                                        <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                        </svg>
+                                    </div>
                                 </div>
                                 <div className="flex gap-2 w-full sm:w-auto">
-                                    <button type="submit" className="flex-1 sm:flex-none px-5 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold text-sm transition-all active:scale-95 shadow-sm shadow-blue-100">
+                                    <button type="submit" className="flex-1 sm:flex-none px-8 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-bold text-sm transition-all active:scale-95 shadow-sm shadow-blue-200">
                                         Cari
                                     </button>
                                     {(filters.search || filters.batch_type || Object.values(columnFilters).some(v => v)) && (
                                         <Link
                                             href={route('admin.permasalahan.index', { baseData, jenis })}
                                             onClick={() => setBatchType('')}
-                                            className="flex-1 sm:flex-none px-5 py-1.5 sm:py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-bold transition-colors text-sm text-center"
+                                            className="flex-1 sm:flex-none px-6 py-2.5 bg-white text-slate-600 rounded-xl hover:bg-slate-50 border border-slate-200 font-bold transition-all text-sm text-center shadow-sm"
                                         >
                                             Reset
                                         </Link>
@@ -323,14 +320,13 @@ export default function Index({
                                 </div>
                             </div>
 
-                            {/* Row 2: Secondary Filters */}
-                            <div className="flex gap-4 items-end flex-wrap border-t border-slate-100 pt-4">
-                                <div className="w-fit min-w-[140px] sm:min-w-[200px]">
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Base Data</label>
+                            <div className="flex gap-4 items-end flex-wrap pt-4 border-t border-slate-100">
+                                <div className="w-full sm:w-auto min-w-[200px]">
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Base Data</label>
                                     <select
                                         value={baseData}
                                         onChange={handleBaseDataChange}
-                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
+                                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-semibold text-slate-700"
                                     >
                                         <option value="statistik">Data Statistik (Raw)</option>
                                         <option value="penelitian">Data Penelitian</option>
@@ -340,8 +336,8 @@ export default function Index({
                                 </div>
 
                                 {baseData === 'pengabdian' && (
-                                    <div className="w-fit min-w-[140px] sm:min-w-[200px]">
-                                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Jenis Pengabdian</label>
+                                    <div className="w-full sm:w-auto min-w-[200px]">
+                                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Jenis Pengabdian</label>
                                         <select
                                             value={batchType}
                                             onChange={(e) => {
@@ -350,7 +346,7 @@ export default function Index({
                                                     search, perPage, baseData, jenis, batch_type: e.target.value, sort, direction, tab: activeTab
                                                 }, { preserveState: true, replace: true });
                                             }}
-                                            className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
+                                            className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-semibold text-slate-700"
                                         >
                                             <option value="Multitahun Lanjutan, Batch I & Batch II">Multitahun Lanjutan, Batch I & Batch II</option>
                                             <option value="Kosabangsa">Kosabangsa</option>
@@ -358,12 +354,12 @@ export default function Index({
                                     </div>
                                 )}
 
-                                <div className="w-fit min-w-[140px] sm:min-w-[180px]">
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tipe Permasalahan</label>
+                                <div className="w-full sm:w-auto min-w-[200px]">
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Kategori</label>
                                     <select
                                         value={jenis}
                                         onChange={handleJenisChange}
-                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
+                                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-semibold text-slate-700"
                                     >
                                         <option value="Sampah">Sampah</option>
                                         <option value="Stunting">Stunting</option>
@@ -374,30 +370,32 @@ export default function Index({
                                 </div>
 
                                 {jenis === 'Krisis Listrik' && baseData !== 'statistik' && (
-                                    <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                                    <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
                                         <button
                                             type="button"
                                             onClick={() => handleListrikModeChange('SAIDI')}
-                                            className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${listrikMode === 'SAIDI' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                            className={`px-6 py-1.5 text-xs font-black rounded-lg transition-all ${listrikMode === 'SAIDI' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                         >
                                             SAIDI
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => handleListrikModeChange('SAIFI')}
-                                            className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${listrikMode === 'SAIFI' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                            className={`px-6 py-1.5 text-xs font-black rounded-lg transition-all ${listrikMode === 'SAIFI' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                                         >
                                             SAIFI
                                         </button>
                                     </div>
                                 )}
 
-                                <div className="w-fit sm:ml-auto flex items-center gap-2">
-                                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">Per halaman</span>
+                                <div className="flex-1"></div>
+
+                                <div className="w-full sm:w-auto">
+                                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Rows</label>
                                     <select
                                         value={perPage}
                                         onChange={handlePerPageChange}
-                                        className="w-fit px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
+                                        className="w-full px-4 py-2 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-semibold text-slate-700"
                                     >
                                         <option value={20}>20</option>
                                         <option value={50}>50</option>
@@ -408,57 +406,56 @@ export default function Index({
                         </form>
                     </div>
 
-                    <div className="p-4 pt-1">
-                        {/* Tab Switcher (Only in Statistik mode) */}
+                    <div className="p-6">
                         {baseData === 'statistik' && (
-                            <div className="flex gap-1 bg-slate-100 p-1 rounded-lg w-fit mb-6">
+                            <div className="flex gap-2 bg-slate-100 p-1.5 rounded-2xl w-fit mb-8 shadow-inner">
                                 <button
                                     onClick={() => handleTabChange('provinsi')}
-                                    className={`px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${activeTab === 'provinsi' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-8 py-2.5 text-sm font-black rounded-xl transition-all duration-300 ${activeTab === 'provinsi' ? 'bg-white text-blue-600 shadow-lg scale-100' : 'text-slate-500 hover:text-slate-700 scale-95 opacity-70'}`}
                                 >
                                     Provinsi
                                 </button>
                                 <button
                                     onClick={() => handleTabChange('kabupaten')}
-                                    className={`px-4 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${activeTab === 'kabupaten' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`px-8 py-2.5 text-sm font-black rounded-xl transition-all duration-300 ${activeTab === 'kabupaten' ? 'bg-white text-blue-600 shadow-lg scale-100' : 'text-slate-500 hover:text-slate-700 scale-95 opacity-70'}`}
                                 >
                                     Kabupaten/Kota
                                 </button>
                             </div>
                         )}
 
-                        {/* Mode 1: Statistik View */}
                         {baseData === 'statistik' ? (
-                            <>
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 {activeTab === 'provinsi' ? (
                                     <>
                                         <AdminTable
                                             striped
                                             columns={
                                                 normalizedJenis === 'sampah' ? [
-                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
+                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
-                                                    { key: 'timbulan_tahunan_ton', title: 'Timbulan Sampah Tahunan (ton)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
+                                                    { key: 'timbulan_tahunan_ton', title: 'Timbulan Sampah Tahunan (ton)', render: (v) => <span className="font-black text-slate-800">{display(v === 0 ? '0' : Number(v).toLocaleString('id-ID'))}</span> },
                                                 ] : normalizedJenis === 'krisis_listrik' ? [
-                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
+                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'satuan_pln_provinsi', title: 'Satuan PLN/Provinsi', render: (v) => display(v) },
-                                                    { key: 'saidi', title: 'SAIDI (Jam/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                    { key: 'saifi', title: 'SAIFI (Kali/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
+                                                    { key: 'saidi', title: 'SAIDI (Jam/Pelanggan)', render: (v) => <span className="font-black text-slate-800">{display(v === 0 ? '0' : Number(v).toLocaleString('id-ID'))}</span> },
+                                                    { key: 'saifi', title: 'SAIFI (Kali/Pelanggan)', render: (v) => <span className="font-black text-slate-800">{display(v === 0 ? '0' : Number(v).toLocaleString('id-ID'))}</span> },
                                                 ] : normalizedJenis === 'ketahanan_pangan' ? [
-                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
+                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
-                                                    { key: 'ikp', title: 'IKP', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
+                                                    { key: 'ikp', title: 'IKP', render: (v) => <span className="font-black text-slate-800">{display(v === 0 ? '0' : Number(v).toLocaleString('id-ID'))}</span> },
                                                 ] : [
-                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
+                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
-                                                    { key: 'persentase', title: 'Persentase', render: (v) => display(v) },
+                                                    { key: 'persentase', title: 'Persentase', render: (v) => <span className="font-black text-slate-800">{display(v)}%</span> },
                                                 ]
                                             }
                                             data={permasalahanProvinsi.data || []}
                                         />
-                                        <div className="mt-3 text-sm text-slate-600 p-2 bg-slate-50 rounded-lg border border-slate-100">
-                                            <span className="font-bold text-slate-700">Sumber Data:</span> {sumberText}
+                                        <div className="mt-6 text-xs text-slate-400 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
+                                            <span className="font-bold uppercase tracking-widest text-[10px] text-slate-500">Sumber Data:</span> {sumberText}
                                         </div>
                                         <Pagination data={permasalahanProvinsi} />
                                     </>
@@ -468,37 +465,41 @@ export default function Index({
                                             striped
                                             columns={
                                                 normalizedJenis === 'sampah' ? [
-                                                    { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
+                                                    { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
+                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
-                                                    { key: 'timbulan_tahunan_ton', title: 'Timbulan Sampah Tahunan (ton)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
+                                                    { key: 'timbulan_tahunan_ton', title: 'Timbulan Sampah Tahunan (ton)', render: (v) => <span className="font-black text-slate-800">{display(v === 0 ? '0' : Number(v).toLocaleString('id-ID'))}</span> },
                                                 ] : normalizedJenis === 'krisis_listrik' ? [
-                                                    { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
+                                                    { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
+                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                                                     { key: 'satuan_pln_provinsi', title: 'Satuan PLN/Provinsi', render: (v) => display(v) },
-                                                    { key: 'saidi', title: 'SAIDI (Jam/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
-                                                    { key: 'saifi', title: 'SAIFI (Kali/Pelanggan)', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
+                                                    { key: 'saidi', title: 'SAIDI (Jam/Pelanggan)', render: (v) => <span className="font-black text-slate-800">{display(v === 0 ? '0' : Number(v).toLocaleString('id-ID'))}</span> },
+                                                    { key: 'saifi', title: 'SAIFI (Kali/Pelanggan)', render: (v) => <span className="font-black text-slate-800">{display(v === 0 ? '0' : Number(v).toLocaleString('id-ID'))}</span> },
                                                 ] : normalizedJenis === 'ketahanan_pangan' ? [
-                                                    { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
+                                                    { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
+                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
-                                                    { key: 'ikp', title: 'IKP', render: (v) => display(v === 0 ? '0' : Number(v).toLocaleString('id-ID')) },
+                                                    { key: 'ikp', title: 'IKP', render: (v) => <span className="font-black text-slate-800">{display(v === 0 ? '0' : Number(v).toLocaleString('id-ID'))}</span> },
                                                 ] : [
-                                                    { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => titleCase(v) },
+                                                    { key: 'kabupaten_kota', title: 'Kabupaten/Kota', render: (v) => <span className="font-bold text-slate-700">{titleCase(v)}</span> },
+                                                    { key: 'provinsi', title: 'Provinsi', render: (v) => titleCase(v) },
                                                     { key: 'jenis_permasalahan', title: 'Jenis', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
-                                                    { key: 'persentase', title: 'Persentase', render: (v) => display(v) },
+                                                    { key: 'persentase', title: 'Persentase', render: (v) => <span className="font-black text-slate-800">{display(v)}%</span> },
                                                 ]
                                             }
                                             data={permasalahanKabupaten.data || []}
                                         />
-                                        <div className="mt-3 text-sm text-slate-600 p-2 bg-slate-50 rounded-lg border border-slate-100">
-                                            <span className="font-bold text-slate-700">Sumber Data:</span> {sumberText}
+                                        <div className="mt-6 text-xs text-slate-400 p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-3">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></div>
+                                            <span className="font-bold uppercase tracking-widest text-[10px] text-slate-500">Sumber Data:</span> {sumberText}
                                         </div>
                                         <Pagination data={permasalahanKabupaten} />
                                     </>
                                 )}
-                            </>
+                            </div>
                         ) : (
-                            /* Mode 2: Overlaps Data */
-                            <>
+                            <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <AdminTable
                                     striped
                                     columnFilterEnabled={true}
@@ -506,12 +507,12 @@ export default function Index({
                                     onFilterChange={handleColumnFilterChange}
                                     sort={{ key: filters.sort, direction: filters.direction }}
                                     columns={[
-                                        { key: 'no', title: 'No', className: 'w-12 text-center' },
-                                        { key: 'judul', title: 'Judul Riset', sortable: true, className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-xs sm:text-sm leading-relaxed" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
-                                        { key: 'peneliti', title: 'Peneliti / Pengusul', sortable: true, className: 'min-w-[180px]', render: (_, item) => <div className="text-xs sm:text-sm">{getVal(item, 'peneliti')}</div> },
-                                        { key: 'institusi', title: 'Institusi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <div className="truncate text-xs sm:text-sm" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
+                                        { key: 'no', title: 'No', className: 'w-16 text-center' },
+                                        { key: 'judul', title: 'Judul Riset', sortable: true, className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-sm leading-relaxed font-bold text-slate-800" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
+                                        { key: 'peneliti', title: 'Peneliti / Pengusul', sortable: true, className: 'min-w-[180px]', render: (_, item) => <div className="font-semibold text-slate-700">{getVal(item, 'peneliti')}</div> },
+                                        { key: 'institusi', title: 'Institusi', sortable: true, className: 'min-w-[200px]', render: (_, item) => <div className="truncate text-slate-600 text-xs" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
                                         { key: 'provinsi', title: 'Provinsi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <Badge color="blue">{getVal(item, 'provinsi')}</Badge> },
-                                        { key: 'tahun', title: 'Tahun', sortable: true, className: 'min-w-[100px] text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
+                                        { key: 'tahun', title: 'Tahun', sortable: true, className: 'min-w-[120px] text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
                                     ]}
                                     data={(data.data || []).map((item, index) => ({
                                         ...item,
@@ -519,7 +520,7 @@ export default function Index({
                                     }))}
                                 />
                                 <Pagination data={data} />
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -528,24 +529,23 @@ export default function Index({
     );
 }
 
-// Internal Pagination Component for cleaner main component
 function Pagination({ data }) {
     if ((data.last_page || 1) <= 1) return null;
     return (
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-slate-600 text-center sm:text-left">
-                Menampilkan {data.from?.toLocaleString('id-ID')} - {data.to?.toLocaleString('id-ID')} dari {data.total?.toLocaleString('id-ID')} data
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-slate-50 mt-6">
+            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                Menampilkan <span className="text-slate-600">{data.from?.toLocaleString('id-ID')}</span> - <span className="text-slate-600">{data.to?.toLocaleString('id-ID')}</span> dari <span className="text-slate-600 font-black">{data.total?.toLocaleString('id-ID')}</span> data
             </div>
-            <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
+            <div className="flex flex-wrap justify-center gap-1.5">
                 {(data.links || []).map((link, index) => {
                     let label = link.label;
-                    if (label.includes('Previous')) label = '&laquo;';
-                    if (label.includes('Next')) label = '&raquo;';
+                    if (label.includes('Previous')) label = '←';
+                    if (label.includes('Next')) label = '→';
                     return (
                         <Link
                             key={index}
                             href={link.url || '#'}
-                            className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded transition-colors ${link.active ? 'bg-blue-600 text-white font-semibold shadow-sm' : link.url ? 'bg-slate-50 text-slate-600 hover:bg-slate-200 border border-slate-100' : 'bg-white text-slate-300 border border-slate-100 cursor-not-allowed pointer-events-none'}`}
+                            className={`min-w-[36px] h-9 flex items-center justify-center text-xs font-black rounded-xl transition-all ${link.active ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : link.url ? 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200' : 'bg-slate-50 text-slate-300 border border-slate-100 cursor-not-allowed pointer-events-none'}`}
                             dangerouslySetInnerHTML={{ __html: label }}
                             preserveScroll={true}
                         />
@@ -555,4 +555,3 @@ function Pagination({ data }) {
         </div>
     );
 }
-

@@ -480,10 +480,12 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                         <button
                             onClick={() => handleTypeChange('batch')}
                             className={`px-8 py-4 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${(filters.type || 'batch') === 'batch'
+                            className={`px-8 py-4 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${(filters.type || 'batch') === 'batch'
                                 ? 'border-amber-600 text-amber-600 bg-amber-50/50'
                                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-50'
                                 }`}
                         >
+                            📦 Multitahun, Batch I & Batch II
                             📦 Multitahun, Batch I & Batch II
                         </button>
                         <button
