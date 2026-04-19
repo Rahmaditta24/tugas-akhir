@@ -93,9 +93,10 @@ class HilirisasiPageController extends Controller
             'totalFields' => (clone $statsQ)->distinct('skema')->count('skema'),
         ];
 
-        $cacheKey = 'map_data_hilirisasi_v4_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_hilirisasi_v5_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
-            DB::statement('SET SESSION group_concat_max_len = 1000000');
+            // PERFORMANCE OPTIMIZATION: Remove GROUP_CONCAT, load details on demand
+            // Only return summary data for map pins
             $query = (clone $baseQuery)
                 ->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
@@ -103,12 +104,8 @@ class HilirisasiPageController extends Controller
                     DB::raw('perguruan_tinggi as institusi_name'),
                     DB::raw('MAX(provinsi) as provinsi'),
                     DB::raw('COUNT(*) as total_penelitian'),
-                    DB::raw('GROUP_CONCAT(COALESCE(skema, "-") SEPARATOR "|") as all_fields'),
-                    DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as all_ids'),
-                    DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
-                    DB::raw('GROUP_CONCAT(CAST(tahun AS CHAR) SEPARATOR "|") as all_years'),
-                    DB::raw('GROUP_CONCAT(COALESCE(luaran, "-") SEPARATOR "|") as all_themes'),
-                    DB::raw('GROUP_CONCAT("-" SEPARATOR "|") as all_pt_types')
+                    DB::raw('MAX(skema) as sample_field'),
+                    DB::raw('GROUP_CONCAT(DISTINCT skema SEPARATOR "|") as skema_list')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -123,13 +120,10 @@ class HilirisasiPageController extends Controller
                     'pt_longitude' => (float)$item->pt_longitude,
                     'provinsi' => $item->provinsi,
                     'total_penelitian' => (int)$item->total_penelitian,
-                    'bidang_fokus' => $item->all_fields,
-                    'ids' => $item->all_ids,
-                    'titles' => $item->all_titles,
-                    'skema_list' => $item->all_fields, // Hilirisasi uses skema as field
-                    'tahun_list' => $item->all_years,
-                    'tema_list' => $item->all_themes,
-                    'jenis_pt_list' => $item->all_pt_types,
+                    'bidang_fokus' => $item->sample_field ?? '-',
+                    'skema_list' => $item->skema_list ?? '-',
+                    // REMOVED: ids, titles, researchers, etc.
+                    // Loaded via API when user clicks
                 ];
             })->all();
         });

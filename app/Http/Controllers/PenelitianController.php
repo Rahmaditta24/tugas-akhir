@@ -115,13 +115,11 @@ class PenelitianController extends Controller
             'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
         ];
 
-        // For map: MEMORY-EFFICIENT GEOGRAPHIC CLUSTERING
-        $cacheKey = 'map_data_cache_v5_' . md5(json_encode($request->all()));
+        // For map: OPTIMIZED - Remove GROUP_CONCAT, load details on demand
+        $cacheKey = 'map_data_cache_v6_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 300, function() use ($baseQuery) {
-            DB::statement('SET SESSION group_concat_max_len = 1000000');
-            // Aggregate by geographic location (rounded coordinates)
-
-
+            // PERFORMANCE OPTIMIZATION: Only return summary data for map pins
+            // Detailed information is loaded via /api/research/{type}/{id} when user clicks
             $aggregatedData = (clone $baseQuery)
                 ->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
@@ -129,14 +127,8 @@ class PenelitianController extends Controller
                     DB::raw('COUNT(*) as total_penelitian'),
                     DB::raw('institusi as institusi_name'),
                     DB::raw('MAX(provinsi) as provinsi'),
-                    DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, "-") SEPARATOR "|") as all_fields'),
-                    DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as all_ids'),
-                    DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
-                    DB::raw('GROUP_CONCAT(COALESCE(skema, "-") SEPARATOR "|") as all_skema'),
-                    DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan AS CHAR) SEPARATOR "|") as all_years'),
-                    DB::raw('GROUP_CONCAT(COALESCE(tema_prioritas, "-") SEPARATOR "|") as all_themes'),
-                    DB::raw('GROUP_CONCAT(COALESCE(jenis_pt, "-") SEPARATOR "|") as all_pt_types'),
-                    DB::raw('GROUP_CONCAT(COALESCE(nama, "-") SEPARATOR "|") as all_researchers')
+                    DB::raw('MAX(bidang_fokus) as sample_field'),
+                    DB::raw('GROUP_CONCAT(DISTINCT skema SEPARATOR "|") as skema_list')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -152,14 +144,10 @@ class PenelitianController extends Controller
                     'total_penelitian' => (int)$item->total_penelitian,
                     'institusi' => $item->institusi_name,
                     'provinsi' => $item->provinsi,
-                    'bidang_fokus' => $item->all_fields,
-                    'ids' => $item->all_ids,
-                    'titles' => $item->all_titles,
-                    'skema_list' => $item->all_skema,
-                    'tahun_list' => $item->all_years,
-                    'tema_list' => $item->all_themes,
-                    'jenis_pt_list' => $item->all_pt_types,
-                    'all_researchers' => $item->all_researchers,
+                    'bidang_fokus' => $item->sample_field ?? '-',
+                    'skema_list' => $item->skema_list ?? '-',
+                    // REMOVED: GROUP_CONCAT for ids, titles, researchers, etc.
+                    // These are loaded via API when user clicks on map pin
                 ];
             })->toArray();
 
