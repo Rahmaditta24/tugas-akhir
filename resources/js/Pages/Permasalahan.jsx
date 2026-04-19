@@ -1,15 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
 import MainLayout from '../Layouts/MainLayout';
 import NavigationTabs from '../Components/NavigationTabs';
-import PermasalahanMap from '../Components/PermasalahanMap';
 import MapControls from '../Components/MapControls';
 import StatisticsCards from '../Components/StatisticsCards';
 import PermasalahanLegend from '../Components/PermasalahanLegend';
 import ResearchList from '../Components/ResearchList';
 import PermasalahanDataTable from '../Components/PermasalahanDataTable';
-import PermasalahanDetailModal from '../Components/PermasalahanDetailModal';
+
+// Lazy-loaded components
+const PermasalahanMap = lazy(() => import('../Components/PermasalahanMap'));
+const PermasalahanDetailModal = lazy(() => import('../Components/PermasalahanDetailModal'));
+
+// Loading fallback
+const MapLoading = () => (
+    <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
+        <div className="text-gray-400 font-medium">Memuat peta...</div>
+    </div>
+);
 
 export default function Permasalahan({
     mapData = [],
@@ -188,21 +197,23 @@ export default function Permasalahan({
             <NavigationTabs activePage="permasalahan" />
 
             <div className="relative">
-                <PermasalahanMap
-                    mapData={mapData}
-                    permasalahanStats={permasalahanStats}
-                    permasalahanKabupatenStats={permasalahanKabupatenStats}
-                    activeDataType={Array.isArray(filters.dataType) ? filters.dataType[0] : (filters.dataType || 'Sampah')}
-                    bubbleType={filters.bubbleType}
-                    showBubbles={showBubbles}
-                    viewMode={viewMode}
-                    minPct={minPct}
-                    maxPct={maxPct}
-                    onLegendUpdate={setLegendData}
-                    selectedMetrik={selectedMetrik}
-                    onMetrikChange={setSelectedMetrik}
-                    stats={stats}
-                />
+                <Suspense fallback={<MapLoading />}>
+                    <PermasalahanMap
+                        mapData={mapData}
+                        permasalahanStats={permasalahanStats}
+                        permasalahanKabupatenStats={permasalahanKabupatenStats}
+                        activeDataType={Array.isArray(filters.dataType) ? filters.dataType[0] : (filters.dataType || 'Sampah')}
+                        bubbleType={filters.bubbleType}
+                        showBubbles={showBubbles}
+                        viewMode={viewMode}
+                        minPct={minPct}
+                        maxPct={maxPct}
+                        onLegendUpdate={setLegendData}
+                        selectedMetrik={selectedMetrik}
+                        onMetrikChange={setSelectedMetrik}
+                        stats={stats}
+                    />
+                </Suspense>
 
                 <MapControls
                     onSearch={handleSearch}
@@ -317,11 +328,13 @@ export default function Permasalahan({
             </div>
 
             {selectedResearch && (
-                <PermasalahanDetailModal
-                    isOpen={!!selectedResearch}
-                    data={selectedResearch}
-                    onClose={() => setSelectedResearch(null)}
-                />
+                <Suspense fallback={null}>
+                    <PermasalahanDetailModal
+                        isOpen={!!selectedResearch}
+                        data={selectedResearch}
+                        onClose={() => setSelectedResearch(null)}
+                    />
+                </Suspense>
             )}
         </MainLayout>
     );

@@ -1,14 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { router } from '@inertiajs/react';
 import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
 import MainLayout from '../Layouts/MainLayout';
 import NavigationTabs from '../Components/NavigationTabs';
-import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
 import StatisticsCards from '../Components/StatisticsCards';
-import ResearchList from '../Components/ResearchList';
-import ResearchModal from '../Components/ResearchModal';
+
+// Lazy-loaded components for better performance
+const MapContainer = lazy(() => import('../Components/MapContainer'));
+const ResearchList = lazy(() => import('../Components/ResearchList'));
+const ResearchModal = lazy(() => import('../Components/ResearchModal'));
+
+// Loading fallbacks
+const MapLoading = () => (
+    <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
+        <div className="text-gray-400 font-medium">Memuat peta...</div>
+    </div>
+);
+
+const ListLoading = () => (
+    <div className="space-y-3">
+        {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-20 bg-gray-100 animate-pulse rounded" />
+        ))}
+    </div>
+);
 
 export default function Home({ mapData = [], researches = [], stats = {}, filterOptions = {}, filters: initialFilters = {}, isFiltered = false }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
@@ -243,13 +260,15 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             <NavigationTabs activePage="penelitian" />
 
             <div className="relative">
-                <MapContainer
-                    mapData={mapData}
-                    data={researches}
-                    displayMode={displayMode}
-                    onStatsChange={handleStatsChange}
-                    filters={filters}
-                />
+                <Suspense fallback={<MapLoading />}>
+                    <MapContainer
+                        mapData={mapData}
+                        data={researches}
+                        displayMode={displayMode}
+                        onStatsChange={handleStatsChange}
+                        filters={filters}
+                    />
+                </Suspense>
 
                 <MapControls
                     onSearch={handleSearch}
@@ -271,22 +290,26 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                 <section className="bg-white/80 backdrop-blur-sm">
                     <div className="container mx-auto sm:px-6 lg:px-0">
                         <StatisticsCards stats={currentStats} />
-                        <ResearchList
-                            researches={researches}
-                            onAdvancedSearch={handleAdvancedSearch}
-                            isFiltered={isFiltered}
-                            isPenelitianPage={true}
-                            onItemClick={handleItemClick}
-                        />
+                        <Suspense fallback={<ListLoading />}>
+                            <ResearchList
+                                researches={researches}
+                                onAdvancedSearch={handleAdvancedSearch}
+                                isFiltered={isFiltered}
+                                isPenelitianPage={true}
+                                onItemClick={handleItemClick}
+                            />
+                        </Suspense>
                     </div>
                 </section>
             </div>
 
-            <ResearchModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                data={selectedResearch}
-            />
+            <Suspense fallback={null}>
+                <ResearchModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    data={selectedResearch}
+                />
+            </Suspense>
         </MainLayout>
     );
 }

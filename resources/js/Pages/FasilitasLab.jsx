@@ -1,12 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import MainLayout from '../Layouts/MainLayout';
 import { router } from '@inertiajs/react';
 import NavigationTabs from '../Components/NavigationTabs';
-import MapContainer from '../Components/MapContainer';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
 import StatisticsCards from '../Components/StatisticsCards';
-import ResearchModal from '../Components/ResearchModal';
+
+// Lazy-loaded components
+const MapContainer = lazy(() => import('../Components/MapContainer'));
+const ResearchModal = lazy(() => import('../Components/ResearchModal'));
+
+// Loading fallback
+const MapLoading = () => (
+    <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
+        <div className="text-gray-400 font-medium">Memuat peta...</div>
+    </div>
+);
 
 export default function FasilitasLab({ mapData = [], researches = [], stats = {}, title, isFiltered = false, filters: initialFilters = {}, filterOptions: serverFilterOptions = {} }) {
     const [displayMode, setDisplayMode] = useState('peneliti');
@@ -84,11 +93,13 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
             <NavigationTabs activePage="fasilitas-lab" />
 
             <div className="relative">
-                <MapContainer
-                    mapData={mapData}
-                    displayMode={displayMode}
-                    onCampusClick={handleCampusClick}
-                />
+                <Suspense fallback={<MapLoading />}>
+                    <MapContainer
+                        mapData={mapData}
+                        displayMode={displayMode}
+                        onCampusClick={handleCampusClick}
+                    />
+                </Suspense>
                 <MapControls
                     onSearch={handleSearch}
                     onDisplayModeChange={setDisplayMode}
@@ -137,17 +148,19 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
             </div>
 
             {selectedLab && (
-                <ResearchModal
-                    isOpen={!!selectedLab}
-                    data={{
-                        ...selectedLab,
-                        isFasilitasLab: true,
-                        currentDataType: 'fasilitas-lab',
-                        kampus_ptnbh: selectedLab.kampus_ptnbh || (filters.kampus_ptnbh ? 'PTNBH' : null),
-                        kategori_pt: selectedLab.kategori_pt || selectedLab.jenis_pt || selectedLab.ptn_pts || (filters.kampus_ptnbh ? 'PTNBH' : null),
-                    }}
-                    onClose={() => setSelectedLab(null)}
-                />
+                <Suspense fallback={null}>
+                    <ResearchModal
+                        isOpen={!!selectedLab}
+                        data={{
+                            ...selectedLab,
+                            isFasilitasLab: true,
+                            currentDataType: 'fasilitas-lab',
+                            kampus_ptnbh: selectedLab.kampus_ptnbh || (filters.kampus_ptnbh ? 'PTNBH' : null),
+                            kategori_pt: selectedLab.kategori_pt || selectedLab.jenis_pt || selectedLab.ptn_pts || (filters.kampus_ptnbh ? 'PTNBH' : null),
+                        }}
+                        onClose={() => setSelectedLab(null)}
+                    />
+                </Suspense>
             )}
         </MainLayout>
     );
