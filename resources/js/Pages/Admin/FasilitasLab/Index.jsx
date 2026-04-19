@@ -11,6 +11,7 @@ import ImportModal from '../../../Components/ImportModal';
 import BulkUpdateModal from '../../../Components/BulkUpdateModal';
 import CampusSelect from '../../../Components/CampusSelect';
 import LocationSelect from '../../../Components/LocationSelect';
+import HeaderActions from '../../../Components/Admin/HeaderActions';
 
 export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
     const { flash } = usePage().props;
@@ -339,43 +340,16 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                     subtitle="Kelola data fasilitas laboratorium"
                     icon={<span className="text-xl">🧪</span>}
                     actions={(
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                            <button
-                                onClick={handleExport}
-                                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all active:scale-95 text-xs sm:text-sm font-bold shadow-sm"
-                                title="Export CSV"
-                            >
-                                <svg className="w-6 h-6 sm:w-5 sm:h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                <span className="hidden sm:inline">
-                                    {selectedIds.length > 0 ? `Export Terpilih (${selectedIds.length})` : 'Export Data'}
-                                </span>
-                                {selectedIds.length > 0 && <span className="sm:hidden">{selectedIds.length}</span>}
-                            </button>
-
-                            <button
-                                onClick={() => setShowImportModal(true)}
-                                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition-all active:scale-95 text-xs sm:text-sm font-bold shadow-sm"
-                                title="Import Data"
-                            >
-                                <svg className="w-6 h-6 sm:w-5 sm:h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                                </svg>
-                                <span className="hidden sm:inline">Import Data</span>
-                            </button>
-
-                            <Link 
-                                href={route('admin.fasilitas-lab.create')} 
-                                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all active:scale-95 text-xs sm:text-sm font-bold shadow-sm"
-                            >
-                                <svg className="w-6 h-6 sm:w-5 sm:h-5 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                                </svg>
-                                <span className="hidden sm:inline">Tambah Data</span>
-                                <span className="sm:hidden">Tambah</span>
-                            </Link>
-                        </div>
+                        <HeaderActions
+                            onExport={handleExport}
+                            onImport={() => setShowImportModal(true)}
+                            linkCreate={route('admin.fasilitas-lab.create')}
+                            isImporting={isImporting}
+                            selectedCount={selectedIds.length}
+                            exportLabel="Export Data"
+                            exportSelectedLabel="Export Terpilih"
+                            createLabel="Tambah Data"
+                        />
                     )}
                 />
 

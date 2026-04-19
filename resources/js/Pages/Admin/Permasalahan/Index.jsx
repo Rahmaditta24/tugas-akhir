@@ -5,6 +5,7 @@ import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
 import { fmt, display, titleCase } from '../../../Utils/format';
+import HeaderActions from '../../../Components/Admin/HeaderActions';
 
 export default function Index({
     data = {},
@@ -224,17 +225,10 @@ export default function Index({
                     subtitle={baseData === 'statistik' ? "Daftar data statistik per wilayah" : "Daftar riset terkait kategori permasalahan"}
                     icon={<span className="text-xl">⚠️</span>}
                     actions={(
-                        <div className="flex gap-2">
-                            <button
-                                onClick={handleExportCSV}
-                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm"
-                            >
-                                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                Export CSV
-                            </button>
-                        </div>
+                        <HeaderActions
+                            onExport={handleExportCSV}
+                            exportLabel="Export CSV"
+                        />
                     )}
                 />
 

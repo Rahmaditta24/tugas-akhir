@@ -11,6 +11,8 @@ import ImportModal from '../../../Components/ImportModal';
 import BulkUpdateModal from '../../../Components/BulkUpdateModal';
 import CampusSelect from '../../../Components/CampusSelect';
 import LocationSelect from '../../../Components/LocationSelect';
+import HeaderActions from '../../../Components/Admin/HeaderActions';
+
 
 export default function Index({ hilirisasi, stats = {}, filters = {} }) {
     const { flash } = usePage().props;
@@ -404,45 +406,15 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                     subtitle="Kelola data hilirisasi riset"
                     icon={<span className="text-xl">🏭</span>}
                 actions={(
-                    <div className="flex flex-wrap gap-2 sm:gap-3">
-                        <button
-                            onClick={handleExport}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-50 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-emerald-600 hover:bg-emerald-100 transition-all active:scale-95 border border-emerald-200/50 shadow-sm sm:w-auto flex-1"
-                            title="Export Data"
-                        >
-                            <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            <span className="hidden sm:inline">
-                                {selectedIds.length > 0 ? `Export Terpilih (${selectedIds.length})` : 'Export Data'}
-                            </span>
-                            {selectedIds.length > 0 && <span className="sm:hidden">{selectedIds.length}</span>}
-                        </button>
-
-                        <button
-                            onClick={() => setShowImportModal(true)}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-50 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-amber-600 hover:bg-amber-100 transition-all active:scale-95 border border-amber-200/50 shadow-sm sm:w-auto flex-1"
-                            title="Import Data"
-                        >
-                            <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                            </svg>
-                            <span className="hidden sm:inline">Import Data</span>
-                            <span className="sm:hidden">Import</span>
-                        </button>
-
-                        <Link
-                            href={route('admin.hilirisasi.create')}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200 border border-blue-500 w-full sm:w-auto"
-                        >
-                            <svg className="h-5 w-5 sm:h-4 sm:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span className="hidden sm:inline">Tambah Data</span>
-                            <span className="sm:hidden">Tambah</span>
-                        </Link>
-                    </div>
+                    <HeaderActions
+                        onExport={handleExport}
+                        onImport={() => setShowImportModal(true)}
+                        isImporting={isImporting}
+                        linkCreate={route('admin.hilirisasi.create')}
+                        selectedCount={selectedIds.length}
+                    />
                 )}
+
                 />
 
                 {/* Statistics Cards */}

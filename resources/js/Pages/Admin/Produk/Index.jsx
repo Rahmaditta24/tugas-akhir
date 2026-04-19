@@ -10,6 +10,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import ImportModal from '../../../Components/ImportModal';
 import BulkUpdateModal from '../../../Components/BulkUpdateModal';
 import CampusSelect from '../../../Components/CampusSelect';
+import HeaderActions from '../../../Components/Admin/HeaderActions';
 
 export default function Index({ produk, stats = {}, filters = {} }) {
     const { flash } = usePage().props;
@@ -310,35 +311,16 @@ export default function Index({ produk, stats = {}, filters = {} }) {
                     subtitle="Kelola data produk dan paten"
                     icon={<span className="text-xl">📦</span>}
                     actions={(
-                        <div className="flex gap-2">
-                            <button
-                                onClick={handleExport}
-                                className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm active:scale-95"
-                            >
-                                <svg className="w-5 h-5 sm:w-4 sm:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                                {selectedIds.length > 0 ? `Export Terpilih (${selectedIds.length})` : 'Export Semua Data'}
-                            </button>
-
-                            <button
-                                onClick={() => setShowImportModal(true)}
-                                disabled={isImporting}
-                                className="px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors flex items-center justify-center text-sm font-medium shadow-sm disabled:opacity-50 active:scale-95"
-                            >
-                                {isImporting ? (
-                                    <span className="mr-2 h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
-                                ) : (
-                                    <svg className="w-5 h-5 sm:w-4 sm:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                                )}
-                                {isImporting ? 'Proses...' : 'Import Data'}
-                            </button>
-
-                            <Link
-                                href={route('admin.produk.create')}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center text-sm font-medium shadow-sm active:scale-95"
-                            >
-                                <span className="text-lg sm:text-base mr-1">+</span> Tambah
-                            </Link>
-                        </div>
+                        <HeaderActions
+                            onExport={handleExport}
+                            onImport={() => setShowImportModal(true)}
+                            linkCreate={route('admin.produk.create')}
+                            isImporting={isImporting}
+                            selectedCount={selectedIds.length}
+                            exportLabel="Export Semua Data"
+                            exportSelectedLabel="Export Terpilih"
+                            createLabel="Tambah"
+                        />
                     )}
                 />
 

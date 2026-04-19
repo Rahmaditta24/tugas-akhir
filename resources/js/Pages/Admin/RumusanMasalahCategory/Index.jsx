@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import PageHeader from '../../../Components/PageHeader';
+import HeaderActions from '../../../Components/Admin/HeaderActions';
 
 export default function RumusanMasalahCategoryIndex({ categories }) {
     // --- State Management ---
@@ -121,15 +123,17 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
                     {/* Header Page */}
-                    <div className="flex justify-between items-center mb-6 px-1">
-                        <h2 className="text-lg sm:text-xl font-bold text-gray-900">Kategori</h2>
-                        <button
-                            onClick={openCreateModal}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 sm:py-2 px-3 sm:px-5 rounded-lg shadow-sm transition-colors duration-200 text-xs sm:text-sm"
-                        >
-                            Tambah Kategori
-                        </button>
-                    </div>
+                    <PageHeader
+                        title="Kategori"
+                        subtitle="Manajemen kategori rumusan masalah"
+                        icon={<span className="text-xl">🏷️</span>}
+                        actions={(
+                            <HeaderActions
+                                onCreate={openCreateModal}
+                                createLabel="Tambah Kategori"
+                            />
+                        )}
+                    />
 
                     {/* Grid Layout */}
                     <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
