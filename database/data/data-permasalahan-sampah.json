@@ -1,0 +1,1450 @@
+{
+  "Provinsi": [
+    {
+      "Provinsi": "Aceh",
+      "Timbulan Sampah Tahunan(ton)": 940267.23
+    },
+    {
+      "Provinsi": "Sumatera Utara",
+      "Timbulan Sampah Tahunan(ton)": 1108716.2
+    },
+    {
+      "Provinsi": "Sumatera Barat",
+      "Timbulan Sampah Tahunan(ton)": 842630.69
+    },
+    {
+      "Provinsi": "Riau",
+      "Timbulan Sampah Tahunan(ton)": 752982.7999999999
+    },
+    {
+      "Provinsi": "Jambi",
+      "Timbulan Sampah Tahunan(ton)": 233450.87
+    },
+    {
+      "Provinsi": "Sumatera Selatan",
+      "Timbulan Sampah Tahunan(ton)": 642748.6399999999
+    },
+    {
+      "Provinsi": "Bengkulu",
+      "Timbulan Sampah Tahunan(ton)": 245220.59000000003
+    },
+    {
+      "Provinsi": "Lampung",
+      "Timbulan Sampah Tahunan(ton)": 720583.2999999999
+    },
+    {
+      "Provinsi": "Kepulauan Bangka Belitung",
+      "Timbulan Sampah Tahunan(ton)": 143596.09
+    },
+    {
+      "Provinsi": "Kepulauan Riau",
+      "Timbulan Sampah Tahunan(ton)": 152634.87
+    },
+    {
+      "Provinsi": "DKI Jakarta",
+      "Timbulan Sampah Tahunan(ton)": 3171247.5999999996
+    },
+    {
+      "Provinsi": "Jawa Barat",
+      "Timbulan Sampah Tahunan(ton)": 6333185.650000001
+    },
+    {
+      "Provinsi": "Jawa Tengah",
+      "Timbulan Sampah Tahunan(ton)": 3648833.5399999996
+    },
+    {
+      "Provinsi": "Daerah Istimewa Yogyakarta",
+      "Timbulan Sampah Tahunan(ton)": 702140.01
+    },
+    {
+      "Provinsi": "Jawa Timur",
+      "Timbulan Sampah Tahunan(ton)": 5090417.96
+    },
+    {
+      "Provinsi": "Banten",
+      "Timbulan Sampah Tahunan(ton)": 2159859.19
+    },
+    {
+      "Provinsi": "Bali",
+      "Timbulan Sampah Tahunan(ton)": 1167451.76
+    },
+    {
+      "Provinsi": "Nusa Tenggara Barat",
+      "Timbulan Sampah Tahunan(ton)": 626286.71
+    },
+    {
+      "Provinsi": "Nusa Tenggara Timur",
+      "Timbulan Sampah Tahunan(ton)": 627983.4199999999
+    },
+    {
+      "Provinsi": "Kalimantan Barat",
+      "Timbulan Sampah Tahunan(ton)": 790470.3300000001
+    },
+    {
+      "Provinsi": "Kalimantan Tengah",
+      "Timbulan Sampah Tahunan(ton)": 463358.56999999995
+    },
+    {
+      "Provinsi": "Kalimantan Selatan",
+      "Timbulan Sampah Tahunan(ton)": 798570.4099999999
+    },
+    {
+      "Provinsi": "Kalimantan Timur",
+      "Timbulan Sampah Tahunan(ton)": 835108.87
+    },
+    {
+      "Provinsi": "Kalimantan Utara",
+      "Timbulan Sampah Tahunan(ton)": 51567.58
+    },
+    {
+      "Provinsi": "Sulawesi Utara",
+      "Timbulan Sampah Tahunan(ton)": 505276.76999999996
+    },
+    {
+      "Provinsi": "Sulawesi Tengah",
+      "Timbulan Sampah Tahunan(ton)": 249978.3
+    },
+    {
+      "Provinsi": "Sulawesi Selatan",
+      "Timbulan Sampah Tahunan(ton)": 1210074.35
+    },
+    {
+      "Provinsi": "Sulawesi Tenggara",
+      "Timbulan Sampah Tahunan(ton)": 246137.69
+    },
+    {
+      "Provinsi": "Gorontalo",
+      "Timbulan Sampah Tahunan(ton)": 72827.63
+    },
+    {
+      "Provinsi": "Sulawesi Barat",
+      "Timbulan Sampah Tahunan(ton)": 109656.19
+    },
+    {
+      "Provinsi": "Maluku",
+      "Timbulan Sampah Tahunan(ton)": 169087.22999999998
+    },
+    {
+      "Provinsi": "Maluku Utara",
+      "Timbulan Sampah Tahunan(ton)": 121288.44
+    },
+    {
+      "Provinsi": "Papua",
+      "Timbulan Sampah Tahunan(ton)": 82009.66
+    },
+    {
+      "Provinsi": "Papua Barat",
+      "Timbulan Sampah Tahunan(ton)": 92883.59000000001
+    },
+    {
+      "Provinsi": "Papua Selatan",
+      "Timbulan Sampah Tahunan(ton)": 26823.56
+    },
+    {
+      "Provinsi": "Papua Tengah",
+      "Timbulan Sampah Tahunan(ton)": 99793.19
+    },
+    {
+      "Provinsi": "Papua Pegunungan",
+      "Timbulan Sampah Tahunan(ton)": 41244.56
+    },
+    {
+      "Provinsi": "Papua Barat Daya",
+      "Timbulan Sampah Tahunan(ton)": 36713.6
+    }
+  ],
+  "Kabupaten": [
+    {
+      "Kabupaten/Kota": "Aceh Selatan",
+      "Timbulan Sampah Tahunan(ton)": 34527.1
+    },
+    {
+      "Kabupaten/Kota": "Aceh Tenggara",
+      "Timbulan Sampah Tahunan(ton)": 54634.66
+    },
+    {
+      "Kabupaten/Kota": "Aceh Timur",
+      "Timbulan Sampah Tahunan(ton)": 66389.56
+    },
+    {
+      "Kabupaten/Kota": "Aceh Tengah",
+      "Timbulan Sampah Tahunan(ton)": 41273.39
+    },
+    {
+      "Kabupaten/Kota": "Aceh Barat",
+      "Timbulan Sampah Tahunan(ton)": 37432.21
+    },
+    {
+      "Kabupaten/Kota": "Aceh Besar",
+      "Timbulan Sampah Tahunan(ton)": 54434.93
+    },
+    {
+      "Kabupaten/Kota": "Pidie",
+      "Timbulan Sampah Tahunan(ton)": 65420.41
+    },
+    {
+      "Kabupaten/Kota": "Aceh Utara",
+      "Timbulan Sampah Tahunan(ton)": 112171.8
+    },
+    {
+      "Kabupaten/Kota": "Simeulue",
+      "Timbulan Sampah Tahunan(ton)": 16673.93
+    },
+    {
+      "Kabupaten/Kota": "Aceh Singkil",
+      "Timbulan Sampah Tahunan(ton)": 20039.08
+    },
+    {
+      "Kabupaten/Kota": "Bireuen",
+      "Timbulan Sampah Tahunan(ton)": 59046.49
+    },
+    {
+      "Kabupaten/Kota": "Aceh Barat Daya",
+      "Timbulan Sampah Tahunan(ton)": 29210.59
+    },
+    {
+      "Kabupaten/Kota": "Gayo Lues",
+      "Timbulan Sampah Tahunan(ton)": 15308.98
+    },
+    {
+      "Kabupaten/Kota": "Aceh Jaya",
+      "Timbulan Sampah Tahunan(ton)": 18373.01
+    },
+    {
+      "Kabupaten/Kota": "Nagan Raya",
+      "Timbulan Sampah Tahunan(ton)": 25763.31
+    },
+    {
+      "Kabupaten/Kota": "Aceh Tamiang",
+      "Timbulan Sampah Tahunan(ton)": 45127.58
+    },
+    {
+      "Kabupaten/Kota": "Bener Meriah",
+      "Timbulan Sampah Tahunan(ton)": 23371.68
+    },
+    {
+      "Kabupaten/Kota": "Pidie Jaya",
+      "Timbulan Sampah Tahunan(ton)": 30143.46
+    },
+    {
+      "Kabupaten/Kota": "Kota Banda Aceh",
+      "Timbulan Sampah Tahunan(ton)": 94679.61
+    },
+    {
+      "Kabupaten/Kota": "Kota Sabang",
+      "Timbulan Sampah Tahunan(ton)": 6354.94
+    },
+    {
+      "Kabupaten/Kota": "Kota Lhokseumawe",
+      "Timbulan Sampah Tahunan(ton)": 36509.25
+    },
+    {
+      "Kabupaten/Kota": "Kota Langsa",
+      "Timbulan Sampah Tahunan(ton)": 35538.23
+    },
+    {
+      "Kabupaten/Kota": "Kota Subulussalam",
+      "Timbulan Sampah Tahunan(ton)": 17843.03
+    },
+    {
+      "Kabupaten/Kota": "Nias",
+      "Timbulan Sampah Tahunan(ton)": 21446.67
+    },
+    {
+      "Kabupaten/Kota": "Langkat",
+      "Timbulan Sampah Tahunan(ton)": 194674.76
+    },
+    {
+      "Kabupaten/Kota": "Simalungun",
+      "Timbulan Sampah Tahunan(ton)": 189055.4
+    },
+    {
+      "Kabupaten/Kota": "Dairi",
+      "Timbulan Sampah Tahunan(ton)": 48265.41
+    },
+    {
+      "Kabupaten/Kota": "Pakpak Bharat",
+      "Timbulan Sampah Tahunan(ton)": 8055.11
+    },
+    {
+      "Kabupaten/Kota": "Kota Medan",
+      "Timbulan Sampah Tahunan(ton)": 632149.41
+    },
+    {
+      "Kabupaten/Kota": "Kota Sibolga",
+      "Timbulan Sampah Tahunan(ton)": 15069.44
+    },
+    {
+      "Kabupaten/Kota": "Pesisir Selatan",
+      "Timbulan Sampah Tahunan(ton)": 57526.37
+    },
+    {
+      "Kabupaten/Kota": "Solok",
+      "Timbulan Sampah Tahunan(ton)": 59233.95
+    },
+    {
+      "Kabupaten/Kota": "Tanah Datar",
+      "Timbulan Sampah Tahunan(ton)": 47943.05
+    },
+    {
+      "Kabupaten/Kota": "Padang Pariaman",
+      "Timbulan Sampah Tahunan(ton)": 83798.34
+    },
+    {
+      "Kabupaten/Kota": "Agam",
+      "Timbulan Sampah Tahunan(ton)": 78067.22
+    },
+    {
+      "Kabupaten/Kota": "Lima Puluh Kota",
+      "Timbulan Sampah Tahunan(ton)": 58558.56
+    },
+    {
+      "Kabupaten/Kota": "Dharmasraya",
+      "Timbulan Sampah Tahunan(ton)": 44200.04
+    },
+    {
+      "Kabupaten/Kota": "Solok Selatan",
+      "Timbulan Sampah Tahunan(ton)": 27964.84
+    },
+    {
+      "Kabupaten/Kota": "Kota Padang",
+      "Timbulan Sampah Tahunan(ton)": 240920.66
+    },
+    {
+      "Kabupaten/Kota": "Kota Solok",
+      "Timbulan Sampah Tahunan(ton)": 21438.24
+    },
+    {
+      "Kabupaten/Kota": "Kota Sawahlunto",
+      "Timbulan Sampah Tahunan(ton)": 6988.44
+    },
+    {
+      "Kabupaten/Kota": "Kota Padang Panjang",
+      "Timbulan Sampah Tahunan(ton)": 18317.45
+    },
+    {
+      "Kabupaten/Kota": "Kota Bukittinggi",
+      "Timbulan Sampah Tahunan(ton)": 48542.31
+    },
+    {
+      "Kabupaten/Kota": "Kota Payakumbuh",
+      "Timbulan Sampah Tahunan(ton)": 34285.94
+    },
+    {
+      "Kabupaten/Kota": "Kota Pariaman",
+      "Timbulan Sampah Tahunan(ton)": 14845.28
+    },
+    {
+      "Kabupaten/Kota": "Bengkalis",
+      "Timbulan Sampah Tahunan(ton)": 95314.82
+    },
+    {
+      "Kabupaten/Kota": "Rokan Hulu",
+      "Timbulan Sampah Tahunan(ton)": 103202.06
+    },
+    {
+      "Kabupaten/Kota": "Siak",
+      "Timbulan Sampah Tahunan(ton)": 70104.67
+    },
+    {
+      "Kabupaten/Kota": "Kuantan Singingi",
+      "Timbulan Sampah Tahunan(ton)": 52644.83
+    },
+    {
+      "Kabupaten/Kota": "Kota Pekanbaru",
+      "Timbulan Sampah Tahunan(ton)": 369019.82
+    },
+    {
+      "Kabupaten/Kota": "Kota Dumai",
+      "Timbulan Sampah Tahunan(ton)": 62696.6
+    },
+    {
+      "Kabupaten/Kota": "Tebo",
+      "Timbulan Sampah Tahunan(ton)": 52990.12
+    },
+    {
+      "Kabupaten/Kota": "Kota Jambi",
+      "Timbulan Sampah Tahunan(ton)": 161897.58
+    },
+    {
+      "Kabupaten/Kota": "Kota Sungai Penuh",
+      "Timbulan Sampah Tahunan(ton)": 18563.17
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ulu",
+      "Timbulan Sampah Tahunan(ton)": 55478.83
+    },
+    {
+      "Kabupaten/Kota": "Muara Enim",
+      "Timbulan Sampah Tahunan(ton)": 85838.07
+    },
+    {
+      "Kabupaten/Kota": "Lahat",
+      "Timbulan Sampah Tahunan(ton)": 99542.14
+    },
+    {
+      "Kabupaten/Kota": "Musi Banyuasin",
+      "Timbulan Sampah Tahunan(ton)": 103264.34
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ulu Timur",
+      "Timbulan Sampah Tahunan(ton)": 103250.47
+    },
+    {
+      "Kabupaten/Kota": "Ogan Ilir",
+      "Timbulan Sampah Tahunan(ton)": 64162.47
+    },
+    {
+      "Kabupaten/Kota": "Penukal Abab Lematang Ilir",
+      "Timbulan Sampah Tahunan(ton)": 38730.15
+    },
+    {
+      "Kabupaten/Kota": "Musi Rawas Utara",
+      "Timbulan Sampah Tahunan(ton)": 28398.02
+    },
+    {
+      "Kabupaten/Kota": "Kota Pagar Alam",
+      "Timbulan Sampah Tahunan(ton)": 26980.07
+    },
+    {
+      "Kabupaten/Kota": "Kota Prabumulih",
+      "Timbulan Sampah Tahunan(ton)": 37104.08
+    },
+    {
+      "Kabupaten/Kota": "Bengkulu Utara",
+      "Timbulan Sampah Tahunan(ton)": 67563.03
+    },
+    {
+      "Kabupaten/Kota": "Seluma",
+      "Timbulan Sampah Tahunan(ton)": 39238.6
+    },
+    {
+      "Kabupaten/Kota": "Lebong",
+      "Timbulan Sampah Tahunan(ton)": 16665.32
+    },
+    {
+      "Kabupaten/Kota": "Bengkulu Tengah",
+      "Timbulan Sampah Tahunan(ton)": 22107.87
+    },
+    {
+      "Kabupaten/Kota": "Kota Bengkulu",
+      "Timbulan Sampah Tahunan(ton)": 99645.77
+    },
+    {
+      "Kabupaten/Kota": "Lampung Utara",
+      "Timbulan Sampah Tahunan(ton)": 92728.83
+    },
+    {
+      "Kabupaten/Kota": "Tulang Bawang",
+      "Timbulan Sampah Tahunan(ton)": 63301.22
+    },
+    {
+      "Kabupaten/Kota": "Tanggamus",
+      "Timbulan Sampah Tahunan(ton)": 136404.5
+    },
+    {
+      "Kabupaten/Kota": "Lampung Timur",
+      "Timbulan Sampah Tahunan(ton)": 208521.22
+    },
+    {
+      "Kabupaten/Kota": "Way Kanan",
+      "Timbulan Sampah Tahunan(ton)": 71506.86
+    },
+    {
+      "Kabupaten/Kota": "Pesawaran",
+      "Timbulan Sampah Tahunan(ton)": 63131.88
+    },
+    {
+      "Kabupaten/Kota": "Pringsewu",
+      "Timbulan Sampah Tahunan(ton)": 59628.59
+    },
+    {
+      "Kabupaten/Kota": "Pesisir Barat",
+      "Timbulan Sampah Tahunan(ton)": 25360.2
+    },
+    {
+      "Kabupaten/Kota": "Bangka",
+      "Timbulan Sampah Tahunan(ton)": 50786.39
+    },
+    {
+      "Kabupaten/Kota": "Bangka Tengah",
+      "Timbulan Sampah Tahunan(ton)": 41510.84
+    },
+    {
+      "Kabupaten/Kota": "Bangka Barat",
+      "Timbulan Sampah Tahunan(ton)": 30888.64
+    },
+    {
+      "Kabupaten/Kota": "Belitung Timur",
+      "Timbulan Sampah Tahunan(ton)": 20410.22
+    },
+    {
+      "Kabupaten/Kota": "Bintan",
+      "Timbulan Sampah Tahunan(ton)": 20858.45
+    },
+    {
+      "Kabupaten/Kota": "Karimun",
+      "Timbulan Sampah Tahunan(ton)": 70684.84
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Anambas",
+      "Timbulan Sampah Tahunan(ton)": 5375.79
+    },
+    {
+      "Kabupaten/Kota": "Kota Tanjung Pinang",
+      "Timbulan Sampah Tahunan(ton)": 55715.79
+    },
+    {
+      "Kabupaten/Kota": "Administrasi Kepulauan Seribu",
+      "Timbulan Sampah Tahunan(ton)": 6739.09
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Pusat",
+      "Timbulan Sampah Tahunan(ton)": 312221.09
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Utara",
+      "Timbulan Sampah Tahunan(ton)": 509694.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Barat",
+      "Timbulan Sampah Tahunan(ton)": 757857.05
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Selatan",
+      "Timbulan Sampah Tahunan(ton)": 725690.82
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Timur",
+      "Timbulan Sampah Tahunan(ton)": 859045.05
+    },
+    {
+      "Kabupaten/Kota": "Bogor",
+      "Timbulan Sampah Tahunan(ton)": 1026931.33
+    },
+    {
+      "Kabupaten/Kota": "Cianjur",
+      "Timbulan Sampah Tahunan(ton)": 462637.87
+    },
+    {
+      "Kabupaten/Kota": "Bandung",
+      "Timbulan Sampah Tahunan(ton)": 478956.72
+    },
+    {
+      "Kabupaten/Kota": "Garut",
+      "Timbulan Sampah Tahunan(ton)": 418262.61
+    },
+    {
+      "Kabupaten/Kota": "Tasikmalaya",
+      "Timbulan Sampah Tahunan(ton)": 254875.2
+    },
+    {
+      "Kabupaten/Kota": "Ciamis",
+      "Timbulan Sampah Tahunan(ton)": 182871.42
+    },
+    {
+      "Kabupaten/Kota": "Kuningan",
+      "Timbulan Sampah Tahunan(ton)": 179838.71
+    },
+    {
+      "Kabupaten/Kota": "Cirebon",
+      "Timbulan Sampah Tahunan(ton)": 465242.92
+    },
+    {
+      "Kabupaten/Kota": "Sumedang",
+      "Timbulan Sampah Tahunan(ton)": 176030.01
+    },
+    {
+      "Kabupaten/Kota": "Indramayu",
+      "Timbulan Sampah Tahunan(ton)": 414835.78
+    },
+    {
+      "Kabupaten/Kota": "Purwakarta",
+      "Timbulan Sampah Tahunan(ton)": 152672.78
+    },
+    {
+      "Kabupaten/Kota": "Karawang",
+      "Timbulan Sampah Tahunan(ton)": 389444.24
+    },
+    {
+      "Kabupaten/Kota": "Bekasi",
+      "Timbulan Sampah Tahunan(ton)": 614462.32
+    },
+    {
+      "Kabupaten/Kota": "Kota Bogor",
+      "Timbulan Sampah Tahunan(ton)": 284631.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Bandung",
+      "Timbulan Sampah Tahunan(ton)": 546151.49
+    },
+    {
+      "Kabupaten/Kota": "Kota Cirebon",
+      "Timbulan Sampah Tahunan(ton)": 78969.28
+    },
+    {
+      "Kabupaten/Kota": "Kota Cimahi",
+      "Timbulan Sampah Tahunan(ton)": 84666.28
+    },
+    {
+      "Kabupaten/Kota": "Kota Tasikmalaya",
+      "Timbulan Sampah Tahunan(ton)": 121705.09
+    },
+    {
+      "Kabupaten/Kota": "Banyumas",
+      "Timbulan Sampah Tahunan(ton)": 200228.74
+    },
+    {
+      "Kabupaten/Kota": "Banjarnegara",
+      "Timbulan Sampah Tahunan(ton)": 155978.66
+    },
+    {
+      "Kabupaten/Kota": "Purworejo",
+      "Timbulan Sampah Tahunan(ton)": 117937.34
+    },
+    {
+      "Kabupaten/Kota": "Wonosobo",
+      "Timbulan Sampah Tahunan(ton)": 132810.94
+    },
+    {
+      "Kabupaten/Kota": "Magelang",
+      "Timbulan Sampah Tahunan(ton)": 243075.58
+    },
+    {
+      "Kabupaten/Kota": "Boyolali",
+      "Timbulan Sampah Tahunan(ton)": 108784.91
+    },
+    {
+      "Kabupaten/Kota": "Sukoharjo",
+      "Timbulan Sampah Tahunan(ton)": 133436.7
+    },
+    {
+      "Kabupaten/Kota": "Sragen",
+      "Timbulan Sampah Tahunan(ton)": 218449.22
+    },
+    {
+      "Kabupaten/Kota": "Rembang",
+      "Timbulan Sampah Tahunan(ton)": 96766.9
+    },
+    {
+      "Kabupaten/Kota": "Pati",
+      "Timbulan Sampah Tahunan(ton)": 248083.93
+    },
+    {
+      "Kabupaten/Kota": "Kudus",
+      "Timbulan Sampah Tahunan(ton)": 159650.27
+    },
+    {
+      "Kabupaten/Kota": "Jepara",
+      "Timbulan Sampah Tahunan(ton)": 153000.41
+    },
+    {
+      "Kabupaten/Kota": "Demak",
+      "Timbulan Sampah Tahunan(ton)": 228667.03
+    },
+    {
+      "Kabupaten/Kota": "Semarang",
+      "Timbulan Sampah Tahunan(ton)": 196718.94
+    },
+    {
+      "Kabupaten/Kota": "Kendal",
+      "Timbulan Sampah Tahunan(ton)": 158286.48
+    },
+    {
+      "Kabupaten/Kota": "Brebes",
+      "Timbulan Sampah Tahunan(ton)": 372861.55
+    },
+    {
+      "Kabupaten/Kota": "Kota Magelang",
+      "Timbulan Sampah Tahunan(ton)": 29515.1
+    },
+    {
+      "Kabupaten/Kota": "Kota Surakarta",
+      "Timbulan Sampah Tahunan(ton)": 153360.91
+    },
+    {
+      "Kabupaten/Kota": "Kota Salatiga",
+      "Timbulan Sampah Tahunan(ton)": 42629.82
+    },
+    {
+      "Kabupaten/Kota": "Kota Semarang",
+      "Timbulan Sampah Tahunan(ton)": 434243.97
+    },
+    {
+      "Kabupaten/Kota": "Kota Tegal",
+      "Timbulan Sampah Tahunan(ton)": 64346.14
+    },
+    {
+      "Kabupaten/Kota": "Kulon Progo",
+      "Timbulan Sampah Tahunan(ton)": 80033.9
+    },
+    {
+      "Kabupaten/Kota": "Bantul",
+      "Timbulan Sampah Tahunan(ton)": 158430.04
+    },
+    {
+      "Kabupaten/Kota": "Gunungkidul",
+      "Timbulan Sampah Tahunan(ton)": 134318.32
+    },
+    {
+      "Kabupaten/Kota": "Sleman",
+      "Timbulan Sampah Tahunan(ton)": 219653.64
+    },
+    {
+      "Kabupaten/Kota": "Kota Yogyakarta",
+      "Timbulan Sampah Tahunan(ton)": 109704.11
+    },
+    {
+      "Kabupaten/Kota": "Pacitan",
+      "Timbulan Sampah Tahunan(ton)": 105691.5
+    },
+    {
+      "Kabupaten/Kota": "Trenggalek",
+      "Timbulan Sampah Tahunan(ton)": 110391.91
+    },
+    {
+      "Kabupaten/Kota": "Tulungagung",
+      "Timbulan Sampah Tahunan(ton)": 164395.27
+    },
+    {
+      "Kabupaten/Kota": "Blitar",
+      "Timbulan Sampah Tahunan(ton)": 152206.64
+    },
+    {
+      "Kabupaten/Kota": "Kediri",
+      "Timbulan Sampah Tahunan(ton)": 245930.28
+    },
+    {
+      "Kabupaten/Kota": "Malang",
+      "Timbulan Sampah Tahunan(ton)": 356238.93
+    },
+    {
+      "Kabupaten/Kota": "Jember",
+      "Timbulan Sampah Tahunan(ton)": 304964.95
+    },
+    {
+      "Kabupaten/Kota": "Banyuwangi",
+      "Timbulan Sampah Tahunan(ton)": 306270.96
+    },
+    {
+      "Kabupaten/Kota": "Bondowoso",
+      "Timbulan Sampah Tahunan(ton)": 115049.02
+    },
+    {
+      "Kabupaten/Kota": "Situbondo",
+      "Timbulan Sampah Tahunan(ton)": 93669.45
+    },
+    {
+      "Kabupaten/Kota": "Probolinggo",
+      "Timbulan Sampah Tahunan(ton)": 169923.41
+    },
+    {
+      "Kabupaten/Kota": "Sidoarjo",
+      "Timbulan Sampah Tahunan(ton)": 313401.68
+    },
+    {
+      "Kabupaten/Kota": "Mojokerto",
+      "Timbulan Sampah Tahunan(ton)": 164117.17
+    },
+    {
+      "Kabupaten/Kota": "Jombang",
+      "Timbulan Sampah Tahunan(ton)": 193583.44
+    },
+    {
+      "Kabupaten/Kota": "Madiun",
+      "Timbulan Sampah Tahunan(ton)": 107927.58
+    },
+    {
+      "Kabupaten/Kota": "Magetan",
+      "Timbulan Sampah Tahunan(ton)": 100976.23
+    },
+    {
+      "Kabupaten/Kota": "Ngawi",
+      "Timbulan Sampah Tahunan(ton)": 135297.67
+    },
+    {
+      "Kabupaten/Kota": "Tuban",
+      "Timbulan Sampah Tahunan(ton)": 192907.81
+    },
+    {
+      "Kabupaten/Kota": "Lamongan",
+      "Timbulan Sampah Tahunan(ton)": 202331.91
+    },
+    {
+      "Kabupaten/Kota": "Bangkalan",
+      "Timbulan Sampah Tahunan(ton)": 152450.43
+    },
+    {
+      "Kabupaten/Kota": "Pamekasan",
+      "Timbulan Sampah Tahunan(ton)": 102470.1
+    },
+    {
+      "Kabupaten/Kota": "Sumenep",
+      "Timbulan Sampah Tahunan(ton)": 133059.91
+    },
+    {
+      "Kabupaten/Kota": "Kota Blitar",
+      "Timbulan Sampah Tahunan(ton)": 27988.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Malang",
+      "Timbulan Sampah Tahunan(ton)": 284095.41
+    },
+    {
+      "Kabupaten/Kota": "Kota Probolinggo",
+      "Timbulan Sampah Tahunan(ton)": 44357.36
+    },
+    {
+      "Kabupaten/Kota": "Kota Pasuruan",
+      "Timbulan Sampah Tahunan(ton)": 54335.88
+    },
+    {
+      "Kabupaten/Kota": "Kota Madiun",
+      "Timbulan Sampah Tahunan(ton)": 45287.39
+    },
+    {
+      "Kabupaten/Kota": "Kota Surabaya",
+      "Timbulan Sampah Tahunan(ton)": 659033.63
+    },
+    {
+      "Kabupaten/Kota": "Kota Batu",
+      "Timbulan Sampah Tahunan(ton)": 52063.84
+    },
+    {
+      "Kabupaten/Kota": "Lebak",
+      "Timbulan Sampah Tahunan(ton)": 219931.19
+    },
+    {
+      "Kabupaten/Kota": "Serang",
+      "Timbulan Sampah Tahunan(ton)": 438206.52
+    },
+    {
+      "Kabupaten/Kota": "Kota Tangerang",
+      "Timbulan Sampah Tahunan(ton)": 798405.91
+    },
+    {
+      "Kabupaten/Kota": "Kota Cilegon",
+      "Timbulan Sampah Tahunan(ton)": 104729.66
+    },
+    {
+      "Kabupaten/Kota": "Kota Serang",
+      "Timbulan Sampah Tahunan(ton)": 225318.46
+    },
+    {
+      "Kabupaten/Kota": "Kota Tangerang Selatan",
+      "Timbulan Sampah Tahunan(ton)": 373267.45
+    },
+    {
+      "Kabupaten/Kota": "Jembrana",
+      "Timbulan Sampah Tahunan(ton)": 59962.2
+    },
+    {
+      "Kabupaten/Kota": "Badung",
+      "Timbulan Sampah Tahunan(ton)": 199810.15
+    },
+    {
+      "Kabupaten/Kota": "Gianyar",
+      "Timbulan Sampah Tahunan(ton)": 205137.0
+    },
+    {
+      "Kabupaten/Kota": "Klungkung",
+      "Timbulan Sampah Tahunan(ton)": 40654.25
+    },
+    {
+      "Kabupaten/Kota": "Bangli",
+      "Timbulan Sampah Tahunan(ton)": 41557.88
+    },
+    {
+      "Kabupaten/Kota": "Karangasem",
+      "Timbulan Sampah Tahunan(ton)": 102643.48
+    },
+    {
+      "Kabupaten/Kota": "Buleleng",
+      "Timbulan Sampah Tahunan(ton)": 150880.05
+    },
+    {
+      "Kabupaten/Kota": "Kota Denpasar",
+      "Timbulan Sampah Tahunan(ton)": 366806.75
+    },
+    {
+      "Kabupaten/Kota": "Lombok Barat",
+      "Timbulan Sampah Tahunan(ton)": 110031.59
+    },
+    {
+      "Kabupaten/Kota": "Lombok Tengah",
+      "Timbulan Sampah Tahunan(ton)": 159368.34
+    },
+    {
+      "Kabupaten/Kota": "Lombok Timur",
+      "Timbulan Sampah Tahunan(ton)": 203141.77
+    },
+    {
+      "Kabupaten/Kota": "Sumbawa",
+      "Timbulan Sampah Tahunan(ton)": 91615.0
+    },
+    {
+      "Kabupaten/Kota": "Sumbawa Barat",
+      "Timbulan Sampah Tahunan(ton)": 22421.95
+    },
+    {
+      "Kabupaten/Kota": "Lombok Utara",
+      "Timbulan Sampah Tahunan(ton)": 39708.06
+    },
+    {
+      "Kabupaten/Kota": "Kupang",
+      "Timbulan Sampah Tahunan(ton)": 56970.66
+    },
+    {
+      "Kabupaten/Kota": "Timor Tengah Utara",
+      "Timbulan Sampah Tahunan(ton)": 39606.44
+    },
+    {
+      "Kabupaten/Kota": "Flores Timur",
+      "Timbulan Sampah Tahunan(ton)": 75221.76
+    },
+    {
+      "Kabupaten/Kota": "Ngada",
+      "Timbulan Sampah Tahunan(ton)": 43825.66
+    },
+    {
+      "Kabupaten/Kota": "Manggarai",
+      "Timbulan Sampah Tahunan(ton)": 54522.82
+    },
+    {
+      "Kabupaten/Kota": "Sumba Timur",
+      "Timbulan Sampah Tahunan(ton)": 21792.78
+    },
+    {
+      "Kabupaten/Kota": "Lembata",
+      "Timbulan Sampah Tahunan(ton)": 25975.96
+    },
+    {
+      "Kabupaten/Kota": "Rote Ndao",
+      "Timbulan Sampah Tahunan(ton)": 49291.78
+    },
+    {
+      "Kabupaten/Kota": "Manggarai Barat",
+      "Timbulan Sampah Tahunan(ton)": 51637.1
+    },
+    {
+      "Kabupaten/Kota": "Nagekeo",
+      "Timbulan Sampah Tahunan(ton)": 24104.31
+    },
+    {
+      "Kabupaten/Kota": "Sumba Tengah",
+      "Timbulan Sampah Tahunan(ton)": 13210.37
+    },
+    {
+      "Kabupaten/Kota": "Sumba Barat Daya",
+      "Timbulan Sampah Tahunan(ton)": 58778.32
+    },
+    {
+      "Kabupaten/Kota": "Malaka",
+      "Timbulan Sampah Tahunan(ton)": 27885.12
+    },
+    {
+      "Kabupaten/Kota": "Kota Kupang",
+      "Timbulan Sampah Tahunan(ton)": 85160.34
+    },
+    {
+      "Kabupaten/Kota": "Mempawah",
+      "Timbulan Sampah Tahunan(ton)": 30500.63
+    },
+    {
+      "Kabupaten/Kota": "Sanggau",
+      "Timbulan Sampah Tahunan(ton)": 92630.25
+    },
+    {
+      "Kabupaten/Kota": "Ketapang",
+      "Timbulan Sampah Tahunan(ton)": 110297.78
+    },
+    {
+      "Kabupaten/Kota": "Kapuas Hulu",
+      "Timbulan Sampah Tahunan(ton)": 50171.99
+    },
+    {
+      "Kabupaten/Kota": "Bengkayang",
+      "Timbulan Sampah Tahunan(ton)": 43650.93
+    },
+    {
+      "Kabupaten/Kota": "Landak",
+      "Timbulan Sampah Tahunan(ton)": 59797.95
+    },
+    {
+      "Kabupaten/Kota": "Melawi",
+      "Timbulan Sampah Tahunan(ton)": 31145.01
+    },
+    {
+      "Kabupaten/Kota": "Kayong Utara",
+      "Timbulan Sampah Tahunan(ton)": 23925.75
+    },
+    {
+      "Kabupaten/Kota": "Kubu Raya",
+      "Timbulan Sampah Tahunan(ton)": 162500.56
+    },
+    {
+      "Kabupaten/Kota": "Kota Pontianak",
+      "Timbulan Sampah Tahunan(ton)": 150366.28
+    },
+    {
+      "Kabupaten/Kota": "Kota Singkawang",
+      "Timbulan Sampah Tahunan(ton)": 35483.2
+    },
+    {
+      "Kabupaten/Kota": "Kotawaringin Barat",
+      "Timbulan Sampah Tahunan(ton)": 51052.55
+    },
+    {
+      "Kabupaten/Kota": "Kotawaringin Timur",
+      "Timbulan Sampah Tahunan(ton)": 87386.06
+    },
+    {
+      "Kabupaten/Kota": "Kapuas",
+      "Timbulan Sampah Tahunan(ton)": 77596.45
+    },
+    {
+      "Kabupaten/Kota": "Barito Selatan",
+      "Timbulan Sampah Tahunan(ton)": 24813.8
+    },
+    {
+      "Kabupaten/Kota": "Barito Utara",
+      "Timbulan Sampah Tahunan(ton)": 23833.48
+    },
+    {
+      "Kabupaten/Kota": "Seruyan",
+      "Timbulan Sampah Tahunan(ton)": 31262.98
+    },
+    {
+      "Kabupaten/Kota": "Sukamara",
+      "Timbulan Sampah Tahunan(ton)": 9406.93
+    },
+    {
+      "Kabupaten/Kota": "Gunung Mas",
+      "Timbulan Sampah Tahunan(ton)": 35653.47
+    },
+    {
+      "Kabupaten/Kota": "Pulang Pisau",
+      "Timbulan Sampah Tahunan(ton)": 25221.5
+    },
+    {
+      "Kabupaten/Kota": "Murung Raya",
+      "Timbulan Sampah Tahunan(ton)": 21512.55
+    },
+    {
+      "Kabupaten/Kota": "Barito Timur",
+      "Timbulan Sampah Tahunan(ton)": 17127.55
+    },
+    {
+      "Kabupaten/Kota": "Kota Palangkaraya",
+      "Timbulan Sampah Tahunan(ton)": 58491.25
+    },
+    {
+      "Kabupaten/Kota": "Tanah Laut",
+      "Timbulan Sampah Tahunan(ton)": 53161.08
+    },
+    {
+      "Kabupaten/Kota": "Kotabaru",
+      "Timbulan Sampah Tahunan(ton)": 66175.43
+    },
+    {
+      "Kabupaten/Kota": "Banjar",
+      "Timbulan Sampah Tahunan(ton)": 133381.04
+    },
+    {
+      "Kabupaten/Kota": "Barito Kuala",
+      "Timbulan Sampah Tahunan(ton)": 36602.13
+    },
+    {
+      "Kabupaten/Kota": "Tapin",
+      "Timbulan Sampah Tahunan(ton)": 28892.38
+    },
+    {
+      "Kabupaten/Kota": "Hulu Sungai Selatan",
+      "Timbulan Sampah Tahunan(ton)": 35624.29
+    },
+    {
+      "Kabupaten/Kota": "Hulu Sungai Tengah",
+      "Timbulan Sampah Tahunan(ton)": 39180.56
+    },
+    {
+      "Kabupaten/Kota": "Hulu Sungai Utara",
+      "Timbulan Sampah Tahunan(ton)": 34609.15
+    },
+    {
+      "Kabupaten/Kota": "Tabalong",
+      "Timbulan Sampah Tahunan(ton)": 43092.79
+    },
+    {
+      "Kabupaten/Kota": "Tanah Bumbu",
+      "Timbulan Sampah Tahunan(ton)": 63206.32
+    },
+    {
+      "Kabupaten/Kota": "Balangan",
+      "Timbulan Sampah Tahunan(ton)": 21307.04
+    },
+    {
+      "Kabupaten/Kota": "Kota Banjarmasin",
+      "Timbulan Sampah Tahunan(ton)": 173647.25
+    },
+    {
+      "Kabupaten/Kota": "Kota Banjarbaru",
+      "Timbulan Sampah Tahunan(ton)": 69690.95
+    },
+    {
+      "Kabupaten/Kota": "Paser",
+      "Timbulan Sampah Tahunan(ton)": 44299.9
+    },
+    {
+      "Kabupaten/Kota": "Kutai Kartanegara",
+      "Timbulan Sampah Tahunan(ton)": 135200.79
+    },
+    {
+      "Kabupaten/Kota": "Berau",
+      "Timbulan Sampah Tahunan(ton)": 52732.1
+    },
+    {
+      "Kabupaten/Kota": "Kutai Barat",
+      "Timbulan Sampah Tahunan(ton)": 26297.37
+    },
+    {
+      "Kabupaten/Kota": "Kutai Timur",
+      "Timbulan Sampah Tahunan(ton)": 79082.18
+    },
+    {
+      "Kabupaten/Kota": "Penajam Paser Utara",
+      "Timbulan Sampah Tahunan(ton)": 36427.0
+    },
+    {
+      "Kabupaten/Kota": "Mahakam Ulu",
+      "Timbulan Sampah Tahunan(ton)": 6744.85
+    },
+    {
+      "Kabupaten/Kota": "Kota Balikpapan",
+      "Timbulan Sampah Tahunan(ton)": 195151.92
+    },
+    {
+      "Kabupaten/Kota": "Kota Samarinda",
+      "Timbulan Sampah Tahunan(ton)": 220209.83
+    },
+    {
+      "Kabupaten/Kota": "Kota Bontang",
+      "Timbulan Sampah Tahunan(ton)": 38962.93
+    },
+    {
+      "Kabupaten/Kota": "Bulungan",
+      "Timbulan Sampah Tahunan(ton)": 30681.17
+    },
+    {
+      "Kabupaten/Kota": "Nunukan",
+      "Timbulan Sampah Tahunan(ton)": 16703.8
+    },
+    {
+      "Kabupaten/Kota": "Tana Tidung",
+      "Timbulan Sampah Tahunan(ton)": 4182.61
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow",
+      "Timbulan Sampah Tahunan(ton)": 46496.44
+    },
+    {
+      "Kabupaten/Kota": "Minahasa",
+      "Timbulan Sampah Tahunan(ton)": 63922.63
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Sangihe",
+      "Timbulan Sampah Tahunan(ton)": 20529.64
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Talaud",
+      "Timbulan Sampah Tahunan(ton)": 14694.17
+    },
+    {
+      "Kabupaten/Kota": "Minahasa Selatan",
+      "Timbulan Sampah Tahunan(ton)": 35710.14
+    },
+    {
+      "Kabupaten/Kota": "Minahasa Utara",
+      "Timbulan Sampah Tahunan(ton)": 43976.48
+    },
+    {
+      "Kabupaten/Kota": "Minahasa Tenggara",
+      "Timbulan Sampah Tahunan(ton)": 17418.53
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow Utara",
+      "Timbulan Sampah Tahunan(ton)": 12572.21
+    },
+    {
+      "Kabupaten/Kota": "Kep. Siau Tagulandang Biaro",
+      "Timbulan Sampah Tahunan(ton)": 10640.92
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow Timur",
+      "Timbulan Sampah Tahunan(ton)": 13529.97
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow Selatan",
+      "Timbulan Sampah Tahunan(ton)": 11004.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Manado",
+      "Timbulan Sampah Tahunan(ton)": 106288.37
+    },
+    {
+      "Kabupaten/Kota": "Kota Bitung",
+      "Timbulan Sampah Tahunan(ton)": 58055.22
+    },
+    {
+      "Kabupaten/Kota": "Kota Tomohon",
+      "Timbulan Sampah Tahunan(ton)": 18810.64
+    },
+    {
+      "Kabupaten/Kota": "Kota Kotamobagu",
+      "Timbulan Sampah Tahunan(ton)": 31626.81
+    },
+    {
+      "Kabupaten/Kota": "Morowali",
+      "Timbulan Sampah Tahunan(ton)": 31107.13
+    },
+    {
+      "Kabupaten/Kota": "Banggai Kepulauan",
+      "Timbulan Sampah Tahunan(ton)": 22207.33
+    },
+    {
+      "Kabupaten/Kota": "Parigi Moutong",
+      "Timbulan Sampah Tahunan(ton)": 83415.46
+    },
+    {
+      "Kabupaten/Kota": "Banggai Laut",
+      "Timbulan Sampah Tahunan(ton)": 14124.59
+    },
+    {
+      "Kabupaten/Kota": "Morowali Utara",
+      "Timbulan Sampah Tahunan(ton)": 27490.71
+    },
+    {
+      "Kabupaten/Kota": "Kota Palu",
+      "Timbulan Sampah Tahunan(ton)": 71633.08
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Selayar",
+      "Timbulan Sampah Tahunan(ton)": 20746.6
+    },
+    {
+      "Kabupaten/Kota": "Bulukumba",
+      "Timbulan Sampah Tahunan(ton)": 67943.0
+    },
+    {
+      "Kabupaten/Kota": "Bantaeng",
+      "Timbulan Sampah Tahunan(ton)": 30896.96
+    },
+    {
+      "Kabupaten/Kota": "Bone",
+      "Timbulan Sampah Tahunan(ton)": 149743.08
+    },
+    {
+      "Kabupaten/Kota": "Maros",
+      "Timbulan Sampah Tahunan(ton)": 56827.14
+    },
+    {
+      "Kabupaten/Kota": "Pangkajene dan Kepulauan",
+      "Timbulan Sampah Tahunan(ton)": 52821.49
+    },
+    {
+      "Kabupaten/Kota": "Barru",
+      "Timbulan Sampah Tahunan(ton)": 28526.21
+    },
+    {
+      "Kabupaten/Kota": "Soppeng",
+      "Timbulan Sampah Tahunan(ton)": 35179.43
+    },
+    {
+      "Kabupaten/Kota": "Sidenreng Rappang",
+      "Timbulan Sampah Tahunan(ton)": 48288.33
+    },
+    {
+      "Kabupaten/Kota": "Pinrang",
+      "Timbulan Sampah Tahunan(ton)": 68522.47
+    },
+    {
+      "Kabupaten/Kota": "Tana Toraja",
+      "Timbulan Sampah Tahunan(ton)": 47131.9
+    },
+    {
+      "Kabupaten/Kota": "Luwu Utara",
+      "Timbulan Sampah Tahunan(ton)": 60358.96
+    },
+    {
+      "Kabupaten/Kota": "Luwu Timur",
+      "Timbulan Sampah Tahunan(ton)": 45045.38
+    },
+    {
+      "Kabupaten/Kota": "Toraja Utara",
+      "Timbulan Sampah Tahunan(ton)": 48638.62
+    },
+    {
+      "Kabupaten/Kota": "Kota Makassar",
+      "Timbulan Sampah Tahunan(ton)": 387470.48
+    },
+    {
+      "Kabupaten/Kota": "Kota Parepare",
+      "Timbulan Sampah Tahunan(ton)": 29535.8
+    },
+    {
+      "Kabupaten/Kota": "Kota Palopo",
+      "Timbulan Sampah Tahunan(ton)": 32398.5
+    },
+    {
+      "Kabupaten/Kota": "Kolaka",
+      "Timbulan Sampah Tahunan(ton)": 44297.57
+    },
+    {
+      "Kabupaten/Kota": "Muna",
+      "Timbulan Sampah Tahunan(ton)": 34770.63
+    },
+    {
+      "Kabupaten/Kota": "Konawe Utara",
+      "Timbulan Sampah Tahunan(ton)": 11299.09
+    },
+    {
+      "Kabupaten/Kota": "Kolaka Timur",
+      "Timbulan Sampah Tahunan(ton)": 20651.85
+    },
+    {
+      "Kabupaten/Kota": "Buton Selatan",
+      "Timbulan Sampah Tahunan(ton)": 8527.64
+    },
+    {
+      "Kabupaten/Kota": "Kota Kendari",
+      "Timbulan Sampah Tahunan(ton)": 93375.91
+    },
+    {
+      "Kabupaten/Kota": "Kota Bau Bau",
+      "Timbulan Sampah Tahunan(ton)": 33215.0
+    },
+    {
+      "Kabupaten/Kota": "Bone Bolango",
+      "Timbulan Sampah Tahunan(ton)": 20753.66
+    },
+    {
+      "Kabupaten/Kota": "Kota Gorontalo",
+      "Timbulan Sampah Tahunan(ton)": 52073.97
+    },
+    {
+      "Kabupaten/Kota": "Pasangkayu",
+      "Timbulan Sampah Tahunan(ton)": 29815.54
+    },
+    {
+      "Kabupaten/Kota": "Mamuju",
+      "Timbulan Sampah Tahunan(ton)": 53362.09
+    },
+    {
+      "Kabupaten/Kota": "Majene",
+      "Timbulan Sampah Tahunan(ton)": 26478.56
+    },
+    {
+      "Kabupaten/Kota": "Buru",
+      "Timbulan Sampah Tahunan(ton)": 23572.5
+    },
+    {
+      "Kabupaten/Kota": "Seram Bagian Barat",
+      "Timbulan Sampah Tahunan(ton)": 31738.79
+    },
+    {
+      "Kabupaten/Kota": "Kota Ambon",
+      "Timbulan Sampah Tahunan(ton)": 90460.29
+    },
+    {
+      "Kabupaten/Kota": "Kota Tual",
+      "Timbulan Sampah Tahunan(ton)": 23315.65
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Tengah",
+      "Timbulan Sampah Tahunan(ton)": 15549.0
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Selatan",
+      "Timbulan Sampah Tahunan(ton)": 37286.06
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Sula",
+      "Timbulan Sampah Tahunan(ton)": 24933.79
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Timur",
+      "Timbulan Sampah Tahunan(ton)": 19652.42
+    },
+    {
+      "Kabupaten/Kota": "Pulau Morotai",
+      "Timbulan Sampah Tahunan(ton)": 11951.56
+    },
+    {
+      "Kabupaten/Kota": "Pulau Taliabu",
+      "Timbulan Sampah Tahunan(ton)": 11915.61
+    },
+    {
+      "Kabupaten/Kota": "Jayapura",
+      "Timbulan Sampah Tahunan(ton)": 37188.39
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Yapen",
+      "Timbulan Sampah Tahunan(ton)": 16951.62
+    },
+    {
+      "Kabupaten/Kota": "Biak Numfor",
+      "Timbulan Sampah Tahunan(ton)": 21664.65
+    },
+    {
+      "Kabupaten/Kota": "Sarmi",
+      "Timbulan Sampah Tahunan(ton)": 6205.0
+    },
+    {
+      "Kabupaten/Kota": "Manokwari",
+      "Timbulan Sampah Tahunan(ton)": 76650.0
+    },
+    {
+      "Kabupaten/Kota": "Teluk Wondama",
+      "Timbulan Sampah Tahunan(ton)": 6501.96
+    },
+    {
+      "Kabupaten/Kota": "Kaimana",
+      "Timbulan Sampah Tahunan(ton)": 9731.63
+    },
+    {
+      "Kabupaten/Kota": "Boven Digoel",
+      "Timbulan Sampah Tahunan(ton)": 9518.18
+    },
+    {
+      "Kabupaten/Kota": "Asmat",
+      "Timbulan Sampah Tahunan(ton)": 17305.38
+    },
+    {
+      "Kabupaten/Kota": "Nabire",
+      "Timbulan Sampah Tahunan(ton)": 25466.34
+    },
+    {
+      "Kabupaten/Kota": "Mimika",
+      "Timbulan Sampah Tahunan(ton)": 57125.42
+    },
+    {
+      "Kabupaten/Kota": "Dogiyai",
+      "Timbulan Sampah Tahunan(ton)": 17201.43
+    },
+    {
+      "Kabupaten/Kota": "Jayawijaya",
+      "Timbulan Sampah Tahunan(ton)": 41244.56
+    },
+    {
+      "Kabupaten/Kota": "Sorong",
+      "Timbulan Sampah Tahunan(ton)": 18974.6
+    },
+    {
+      "Kabupaten/Kota": "Sorong Selatan",
+      "Timbulan Sampah Tahunan(ton)": 7738.0
+    },
+    {
+      "Kabupaten/Kota": "Raja Ampat",
+      "Timbulan Sampah Tahunan(ton)": 10001.0
+    }
+  ]
+}

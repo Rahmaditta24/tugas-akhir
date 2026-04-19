@@ -1,0 +1,196 @@
+{
+  "Sheet1": [
+    {
+      "Provinsi": "Aceh",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 10.38,
+      "SAIFI (Kali/Pelanggan)": 5.13
+    },
+    {
+      "Provinsi": "Sumatera Utara",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 6.15,
+      "SAIFI (Kali/Pelanggan)": 3.56
+    },
+    {
+      "Provinsi": "Sumatera Barat",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 6.55,
+      "SAIFI (Kali/Pelanggan)": 3.46
+    },
+    {
+      "Provinsi": "Riau",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 3.79,
+      "SAIFI (Kali/Pelanggan)": 1.5
+    },
+    {
+      "Provinsi": "Kepulauan Riau",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 3.79,
+      "SAIFI (Kali/Pelanggan)": 1.5
+    },
+    {
+      "Provinsi": "Sumatera Selatan",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 13.93,
+      "SAIFI (Kali/Pelanggan)": 5.38
+    },
+    {
+      "Provinsi": "Jambi",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 13.93,
+      "SAIFI (Kali/Pelanggan)": 5.38
+    },
+    {
+      "Provinsi": "Bengkulu",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 13.93,
+      "SAIFI (Kali/Pelanggan)": 5.38
+    },
+    {
+      "Provinsi": "Kepulauan Bangka Belitung",
+      "Satuan PLN/Provinsi": "UIW",
+      "SAIDI (Jam/Pelanggan)": 0.88,
+      "SAIFI (Kali/Pelanggan)": 1.94
+    },
+    {
+      "Provinsi": "Lampung",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 27.75,
+      "SAIFI (Kali/Pelanggan)": 6.33
+    },
+    {
+      "Provinsi": "Kalimantan Barat",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 11.86,
+      "SAIFI (Kali/Pelanggan)": 11.42
+    },
+    {
+      "Provinsi": "Kalimantan Selatan",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 5.89,
+      "SAIFI (Kali/Pelanggan)": 5.37
+    },
+    {
+      "Provinsi": "Kalimantan Tengah",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 5.89,
+      "SAIFI (Kali/Pelanggan)": 5.37
+    },
+    {
+      "Provinsi": "Kalimantan Timur",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 8.12,
+      "SAIFI (Kali/Pelanggan)": 7.35
+    },
+    {
+      "Provinsi": "Kalimantan Utara",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 8.12,
+      "SAIFI (Kali/Pelanggan)": 7.35
+    },
+    {
+      "Provinsi": "Sulawesi Utara",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 19.48,
+      "SAIFI (Kali/Pelanggan)": 8.92
+    },
+    {
+      "Provinsi": "Sulawesi Tengah",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 19.48,
+      "SAIFI (Kali/Pelanggan)": 8.92
+    },
+    {
+      "Provinsi": "Gorontalo",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 19.48,
+      "SAIFI (Kali/Pelanggan)": 8.92
+    },
+    {
+      "Provinsi": "Sulawesi Barat",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 7.58,
+      "SAIFI (Kali/Pelanggan)": 5.28
+    },
+    {
+      "Provinsi": "Maluku",
+      "Satuan PLN/Provinsi": "UIW",
+      "SAIDI (Jam/Pelanggan)": 1.03,
+      "SAIFI (Kali/Pelanggan)": 2.51
+    },
+    {
+      "Provinsi": "Maluku Utara",
+      "Satuan PLN/Provinsi": "UIW",
+      "SAIDI (Jam/Pelanggan)": 1.03,
+      "SAIFI (Kali/Pelanggan)": 2.51
+    },
+    {
+      "Provinsi": "Papua ",
+      "Satuan PLN/Provinsi": "UIW",
+      "SAIDI (Jam/Pelanggan)": 5.57,
+      "SAIFI (Kali/Pelanggan)": 4.44
+    },
+    {
+      "Provinsi": "Papua Barat",
+      "Satuan PLN/Provinsi": "UIW",
+      "SAIDI (Jam/Pelanggan)": 5.57,
+      "SAIFI (Kali/Pelanggan)": 4.44
+    },
+    {
+      "Provinsi": "Bali",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 1.04,
+      "SAIFI (Kali/Pelanggan)": 0.91
+    },
+    {
+      "Provinsi": "Nusa Tenggara Barat",
+      "Satuan PLN/Provinsi": "UIW",
+      "SAIDI (Jam/Pelanggan)": 3.03,
+      "SAIFI (Kali/Pelanggan)": 2.59
+    },
+    {
+      "Provinsi": "Nusa Tenggara Timur",
+      "Satuan PLN/Provinsi": "UIW",
+      "SAIDI (Jam/Pelanggan)": 1.59,
+      "SAIFI (Kali/Pelanggan)": 2.03
+    },
+    {
+      "Provinsi": "Batam",
+      "Satuan PLN/Provinsi": "PT PLN",
+      "SAIDI (Jam/Pelanggan)": 2.17,
+      "SAIFI (Kali/Pelanggan)": 2.45
+    },
+    {
+      "Provinsi": "Jawa Timur",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 1.63,
+      "SAIFI (Kali/Pelanggan)": 1.78
+    },
+    {
+      "Provinsi": "Jawa Tengah",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 2.95,
+      "SAIFI (Kali/Pelanggan)": 2.28
+    },
+    {
+      "Provinsi": "Jawa Barat",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 4.28,
+      "SAIFI (Kali/Pelanggan)": 3.11
+    },
+    {
+      "Provinsi": "Banten",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 1.67,
+      "SAIFI (Kali/Pelanggan)": 1.04
+    },
+    {
+      "Provinsi": "DKI Jakarta",
+      "Satuan PLN/Provinsi": "UID",
+      "SAIDI (Jam/Pelanggan)": 0.43,
+      "SAIFI (Kali/Pelanggan)": 0.65
+    }
+  ]
+}

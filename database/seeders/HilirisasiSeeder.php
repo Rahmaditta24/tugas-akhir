@@ -10,7 +10,7 @@ class HilirisasiSeeder extends Seeder
 {
     public function run(): void
     {
-        $jsonPath = base_path('../peta-bima/data/data-hilirisasi_clean.json');
+        $jsonPath = database_path('data/data-hilirisasi.json');
         $toTitleCase = function ($str) {
             if (!$str || $str === 'tidak tersedia') return $str;
             $res = mb_convert_case($str, MB_CASE_TITLE, "UTF-8");

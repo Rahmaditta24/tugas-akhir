@@ -10,7 +10,7 @@ class ProdukSeeder extends Seeder
 {
     public function run(): void
     {
-        $path = base_path('../peta-bima/data/data-produk-hilirisasi_clean.json');
+        $path = database_path('data/data-produk-hilirisasi.json');
         if (!file_exists($path)) {
             $this->command?->warn('Produk JSON not found: ' . $path);
             return;

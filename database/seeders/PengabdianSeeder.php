@@ -10,7 +10,7 @@ class PengabdianSeeder extends Seeder
 {
     public function run(): void
     {
-        $jsonPath = base_path('../peta-bima/data/data-pengabdian_clean.json');
+        $jsonPath = database_path('data/data-pengabdian.json');
         $toTitleCase = function ($str) {
             if (!$str || $str === 'tidak tersedia')
                 return $str;

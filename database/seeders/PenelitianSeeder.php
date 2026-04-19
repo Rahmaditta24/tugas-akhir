@@ -13,7 +13,7 @@ class PenelitianSeeder extends Seeder
      */
     public function run(): void
     {
-        $jsonPath = base_path('../peta-bima/data/data-penelitian_clean.json');
+        $jsonPath = database_path('data/data-penelitian.json');
 
         if (!file_exists($jsonPath)) {
             $this->command->error("File tidak ditemukan: {$jsonPath}");

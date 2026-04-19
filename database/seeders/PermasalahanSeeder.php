@@ -45,7 +45,7 @@ class PermasalahanSeeder extends Seeder
 
     private function loadKabupatenProvinsiLookup(): void
     {
-        $kabPath = base_path('../peta-bima/data/kabupaten/kabupaten-new.json');
+        $kabPath = database_path('data/kabupaten-new.json');
         if (!file_exists($kabPath)) {
             $this->command->warn('File kabupaten lookup tidak ditemukan: ' . $kabPath);
             return;
@@ -116,7 +116,7 @@ class PermasalahanSeeder extends Seeder
 
     private function importSampah()
     {
-        $jsonPath = base_path('../peta-bima/data/permasalahan/data-permasalahan-sampah.json');
+        $jsonPath = database_path('data/data-permasalahan-sampah.json');
 
         if (!file_exists($jsonPath)) {
             $this->command->warn("File sampah tidak ditemukan");
@@ -166,7 +166,7 @@ class PermasalahanSeeder extends Seeder
 
     private function importStunting()
     {
-        $jsonPath = base_path('../peta-bima/data/permasalahan/data-permasalahan-stunting.json');
+        $jsonPath = database_path('data/data-permasalahan-stunting.json');
 
         if (!file_exists($jsonPath)) {
             $this->command->warn("File stunting tidak ditemukan");
@@ -216,7 +216,7 @@ class PermasalahanSeeder extends Seeder
 
     private function importGiziBuruk()
     {
-        $jsonPath = base_path('../peta-bima/data/permasalahan/data-permasalahan-gizi-buruk.json');
+        $jsonPath = database_path('data/data-permasalahan-gizi-buruk.json');
 
         if (!file_exists($jsonPath)) {
             $this->command->warn("File gizi buruk tidak ditemukan");
@@ -266,7 +266,7 @@ class PermasalahanSeeder extends Seeder
 
     private function importKrisisListrik()
     {
-        $jsonPath = base_path('../peta-bima/data/permasalahan/data-permasalahan-krisis-listrik.json');
+        $jsonPath = database_path('data/data-permasalahan-krisis-listrik.json');
 
         if (!file_exists($jsonPath)) {
             $this->command->warn("File krisis listrik tidak ditemukan");
@@ -309,7 +309,7 @@ class PermasalahanSeeder extends Seeder
 
     private function importKetahananPangan()
     {
-        $jsonPath = base_path('../peta-bima/data/permasalahan/data-permasalahan-ketahanan-pangan.json');
+        $jsonPath = database_path('data/data-permasalahan-ketahanan-pangan.json');
 
         if (!file_exists($jsonPath)) {
             $this->command->warn("File ketahanan pangan tidak ditemukan");

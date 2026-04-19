@@ -1,0 +1,2210 @@
+{
+  "Provinsi": [
+    {
+      "Provinsi": "Aceh",
+      "Persentase": 23.8
+    },
+    {
+      "Provinsi": "Sumatera Utara",
+      "Persentase": 17.6
+    },
+    {
+      "Provinsi": "Sumatera Barat",
+      "Persentase": 17.8
+    },
+    {
+      "Provinsi": "Riau",
+      "Persentase": 18.4
+    },
+    {
+      "Provinsi": "Jambi",
+      "Persentase": 20.1
+    },
+    {
+      "Provinsi": "Sumatera Selatan",
+      "Persentase": 13.6
+    },
+    {
+      "Provinsi": "Bengkulu",
+      "Persentase": 18.4
+    },
+    {
+      "Provinsi": "Lampung",
+      "Persentase": 14.3
+    },
+    {
+      "Provinsi": "Kepulauan Bangka Belitung",
+      "Persentase": 16.3
+    },
+    {
+      "Provinsi": "Kepulauan Riau",
+      "Persentase": 13.0
+    },
+    {
+      "Provinsi": "DKI Jakarta",
+      "Persentase": 15.0
+    },
+    {
+      "Provinsi": "Jawa Barat",
+      "Persentase": 17.6
+    },
+    {
+      "Provinsi": "Jawa Tengah",
+      "Persentase": 17.1
+    },
+    {
+      "Provinsi": "Daerah Istimewa Yogyakarta",
+      "Persentase": 17.5
+    },
+    {
+      "Provinsi": "Jawa Timur",
+      "Persentase": 13.9
+    },
+    {
+      "Provinsi": "Banten",
+      "Persentase": 16.6
+    },
+    {
+      "Provinsi": "Bali",
+      "Persentase": 8.7
+    },
+    {
+      "Provinsi": "Nusa Tenggara Barat",
+      "Persentase": 20.8
+    },
+    {
+      "Provinsi": "Nusa Tenggara Timur",
+      "Persentase": 30.9
+    },
+    {
+      "Provinsi": "Kalimantan Barat",
+      "Persentase": 22.8
+    },
+    {
+      "Provinsi": "Kalimantan Tengah",
+      "Persentase": 17.3
+    },
+    {
+      "Provinsi": "Kalimantan Selatan",
+      "Persentase": 22.1
+    },
+    {
+      "Provinsi": "Kalimantan Timur",
+      "Persentase": 15.2
+    },
+    {
+      "Provinsi": "Kalimantan Utara",
+      "Persentase": 15.6
+    },
+    {
+      "Provinsi": "Sulawesi Utara",
+      "Persentase": 13.8
+    },
+    {
+      "Provinsi": "Sulawesi Tengah",
+      "Persentase": 22.5
+    },
+    {
+      "Provinsi": "Sulawesi Selatan",
+      "Persentase": 21.6
+    },
+    {
+      "Provinsi": "Sulawesi Tenggara",
+      "Persentase": 22.6
+    },
+    {
+      "Provinsi": "Gorontalo",
+      "Persentase": 21.0
+    },
+    {
+      "Provinsi": "Sulawesi Barat",
+      "Persentase": 24.6
+    },
+    {
+      "Provinsi": "Maluku",
+      "Persentase": 23.4
+    },
+    {
+      "Provinsi": "Maluku Utara",
+      "Persentase": 20.9
+    },
+    {
+      "Provinsi": "Papua Barat",
+      "Persentase": 18.3
+    },
+    {
+      "Provinsi": "Papua Barat Daya",
+      "Persentase": 22.9
+    },
+    {
+      "Provinsi": "Papua",
+      "Persentase": 27.0
+    },
+    {
+      "Provinsi": "Papua Selatan",
+      "Persentase": 26.2
+    },
+    {
+      "Provinsi": "Papua Tengah",
+      "Persentase": 23.5
+    },
+    {
+      "Provinsi": "Papua Pegunungan",
+      "Persentase": 22.5
+    }
+  ],
+  "Kabupaten": [
+    {
+      "Kabupaten/Kota": "Simeulue",
+      "Persentase": 24.5
+    },
+    {
+      "Kabupaten/Kota": "Aceh Singkil",
+      "Persentase": 19.8
+    },
+    {
+      "Kabupaten/Kota": "Aceh Selatan",
+      "Persentase": 21.9
+    },
+    {
+      "Kabupaten/Kota": "Aceh Tenggara",
+      "Persentase": 21.5
+    },
+    {
+      "Kabupaten/Kota": "Aceh Timur",
+      "Persentase": 37.0
+    },
+    {
+      "Kabupaten/Kota": "Aceh Tengah",
+      "Persentase": 32.0
+    },
+    {
+      "Kabupaten/Kota": "Aceh Barat",
+      "Persentase": 26.0
+    },
+    {
+      "Kabupaten/Kota": "Aceh Besar",
+      "Persentase": 23.6
+    },
+    {
+      "Kabupaten/Kota": "Pidie",
+      "Persentase": 29.1
+    },
+    {
+      "Kabupaten/Kota": "Bireuen",
+      "Persentase": 25.1
+    },
+    {
+      "Kabupaten/Kota": "Aceh Utara",
+      "Persentase": 25.5
+    },
+    {
+      "Kabupaten/Kota": "Aceh Barat Daya",
+      "Persentase": 21.0
+    },
+    {
+      "Kabupaten/Kota": "Gayo Lues",
+      "Persentase": 16.1
+    },
+    {
+      "Kabupaten/Kota": "Aceh Tamiang",
+      "Persentase": 23.0
+    },
+    {
+      "Kabupaten/Kota": "Nagan Raya",
+      "Persentase": 24.1
+    },
+    {
+      "Kabupaten/Kota": "Aceh Jaya",
+      "Persentase": 23.1
+    },
+    {
+      "Kabupaten/Kota": "Bener Meriah",
+      "Persentase": 19.0
+    },
+    {
+      "Kabupaten/Kota": "Pidie Jaya",
+      "Persentase": 19.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Banda Aceh",
+      "Persentase": 15.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Sabang",
+      "Persentase": 20.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Langsa",
+      "Persentase": 16.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Lhokseumawe",
+      "Persentase": 20.4
+    },
+    {
+      "Kabupaten/Kota": "Kota Subulussalam",
+      "Persentase": 21.8
+    },
+    {
+      "Kabupaten/Kota": "Nias",
+      "Persentase": 20.5
+    },
+    {
+      "Kabupaten/Kota": "Mandailing Natal",
+      "Persentase": 14.4
+    },
+    {
+      "Kabupaten/Kota": "Tapanuli Selatan",
+      "Persentase": 3.7
+    },
+    {
+      "Kabupaten/Kota": "Tapanuli Tengah",
+      "Persentase": 23.0
+    },
+    {
+      "Kabupaten/Kota": "Tapanuli Utara",
+      "Persentase": 13.8
+    },
+    {
+      "Kabupaten/Kota": "Toba",
+      "Persentase": 21.0
+    },
+    {
+      "Kabupaten/Kota": "Labuhanbatu",
+      "Persentase": 19.5
+    },
+    {
+      "Kabupaten/Kota": "Asahan",
+      "Persentase": 20.9
+    },
+    {
+      "Kabupaten/Kota": "Simalungun",
+      "Persentase": 19.0
+    },
+    {
+      "Kabupaten/Kota": "Dairi",
+      "Persentase": 16.5
+    },
+    {
+      "Kabupaten/Kota": "Karo",
+      "Persentase": 18.0
+    },
+    {
+      "Kabupaten/Kota": "Deli Serdang",
+      "Persentase": 21.5
+    },
+    {
+      "Kabupaten/Kota": "Langkat",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Nias Selatan",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Humbang Hasundutan",
+      "Persentase": 19.1
+    },
+    {
+      "Kabupaten/Kota": "Pakpak Bharat",
+      "Persentase": 22.0
+    },
+    {
+      "Kabupaten/Kota": "Samosir",
+      "Persentase": 19.8
+    },
+    {
+      "Kabupaten/Kota": "Serdang Bedagai",
+      "Persentase": 21.0
+    },
+    {
+      "Kabupaten/Kota": "Batu Bara",
+      "Persentase": 19.3
+    },
+    {
+      "Kabupaten/Kota": "Padang Lawas Utara",
+      "Persentase": 17.8
+    },
+    {
+      "Kabupaten/Kota": "Padang Lawas",
+      "Persentase": 21.6
+    },
+    {
+      "Kabupaten/Kota": "Labuhanbatu Selatan",
+      "Persentase": 22.0
+    },
+    {
+      "Kabupaten/Kota": "Labuhanbatu Utara",
+      "Persentase": 18.6
+    },
+    {
+      "Kabupaten/Kota": "Nias Utara",
+      "Persentase": 19.8
+    },
+    {
+      "Kabupaten/Kota": "Nias Barat",
+      "Persentase": 25.0
+    },
+    {
+      "Kabupaten/Kota": "Sibolga",
+      "Persentase": 20.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Tanjungbalai",
+      "Persentase": 13.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Pematang Siantar",
+      "Persentase": 11.1
+    },
+    {
+      "Kabupaten/Kota": "Kota Tebing Tinggi",
+      "Persentase": 15.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Medan",
+      "Persentase": 20.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Binjai",
+      "Persentase": 22.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Padangsidimpuan",
+      "Persentase": 20.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Gunungsitoli",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Mentawai",
+      "Persentase": 21.1
+    },
+    {
+      "Kabupaten/Kota": "Pesisir Selatan",
+      "Persentase": 20.7
+    },
+    {
+      "Kabupaten/Kota": "Solok",
+      "Persentase": 18.6
+    },
+    {
+      "Kabupaten/Kota": "Sijunjung",
+      "Persentase": 17.7
+    },
+    {
+      "Kabupaten/Kota": "Tanah Datar",
+      "Persentase": 20.1
+    },
+    {
+      "Kabupaten/Kota": "Padang Pariaman",
+      "Persentase": 19.3
+    },
+    {
+      "Kabupaten/Kota": "Agam",
+      "Persentase": 17.4
+    },
+    {
+      "Kabupaten/Kota": "Lima Puluh Kota",
+      "Persentase": 20.8
+    },
+    {
+      "Kabupaten/Kota": "Pasaman",
+      "Persentase": 22.2
+    },
+    {
+      "Kabupaten/Kota": "Solok Selatan",
+      "Persentase": 21.0
+    },
+    {
+      "Kabupaten/Kota": "Dharmasraya",
+      "Persentase": 17.3
+    },
+    {
+      "Kabupaten/Kota": "Pasaman Barat",
+      "Persentase": 16.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Padang",
+      "Persentase": 18.4
+    },
+    {
+      "Kabupaten/Kota": "Kota Solok",
+      "Persentase": 14.8
+    },
+    {
+      "Kabupaten/Kota": "Kota Sawahlunto",
+      "Persentase": 15.8
+    },
+    {
+      "Kabupaten/Kota": "Kota Padang Panjang",
+      "Persentase": 14.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Bukittinggi",
+      "Persentase": 14.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Payakumbuh",
+      "Persentase": 13.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Pariaman",
+      "Persentase": 14.2
+    },
+    {
+      "Kabupaten/Kota": "Kuantan Singingi",
+      "Persentase": 17.4
+    },
+    {
+      "Kabupaten/Kota": "Indragiri Hulu",
+      "Persentase": 18.1
+    },
+    {
+      "Kabupaten/Kota": "Indragiri Hilir",
+      "Persentase": 20.3
+    },
+    {
+      "Kabupaten/Kota": "Pelalawan",
+      "Persentase": 17.9
+    },
+    {
+      "Kabupaten/Kota": "Siak",
+      "Persentase": 15.1
+    },
+    {
+      "Kabupaten/Kota": "Kampar",
+      "Persentase": 17.4
+    },
+    {
+      "Kabupaten/Kota": "Rokan Hulu",
+      "Persentase": 19.4
+    },
+    {
+      "Kabupaten/Kota": "Bengkalis",
+      "Persentase": 14.7
+    },
+    {
+      "Kabupaten/Kota": "Rokan Hilir",
+      "Persentase": 17.3
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Meranti",
+      "Persentase": 18.1
+    },
+    {
+      "Kabupaten/Kota": "Kota Pekanbaru",
+      "Persentase": 12.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Dumai",
+      "Persentase": 15.8
+    },
+    {
+      "Kabupaten/Kota": "Kerinci",
+      "Persentase": 15.5
+    },
+    {
+      "Kabupaten/Kota": "Merangin",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Sarolangun",
+      "Persentase": 17.5
+    },
+    {
+      "Kabupaten/Kota": "Batang Hari",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Muaro Jambi",
+      "Persentase": 17.4
+    },
+    {
+      "Kabupaten/Kota": "Tanjung Jabung Timur",
+      "Persentase": 16.7
+    },
+    {
+      "Kabupaten/Kota": "Tanjung Jabung Barat",
+      "Persentase": 20.7
+    },
+    {
+      "Kabupaten/Kota": "Tebo",
+      "Persentase": 18.5
+    },
+    {
+      "Kabupaten/Kota": "Bungo",
+      "Persentase": 17.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Jambi",
+      "Persentase": 15.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Sungai Penuh",
+      "Persentase": 9.2
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ulu",
+      "Persentase": 17.5
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ilir",
+      "Persentase": 17.6
+    },
+    {
+      "Kabupaten/Kota": "Muara Enim",
+      "Persentase": 17.0
+    },
+    {
+      "Kabupaten/Kota": "Lahat",
+      "Persentase": 16.1
+    },
+    {
+      "Kabupaten/Kota": "Musi Rawas",
+      "Persentase": 15.6
+    },
+    {
+      "Kabupaten/Kota": "Musi Banyuasin",
+      "Persentase": 15.3
+    },
+    {
+      "Kabupaten/Kota": "Banyuasin",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ulu Selatan",
+      "Persentase": 16.4
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ulu Timur",
+      "Persentase": 19.8
+    },
+    {
+      "Kabupaten/Kota": "Empat Lawang",
+      "Persentase": 16.1
+    },
+    {
+      "Kabupaten/Kota": "Penukal Abab Lematang Ilir",
+      "Persentase": 15.8
+    },
+    {
+      "Kabupaten/Kota": "Musi Rawas Utara",
+      "Persentase": 16.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Palembang",
+      "Persentase": 12.8
+    },
+    {
+      "Kabupaten/Kota": "Kota Prabumulih",
+      "Persentase": 14.1
+    },
+    {
+      "Kabupaten/Kota": "Kota Pagar Alam",
+      "Persentase": 13.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Lubuk Linggau",
+      "Persentase": 14.2
+    },
+    {
+      "Kabupaten/Kota": "Bengkulu Selatan",
+      "Persentase": 14.8
+    },
+    {
+      "Kabupaten/Kota": "Rejang Lebong",
+      "Persentase": 19.7
+    },
+    {
+      "Kabupaten/Kota": "Bengkulu Utara",
+      "Persentase": 15.6
+    },
+    {
+      "Kabupaten/Kota": "Kaur",
+      "Persentase": 15.2
+    },
+    {
+      "Kabupaten/Kota": "Seluma",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Mukomuko",
+      "Persentase": 17.9
+    },
+    {
+      "Kabupaten/Kota": "Lebong",
+      "Persentase": 14.6
+    },
+    {
+      "Kabupaten/Kota": "Kepahiang",
+      "Persentase": 19.5
+    },
+    {
+      "Kabupaten/Kota": "Bengkulu Tengah",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Bengkulu",
+      "Persentase": 16.1
+    },
+    {
+      "Kabupaten/Kota": "Lampung Barat",
+      "Persentase": 19.9
+    },
+    {
+      "Kabupaten/Kota": "Tanggamus",
+      "Persentase": 19.1
+    },
+    {
+      "Kabupaten/Kota": "Lampung Selatan",
+      "Persentase": 14.8
+    },
+    {
+      "Kabupaten/Kota": "Lampung Timur",
+      "Persentase": 14.4
+    },
+    {
+      "Kabupaten/Kota": "Lampung Tengah",
+      "Persentase": 16.6
+    },
+    {
+      "Kabupaten/Kota": "Lampung Utara",
+      "Persentase": 14.2
+    },
+    {
+      "Kabupaten/Kota": "Way Kanan",
+      "Persentase": 15.2
+    },
+    {
+      "Kabupaten/Kota": "Tulang Bawang",
+      "Persentase": 15.8
+    },
+    {
+      "Kabupaten/Kota": "Pesawaran",
+      "Persentase": 14.9
+    },
+    {
+      "Kabupaten/Kota": "Pringsewu",
+      "Persentase": 15.5
+    },
+    {
+      "Kabupaten/Kota": "Mesuji",
+      "Persentase": 12.9
+    },
+    {
+      "Kabupaten/Kota": "Tulang Bawang Barat",
+      "Persentase": 15.8
+    },
+    {
+      "Kabupaten/Kota": "Pesisir Barat",
+      "Persentase": 18.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Bandar Lampung",
+      "Persentase": 14.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Metro",
+      "Persentase": 13.2
+    },
+    {
+      "Kabupaten/Kota": "Bangka",
+      "Persentase": 20.1
+    },
+    {
+      "Kabupaten/Kota": "Belitung",
+      "Persentase": 17.3
+    },
+    {
+      "Kabupaten/Kota": "Bangka Barat",
+      "Persentase": 19.9
+    },
+    {
+      "Kabupaten/Kota": "Bangka Tengah",
+      "Persentase": 19.4
+    },
+    {
+      "Kabupaten/Kota": "Bangka Selatan",
+      "Persentase": 19.9
+    },
+    {
+      "Kabupaten/Kota": "Belitung Timur",
+      "Persentase": 16.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Pangkal Pinang",
+      "Persentase": 14.2
+    },
+    {
+      "Kabupaten/Kota": "Karimun",
+      "Persentase": 18.0
+    },
+    {
+      "Kabupaten/Kota": "Bintan",
+      "Persentase": 15.8
+    },
+    {
+      "Kabupaten/Kota": "Natuna",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Lingga",
+      "Persentase": 19.3
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Anambas",
+      "Persentase": 15.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Batam",
+      "Persentase": 15.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Tanjung Pinang",
+      "Persentase": 13.9
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Seribu",
+      "Persentase": 15.1
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Selatan",
+      "Persentase": 12.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Timur",
+      "Persentase": 13.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Pusat",
+      "Persentase": 16.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Barat",
+      "Persentase": 13.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Utara",
+      "Persentase": 13.2
+    },
+    {
+      "Kabupaten/Kota": "Bogor",
+      "Persentase": 16.4
+    },
+    {
+      "Kabupaten/Kota": "Sukabumi",
+      "Persentase": 13.8
+    },
+    {
+      "Kabupaten/Kota": "Cianjur",
+      "Persentase": 6.3
+    },
+    {
+      "Kabupaten/Kota": "Bandung",
+      "Persentase": 19.4
+    },
+    {
+      "Kabupaten/Kota": "Garut",
+      "Persentase": 13.8
+    },
+    {
+      "Kabupaten/Kota": "Tasikmalaya",
+      "Persentase": 15.2
+    },
+    {
+      "Kabupaten/Kota": "Ciamis",
+      "Persentase": 14.9
+    },
+    {
+      "Kabupaten/Kota": "Kuningan",
+      "Persentase": 19.5
+    },
+    {
+      "Kabupaten/Kota": "Cirebon",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Majalengka",
+      "Persentase": 15.8
+    },
+    {
+      "Kabupaten/Kota": "Sumedang",
+      "Persentase": 14.5
+    },
+    {
+      "Kabupaten/Kota": "Indramayu",
+      "Persentase": 10.7
+    },
+    {
+      "Kabupaten/Kota": "Subang",
+      "Persentase": 15.4
+    },
+    {
+      "Kabupaten/Kota": "Purwakarta",
+      "Persentase": 14.1
+    },
+    {
+      "Kabupaten/Kota": "Karawang",
+      "Persentase": 14.7
+    },
+    {
+      "Kabupaten/Kota": "Bekasi",
+      "Persentase": 14.0
+    },
+    {
+      "Kabupaten/Kota": "Bandung Barat",
+      "Persentase": 17.0
+    },
+    {
+      "Kabupaten/Kota": "Pangandaran",
+      "Persentase": 13.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Bogor",
+      "Persentase": 15.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Sukabumi",
+      "Persentase": 14.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Bandung",
+      "Persentase": 16.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Cirebon",
+      "Persentase": 14.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Bekasi",
+      "Persentase": 10.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Depok",
+      "Persentase": 10.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Cimahi",
+      "Persentase": 16.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Tasikmalaya",
+      "Persentase": 11.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Banjar",
+      "Persentase": 15.2
+    },
+    {
+      "Kabupaten/Kota": "Cilacap",
+      "Persentase": 14.9
+    },
+    {
+      "Kabupaten/Kota": "Banyumas",
+      "Persentase": 14.8
+    },
+    {
+      "Kabupaten/Kota": "Purbalingga",
+      "Persentase": 18.3
+    },
+    {
+      "Kabupaten/Kota": "Banjarnegara",
+      "Persentase": 18.7
+    },
+    {
+      "Kabupaten/Kota": "Kebumen",
+      "Persentase": 14.4
+    },
+    {
+      "Kabupaten/Kota": "Purworejo",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Wonosobo",
+      "Persentase": 19.7
+    },
+    {
+      "Kabupaten/Kota": "Magelang",
+      "Persentase": 15.5
+    },
+    {
+      "Kabupaten/Kota": "Boyolali",
+      "Persentase": 21.0
+    },
+    {
+      "Kabupaten/Kota": "Klaten",
+      "Persentase": 18.6
+    },
+    {
+      "Kabupaten/Kota": "Sukoharjo",
+      "Persentase": 14.2
+    },
+    {
+      "Kabupaten/Kota": "Wonogiri",
+      "Persentase": 15.2
+    },
+    {
+      "Kabupaten/Kota": "Karanganyar",
+      "Persentase": 15.1
+    },
+    {
+      "Kabupaten/Kota": "Sragen",
+      "Persentase": 14.8
+    },
+    {
+      "Kabupaten/Kota": "Grobogan",
+      "Persentase": 18.1
+    },
+    {
+      "Kabupaten/Kota": "Blora",
+      "Persentase": 18.9
+    },
+    {
+      "Kabupaten/Kota": "Rembang",
+      "Persentase": 16.8
+    },
+    {
+      "Kabupaten/Kota": "Pati",
+      "Persentase": 16.0
+    },
+    {
+      "Kabupaten/Kota": "Kudus",
+      "Persentase": 15.6
+    },
+    {
+      "Kabupaten/Kota": "Jepara",
+      "Persentase": 14.8
+    },
+    {
+      "Kabupaten/Kota": "Demak",
+      "Persentase": 13.0
+    },
+    {
+      "Kabupaten/Kota": "Semarang",
+      "Persentase": 15.5
+    },
+    {
+      "Kabupaten/Kota": "Temanggung",
+      "Persentase": 19.3
+    },
+    {
+      "Kabupaten/Kota": "Kendal",
+      "Persentase": 14.5
+    },
+    {
+      "Kabupaten/Kota": "Batang",
+      "Persentase": 14.8
+    },
+    {
+      "Kabupaten/Kota": "Pekalongan",
+      "Persentase": 15.7
+    },
+    {
+      "Kabupaten/Kota": "Pemalang",
+      "Persentase": 17.1
+    },
+    {
+      "Kabupaten/Kota": "Tegal",
+      "Persentase": 14.9
+    },
+    {
+      "Kabupaten/Kota": "Brebes",
+      "Persentase": 19.4
+    },
+    {
+      "Kabupaten/Kota": "Kota Magelang",
+      "Persentase": 12.4
+    },
+    {
+      "Kabupaten/Kota": "Kota Surakarta",
+      "Persentase": 13.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Salatiga",
+      "Persentase": 13.4
+    },
+    {
+      "Kabupaten/Kota": "Kota Semarang",
+      "Persentase": 13.1
+    },
+    {
+      "Kabupaten/Kota": "Kota Pekalongan",
+      "Persentase": 17.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Tegal",
+      "Persentase": 17.6
+    },
+    {
+      "Kabupaten/Kota": "Kulon Progo",
+      "Persentase": 13.5
+    },
+    {
+      "Kabupaten/Kota": "Bantul",
+      "Persentase": 15.5
+    },
+    {
+      "Kabupaten/Kota": "Gunungkidul",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Sleman",
+      "Persentase": 11.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Yogyakarta",
+      "Persentase": 11.8
+    },
+    {
+      "Kabupaten/Kota": "Pacitan",
+      "Persentase": 8.6
+    },
+    {
+      "Kabupaten/Kota": "Ponorogo",
+      "Persentase": 14.1
+    },
+    {
+      "Kabupaten/Kota": "Trenggalek",
+      "Persentase": 9.1
+    },
+    {
+      "Kabupaten/Kota": "Tulungagung",
+      "Persentase": 14.9
+    },
+    {
+      "Kabupaten/Kota": "Blitar",
+      "Persentase": 15.6
+    },
+    {
+      "Kabupaten/Kota": "Kediri",
+      "Persentase": 11.8
+    },
+    {
+      "Kabupaten/Kota": "Malang",
+      "Persentase": 21.7
+    },
+    {
+      "Kabupaten/Kota": "Lumajang",
+      "Persentase": 21.5
+    },
+    {
+      "Kabupaten/Kota": "Jember",
+      "Persentase": 21.7
+    },
+    {
+      "Kabupaten/Kota": "Banyuwangi",
+      "Persentase": 21.1
+    },
+    {
+      "Kabupaten/Kota": "Bondowoso",
+      "Persentase": 15.5
+    },
+    {
+      "Kabupaten/Kota": "Situbondo",
+      "Persentase": 17.5
+    },
+    {
+      "Kabupaten/Kota": "Probolinggo",
+      "Persentase": 25.4
+    },
+    {
+      "Kabupaten/Kota": "Pasuruan",
+      "Persentase": 21.6
+    },
+    {
+      "Kabupaten/Kota": "Sidoarjo",
+      "Persentase": 15.4
+    },
+    {
+      "Kabupaten/Kota": "Mojokerto",
+      "Persentase": 18.2
+    },
+    {
+      "Kabupaten/Kota": "Jombang",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Nganjuk",
+      "Persentase": 23.0
+    },
+    {
+      "Kabupaten/Kota": "Madiun",
+      "Persentase": 15.9
+    },
+    {
+      "Kabupaten/Kota": "Magetan",
+      "Persentase": 14.0
+    },
+    {
+      "Kabupaten/Kota": "Ngawi",
+      "Persentase": 17.3
+    },
+    {
+      "Kabupaten/Kota": "Bojonegoro",
+      "Persentase": 17.4
+    },
+    {
+      "Kabupaten/Kota": "Tuban",
+      "Persentase": 16.6
+    },
+    {
+      "Kabupaten/Kota": "Lamongan",
+      "Persentase": 11.9
+    },
+    {
+      "Kabupaten/Kota": "Gresik",
+      "Persentase": 15.7
+    },
+    {
+      "Kabupaten/Kota": "Bangkalan",
+      "Persentase": 21.3
+    },
+    {
+      "Kabupaten/Kota": "Sampang",
+      "Persentase": 21.1
+    },
+    {
+      "Kabupaten/Kota": "Pamekasan",
+      "Persentase": 20.6
+    },
+    {
+      "Kabupaten/Kota": "Sumenep",
+      "Persentase": 17.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Kediri",
+      "Persentase": 16.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Blitar",
+      "Persentase": 13.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Malang",
+      "Persentase": 18.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Probolinggo",
+      "Persentase": 22.4
+    },
+    {
+      "Kabupaten/Kota": "Kota Pasuruan",
+      "Persentase": 18.4
+    },
+    {
+      "Kabupaten/Kota": "Kota Mojokerto",
+      "Persentase": 15.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Madiun",
+      "Persentase": 13.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Surabaya",
+      "Persentase": 11.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Batu",
+      "Persentase": 12.3
+    },
+    {
+      "Kabupaten/Kota": "Pandeglang",
+      "Persentase": 21.7
+    },
+    {
+      "Kabupaten/Kota": "Lebak",
+      "Persentase": 19.1
+    },
+    {
+      "Kabupaten/Kota": "Tangerang",
+      "Persentase": 17.4
+    },
+    {
+      "Kabupaten/Kota": "Serang",
+      "Persentase": 20.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Tangerang",
+      "Persentase": 14.8
+    },
+    {
+      "Kabupaten/Kota": "Kota Cilegon",
+      "Persentase": 15.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Serang",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Tangerang Selatan",
+      "Persentase": 12.6
+    },
+    {
+      "Kabupaten/Kota": "Jembrana",
+      "Persentase": 9.1
+    },
+    {
+      "Kabupaten/Kota": "Tabanan",
+      "Persentase": 5.9
+    },
+    {
+      "Kabupaten/Kota": "Badung",
+      "Persentase": 6.0
+    },
+    {
+      "Kabupaten/Kota": "Gianyar",
+      "Persentase": 5.8
+    },
+    {
+      "Kabupaten/Kota": "Klungkung",
+      "Persentase": 6.6
+    },
+    {
+      "Kabupaten/Kota": "Bangli",
+      "Persentase": 7.3
+    },
+    {
+      "Kabupaten/Kota": "Karangasem",
+      "Persentase": 9.7
+    },
+    {
+      "Kabupaten/Kota": "Buleleng",
+      "Persentase": 12.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Denpasar",
+      "Persentase": 10.2
+    },
+    {
+      "Kabupaten/Kota": "Lombok Barat",
+      "Persentase": 15.4
+    },
+    {
+      "Kabupaten/Kota": "Lombok Tengah",
+      "Persentase": 15.6
+    },
+    {
+      "Kabupaten/Kota": "Lombok Timur",
+      "Persentase": 20.7
+    },
+    {
+      "Kabupaten/Kota": "Sumbawa",
+      "Persentase": 21.5
+    },
+    {
+      "Kabupaten/Kota": "Dompu",
+      "Persentase": 18.9
+    },
+    {
+      "Kabupaten/Kota": "Bima",
+      "Persentase": 24.2
+    },
+    {
+      "Kabupaten/Kota": "Sumbawa Barat",
+      "Persentase": 18.8
+    },
+    {
+      "Kabupaten/Kota": "Lombok Utara",
+      "Persentase": 23.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Mataram",
+      "Persentase": 17.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Bima",
+      "Persentase": 21.0
+    },
+    {
+      "Kabupaten/Kota": "Sumba Barat",
+      "Persentase": 21.3
+    },
+    {
+      "Kabupaten/Kota": "Sumba Timur",
+      "Persentase": 25.7
+    },
+    {
+      "Kabupaten/Kota": "Kupang",
+      "Persentase": 31.2
+    },
+    {
+      "Kabupaten/Kota": "Timor Tengah Selatan",
+      "Persentase": 40.7
+    },
+    {
+      "Kabupaten/Kota": "Timor Tengah Utara",
+      "Persentase": 40.6
+    },
+    {
+      "Kabupaten/Kota": "Belu",
+      "Persentase": 41.0
+    },
+    {
+      "Kabupaten/Kota": "Alor",
+      "Persentase": 41.7
+    },
+    {
+      "Kabupaten/Kota": "Lembata",
+      "Persentase": 25.0
+    },
+    {
+      "Kabupaten/Kota": "Flores Timur",
+      "Persentase": 29.7
+    },
+    {
+      "Kabupaten/Kota": "Sikka",
+      "Persentase": 28.8
+    },
+    {
+      "Kabupaten/Kota": "Ende",
+      "Persentase": 29.5
+    },
+    {
+      "Kabupaten/Kota": "Ngada",
+      "Persentase": 27.3
+    },
+    {
+      "Kabupaten/Kota": "Manggarai",
+      "Persentase": 35.6
+    },
+    {
+      "Kabupaten/Kota": "Rote Ndao",
+      "Persentase": 28.0
+    },
+    {
+      "Kabupaten/Kota": "Manggarai Barat",
+      "Persentase": 25.0
+    },
+    {
+      "Kabupaten/Kota": "Sumba Tengah",
+      "Persentase": 28.5
+    },
+    {
+      "Kabupaten/Kota": "Sumba Barat Daya",
+      "Persentase": 37.5
+    },
+    {
+      "Kabupaten/Kota": "Nagekeo",
+      "Persentase": 20.1
+    },
+    {
+      "Kabupaten/Kota": "Manggarai Timur",
+      "Persentase": 30.5
+    },
+    {
+      "Kabupaten/Kota": "Sabu Raijua",
+      "Persentase": 29.9
+    },
+    {
+      "Kabupaten/Kota": "Malaka",
+      "Persentase": 28.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Kupang",
+      "Persentase": 28.6
+    },
+    {
+      "Kabupaten/Kota": "Sambas",
+      "Persentase": 25.1
+    },
+    {
+      "Kabupaten/Kota": "Bengkayang",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Landak",
+      "Persentase": 23.1
+    },
+    {
+      "Kabupaten/Kota": "Mempawah",
+      "Persentase": 22.9
+    },
+    {
+      "Kabupaten/Kota": "Sanggau",
+      "Persentase": 25.3
+    },
+    {
+      "Kabupaten/Kota": "Ketapang",
+      "Persentase": 22.0
+    },
+    {
+      "Kabupaten/Kota": "Sintang",
+      "Persentase": 24.7
+    },
+    {
+      "Kabupaten/Kota": "Kapuas Hulu",
+      "Persentase": 20.7
+    },
+    {
+      "Kabupaten/Kota": "Sekadau",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Melawi",
+      "Persentase": 29.1
+    },
+    {
+      "Kabupaten/Kota": "Kayong Utara",
+      "Persentase": 29.0
+    },
+    {
+      "Kabupaten/Kota": "Kubu Raya",
+      "Persentase": 20.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Pontianak",
+      "Persentase": 19.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Singkawang",
+      "Persentase": 17.1
+    },
+    {
+      "Kabupaten/Kota": "Kotawaringin Barat",
+      "Persentase": 14.8
+    },
+    {
+      "Kabupaten/Kota": "Kotawaringin Timur",
+      "Persentase": 20.9
+    },
+    {
+      "Kabupaten/Kota": "Kapuas",
+      "Persentase": 20.8
+    },
+    {
+      "Kabupaten/Kota": "Barito Selatan",
+      "Persentase": 27.2
+    },
+    {
+      "Kabupaten/Kota": "Barito Utara",
+      "Persentase": 20.9
+    },
+    {
+      "Kabupaten/Kota": "Sukamara",
+      "Persentase": 16.4
+    },
+    {
+      "Kabupaten/Kota": "Lamandau",
+      "Persentase": 24.4
+    },
+    {
+      "Kabupaten/Kota": "Seruyan",
+      "Persentase": 25.5
+    },
+    {
+      "Kabupaten/Kota": "Katingan",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Pulang Pisau",
+      "Persentase": 21.5
+    },
+    {
+      "Kabupaten/Kota": "Gunung Mas",
+      "Persentase": 18.5
+    },
+    {
+      "Kabupaten/Kota": "Barito Timur",
+      "Persentase": 19.8
+    },
+    {
+      "Kabupaten/Kota": "Murung Raya",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Palang Karaya",
+      "Persentase": 21.7
+    },
+    {
+      "Kabupaten/Kota": "Tanah Laut",
+      "Persentase": 20.8
+    },
+    {
+      "Kabupaten/Kota": "Kotabaru",
+      "Persentase": 20.2
+    },
+    {
+      "Kabupaten/Kota": "Banjar",
+      "Persentase": 22.3
+    },
+    {
+      "Kabupaten/Kota": "Barito Kuala",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Tapin",
+      "Persentase": 16.5
+    },
+    {
+      "Kabupaten/Kota": "Hulu Sungai Selatan",
+      "Persentase": 19.5
+    },
+    {
+      "Kabupaten/Kota": "Hulu Sungai Tengah",
+      "Persentase": 19.5
+    },
+    {
+      "Kabupaten/Kota": "Hulu Sungai Utara",
+      "Persentase": 23.2
+    },
+    {
+      "Kabupaten/Kota": "Tabalong",
+      "Persentase": 18.7
+    },
+    {
+      "Kabupaten/Kota": "Tanah Bumbu",
+      "Persentase": 20.4
+    },
+    {
+      "Kabupaten/Kota": "Balangan",
+      "Persentase": 16.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Banjarbaru",
+      "Persentase": 16.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Banjarmasin",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Paser",
+      "Persentase": 22.1
+    },
+    {
+      "Kabupaten/Kota": "Kutai Barat",
+      "Persentase": 22.1
+    },
+    {
+      "Kabupaten/Kota": "Kutai Kartanegara",
+      "Persentase": 19.3
+    },
+    {
+      "Kabupaten/Kota": "Kutai Timur",
+      "Persentase": 22.6
+    },
+    {
+      "Kabupaten/Kota": "Berau",
+      "Persentase": 21.5
+    },
+    {
+      "Kabupaten/Kota": "Penajam Paser Utara",
+      "Persentase": 23.3
+    },
+    {
+      "Kabupaten/Kota": "Mahakam Ulu",
+      "Persentase": 22.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Balikpapan",
+      "Persentase": 22.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Samarinda",
+      "Persentase": 17.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Bontang",
+      "Persentase": 22.2
+    },
+    {
+      "Kabupaten/Kota": "Malinau",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Bulungan",
+      "Persentase": 19.5
+    },
+    {
+      "Kabupaten/Kota": "Tana Tidung",
+      "Persentase": 16.9
+    },
+    {
+      "Kabupaten/Kota": "Nunukan",
+      "Persentase": 19.5
+    },
+    {
+      "Kabupaten/Kota": "Kota Tarakan",
+      "Persentase": 16.4
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow",
+      "Persentase": 15.3
+    },
+    {
+      "Kabupaten/Kota": "Minahasa",
+      "Persentase": 20.1
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Sangihe",
+      "Persentase": 23.2
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Talaud",
+      "Persentase": 14.0
+    },
+    {
+      "Kabupaten/Kota": "Minahasa Selatan",
+      "Persentase": 17.7
+    },
+    {
+      "Kabupaten/Kota": "Minahasa Utara",
+      "Persentase": 17.0
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow Utara",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Siau Tagulandang Biaro",
+      "Persentase": 17.7
+    },
+    {
+      "Kabupaten/Kota": "Minahasa Tenggara",
+      "Persentase": 21.1
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow Selatan",
+      "Persentase": 17.6
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow Timur",
+      "Persentase": 17.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Manado",
+      "Persentase": 17.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Bitung",
+      "Persentase": 14.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Tomohon",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Kotamobagu",
+      "Persentase": 16.6
+    },
+    {
+      "Kabupaten/Kota": "Banggai Kepulauan",
+      "Persentase": 27.2
+    },
+    {
+      "Kabupaten/Kota": "Banggai",
+      "Persentase": 23.7
+    },
+    {
+      "Kabupaten/Kota": "Morowali",
+      "Persentase": 18.5
+    },
+    {
+      "Kabupaten/Kota": "Poso",
+      "Persentase": 13.1
+    },
+    {
+      "Kabupaten/Kota": "Donggala",
+      "Persentase": 23.1
+    },
+    {
+      "Kabupaten/Kota": "Toli Toli",
+      "Persentase": 24.0
+    },
+    {
+      "Kabupaten/Kota": "Buol",
+      "Persentase": 22.4
+    },
+    {
+      "Kabupaten/Kota": "Parigi Moutong",
+      "Persentase": 23.2
+    },
+    {
+      "Kabupaten/Kota": "Tojo Una Una",
+      "Persentase": 19.7
+    },
+    {
+      "Kabupaten/Kota": "Sigi",
+      "Persentase": 32.7
+    },
+    {
+      "Kabupaten/Kota": "Banggai Laut",
+      "Persentase": 23.7
+    },
+    {
+      "Kabupaten/Kota": "Morowali Utara",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Palu",
+      "Persentase": 23.9
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Selayar",
+      "Persentase": 23.7
+    },
+    {
+      "Kabupaten/Kota": "Bulukumba",
+      "Persentase": 22.2
+    },
+    {
+      "Kabupaten/Kota": "Bantaeng",
+      "Persentase": 23.3
+    },
+    {
+      "Kabupaten/Kota": "Jeneponto",
+      "Persentase": 27.2
+    },
+    {
+      "Kabupaten/Kota": "Takalar",
+      "Persentase": 22.8
+    },
+    {
+      "Kabupaten/Kota": "Gowa",
+      "Persentase": 22.3
+    },
+    {
+      "Kabupaten/Kota": "Sinjai",
+      "Persentase": 23.8
+    },
+    {
+      "Kabupaten/Kota": "Maros",
+      "Persentase": 20.6
+    },
+    {
+      "Kabupaten/Kota": "Pangkajene Kepulauan",
+      "Persentase": 20.8
+    },
+    {
+      "Kabupaten/Kota": "Barru",
+      "Persentase": 20.0
+    },
+    {
+      "Kabupaten/Kota": "Bone",
+      "Persentase": 22.9
+    },
+    {
+      "Kabupaten/Kota": "Soppeng",
+      "Persentase": 21.6
+    },
+    {
+      "Kabupaten/Kota": "Wajo",
+      "Persentase": 22.7
+    },
+    {
+      "Kabupaten/Kota": "Sidenreng Rappang",
+      "Persentase": 22.9
+    },
+    {
+      "Kabupaten/Kota": "Pinrang",
+      "Persentase": 24.5
+    },
+    {
+      "Kabupaten/Kota": "Enrekang",
+      "Persentase": 28.1
+    },
+    {
+      "Kabupaten/Kota": "Luwu",
+      "Persentase": 23.1
+    },
+    {
+      "Kabupaten/Kota": "Tana Toraja",
+      "Persentase": 22.0
+    },
+    {
+      "Kabupaten/Kota": "Luwu Utara",
+      "Persentase": 24.0
+    },
+    {
+      "Kabupaten/Kota": "Luwu Timur",
+      "Persentase": 23.3
+    },
+    {
+      "Kabupaten/Kota": "Toraja Utara",
+      "Persentase": 25.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Makassar",
+      "Persentase": 20.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Parepare",
+      "Persentase": 23.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Palopo",
+      "Persentase": 20.2
+    },
+    {
+      "Kabupaten/Kota": "Buton",
+      "Persentase": 23.5
+    },
+    {
+      "Kabupaten/Kota": "Muna",
+      "Persentase": 22.1
+    },
+    {
+      "Kabupaten/Kota": "Konawe",
+      "Persentase": 21.8
+    },
+    {
+      "Kabupaten/Kota": "Kolaka",
+      "Persentase": 23.1
+    },
+    {
+      "Kabupaten/Kota": "Konawe Selatan",
+      "Persentase": 23.1
+    },
+    {
+      "Kabupaten/Kota": "Bombana",
+      "Persentase": 21.5
+    },
+    {
+      "Kabupaten/Kota": "Wakatobi",
+      "Persentase": 22.7
+    },
+    {
+      "Kabupaten/Kota": "Kolaka Utara",
+      "Persentase": 23.5
+    },
+    {
+      "Kabupaten/Kota": "Buton Utara",
+      "Persentase": 23.6
+    },
+    {
+      "Kabupaten/Kota": "Konawe Utara",
+      "Persentase": 21.4
+    },
+    {
+      "Kabupaten/Kota": "Kolaka Timur",
+      "Persentase": 20.6
+    },
+    {
+      "Kabupaten/Kota": "Konawe Kepulauan",
+      "Persentase": 23.6
+    },
+    {
+      "Kabupaten/Kota": "Muna Barat",
+      "Persentase": 23.4
+    },
+    {
+      "Kabupaten/Kota": "Buton Tengah",
+      "Persentase": 22.0
+    },
+    {
+      "Kabupaten/Kota": "Buton Selatan",
+      "Persentase": 26.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Kendari",
+      "Persentase": 22.8
+    },
+    {
+      "Kabupaten/Kota": "Kota Baubau",
+      "Persentase": 24.8
+    },
+    {
+      "Kabupaten/Kota": "Boalemo",
+      "Persentase": 17.8
+    },
+    {
+      "Kabupaten/Kota": "Gorontalo",
+      "Persentase": 20.1
+    },
+    {
+      "Kabupaten/Kota": "Pohuwato",
+      "Persentase": 18.0
+    },
+    {
+      "Kabupaten/Kota": "Bone Bolango",
+      "Persentase": 22.2
+    },
+    {
+      "Kabupaten/Kota": "Gorontalo Utara",
+      "Persentase": 22.4
+    },
+    {
+      "Kabupaten/Kota": "Kota Gorontalo",
+      "Persentase": 22.6
+    },
+    {
+      "Kabupaten/Kota": "Majene",
+      "Persentase": 25.8
+    },
+    {
+      "Kabupaten/Kota": "Polewali Mandar",
+      "Persentase": 28.6
+    },
+    {
+      "Kabupaten/Kota": "Mamasa",
+      "Persentase": 26.4
+    },
+    {
+      "Kabupaten/Kota": "Mamuju",
+      "Persentase": 28.0
+    },
+    {
+      "Kabupaten/Kota": "Pasangkayu",
+      "Persentase": 28.2
+    },
+    {
+      "Kabupaten/Kota": "Mamuju Tengah",
+      "Persentase": 28.1
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Tanimbar",
+      "Persentase": 39.4
+    },
+    {
+      "Kabupaten/Kota": "Maluku Tenggara",
+      "Persentase": 24.6
+    },
+    {
+      "Kabupaten/Kota": "Maluku Tengah",
+      "Persentase": 23.5
+    },
+    {
+      "Kabupaten/Kota": "Buru",
+      "Persentase": 24.0
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Aru",
+      "Persentase": 30.5
+    },
+    {
+      "Kabupaten/Kota": "Seram Bagian Barat",
+      "Persentase": 29.4
+    },
+    {
+      "Kabupaten/Kota": "Seram Bagian Timur",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Maluku Barat Daya",
+      "Persentase": 30.0
+    },
+    {
+      "Kabupaten/Kota": "Buru Selatan",
+      "Persentase": 38.1
+    },
+    {
+      "Kabupaten/Kota": "Kota Ambon",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Kota Tual",
+      "Persentase": 19.0
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Barat",
+      "Persentase": 21.5
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Tengah",
+      "Persentase": 19.1
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Sula",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Selatan",
+      "Persentase": 32.2
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Utara",
+      "Persentase": 20.6
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Timur",
+      "Persentase": 24.0
+    },
+    {
+      "Kabupaten/Kota": "Pulau Morotai",
+      "Persentase": 19.8
+    },
+    {
+      "Kabupaten/Kota": "Pulau Taliabu",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Ternate",
+      "Persentase": 17.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Tidore Kepulauan",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Fak Fak",
+      "Persentase": 21.2
+    },
+    {
+      "Kabupaten/Kota": "Kaimana",
+      "Persentase": 24.8
+    },
+    {
+      "Kabupaten/Kota": "Teluk Wondama",
+      "Persentase": 27.1
+    },
+    {
+      "Kabupaten/Kota": "Teluk Bintuni",
+      "Persentase": 18.5
+    },
+    {
+      "Kabupaten/Kota": "Manokwari",
+      "Persentase": 22.7
+    },
+    {
+      "Kabupaten/Kota": "Manokwari Selatan",
+      "Persentase": 26.0
+    },
+    {
+      "Kabupaten/Kota": "Pegunungan Arfak",
+      "Persentase": 28.2
+    },
+    {
+      "Kabupaten/Kota": "Raja Ampat",
+      "Persentase": 27.6
+    },
+    {
+      "Kabupaten/Kota": "Sorong",
+      "Persentase": 19.5
+    },
+    {
+      "Kabupaten/Kota": "Sorong Selatan",
+      "Persentase": 23.2
+    },
+    {
+      "Kabupaten/Kota": "Maybrat",
+      "Persentase": 19.3
+    },
+    {
+      "Kabupaten/Kota": "Tambrauw",
+      "Persentase": 23.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Sorong",
+      "Persentase": 25.2
+    },
+    {
+      "Kabupaten/Kota": "Jayapura",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Yapen",
+      "Persentase": 22.6
+    },
+    {
+      "Kabupaten/Kota": "Biak Numfor",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Sarmi",
+      "Persentase": 19.3
+    },
+    {
+      "Kabupaten/Kota": "Keerom",
+      "Persentase": 22.0
+    },
+    {
+      "Kabupaten/Kota": "Waropen",
+      "Persentase": 16.5
+    },
+    {
+      "Kabupaten/Kota": "Supiori",
+      "Persentase": 17.6
+    },
+    {
+      "Kabupaten/Kota": "Mamberamo Raya",
+      "Persentase": 17.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Jayapura",
+      "Persentase": 19.1
+    },
+    {
+      "Kabupaten/Kota": "Merauke",
+      "Persentase": 17.0
+    },
+    {
+      "Kabupaten/Kota": "Boven Digoel",
+      "Persentase": 22.1
+    },
+    {
+      "Kabupaten/Kota": "Mappi",
+      "Persentase": 17.9
+    },
+    {
+      "Kabupaten/Kota": "Asmat",
+      "Persentase": 17.2
+    },
+    {
+      "Kabupaten/Kota": "Mimika",
+      "Persentase": 19.2
+    },
+    {
+      "Kabupaten/Kota": "Dogiyai",
+      "Persentase": 35.0
+    },
+    {
+      "Kabupaten/Kota": "Deiyai",
+      "Persentase": 26.6
+    },
+    {
+      "Kabupaten/Kota": "Nabire",
+      "Persentase": 19.6
+    },
+    {
+      "Kabupaten/Kota": "Paniai",
+      "Persentase": 23.7
+    },
+    {
+      "Kabupaten/Kota": "Intan Jaya",
+      "Persentase": 32.1
+    },
+    {
+      "Kabupaten/Kota": "Puncak",
+      "Persentase": 32.2
+    },
+    {
+      "Kabupaten/Kota": "Puncak Jaya",
+      "Persentase": 17.1
+    },
+    {
+      "Kabupaten/Kota": "Nduga",
+      "Persentase": 28.0
+    },
+    {
+      "Kabupaten/Kota": "Jayawijaya",
+      "Persentase": 20.0
+    },
+    {
+      "Kabupaten/Kota": "Lanny Jaya",
+      "Persentase": 21.6
+    },
+    {
+      "Kabupaten/Kota": "Tolikara",
+      "Persentase": 26.0
+    },
+    {
+      "Kabupaten/Kota": "Mamberamo Tengah",
+      "Persentase": 21.0
+    },
+    {
+      "Kabupaten/Kota": "Yalimo",
+      "Persentase": 20.0
+    },
+    {
+      "Kabupaten/Kota": "Yahukimo",
+      "Persentase": 24.0
+    },
+    {
+      "Kabupaten/Kota": "Pegunungan Bintang",
+      "Persentase": 20.0
+    }
+  ]
+}

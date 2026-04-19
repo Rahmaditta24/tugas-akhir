@@ -10,7 +10,7 @@ class FasilitasLabSeeder extends Seeder
 {
     public function run(): void
     {
-        $jsonPath = base_path('../peta-bima/data/data-fasilitas-lab_clean.json');
+        $jsonPath = database_path('data/data-fasilitas-lab.json');
         $toTitleCase = function ($str) {
             if (!$str || $str === 'tidak tersedia') return $str;
             return mb_convert_case($str, MB_CASE_TITLE, "UTF-8");

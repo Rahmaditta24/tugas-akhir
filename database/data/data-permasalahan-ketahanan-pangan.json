@@ -1,0 +1,2198 @@
+{
+  "Provinsi": [
+    {
+      "Provinsi": "Aceh",
+      "IKP": 73.80904761904762
+    },
+    {
+      "Provinsi": "Sumatera Barat",
+      "IKP": 77.89473684210526
+    },
+    {
+      "Provinsi": "Sumatera Utara",
+      "IKP": 79.98346153846157
+    },
+    {
+      "Provinsi": "Riau",
+      "IKP": 70.425
+    },
+    {
+      "Provinsi": "Jambi",
+      "IKP": 74.93909090909091
+    },
+    {
+      "Provinsi": "Sumatera Selatan",
+      "IKP": 74.06882352941174
+    },
+    {
+      "Provinsi": "Bengkulu",
+      "IKP": 73.392
+    },
+    {
+      "Provinsi": "Lampung",
+      "IKP": 82.58066666666667
+    },
+    {
+      "Provinsi": "Kepulauan Bangka Belitung",
+      "IKP": 70.21142857142857
+    },
+    {
+      "Provinsi": "Kepulauan Riau",
+      "IKP": 66.28857142857143
+    },
+    {
+      "Provinsi": "DKI Jakarta",
+      "IKP": 85.13000000000001
+    },
+    {
+      "Provinsi": "Jawa Barat",
+      "IKP": 82.9674074074074
+    },
+    {
+      "Provinsi": "Jawa Tengah",
+      "IKP": 85.34457142857141
+    },
+    {
+      "Provinsi": "Daerah Istimewa Yogyakarta",
+      "IKP": 84.148
+    },
+    {
+      "Provinsi": "Jawa Timur",
+      "IKP": 83.86210526315789
+    },
+    {
+      "Provinsi": "Banten",
+      "IKP": 79.255
+    },
+    {
+      "Provinsi": "Bali",
+      "IKP": 88.23111111111112
+    },
+    {
+      "Provinsi": "Maluku Utara",
+      "IKP": 61.43599999999999
+    },
+    {
+      "Provinsi": "Nusa Tenggara Timur",
+      "IKP": 70.9059090909091
+    },
+    {
+      "Provinsi": "Nusa Tenggara Barat",
+      "IKP": 73.26093750000001
+    },
+    {
+      "Provinsi": "Kalimantan Barat",
+      "IKP": 73.48642857142859
+    },
+    {
+      "Provinsi": "Kalimantan Tengah",
+      "IKP": 70.16
+    },
+    {
+      "Provinsi": "Kalimantan Selatan",
+      "IKP": 82.94923076923077
+    },
+    {
+      "Provinsi": "Kalimantan Timur",
+      "IKP": 78.607
+    },
+    {
+      "Provinsi": "Kalimantan Utara",
+      "IKP": 75.772
+    },
+    {
+      "Provinsi": "Sulawesi Utara",
+      "IKP": 76.32266666666668
+    },
+    {
+      "Provinsi": "Sulawesi Tengah",
+      "IKP": 78.41176470588236
+    },
+    {
+      "Provinsi": "Sulawesi Selatan",
+      "IKP": 83.82416666666667
+    },
+    {
+      "Provinsi": "Sulawesi Tenggara",
+      "IKP": 76.68235294117646
+    },
+    {
+      "Provinsi": "Gorontalo",
+      "IKP": 81.47
+    },
+    {
+      "Provinsi": "Sulawesi Barat",
+      "IKP": 71.99333333333334
+    },
+    {
+      "Provinsi": "Maluku",
+      "IKP": 62.08619047619048
+    },
+    {
+      "Provinsi": "Papua",
+      "IKP": 40.210689655172416
+    },
+    {
+      "Provinsi": "Papua Barat",
+      "IKP": 51.40333333333333
+    }
+  ],
+  "Kabupaten": [
+    {
+      "Kabupaten/Kota": "Aceh Selatan",
+      "IKP": 73.84
+    },
+    {
+      "Kabupaten/Kota": "Aceh Tenggara",
+      "IKP": 76.87
+    },
+    {
+      "Kabupaten/Kota": "Aceh Timur",
+      "IKP": 77.19
+    },
+    {
+      "Kabupaten/Kota": "Aceh Tengah",
+      "IKP": 69.08
+    },
+    {
+      "Kabupaten/Kota": "Aceh Barat",
+      "IKP": 78.27
+    },
+    {
+      "Kabupaten/Kota": "Aceh Besar",
+      "IKP": 84.72
+    },
+    {
+      "Kabupaten/Kota": "Pidie",
+      "IKP": 76.69
+    },
+    {
+      "Kabupaten/Kota": "Aceh Utara",
+      "IKP": 77.12
+    },
+    {
+      "Kabupaten/Kota": "Simeulue",
+      "IKP": 77.54
+    },
+    {
+      "Kabupaten/Kota": "Aceh Singkil",
+      "IKP": 46.1
+    },
+    {
+      "Kabupaten/Kota": "Bireuen",
+      "IKP": 80.83
+    },
+    {
+      "Kabupaten/Kota": "Aceh Barat Daya",
+      "IKP": 78.05
+    },
+    {
+      "Kabupaten/Kota": "Gayo Lues",
+      "IKP": 77.06
+    },
+    {
+      "Kabupaten/Kota": "Aceh Jaya",
+      "IKP": 79.69
+    },
+    {
+      "Kabupaten/Kota": "Nagan Raya",
+      "IKP": 76.6
+    },
+    {
+      "Kabupaten/Kota": "Aceh Tamiang",
+      "IKP": 81.16
+    },
+    {
+      "Kabupaten/Kota": "Bener Meriah",
+      "IKP": 46.98
+    },
+    {
+      "Kabupaten/Kota": "Pidie Jaya",
+      "IKP": 78.95
+    },
+    {
+      "Kabupaten/Kota": "Kota Banda Aceh",
+      "IKP": 87.96
+    },
+    {
+      "Kabupaten/Kota": "Kota Sabang",
+      "IKP": 73.8
+    },
+    {
+      "Kabupaten/Kota": "Kota Lhokseumawe",
+      "IKP": 83.03
+    },
+    {
+      "Kabupaten/Kota": "Kota Langsa",
+      "IKP": 78.05
+    },
+    {
+      "Kabupaten/Kota": "Kota Subulussalam",
+      "IKP": 41.12
+    },
+    {
+      "Kabupaten/Kota": "Tapanuli Tengah",
+      "IKP": 73.81
+    },
+    {
+      "Kabupaten/Kota": "Tapanuli Utara",
+      "IKP": 78.14
+    },
+    {
+      "Kabupaten/Kota": "Tapanuli Selatan",
+      "IKP": 77.29
+    },
+    {
+      "Kabupaten/Kota": "Nias",
+      "IKP": 72.41
+    },
+    {
+      "Kabupaten/Kota": "Langkat",
+      "IKP": 79.92
+    },
+    {
+      "Kabupaten/Kota": "Karo",
+      "IKP": 82.28
+    },
+    {
+      "Kabupaten/Kota": "Deli Serdang",
+      "IKP": 86.2
+    },
+    {
+      "Kabupaten/Kota": "Simalungun",
+      "IKP": 82.42
+    },
+    {
+      "Kabupaten/Kota": "Asahan",
+      "IKP": 76.65
+    },
+    {
+      "Kabupaten/Kota": "Labuhanbatu",
+      "IKP": 76.96
+    },
+    {
+      "Kabupaten/Kota": "Dairi",
+      "IKP": 82.5
+    },
+    {
+      "Kabupaten/Kota": "Toba",
+      "IKP": 84.33
+    },
+    {
+      "Kabupaten/Kota": "Mandailing Natal",
+      "IKP": 70.54
+    },
+    {
+      "Kabupaten/Kota": "Nias Selatan",
+      "IKP": 65.87
+    },
+    {
+      "Kabupaten/Kota": "Pakpak Bharat",
+      "IKP": 75.32
+    },
+    {
+      "Kabupaten/Kota": "Humbang Hasundutan",
+      "IKP": 81.16
+    },
+    {
+      "Kabupaten/Kota": "Samosir",
+      "IKP": 80.35
+    },
+    {
+      "Kabupaten/Kota": "Serdang Bedagai",
+      "IKP": 85.35
+    },
+    {
+      "Kabupaten/Kota": "Batu Bara",
+      "IKP": 78.37
+    },
+    {
+      "Kabupaten/Kota": "Padang Lawas Utara",
+      "IKP": 75.14
+    },
+    {
+      "Kabupaten/Kota": "Padang Lawas",
+      "IKP": 76.75
+    },
+    {
+      "Kabupaten/Kota": "Labuhanbatu Selatan",
+      "IKP": 57.85
+    },
+    {
+      "Kabupaten/Kota": "Labuhanbatu Utara",
+      "IKP": 80.3
+    },
+    {
+      "Kabupaten/Kota": "Nias Utara",
+      "IKP": 73.17
+    },
+    {
+      "Kabupaten/Kota": "Nias Barat",
+      "IKP": 65.35
+    },
+    {
+      "Kabupaten/Kota": "Kota Medan",
+      "IKP": 90.25
+    },
+    {
+      "Kabupaten/Kota": "Kota Pematangsiantar",
+      "IKP": 89.82
+    },
+    {
+      "Kabupaten/Kota": "Kota Sibolga",
+      "IKP": 81.03
+    },
+    {
+      "Kabupaten/Kota": "Kota Tanjung Balai",
+      "IKP": 74.59
+    },
+    {
+      "Kabupaten/Kota": "Kota Binjai",
+      "IKP": 88.22
+    },
+    {
+      "Kabupaten/Kota": "Kota Tebing Tinggi",
+      "IKP": 77.31
+    },
+    {
+      "Kabupaten/Kota": "Kota Padang Sidimpuan",
+      "IKP": 71.32
+    },
+    {
+      "Kabupaten/Kota": "Kota Gunungsitoli",
+      "IKP": 66.12
+    },
+    {
+      "Kabupaten/Kota": "Pesisir Selatan",
+      "IKP": 86.71
+    },
+    {
+      "Kabupaten/Kota": "Solok",
+      "IKP": 82.56
+    },
+    {
+      "Kabupaten/Kota": "Sijunjung",
+      "IKP": 82.05
+    },
+    {
+      "Kabupaten/Kota": "Tanah Datar",
+      "IKP": 89.4
+    },
+    {
+      "Kabupaten/Kota": "Padang Pariaman",
+      "IKP": 85.08
+    },
+    {
+      "Kabupaten/Kota": "Agam",
+      "IKP": 86.92
+    },
+    {
+      "Kabupaten/Kota": "Lima Puluh Kota",
+      "IKP": 82.59
+    },
+    {
+      "Kabupaten/Kota": "Pasaman",
+      "IKP": 82.09
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Mentawai",
+      "IKP": 53.86
+    },
+    {
+      "Kabupaten/Kota": "Dharmasraya",
+      "IKP": 84.98
+    },
+    {
+      "Kabupaten/Kota": "Solok Selatan",
+      "IKP": 85.6
+    },
+    {
+      "Kabupaten/Kota": "Pasaman Barat",
+      "IKP": 80.91
+    },
+    {
+      "Kabupaten/Kota": "Kota Padang",
+      "IKP": 89.63
+    },
+    {
+      "Kabupaten/Kota": "Kota Solok",
+      "IKP": 92.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Sawahlunto",
+      "IKP": 83.45
+    },
+    {
+      "Kabupaten/Kota": "Kota Padang Panjang",
+      "IKP": 87.05
+    },
+    {
+      "Kabupaten/Kota": "Kota Bukittinggi",
+      "IKP": 92.86
+    },
+    {
+      "Kabupaten/Kota": "Kota Payakumbuh",
+      "IKP": 89.33
+    },
+    {
+      "Kabupaten/Kota": "Kota Pariaman",
+      "IKP": 84.08
+    },
+    {
+      "Kabupaten/Kota": "Kampar",
+      "IKP": 59.69
+    },
+    {
+      "Kabupaten/Kota": "Indragiri Hulu",
+      "IKP": 60.71
+    },
+    {
+      "Kabupaten/Kota": "Bengkalis",
+      "IKP": 65.75
+    },
+    {
+      "Kabupaten/Kota": "Indragiri Hilir",
+      "IKP": 69.3
+    },
+    {
+      "Kabupaten/Kota": "Pelalawan",
+      "IKP": 71.59
+    },
+    {
+      "Kabupaten/Kota": "Rokan Hulu",
+      "IKP": 58.88
+    },
+    {
+      "Kabupaten/Kota": "Rokan Hilir",
+      "IKP": 68.67
+    },
+    {
+      "Kabupaten/Kota": "Siak",
+      "IKP": 77.06
+    },
+    {
+      "Kabupaten/Kota": "Kuantan Singingi",
+      "IKP": 73.8
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Meranti",
+      "IKP": 71.15
+    },
+    {
+      "Kabupaten/Kota": "Kota Pekanbaru",
+      "IKP": 92.2
+    },
+    {
+      "Kabupaten/Kota": "Kota Dumai",
+      "IKP": 76.3
+    },
+    {
+      "Kabupaten/Kota": "Kerinci",
+      "IKP": 83.76
+    },
+    {
+      "Kabupaten/Kota": "Merangin",
+      "IKP": 75.01
+    },
+    {
+      "Kabupaten/Kota": "Sarolangun",
+      "IKP": 65.64
+    },
+    {
+      "Kabupaten/Kota": "Batang Hari",
+      "IKP": 74.13
+    },
+    {
+      "Kabupaten/Kota": "Muaro Jambi",
+      "IKP": 68.51
+    },
+    {
+      "Kabupaten/Kota": "Tanjung Jabung Barat",
+      "IKP": 69.6
+    },
+    {
+      "Kabupaten/Kota": "Tanjung Jabung Timur",
+      "IKP": 69.99
+    },
+    {
+      "Kabupaten/Kota": "Bungo",
+      "IKP": 73.39
+    },
+    {
+      "Kabupaten/Kota": "Tebo",
+      "IKP": 71.36
+    },
+    {
+      "Kabupaten/Kota": "Kota Jambi",
+      "IKP": 85.88
+    },
+    {
+      "Kabupaten/Kota": "Kota Sungai Penuh",
+      "IKP": 87.06
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ulu",
+      "IKP": 73.01
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ilir",
+      "IKP": 79.54
+    },
+    {
+      "Kabupaten/Kota": "Muara Enim",
+      "IKP": 75.62
+    },
+    {
+      "Kabupaten/Kota": "Lahat",
+      "IKP": 75.19
+    },
+    {
+      "Kabupaten/Kota": "Musi Rawas",
+      "IKP": 77.66
+    },
+    {
+      "Kabupaten/Kota": "Musi Banyuasin",
+      "IKP": 79.48
+    },
+    {
+      "Kabupaten/Kota": "Banyuasin",
+      "IKP": 79.17
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ulu Timur",
+      "IKP": 85.17
+    },
+    {
+      "Kabupaten/Kota": "Ogan Komering Ulu Selatan",
+      "IKP": 75.37
+    },
+    {
+      "Kabupaten/Kota": "Ogan Ilir",
+      "IKP": 77.55
+    },
+    {
+      "Kabupaten/Kota": "Empat Lawang",
+      "IKP": 67.42
+    },
+    {
+      "Kabupaten/Kota": "Penukal Abab Lematang Ilir",
+      "IKP": 78.79
+    },
+    {
+      "Kabupaten/Kota": "Musi Rawas Utara",
+      "IKP": 59.58
+    },
+    {
+      "Kabupaten/Kota": "Kota Palembang",
+      "IKP": 83.62
+    },
+    {
+      "Kabupaten/Kota": "Kota Pagar Alam",
+      "IKP": 57.79
+    },
+    {
+      "Kabupaten/Kota": "Kota Lubuklinggau",
+      "IKP": 66.1
+    },
+    {
+      "Kabupaten/Kota": "Kota Prabumulih",
+      "IKP": 68.11
+    },
+    {
+      "Kabupaten/Kota": "Bengkulu Selatan",
+      "IKP": 74.91
+    },
+    {
+      "Kabupaten/Kota": "Rejang Lebong",
+      "IKP": 73.11
+    },
+    {
+      "Kabupaten/Kota": "Bengkulu Utara",
+      "IKP": 72.62
+    },
+    {
+      "Kabupaten/Kota": "Kaur",
+      "IKP": 74.75
+    },
+    {
+      "Kabupaten/Kota": "Seluma",
+      "IKP": 71.61
+    },
+    {
+      "Kabupaten/Kota": "Mukomuko",
+      "IKP": 76.57
+    },
+    {
+      "Kabupaten/Kota": "Lebong",
+      "IKP": 77.06
+    },
+    {
+      "Kabupaten/Kota": "Kepahiang",
+      "IKP": 72.43
+    },
+    {
+      "Kabupaten/Kota": "Bengkulu Tengah",
+      "IKP": 62.14
+    },
+    {
+      "Kabupaten/Kota": "Kota Bengkulu",
+      "IKP": 78.72
+    },
+    {
+      "Kabupaten/Kota": "Lampung Selatan",
+      "IKP": 84.46
+    },
+    {
+      "Kabupaten/Kota": "Lampung Tengah",
+      "IKP": 84.93
+    },
+    {
+      "Kabupaten/Kota": "Lampung Utara",
+      "IKP": 76.82
+    },
+    {
+      "Kabupaten/Kota": "Lampung Barat",
+      "IKP": 76.18
+    },
+    {
+      "Kabupaten/Kota": "Tulang Bawang",
+      "IKP": 88.78
+    },
+    {
+      "Kabupaten/Kota": "Tanggamus",
+      "IKP": 76.4
+    },
+    {
+      "Kabupaten/Kota": "Lampung Timur",
+      "IKP": 85.22
+    },
+    {
+      "Kabupaten/Kota": "Way Kanan",
+      "IKP": 79.61
+    },
+    {
+      "Kabupaten/Kota": "Pesawaran",
+      "IKP": 80.85
+    },
+    {
+      "Kabupaten/Kota": "Pringsewu",
+      "IKP": 87.35
+    },
+    {
+      "Kabupaten/Kota": "Mesuji",
+      "IKP": 88.18
+    },
+    {
+      "Kabupaten/Kota": "Tulang Bawang Barat",
+      "IKP": 83.74
+    },
+    {
+      "Kabupaten/Kota": "Pesisir Barat",
+      "IKP": 75.77
+    },
+    {
+      "Kabupaten/Kota": "Kota Bandar Lampung",
+      "IKP": 84.64
+    },
+    {
+      "Kabupaten/Kota": "Kota Metro",
+      "IKP": 85.78
+    },
+    {
+      "Kabupaten/Kota": "Bangka",
+      "IKP": 74.35
+    },
+    {
+      "Kabupaten/Kota": "Belitung",
+      "IKP": 62.34
+    },
+    {
+      "Kabupaten/Kota": "Bangka Selatan",
+      "IKP": 84.87
+    },
+    {
+      "Kabupaten/Kota": "Bangka Tengah",
+      "IKP": 60.38
+    },
+    {
+      "Kabupaten/Kota": "Bangka Barat",
+      "IKP": 60.25
+    },
+    {
+      "Kabupaten/Kota": "Belitung Timur",
+      "IKP": 62.02
+    },
+    {
+      "Kabupaten/Kota": "Kota Pangkalpinang",
+      "IKP": 87.27
+    },
+    {
+      "Kabupaten/Kota": "Bintan",
+      "IKP": 60.42
+    },
+    {
+      "Kabupaten/Kota": "Karimun",
+      "IKP": 62.68
+    },
+    {
+      "Kabupaten/Kota": "Natuna",
+      "IKP": 60.51
+    },
+    {
+      "Kabupaten/Kota": "Lingga",
+      "IKP": 53.02
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Anambas",
+      "IKP": 55.34
+    },
+    {
+      "Kabupaten/Kota": "Kota Batam",
+      "IKP": 88.83
+    },
+    {
+      "Kabupaten/Kota": "Kota Tanjungpinang",
+      "IKP": 83.22
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Seribu",
+      "IKP": 58.05
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Pusat",
+      "IKP": 91.63
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Utara",
+      "IKP": 87.42
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Barat",
+      "IKP": 91.35
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Selatan",
+      "IKP": 90.52
+    },
+    {
+      "Kabupaten/Kota": "Kota Administrasi Jakarta Timur",
+      "IKP": 91.81
+    },
+    {
+      "Kabupaten/Kota": "Bogor",
+      "IKP": 70.01
+    },
+    {
+      "Kabupaten/Kota": "Sukabumi",
+      "IKP": 78.59
+    },
+    {
+      "Kabupaten/Kota": "Cianjur",
+      "IKP": 80.6
+    },
+    {
+      "Kabupaten/Kota": "Bandung",
+      "IKP": 80.63
+    },
+    {
+      "Kabupaten/Kota": "Garut",
+      "IKP": 78.99
+    },
+    {
+      "Kabupaten/Kota": "Tasikmalaya",
+      "IKP": 78.47
+    },
+    {
+      "Kabupaten/Kota": "Ciamis",
+      "IKP": 83.2
+    },
+    {
+      "Kabupaten/Kota": "Kuningan",
+      "IKP": 81.43
+    },
+    {
+      "Kabupaten/Kota": "Cirebon",
+      "IKP": 82.77
+    },
+    {
+      "Kabupaten/Kota": "Majalengka",
+      "IKP": 82.58
+    },
+    {
+      "Kabupaten/Kota": "Sumedang",
+      "IKP": 86.88
+    },
+    {
+      "Kabupaten/Kota": "Indramayu",
+      "IKP": 86.52
+    },
+    {
+      "Kabupaten/Kota": "Subang",
+      "IKP": 85.65
+    },
+    {
+      "Kabupaten/Kota": "Purwakarta",
+      "IKP": 80.19
+    },
+    {
+      "Kabupaten/Kota": "Karawang",
+      "IKP": 89.04
+    },
+    {
+      "Kabupaten/Kota": "Bekasi",
+      "IKP": 87.48
+    },
+    {
+      "Kabupaten/Kota": "Bandung Barat",
+      "IKP": 75.79
+    },
+    {
+      "Kabupaten/Kota": "Pangandaran",
+      "IKP": 83.86
+    },
+    {
+      "Kabupaten/Kota": "Kota Bogor",
+      "IKP": 85.53
+    },
+    {
+      "Kabupaten/Kota": "Kota Sukabumi",
+      "IKP": 80.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Bandung",
+      "IKP": 91.55
+    },
+    {
+      "Kabupaten/Kota": "Kota Cirebon",
+      "IKP": 83.78
+    },
+    {
+      "Kabupaten/Kota": "Kota Bekasi",
+      "IKP": 93.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Depok",
+      "IKP": 89.81
+    },
+    {
+      "Kabupaten/Kota": "Kota Cimahi",
+      "IKP": 88.68
+    },
+    {
+      "Kabupaten/Kota": "Kota Tasikmalaya",
+      "IKP": 74.37
+    },
+    {
+      "Kabupaten/Kota": "Kota Banjar",
+      "IKP": 78.92
+    },
+    {
+      "Kabupaten/Kota": "Cilacap",
+      "IKP": 84.69
+    },
+    {
+      "Kabupaten/Kota": "Banyumas",
+      "IKP": 80.74
+    },
+    {
+      "Kabupaten/Kota": "Purbalingga",
+      "IKP": 78.47
+    },
+    {
+      "Kabupaten/Kota": "Banjarnegara",
+      "IKP": 79.4
+    },
+    {
+      "Kabupaten/Kota": "Kebumen",
+      "IKP": 81.21
+    },
+    {
+      "Kabupaten/Kota": "Purworejo",
+      "IKP": 86.22
+    },
+    {
+      "Kabupaten/Kota": "Wonosobo",
+      "IKP": 77.87
+    },
+    {
+      "Kabupaten/Kota": "Magelang",
+      "IKP": 80.2
+    },
+    {
+      "Kabupaten/Kota": "Boyolali",
+      "IKP": 87.7
+    },
+    {
+      "Kabupaten/Kota": "Klaten",
+      "IKP": 85.64
+    },
+    {
+      "Kabupaten/Kota": "Sukoharjo",
+      "IKP": 90.93
+    },
+    {
+      "Kabupaten/Kota": "Wonogiri",
+      "IKP": 88.91
+    },
+    {
+      "Kabupaten/Kota": "Karanganyar",
+      "IKP": 89.67
+    },
+    {
+      "Kabupaten/Kota": "Sragen",
+      "IKP": 89.37
+    },
+    {
+      "Kabupaten/Kota": "Grobogan",
+      "IKP": 87.29
+    },
+    {
+      "Kabupaten/Kota": "Blora",
+      "IKP": 88.53
+    },
+    {
+      "Kabupaten/Kota": "Rembang",
+      "IKP": 86.85
+    },
+    {
+      "Kabupaten/Kota": "Pati",
+      "IKP": 90.88
+    },
+    {
+      "Kabupaten/Kota": "Kudus",
+      "IKP": 88.81
+    },
+    {
+      "Kabupaten/Kota": "Jepara",
+      "IKP": 87.0
+    },
+    {
+      "Kabupaten/Kota": "Demak",
+      "IKP": 90.47
+    },
+    {
+      "Kabupaten/Kota": "Semarang",
+      "IKP": 85.57
+    },
+    {
+      "Kabupaten/Kota": "Temanggung",
+      "IKP": 78.91
+    },
+    {
+      "Kabupaten/Kota": "Kendal",
+      "IKP": 84.83
+    },
+    {
+      "Kabupaten/Kota": "Batang",
+      "IKP": 84.77
+    },
+    {
+      "Kabupaten/Kota": "Pekalongan",
+      "IKP": 80.65
+    },
+    {
+      "Kabupaten/Kota": "Pemalang",
+      "IKP": 81.81
+    },
+    {
+      "Kabupaten/Kota": "Tegal",
+      "IKP": 83.71
+    },
+    {
+      "Kabupaten/Kota": "Brebes",
+      "IKP": 78.79
+    },
+    {
+      "Kabupaten/Kota": "Kota Magelang",
+      "IKP": 91.41
+    },
+    {
+      "Kabupaten/Kota": "Kota Surakarta",
+      "IKP": 87.67
+    },
+    {
+      "Kabupaten/Kota": "Kota Salatiga",
+      "IKP": 91.35
+    },
+    {
+      "Kabupaten/Kota": "Kota Semarang",
+      "IKP": 92.74
+    },
+    {
+      "Kabupaten/Kota": "Kota Pekalongan",
+      "IKP": 78.27
+    },
+    {
+      "Kabupaten/Kota": "Kota Tegal",
+      "IKP": 85.73
+    },
+    {
+      "Kabupaten/Kota": "Kulon Progo",
+      "IKP": 85.73
+    },
+    {
+      "Kabupaten/Kota": "Bantul",
+      "IKP": 82.92
+    },
+    {
+      "Kabupaten/Kota": "Gunungkidul",
+      "IKP": 82.97
+    },
+    {
+      "Kabupaten/Kota": "Sleman",
+      "IKP": 84.91
+    },
+    {
+      "Kabupaten/Kota": "Kota Yogyakarta",
+      "IKP": 84.21
+    },
+    {
+      "Kabupaten/Kota": "Pacitan",
+      "IKP": 82.94
+    },
+    {
+      "Kabupaten/Kota": "Ponorogo",
+      "IKP": 88.74
+    },
+    {
+      "Kabupaten/Kota": "Trenggalek",
+      "IKP": 83.17
+    },
+    {
+      "Kabupaten/Kota": "Tulungagung",
+      "IKP": 87.35
+    },
+    {
+      "Kabupaten/Kota": "Blitar",
+      "IKP": 86.43
+    },
+    {
+      "Kabupaten/Kota": "Kediri",
+      "IKP": 81.19
+    },
+    {
+      "Kabupaten/Kota": "Malang",
+      "IKP": 81.09
+    },
+    {
+      "Kabupaten/Kota": "Lumajang",
+      "IKP": 79.58
+    },
+    {
+      "Kabupaten/Kota": "Jember",
+      "IKP": 78.97
+    },
+    {
+      "Kabupaten/Kota": "Banyuwangi",
+      "IKP": 85.77
+    },
+    {
+      "Kabupaten/Kota": "Bondowoso",
+      "IKP": 78.44
+    },
+    {
+      "Kabupaten/Kota": "Situbondo",
+      "IKP": 80.22
+    },
+    {
+      "Kabupaten/Kota": "Probolinggo",
+      "IKP": 74.22
+    },
+    {
+      "Kabupaten/Kota": "Pasuruan",
+      "IKP": 80.31
+    },
+    {
+      "Kabupaten/Kota": "Sidoarjo",
+      "IKP": 84.49
+    },
+    {
+      "Kabupaten/Kota": "Mojokerto",
+      "IKP": 87.32
+    },
+    {
+      "Kabupaten/Kota": "Jombang",
+      "IKP": 86.43
+    },
+    {
+      "Kabupaten/Kota": "Nganjuk",
+      "IKP": 84.88
+    },
+    {
+      "Kabupaten/Kota": "Madiun",
+      "IKP": 86.22
+    },
+    {
+      "Kabupaten/Kota": "Magetan",
+      "IKP": 87.98
+    },
+    {
+      "Kabupaten/Kota": "Ngawi",
+      "IKP": 87.53
+    },
+    {
+      "Kabupaten/Kota": "Bojonegoro",
+      "IKP": 87.63
+    },
+    {
+      "Kabupaten/Kota": "Tuban",
+      "IKP": 85.85
+    },
+    {
+      "Kabupaten/Kota": "Lamongan",
+      "IKP": 90.3
+    },
+    {
+      "Kabupaten/Kota": "Gresik",
+      "IKP": 90.9
+    },
+    {
+      "Kabupaten/Kota": "Bangkalan",
+      "IKP": 76.02
+    },
+    {
+      "Kabupaten/Kota": "Sampang",
+      "IKP": 78.97
+    },
+    {
+      "Kabupaten/Kota": "Pamekasan",
+      "IKP": 79.08
+    },
+    {
+      "Kabupaten/Kota": "Sumenep",
+      "IKP": 79.77
+    },
+    {
+      "Kabupaten/Kota": "Kota Kediri",
+      "IKP": 76.67
+    },
+    {
+      "Kabupaten/Kota": "Kota Blitar",
+      "IKP": 80.8
+    },
+    {
+      "Kabupaten/Kota": "Kota Malang",
+      "IKP": 88.76
+    },
+    {
+      "Kabupaten/Kota": "Kota Probolinggo",
+      "IKP": 78.62
+    },
+    {
+      "Kabupaten/Kota": "Kota Pasuruan",
+      "IKP": 84.16
+    },
+    {
+      "Kabupaten/Kota": "Kota Mojokerto",
+      "IKP": 89.3
+    },
+    {
+      "Kabupaten/Kota": "Kota Madiun",
+      "IKP": 92.29
+    },
+    {
+      "Kabupaten/Kota": "Kota Surabaya",
+      "IKP": 93.06
+    },
+    {
+      "Kabupaten/Kota": "Kota Batu",
+      "IKP": 81.31
+    },
+    {
+      "Kabupaten/Kota": "Pandeglang",
+      "IKP": 75.63
+    },
+    {
+      "Kabupaten/Kota": "Lebak",
+      "IKP": 72.76
+    },
+    {
+      "Kabupaten/Kota": "Tangerang",
+      "IKP": 77.6
+    },
+    {
+      "Kabupaten/Kota": "Serang",
+      "IKP": 81.39
+    },
+    {
+      "Kabupaten/Kota": "Kota Tangerang",
+      "IKP": 85.92
+    },
+    {
+      "Kabupaten/Kota": "Kota Cilegon",
+      "IKP": 80.12
+    },
+    {
+      "Kabupaten/Kota": "Kota Serang",
+      "IKP": 71.95
+    },
+    {
+      "Kabupaten/Kota": "Kota Tangerang Selatan",
+      "IKP": 88.67
+    },
+    {
+      "Kabupaten/Kota": "Jembrana",
+      "IKP": 87.64
+    },
+    {
+      "Kabupaten/Kota": "Tabanan",
+      "IKP": 92.51
+    },
+    {
+      "Kabupaten/Kota": "Badung",
+      "IKP": 92.9
+    },
+    {
+      "Kabupaten/Kota": "Gianyar",
+      "IKP": 92.77
+    },
+    {
+      "Kabupaten/Kota": "Klungkung",
+      "IKP": 87.47
+    },
+    {
+      "Kabupaten/Kota": "Bangli",
+      "IKP": 77.19
+    },
+    {
+      "Kabupaten/Kota": "Karangasem",
+      "IKP": 83.97
+    },
+    {
+      "Kabupaten/Kota": "Buleleng",
+      "IKP": 83.26
+    },
+    {
+      "Kabupaten/Kota": "Kota Denpasar",
+      "IKP": 96.37
+    },
+    {
+      "Kabupaten/Kota": "Lombok Barat",
+      "IKP": 75.74
+    },
+    {
+      "Kabupaten/Kota": "Lombok Tengah",
+      "IKP": 79.5
+    },
+    {
+      "Kabupaten/Kota": "Lombok Timur",
+      "IKP": 73.32
+    },
+    {
+      "Kabupaten/Kota": "Sumbawa",
+      "IKP": 85.82
+    },
+    {
+      "Kabupaten/Kota": "Dompu",
+      "IKP": 81.24
+    },
+    {
+      "Kabupaten/Kota": "Bima",
+      "IKP": 78.26
+    },
+    {
+      "Kabupaten/Kota": "Sumbawa Barat",
+      "IKP": 86.47
+    },
+    {
+      "Kabupaten/Kota": "Lombok Utara",
+      "IKP": 68.39
+    },
+    {
+      "Kabupaten/Kota": "Kota Mataram",
+      "IKP": 80.15
+    },
+    {
+      "Kabupaten/Kota": "Kota Bima",
+      "IKP": 75.53
+    },
+    {
+      "Kabupaten/Kota": "Kupang",
+      "IKP": 70.45
+    },
+    {
+      "Kabupaten/Kota": "Timor Tengah Selatan",
+      "IKP": 67.02
+    },
+    {
+      "Kabupaten/Kota": "Timor Tengah Utara",
+      "IKP": 73.61
+    },
+    {
+      "Kabupaten/Kota": "Belu",
+      "IKP": 71.21
+    },
+    {
+      "Kabupaten/Kota": "Alor",
+      "IKP": 63.81
+    },
+    {
+      "Kabupaten/Kota": "Flores Timur",
+      "IKP": 68.61
+    },
+    {
+      "Kabupaten/Kota": "Sikka",
+      "IKP": 77.22
+    },
+    {
+      "Kabupaten/Kota": "Ende",
+      "IKP": 72.93
+    },
+    {
+      "Kabupaten/Kota": "Ngada",
+      "IKP": 82.72
+    },
+    {
+      "Kabupaten/Kota": "Manggarai",
+      "IKP": 75.69
+    },
+    {
+      "Kabupaten/Kota": "Sumba Timur",
+      "IKP": 70.98
+    },
+    {
+      "Kabupaten/Kota": "Sumba Barat",
+      "IKP": 71.31
+    },
+    {
+      "Kabupaten/Kota": "Lembata",
+      "IKP": 70.11
+    },
+    {
+      "Kabupaten/Kota": "Rote Ndao",
+      "IKP": 71.27
+    },
+    {
+      "Kabupaten/Kota": "Manggarai Barat",
+      "IKP": 78.0
+    },
+    {
+      "Kabupaten/Kota": "Nagekeo",
+      "IKP": 75.2
+    },
+    {
+      "Kabupaten/Kota": "Sumba Tengah",
+      "IKP": 65.96
+    },
+    {
+      "Kabupaten/Kota": "Sumba Barat Daya",
+      "IKP": 62.53
+    },
+    {
+      "Kabupaten/Kota": "Manggarai Timur",
+      "IKP": 66.92
+    },
+    {
+      "Kabupaten/Kota": "Sabu Raijua",
+      "IKP": 56.66
+    },
+    {
+      "Kabupaten/Kota": "Malaka",
+      "IKP": 71.78
+    },
+    {
+      "Kabupaten/Kota": "Kota Kupang",
+      "IKP": 75.94
+    },
+    {
+      "Kabupaten/Kota": "Sambas",
+      "IKP": 70.83
+    },
+    {
+      "Kabupaten/Kota": "Mempawah",
+      "IKP": 73.85
+    },
+    {
+      "Kabupaten/Kota": "Sanggau",
+      "IKP": 78.51
+    },
+    {
+      "Kabupaten/Kota": "Ketapang",
+      "IKP": 77.17
+    },
+    {
+      "Kabupaten/Kota": "Sintang",
+      "IKP": 76.17
+    },
+    {
+      "Kabupaten/Kota": "Kapuas Hulu",
+      "IKP": 74.43
+    },
+    {
+      "Kabupaten/Kota": "Bengkayang",
+      "IKP": 81.24
+    },
+    {
+      "Kabupaten/Kota": "Landak",
+      "IKP": 76.96
+    },
+    {
+      "Kabupaten/Kota": "Sekadau",
+      "IKP": 73.84
+    },
+    {
+      "Kabupaten/Kota": "Melawi",
+      "IKP": 59.56
+    },
+    {
+      "Kabupaten/Kota": "Kayong Utara",
+      "IKP": 76.53
+    },
+    {
+      "Kabupaten/Kota": "Kubu Raya",
+      "IKP": 68.9
+    },
+    {
+      "Kabupaten/Kota": "Kota Pontianak",
+      "IKP": 72.55
+    },
+    {
+      "Kabupaten/Kota": "Kota Singkawang",
+      "IKP": 68.27
+    },
+    {
+      "Kabupaten/Kota": "Kotawaringin Barat",
+      "IKP": 62.27
+    },
+    {
+      "Kabupaten/Kota": "Kotawaringin Timur",
+      "IKP": 73.03
+    },
+    {
+      "Kabupaten/Kota": "Kapuas",
+      "IKP": 82.66
+    },
+    {
+      "Kabupaten/Kota": "Barito Selatan",
+      "IKP": 67.09
+    },
+    {
+      "Kabupaten/Kota": "Barito Utara",
+      "IKP": 81.65
+    },
+    {
+      "Kabupaten/Kota": "Katingan",
+      "IKP": 77.99
+    },
+    {
+      "Kabupaten/Kota": "Seruyan",
+      "IKP": 65.03
+    },
+    {
+      "Kabupaten/Kota": "Sukamara",
+      "IKP": 61.78
+    },
+    {
+      "Kabupaten/Kota": "Lamandau",
+      "IKP": 59.34
+    },
+    {
+      "Kabupaten/Kota": "Gunung Mas",
+      "IKP": 56.38
+    },
+    {
+      "Kabupaten/Kota": "Pulang Pisau",
+      "IKP": 81.88
+    },
+    {
+      "Kabupaten/Kota": "Murung Raya",
+      "IKP": 51.29
+    },
+    {
+      "Kabupaten/Kota": "Barito Timur",
+      "IKP": 81.16
+    },
+    {
+      "Kabupaten/Kota": "Kota Palang Karaya",
+      "IKP": 80.69
+    },
+    {
+      "Kabupaten/Kota": "Tanah Laut",
+      "IKP": 80.59
+    },
+    {
+      "Kabupaten/Kota": "Kotabaru",
+      "IKP": 75.34
+    },
+    {
+      "Kabupaten/Kota": "Banjar",
+      "IKP": 81.54
+    },
+    {
+      "Kabupaten/Kota": "Barito Kuala",
+      "IKP": 82.85
+    },
+    {
+      "Kabupaten/Kota": "Tapin",
+      "IKP": 88.58
+    },
+    {
+      "Kabupaten/Kota": "Hulu Sungai Selatan",
+      "IKP": 83.19
+    },
+    {
+      "Kabupaten/Kota": "Hulu Sungai Tengah",
+      "IKP": 81.3
+    },
+    {
+      "Kabupaten/Kota": "Hulu Sungai Utara",
+      "IKP": 81.2
+    },
+    {
+      "Kabupaten/Kota": "Tabalong",
+      "IKP": 85.94
+    },
+    {
+      "Kabupaten/Kota": "Tanah Bumbu",
+      "IKP": 83.15
+    },
+    {
+      "Kabupaten/Kota": "Balangan",
+      "IKP": 82.7
+    },
+    {
+      "Kabupaten/Kota": "Kota Banjarmasin",
+      "IKP": 85.62
+    },
+    {
+      "Kabupaten/Kota": "Kota Banjarbaru",
+      "IKP": 86.34
+    },
+    {
+      "Kabupaten/Kota": "Paser",
+      "IKP": 80.04
+    },
+    {
+      "Kabupaten/Kota": "Kutai Kartanegara",
+      "IKP": 87.17
+    },
+    {
+      "Kabupaten/Kota": "Berau",
+      "IKP": 81.91
+    },
+    {
+      "Kabupaten/Kota": "Kutai Barat",
+      "IKP": 60.87
+    },
+    {
+      "Kabupaten/Kota": "Kutai Timur",
+      "IKP": 61.64
+    },
+    {
+      "Kabupaten/Kota": "Penajam Paser Utara",
+      "IKP": 88.11
+    },
+    {
+      "Kabupaten/Kota": "Mahakam Ulu",
+      "IKP": 56.53
+    },
+    {
+      "Kabupaten/Kota": "Kota Balikpapan",
+      "IKP": 91.23
+    },
+    {
+      "Kabupaten/Kota": "Kota Samarinda",
+      "IKP": 89.68
+    },
+    {
+      "Kabupaten/Kota": "Kota Bontang",
+      "IKP": 88.89
+    },
+    {
+      "Kabupaten/Kota": "Bulungan",
+      "IKP": 76.61
+    },
+    {
+      "Kabupaten/Kota": "Malinau",
+      "IKP": 74.67
+    },
+    {
+      "Kabupaten/Kota": "Nunukan",
+      "IKP": 78.8
+    },
+    {
+      "Kabupaten/Kota": "Tana Tidung",
+      "IKP": 61.25
+    },
+    {
+      "Kabupaten/Kota": "Kota Tarakan",
+      "IKP": 87.53
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow",
+      "IKP": 84.02
+    },
+    {
+      "Kabupaten/Kota": "Minahasa",
+      "IKP": 79.61
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Sangihe",
+      "IKP": 60.47
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Talaud",
+      "IKP": 79.36
+    },
+    {
+      "Kabupaten/Kota": "Minahasa Selatan",
+      "IKP": 72.82
+    },
+    {
+      "Kabupaten/Kota": "Minahasa Utara",
+      "IKP": 78.79
+    },
+    {
+      "Kabupaten/Kota": "Minahasa Tenggara",
+      "IKP": 75.82
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow Utara",
+      "IKP": 80.12
+    },
+    {
+      "Kabupaten/Kota": "Kep. Siau Tagulandang Biaro",
+      "IKP": 53.11
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow Timur",
+      "IKP": 75.22
+    },
+    {
+      "Kabupaten/Kota": "Bolaang Mongondow Selatan",
+      "IKP": 71.81
+    },
+    {
+      "Kabupaten/Kota": "Kota Manado",
+      "IKP": 87.56
+    },
+    {
+      "Kabupaten/Kota": "Kota Bitung",
+      "IKP": 82.0
+    },
+    {
+      "Kabupaten/Kota": "Kota Tomohon",
+      "IKP": 83.92
+    },
+    {
+      "Kabupaten/Kota": "Kota Kotamobagu",
+      "IKP": 80.21
+    },
+    {
+      "Kabupaten/Kota": "Banggai",
+      "IKP": 85.14
+    },
+    {
+      "Kabupaten/Kota": "Poso",
+      "IKP": 84.6
+    },
+    {
+      "Kabupaten/Kota": "Donggala",
+      "IKP": 73.97
+    },
+    {
+      "Kabupaten/Kota": "Toli Toli",
+      "IKP": 79.39
+    },
+    {
+      "Kabupaten/Kota": "Buol",
+      "IKP": 79.97
+    },
+    {
+      "Kabupaten/Kota": "Morowali",
+      "IKP": 81.44
+    },
+    {
+      "Kabupaten/Kota": "Banggai Kepulauan",
+      "IKP": 66.5
+    },
+    {
+      "Kabupaten/Kota": "Parigi Moutong",
+      "IKP": 78.91
+    },
+    {
+      "Kabupaten/Kota": "Tojo Una Una",
+      "IKP": 73.78
+    },
+    {
+      "Kabupaten/Kota": "Sigi",
+      "IKP": 80.06
+    },
+    {
+      "Kabupaten/Kota": "Banggai Laut",
+      "IKP": 51.91
+    },
+    {
+      "Kabupaten/Kota": "Morowali Utara",
+      "IKP": 81.21
+    },
+    {
+      "Kabupaten/Kota": "Kota Palu",
+      "IKP": 82.43
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Selayar",
+      "IKP": 72.03
+    },
+    {
+      "Kabupaten/Kota": "Bulukumba",
+      "IKP": 83.73
+    },
+    {
+      "Kabupaten/Kota": "Bantaeng",
+      "IKP": 86.59
+    },
+    {
+      "Kabupaten/Kota": "Jeneponto",
+      "IKP": 81.67
+    },
+    {
+      "Kabupaten/Kota": "Takalar",
+      "IKP": 84.63
+    },
+    {
+      "Kabupaten/Kota": "Gowa",
+      "IKP": 87.53
+    },
+    {
+      "Kabupaten/Kota": "Sinjai",
+      "IKP": 82.31
+    },
+    {
+      "Kabupaten/Kota": "Bone",
+      "IKP": 85.66
+    },
+    {
+      "Kabupaten/Kota": "Maros",
+      "IKP": 83.73
+    },
+    {
+      "Kabupaten/Kota": "Pangkajene Kepulauan",
+      "IKP": 81.0
+    },
+    {
+      "Kabupaten/Kota": "Barru",
+      "IKP": 86.67
+    },
+    {
+      "Kabupaten/Kota": "Soppeng",
+      "IKP": 87.9
+    },
+    {
+      "Kabupaten/Kota": "Wajo",
+      "IKP": 86.65
+    },
+    {
+      "Kabupaten/Kota": "Sidenreng Rappang",
+      "IKP": 87.92
+    },
+    {
+      "Kabupaten/Kota": "Pinrang",
+      "IKP": 86.94
+    },
+    {
+      "Kabupaten/Kota": "Enrekang",
+      "IKP": 80.31
+    },
+    {
+      "Kabupaten/Kota": "Luwu",
+      "IKP": 82.23
+    },
+    {
+      "Kabupaten/Kota": "Tana Toraja",
+      "IKP": 76.88
+    },
+    {
+      "Kabupaten/Kota": "Luwu Utara",
+      "IKP": 85.66
+    },
+    {
+      "Kabupaten/Kota": "Luwu Timur",
+      "IKP": 87.73
+    },
+    {
+      "Kabupaten/Kota": "Toraja Utara",
+      "IKP": 80.25
+    },
+    {
+      "Kabupaten/Kota": "Kota Makassar",
+      "IKP": 87.95
+    },
+    {
+      "Kabupaten/Kota": "Kota Pare Pare",
+      "IKP": 82.76
+    },
+    {
+      "Kabupaten/Kota": "Kota Palopo",
+      "IKP": 83.05
+    },
+    {
+      "Kabupaten/Kota": "Kolaka",
+      "IKP": 83.69
+    },
+    {
+      "Kabupaten/Kota": "Konawe",
+      "IKP": 85.89
+    },
+    {
+      "Kabupaten/Kota": "Muna",
+      "IKP": 71.93
+    },
+    {
+      "Kabupaten/Kota": "Buton",
+      "IKP": 72.59
+    },
+    {
+      "Kabupaten/Kota": "Konawe Selatan",
+      "IKP": 84.41
+    },
+    {
+      "Kabupaten/Kota": "Bombana",
+      "IKP": 85.33
+    },
+    {
+      "Kabupaten/Kota": "Wakatobi",
+      "IKP": 62.54
+    },
+    {
+      "Kabupaten/Kota": "Kolaka Utara",
+      "IKP": 70.26
+    },
+    {
+      "Kabupaten/Kota": "Konawe Utara",
+      "IKP": 79.71
+    },
+    {
+      "Kabupaten/Kota": "Buton Utara",
+      "IKP": 81.4
+    },
+    {
+      "Kabupaten/Kota": "Kolaka Timur",
+      "IKP": 85.54
+    },
+    {
+      "Kabupaten/Kota": "Konawe Kepulauan",
+      "IKP": 54.01
+    },
+    {
+      "Kabupaten/Kota": "Muna Barat",
+      "IKP": 79.06
+    },
+    {
+      "Kabupaten/Kota": "Buton Tengah",
+      "IKP": 67.07
+    },
+    {
+      "Kabupaten/Kota": "Buton Selatan",
+      "IKP": 70.01
+    },
+    {
+      "Kabupaten/Kota": "Kota Kendari",
+      "IKP": 89.67
+    },
+    {
+      "Kabupaten/Kota": "Kota Bau Bau",
+      "IKP": 80.49
+    },
+    {
+      "Kabupaten/Kota": "Gorontalo",
+      "IKP": 79.5
+    },
+    {
+      "Kabupaten/Kota": "Boalemo",
+      "IKP": 81.91
+    },
+    {
+      "Kabupaten/Kota": "Bone Bolango",
+      "IKP": 80.32
+    },
+    {
+      "Kabupaten/Kota": "Pohuwato",
+      "IKP": 81.71
+    },
+    {
+      "Kabupaten/Kota": "Gorontalo Utara",
+      "IKP": 78.88
+    },
+    {
+      "Kabupaten/Kota": "Kota Gorontalo",
+      "IKP": 86.5
+    },
+    {
+      "Kabupaten/Kota": "Mamuju Utara",
+      "IKP": 57.34
+    },
+    {
+      "Kabupaten/Kota": "Mamuju",
+      "IKP": 81.47
+    },
+    {
+      "Kabupaten/Kota": "Mamasa",
+      "IKP": 73.19
+    },
+    {
+      "Kabupaten/Kota": "Polewali Mandar",
+      "IKP": 75.87
+    },
+    {
+      "Kabupaten/Kota": "Majene",
+      "IKP": 65.8
+    },
+    {
+      "Kabupaten/Kota": "Mamuju Tengah",
+      "IKP": 78.29
+    },
+    {
+      "Kabupaten/Kota": "Maluku Tengah",
+      "IKP": 71.92
+    },
+    {
+      "Kabupaten/Kota": "Maluku Tenggara",
+      "IKP": 49.43
+    },
+    {
+      "Kabupaten/Kota": "Maluku Tenggara Barat",
+      "IKP": 49.94
+    },
+    {
+      "Kabupaten/Kota": "Buru",
+      "IKP": 80.21
+    },
+    {
+      "Kabupaten/Kota": "Seram Bagian Timur",
+      "IKP": 70.57
+    },
+    {
+      "Kabupaten/Kota": "Seram Bagian Barat",
+      "IKP": 61.29
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Aru",
+      "IKP": 43.15
+    },
+    {
+      "Kabupaten/Kota": "Maluku Barat Daya",
+      "IKP": 65.95
+    },
+    {
+      "Kabupaten/Kota": "Buru Selatan",
+      "IKP": 53.32
+    },
+    {
+      "Kabupaten/Kota": "Kota Ambon",
+      "IKP": 84.56
+    },
+    {
+      "Kabupaten/Kota": "Kota Tual",
+      "IKP": 59.11
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Barat",
+      "IKP": 53.07
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Tengah",
+      "IKP": 52.96
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Utara",
+      "IKP": 62.34
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Selatan",
+      "IKP": 52.69
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Sula",
+      "IKP": 51.76
+    },
+    {
+      "Kabupaten/Kota": "Halmahera Timur",
+      "IKP": 79.63
+    },
+    {
+      "Kabupaten/Kota": "Pulau Morotai",
+      "IKP": 60.71
+    },
+    {
+      "Kabupaten/Kota": "Pulau Taliabu",
+      "IKP": 48.28
+    },
+    {
+      "Kabupaten/Kota": "Kota Ternate",
+      "IKP": 88.24
+    },
+    {
+      "Kabupaten/Kota": "Kota Tidore Kepulauan",
+      "IKP": 64.68
+    },
+    {
+      "Kabupaten/Kota": "Merauke",
+      "IKP": 84.07
+    },
+    {
+      "Kabupaten/Kota": "Jayawijaya",
+      "IKP": 30.4
+    },
+    {
+      "Kabupaten/Kota": "Jayapura",
+      "IKP": 66.89
+    },
+    {
+      "Kabupaten/Kota": "Nabire",
+      "IKP": 66.97
+    },
+    {
+      "Kabupaten/Kota": "Kepulauan Yapen",
+      "IKP": 46.8
+    },
+    {
+      "Kabupaten/Kota": "Biak Numfor",
+      "IKP": 49.23
+    },
+    {
+      "Kabupaten/Kota": "Puncak Jaya",
+      "IKP": 24.19
+    },
+    {
+      "Kabupaten/Kota": "Paniai",
+      "IKP": 22.27
+    },
+    {
+      "Kabupaten/Kota": "Mimika",
+      "IKP": 83.64
+    },
+    {
+      "Kabupaten/Kota": "Sarmi",
+      "IKP": 63.07
+    },
+    {
+      "Kabupaten/Kota": "Keerom",
+      "IKP": 54.21
+    },
+    {
+      "Kabupaten/Kota": "Pegunungan Bintang",
+      "IKP": 25.07
+    },
+    {
+      "Kabupaten/Kota": "Yahukimo",
+      "IKP": 25.62
+    },
+    {
+      "Kabupaten/Kota": "Tolikara",
+      "IKP": 22.83
+    },
+    {
+      "Kabupaten/Kota": "Waropen",
+      "IKP": 47.38
+    },
+    {
+      "Kabupaten/Kota": "Boven Digoel",
+      "IKP": 43.19
+    },
+    {
+      "Kabupaten/Kota": "Mappi",
+      "IKP": 35.44
+    },
+    {
+      "Kabupaten/Kota": "Asmat",
+      "IKP": 45.99
+    },
+    {
+      "Kabupaten/Kota": "Supiori",
+      "IKP": 32.69
+    },
+    {
+      "Kabupaten/Kota": "Mamberamo Raya",
+      "IKP": 23.09
+    },
+    {
+      "Kabupaten/Kota": "Mamberamo Tengah",
+      "IKP": 21.51
+    },
+    {
+      "Kabupaten/Kota": "Yalimo",
+      "IKP": 37.8
+    },
+    {
+      "Kabupaten/Kota": "Lanny Jaya",
+      "IKP": 21.33
+    },
+    {
+      "Kabupaten/Kota": "Nduga",
+      "IKP": 17.1
+    },
+    {
+      "Kabupaten/Kota": "Puncak",
+      "IKP": 30.12
+    },
+    {
+      "Kabupaten/Kota": "Dogiyai",
+      "IKP": 31.37
+    },
+    {
+      "Kabupaten/Kota": "Intan Jaya",
+      "IKP": 14.14
+    },
+    {
+      "Kabupaten/Kota": "Deiyai",
+      "IKP": 21.35
+    },
+    {
+      "Kabupaten/Kota": "Kota Jayapura",
+      "IKP": 78.35
+    },
+    {
+      "Kabupaten/Kota": "Sorong",
+      "IKP": 50.88
+    },
+    {
+      "Kabupaten/Kota": "Manokwari",
+      "IKP": 71.81
+    },
+    {
+      "Kabupaten/Kota": "Fak Fak",
+      "IKP": 48.2
+    },
+    {
+      "Kabupaten/Kota": "Sorong Selatan",
+      "IKP": 40.39
+    },
+    {
+      "Kabupaten/Kota": "Raja Ampat",
+      "IKP": 54.42
+    },
+    {
+      "Kabupaten/Kota": "Teluk Bintuni",
+      "IKP": 43.12
+    },
+    {
+      "Kabupaten/Kota": "Teluk Wondama",
+      "IKP": 36.76
+    },
+    {
+      "Kabupaten/Kota": "Kaimana",
+      "IKP": 48.19
+    },
+    {
+      "Kabupaten/Kota": "Tambrauw",
+      "IKP": 45.92
+    },
+    {
+      "Kabupaten/Kota": "Maybrat",
+      "IKP": 41.27
+    },
+    {
+      "Kabupaten/Kota": "Manokwari Selatan",
+      "IKP": 74.91
+    },
+    {
+      "Kabupaten/Kota": "Pegunungan Arfak",
+      "IKP": 35.53
+    },
+    {
+      "Kabupaten/Kota": "Kota Sorong",
+      "IKP": 76.32
+    }
+  ]
+}
