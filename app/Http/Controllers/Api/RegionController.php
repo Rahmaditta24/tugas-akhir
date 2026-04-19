@@ -12,17 +12,46 @@ class RegionController extends Controller
     public function provinces()
     {
         return Cache::remember('provinces', 86400, function () {
-            // Use GitHub Pages version for better reliability/CORS bypass on server side
-            $response = Http::get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
-            return $response->json();
+            try {
+                // Use GitHub Pages version for better reliability/CORS bypass on server side
+                $response = Http::timeout(10)->retry(2, 1000)->get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
+                
+                if ($response->successful()) {
+                    return $response->json();
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to fetch provinces from API', ['error' => $e->getMessage()]);
+            }
+            
+            // Fallback to local data if API fails
+            return $this->getLocalProvinces();
         });
+    }
+    
+    private function getLocalProvinces()
+    {
+        $path = storage_path('provinces.json');
+        if (file_exists($path)) {
+            return json_decode(file_get_contents($path), true);
+        }
+        return [];
     }
 
     public function regencies($provinceId)
     {
         return Cache::remember("regencies_{$provinceId}", 86400, function () use ($provinceId) {
-            $response = Http::get("https://emsifa.github.io/api-wilayah-indonesia/api/regencies/{$provinceId}.json");
-            return $response->json();
+            try {
+                $response = Http::timeout(10)->retry(2, 1000)->get("https://emsifa.github.io/api-wilayah-indonesia/api/regencies/{$provinceId}.json");
+                
+                if ($response->successful()) {
+                    return $response->json();
+                }
+            } catch (\Exception $e) {
+                \Log::warning("Failed to fetch regencies for province {$provinceId}", ['error' => $e->getMessage()]);
+            }
+            
+            // Return empty array if API fails - frontend should handle gracefully
+            return [];
         });
     }
 

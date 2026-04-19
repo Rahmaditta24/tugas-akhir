@@ -565,8 +565,21 @@ class ProdukController extends Controller
     public function getProvinces()
     {
         $provinces = Cache::remember('provinces', 86400, function () {
-            $response = Http::get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
-            return $response->json();
+            try {
+                $response = Http::timeout(10)->retry(2, 1000)->get('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json');
+                if ($response->successful()) {
+                    return $response->json();
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to fetch provinces', ['error' => $e->getMessage()]);
+            }
+            
+            // Fallback to local data
+            $path = storage_path('provinces.json');
+            if (file_exists($path)) {
+                return json_decode(file_get_contents($path), true);
+            }
+            return [];
         });
 
         // Ambil hanya nama provinsi, diurutkan alfabetis
