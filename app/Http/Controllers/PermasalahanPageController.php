@@ -110,7 +110,7 @@ class PermasalahanPageController extends Controller
             $this->applyAdvancedQueries($query, $request, 'Pengabdian');
 
             $mapData = (clone $query)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun', 'nama_skema as skema')
-                ->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(5000)->get()->toArray();
+                ->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(15000)->get()->toArray();
 
             $researches = (clone $query)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun', 'nama_skema as skema')
                 ->orderByDesc('thn_pelaksanaan_kegiatan')->limit(50)->get();
@@ -136,7 +136,7 @@ class PermasalahanPageController extends Controller
             $this->applyAdvancedQueries($query, $request, 'Hilirisasi');
 
             $mapData = (clone $query)->select('id', 'judul', 'nama_pengusul as nama', 'perguruan_tinggi as institusi', 'provinsi', DB::raw("NULL as kabupaten_kota"), 'pt_latitude', 'pt_longitude', 'skema', 'tahun', 'mitra', 'luaran')
-                ->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(5000)->get()->toArray();
+                ->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(15000)->get()->toArray();
 
             $researches = (clone $query)->select('id', 'judul', 'nama_pengusul as nama', 'perguruan_tinggi as institusi', 'provinsi', DB::raw("NULL as kabupaten_kota"), 'skema', 'tahun', 'mitra', 'luaran')
                 ->orderByDesc('tahun')->limit(50)->get();
@@ -164,7 +164,7 @@ class PermasalahanPageController extends Controller
             $this->applyAdvancedQueries($query, $request, 'Penelitian');
 
             $mapData = (clone $query)->select('id', 'judul', 'nama', 'institusi', 'provinsi', 'kota as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'bidang_fokus', 'thn_pelaksanaan as tahun', 'skema')
-                ->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(5000)->get()->toArray();
+                ->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(15000)->get()->toArray();
 
             $researches = (clone $query)->select('id', 'judul', 'nama', 'institusi', 'provinsi', 'kota as kabupaten_kota', 'bidang_fokus', 'thn_pelaksanaan as tahun', 'skema')
                 ->orderByDesc('thn_pelaksanaan')->limit(50)->get();
