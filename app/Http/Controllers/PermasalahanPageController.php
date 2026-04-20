@@ -85,8 +85,14 @@ class PermasalahanPageController extends Controller
         });
 
         // JSON Data loading
-        $jsonDir = base_path('../peta-bima/data/permasalahan/');
-        $filesMap = ['Sampah' => 'data-permasalahan-sampah.json', 'Stunting' => 'data-permasalahan-stunting.json', 'Gizi Buruk' => 'data-permasalahan-gizi-buruk.json', 'Krisis Listrik' => 'data-permasalahan-krisis-listrik.json', 'Ketahanan Pangan' => 'data-permasalahan-ketahanan-pangan.json'];
+        $jsonDir = database_path('data/');
+        $filesMap = [
+            'Sampah' => 'data-permasalahan-sampah.json',
+            'Stunting' => 'data-permasalahan-stunting.json',
+            'Gizi Buruk' => 'data-permasalahan-gizi-buruk.json',
+            'Krisis Listrik' => 'data-permasalahan-krisis-listrik.json',
+            'Ketahanan Pangan' => 'data-permasalahan-ketahanan-pangan.json'
+        ];
         
         $permasalahanStats = Cache::remember('permasalahan_json_provinsi_stats_v9', 86400, function () use ($jsonDir, $filesMap) {
             $result = [];

@@ -426,7 +426,7 @@ class PermasalahanController extends Controller
                 
                 fputcsv($file, $header);
 
-                $baseDir = realpath(base_path('..'.DIRECTORY_SEPARATOR.'peta-bima'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR.'permasalahan'));
+                $baseDir = database_path('data');
                 $jsonMap = [
                     'sampah' => 'data-permasalahan-sampah.json',
                     'stunting' => 'data-permasalahan-stunting.json',
