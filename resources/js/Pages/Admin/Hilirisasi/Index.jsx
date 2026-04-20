@@ -463,9 +463,6 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                                         <span className="text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-wider">
                                             Data Terpilih
                                         </span>
-                                        <span className="text-[10px] text-blue-50 font-bold uppercase tracking-wider opacity-80">
-                                            {isAllSelectedGlobal ? 'Seluruh Halaman' : 'Aksi massal tersedia'}
-                                        </span>
                                     </div>
                                 </div>
                                 
