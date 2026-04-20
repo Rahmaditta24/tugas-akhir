@@ -68,29 +68,29 @@ export default function ResearchModal({ isOpen, onClose, data }) {
     return (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
             <div
-                className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative"
+                className="bg-white rounded-2xl md:rounded-3xl shadow-2xl w-[88%] md:w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200 relative"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition-colors z-10"
+                    className="absolute top-4 right-4 md:top-6 md:right-6 text-gray-400 hover:text-gray-600 transition-colors z-10 p-1"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
 
-                <div className="p-5 md:p-8">
+                <div className="p-4 sm:p-5 md:p-8">
                     {/* Title */}
-                    <div className="mb-4 md:mb-6">
-                        <h2 className="text-lg md:text-xl font-bold text-gray-900 leading-snug pr-8">
+                    <div className="mb-3 md:mb-6">
+                        <h2 className="text-base md:text-xl font-bold text-gray-900 leading-snug pr-8">
                             {isInstitusi ? (data.institusi || data.nama_institusi) : safeValue(data.nama_laboratorium || data.judul || data.judul_kegiatan)}
                         </h2>
                     </div>
 
                     {/* Content Box */}
-                    <div className="bg-[#F8FAFC] rounded-2xl p-4 md:p-6 space-y-5 md:space-y-8 overflow-y-auto max-h-[65vh] md:max-h-[60vh] custom-scrollbar">
+                    <div className="bg-[#F8FAFC] rounded-xl md:rounded-2xl p-3 sm:p-4 md:p-6 space-y-4 md:space-y-8 overflow-y-auto max-h-[50vh] md:max-h-[60vh] custom-scrollbar">
                         {isProduk ? (
                             <>
                                 <div>
@@ -110,11 +110,11 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-bold text-gray-800">TKT:</span>
                                             <span>{safeValue(data.tkt)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-bold text-gray-800">Bidang:</span>
                                             <span>{safeValue(data.bidang || data.bidang_fokus)}</span>
                                         </div>
@@ -126,19 +126,19 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         Informasi Inventor & Institusi
                                     </h3>
                                     <div className="space-y-4 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-bold text-gray-800">Nama Inventor:</span>
                                             <span>{safeValue(data.nama_inventor || data.nama || data.nama_ketua)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-bold text-gray-800">Email Inventor:</span>
                                             <span>{safeValue(data.email_inventor)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-bold text-gray-800">Institusi:</span>
                                             <span>{safeValue(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-bold text-gray-800">Provinsi:</span>
                                             <span>{safeValue(data.provinsi || data.prov_pt)}</span>
                                         </div>
@@ -166,15 +166,15 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         Informasi Institusi
                                     </h3>
                                     <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-medium text-gray-700">Peneliti:</span>
                                             <span>{safeValue(data.nama_peneliti || data.nama || data.nama_ketua || data.nama_pengusul)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-medium text-gray-700">Institusi:</span>
                                             <span>{safeValue(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-medium text-gray-700">Provinsi:</span>
                                             <span>{titleCase(safeValue(data.provinsi || data.prov_pt || data.prov_mitra))}</span>
                                         </div>
@@ -186,11 +186,11 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         Informasi Penelitian
                                     </h3>
                                     <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-medium text-gray-700">Skema:</span>
                                             <span>{safeValue(data.skema_hilirisasi || data.skema || data.nama_skema)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-medium text-gray-700">Tahun:</span>
                                             <span>{safeValue(data.tahun_hilirisasi || data.tahun || data.thn_pelaksanaan || data.thn_pelaksanaan_kegiatan)}</span>
                                         </div>
@@ -231,19 +231,19 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                     )}
                                                     {!isKosabangsa && (
                                                         <>
-                                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                                 <span className="text-sm font-medium text-gray-700">Status PT:</span>
                                                                 <span>{safeValue(data.pengabdian_status_pt)}</span>
                                                             </div>
-                                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                                 <span className="text-sm font-medium text-gray-700">Kabupaten:</span>
                                                                 <span>{titleCase(data.pengabdian_kabupaten)}</span>
                                                             </div>
-                                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                                 <span className="text-sm font-medium text-gray-700">Provinsi:</span>
                                                                 <span>{titleCase(data.pengabdian_provinsi)}</span>
                                                             </div>
-                                                            <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                    <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                                 <span className="text-sm font-medium text-gray-700">Klaster:</span>
                                                                 <span>{safeValue(data.pengabdian_klaster)}</span>
                                                             </div>
@@ -298,11 +298,11 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         Informasi Umum
                                     </h3>
                                     <div className="space-y-4 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-medium text-gray-600">Institusi:</span>
                                             <span className="font-bold">{safeValue(data.institusi || data.nama_institusi)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-medium text-gray-600">Kategori PT:</span>
                                             <span>{safeValue(data.kategori_pt || data.jenis_pt || data.ptn_pts || (data.kampus_ptnbh ? 'PTNBH' : null))}</span>
                                         </div>
@@ -325,11 +325,11 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         Lokasi
                                     </h3>
                                     <div className="space-y-3 font-semibold text-sm text-gray-900">
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-medium text-gray-600">Provinsi:</span>
                                             <span>{safeValue(data.provinsi)}</span>
                                         </div>
-                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                             <span className="text-sm font-medium text-gray-600">Kota/Kab:</span>
                                             <span>{safeValue(data.kota || data.kabupaten)}</span>
                                         </div>
@@ -369,27 +369,27 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                 Informasi Pelaksana
                                             </h3>
                                             <div className="space-y-3 font-semibold text-sm text-gray-900 ml-1">
-                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                     <span className="text-sm font-medium text-gray-500">Nama Pelaksana:</span>
                                                     <span>{safeValue(data.pengabdian_nama || data.nama || data.nama_ketua)}</span>
                                                 </div>
-                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                     <span className="text-sm font-medium text-gray-500">Institusi:</span>
                                                     <span>{safeValue(data.pengabdian_institusi || data.nama_institusi || data.institusi)}</span>
                                                 </div>
-                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                     <span className="text-sm font-medium text-gray-500">Status PT:</span>
                                                     <span>{safeValue(data.pengabdian_status_pt || data.ptn_pts || data.kategori_pt)}</span>
                                                 </div>
-                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                     <span className="text-sm font-medium text-gray-500">Kabupaten:</span>
                                                     <span>{safeValue(data.pengabdian_kabupaten || data.kab_pt || data.kota)}</span>
                                                 </div>
-                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                     <span className="text-sm font-medium text-gray-500">Provinsi:</span>
                                                     <span>{safeValue(data.pengabdian_provinsi || data.prov_pt || data.provinsi)}</span>
                                                 </div>
-                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                     <span className="text-sm font-medium text-gray-500">Klaster:</span>
                                                     <span>{safeValue(data.pengabdian_klaster || data.klaster)}</span>
                                                 </div>
@@ -402,11 +402,11 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                 Informasi Program
                                             </h3>
                                             <div className="space-y-3 font-semibold text-sm text-gray-900 ml-1">
-                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                     <span className="text-sm font-medium text-gray-500">Skema:</span>
                                                     <span>{safeValue(data.pengabdian_skema || data.nama_skema || data.skema)}</span>
                                                 </div>
-                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                        <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                     <span className="text-sm font-medium text-gray-500">Tahun:</span>
                                                     <span>{safeValue(data.pengabdian_tahun || data.thn_pelaksanaan_kegiatan || data.tahun)}</span>
                                                 </div>
@@ -420,11 +420,11 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                     Informasi Pendamping (Kosabangsa)
                                                 </h3>
                                                 <div className="space-y-3 font-semibold text-sm text-gray-900 ml-1">
-                                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                         <span className="text-sm font-medium text-gray-500">Nama Pendamping:</span>
                                                         <span>{safeValue(data.pengabdian_nama_pendamping)}</span>
                                                     </div>
-                                                    <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                            <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                         <span className="text-sm font-medium text-gray-500">Institusi Pendamping:</span>
                                                         <span>{safeValue(data.pengabdian_institusi_pendamping)}</span>
                                                     </div>
@@ -442,19 +442,19 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                             <div className="space-y-3 font-semibold text-sm text-gray-900">
                                                 {isInstitusi && (
                                                     <>
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">
                                                                 {isProdukPage ? 'Jumlah Produk:' : 'Total Penelitian:'}
                                                             </span>
                                                             <span className="text-blue-600 font-bold">{formatNum(data.total_produk || data.total_penelitian || data.total_pengabdian || data.total_hilirisasi || data._count || 1)}</span>
                                                         </div>
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">
                                                                 {isProdukPage ? 'Nama Kampus:' : 'Institusi:'}
                                                             </span>
                                                             <span>{safeValue(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</span>
                                                         </div>
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">Provinsi:</span>
                                                             <span>{safeValue(data.provinsi || data.prov_pt)}</span>
                                                         </div>
@@ -462,19 +462,19 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                 )}
                                                 {!isInstitusi && (
                                                     <>
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">Peneliti:</span>
                                                             <span>{safeValue(data.nama || data.nama_ketua || data.nama_pengusul)}</span>
                                                         </div>
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">Institusi:</span>
                                                             <span>{safeValue(data.nama_institusi || data.institusi || data.perguruan_tinggi)}</span>
                                                         </div>
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">Jenis PT:</span>
                                                             <span>{ptType}</span>
                                                         </div>
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">Provinsi:</span>
                                                             <span>{safeValue(data.provinsi || data.prov_pt)}</span>
                                                         </div>
@@ -532,7 +532,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                 </h3>
                                                 <div className="space-y-3 font-semibold text-sm text-gray-900">
                                                     {!isProdukPage && (
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">Skema:</span>
                                                             <div>
                                                                 {isInstitusi && skemaBrief.length > 0 ? (
@@ -555,7 +555,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                     )}
 
                                                     {!isProdukPage && (
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">Tahun:</span>
                                                             <div>
                                                                 {isInstitusi && tahunBrief.length > 0 ? (
@@ -591,7 +591,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                         </div>
                                                     ) : (
                                                         !isPengabdianPage && !isHilirisasiPage && (
-                                                                <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                                     <span className="text-sm font-medium text-gray-700">Bidang Fokus:</span>
                                                                     <div>
                                                                         {isInstitusi && bidangBrief.length > 0 ? (
@@ -609,7 +609,7 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                     )}
 
                                                     {!isProdukPage && !isPengabdianPage && !isHilirisasiPage && (
-                                                        <div className="grid grid-cols-[130px_1fr] items-baseline">
+                                                <div className="grid grid-cols-1 sm:grid-cols-[130px_1fr] items-baseline gap-1 sm:gap-0">
                                                             <span className="text-sm font-medium text-gray-700">Tema Prioritas:</span>
                                                             <div>
                                                                 {isInstitusi && temaBrief.length > 0 ? (

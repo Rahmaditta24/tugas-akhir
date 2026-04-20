@@ -111,7 +111,7 @@ function StatisticsCards({ stats, labels = {} }) {
                 >
                     <div className="flex h-full w-full bg-black/10 hover:bg-black/0 transition-colors duration-300">
                         <div className="py-5 px-5 flex flex-col gap-1 justify-center">
-                            <p className="text-sm font-medium uppercase tracking-wider text-white/90">{card.title}</p>
+                            <p className="text-sm font-medium tracking-wider text-white/90">{card.title}</p>
                             <p className="text-3xl font-bold drop-shadow-md">
                                 <AnimatedCounter value={card.value} duration={300} />
                             </p>

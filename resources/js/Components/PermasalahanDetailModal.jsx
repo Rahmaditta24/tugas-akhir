@@ -20,7 +20,7 @@ export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
             onClick={onClose}
         >
             <div 
-                className="bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col animate-in zoom-in-95 duration-200 relative overflow-hidden w-full max-w-[500px]"
+                className="bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col animate-in zoom-in-95 duration-200 relative overflow-hidden w-[88%] sm:w-full max-w-[500px]"
                 style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }}
                 onClick={(e) => e.stopPropagation()}
             >
@@ -46,7 +46,7 @@ export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
                     </div>
 
                     {/* Content Area with background */}
-                    <div className="bg-slate-50 rounded-xl p-4 overflow-y-auto max-h-[55vh] custom-scrollbar">
+                    <div className="bg-slate-50 rounded-xl p-4 overflow-y-auto max-h-[45vh] custom-scrollbar">
                         {isHilirisasi ? (
                             <div className="space-y-4 text-xs sm:text-sm">
                                 <div className="grid grid-cols-1 gap-4">
@@ -58,7 +58,7 @@ export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
                                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Institusi</p>
                                         <p className="font-semibold text-slate-800">{safe(data.institusi || data.perguruan_tinggi)}</p>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Tahun</p>
                                             <p className="font-semibold text-slate-800">{safe(data.tahun || data.thn_pelaksanaan)}</p>
@@ -89,7 +89,7 @@ export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
                                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Institusi</p>
                                         <p className="font-semibold text-slate-800">{safe(data.institusi || data.perguruan_tinggi || data.pengabdian_institusi)}</p>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Tahun</p>
                                             <p className="font-semibold text-slate-800">{safe(data.tahun || data.thn_pelaksanaan || data.pengabdian_tahun)}</p>
@@ -112,7 +112,7 @@ export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
                         ) : (
                             <div className="space-y-4 text-xs sm:text-sm">
                                 <div className="grid grid-cols-1 gap-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Peneliti</p>
                                             <p className="font-semibold text-slate-800">{safe(data.nama || data.nama_ketua)}</p>
@@ -126,7 +126,7 @@ export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
                                         <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Institusi</p>
                                         <p className="font-semibold text-slate-800">{safe(data.institusi || data.nama_institusi || data.perguruan_tinggi)}</p>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Tahun</p>
                                             <p className="font-semibold text-slate-800">{safe(data.tahun || data.thn_pelaksanaan)}</p>
