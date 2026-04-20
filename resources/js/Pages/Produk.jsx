@@ -59,6 +59,7 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
             preserveState: true,
             preserveScroll: true,
             replace: true,
+            only: ['mapData', 'researches', 'stats']
         });
     };
 
@@ -69,16 +70,18 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
         router.get(route('produk.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats'],
             replace: true,
+            only: ['mapData', 'researches', 'stats']
         });
     };
 
     const handleFilterChange = (newFilters) => {
         setFilters(newFilters);
-        router.get(route('produk.index'), { ...newFilters }, {
+        router.get(route('produk.index'), { ...newFilters, search: searchTerm }, {
             preserveState: true,
             preserveScroll: true,
+            replace: true,
+            only: ['mapData', 'researches', 'stats']
         });
     };
 
@@ -213,6 +216,12 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
         }
     };
 
+    const [filteredResearchesForMap, setFilteredResearchesForMap] = useState(researches);
+
+    useEffect(() => {
+        setFilteredResearchesForMap(researches);
+    }, [researches]);
+
     return (
         <MainLayout title={title || "Peta Persebaran Penelitian BIMA Indonesia - Produk"}>
             <Toaster />
@@ -222,6 +231,7 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
                 <Suspense fallback={<MapLoading />}>
                     <MapContainer 
                         mapData={mapData} 
+                        data={filteredResearchesForMap}
                         displayMode={displayMode} 
                         onStatsChange={handleStatsChange}
                         filters={filters} 
@@ -251,6 +261,7 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}
+                            onFilteredResults={setFilteredResearchesForMap}
                             onItemClick={handleItemClick}
                             title="Daftar Produk"
                             isFiltered={isFiltered}

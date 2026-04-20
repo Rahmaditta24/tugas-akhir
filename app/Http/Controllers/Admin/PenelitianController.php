@@ -284,8 +284,6 @@ class PenelitianController extends Controller
                 'perPage' => $perPage,
                 'sort' => $sort,
                 'direction' => $direction,
-                'sort' => $sort,
-                'direction' => $direction,
             ],
         ]);
     }

@@ -59,6 +59,7 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
             preserveState: true,
             preserveScroll: true,
             replace: true,
+            only: ['mapData', 'researches', 'stats']
         });
     };
 
@@ -69,16 +70,18 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
         router.get(route('hilirisasi.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats'],
             replace: true,
+            only: ['mapData', 'researches', 'stats']
         });
     };
 
     const handleFilterChange = (newFilters) => {
         setFilters(newFilters);
-        router.get(route('hilirisasi.index'), { ...newFilters }, {
+        router.get(route('hilirisasi.index'), { ...newFilters, search: searchTerm }, {
             preserveState: true,
             preserveScroll: true,
+            replace: true,
+            only: ['mapData', 'researches', 'stats']
         });
     };
 
@@ -201,6 +204,12 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
         }
     };
 
+    const [filteredResearchesForMap, setFilteredResearchesForMap] = useState(researches);
+
+    useEffect(() => {
+        setFilteredResearchesForMap(researches);
+    }, [researches]);
+
     return (
         <MainLayout title={title || "Peta Persebaran Penelitian BIMA Indonesia - Hilirisasi"}>
             <Toaster />
@@ -210,6 +219,7 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
                 <Suspense fallback={<MapLoading />}>
                     <MapContainer 
                         mapData={mapData} 
+                        data={filteredResearchesForMap}
                         displayMode={displayMode} 
                         onStatsChange={handleStatsChange}
                         filters={filters} 
@@ -236,6 +246,7 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}
+                            onFilteredResults={setFilteredResearchesForMap}
                             onItemClick={handleItemClick}
                             title="Daftar Hilirisasi"
                             isFiltered={isFiltered}

@@ -285,7 +285,7 @@ export default function MapControls({
                         </svg>
                         <input
                             type="text"
-                            value={searchTerm}
+                            value={localSearch}
                             onChange={handleSearchChange}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {

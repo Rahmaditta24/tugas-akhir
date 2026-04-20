@@ -163,7 +163,7 @@ class ProdukPageController extends Controller
                 if (file_exists($path)) {
                     $data = json_decode(file_get_contents($path), true);
                     return collect($data)
-                        ->map(fn($p) => str()->title($p['name']))
+                        ->map(fn($p) => \Illuminate\Support\Str::title($p['name']))
                         ->sort()
                         ->values()
                         ->all();

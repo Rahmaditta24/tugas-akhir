@@ -7,6 +7,12 @@ import 'leaflet.markercluster';
 import ResearchModal from './ResearchModal';
 import { FIELD_COLORS, getFieldColor } from '../Utils/fieldColors';
 
+// Clean [M] and [U] from titles
+const cleanJudul = (str) => {
+    if (!str || typeof str !== 'string') return str || '-';
+    return str.replace(/^\[[MU]\]\s*/i, '').trim();
+};
+
 const CONFIG = {
     DEFAULT_CENTER: [-2.5, 118],
     DEFAULT_ZOOM: 5,
@@ -172,6 +178,7 @@ export default function MapContainer({
         };
     }, [fetchDetail]);
 
+    const fetechDetailCallback = fetchDetail; // Just a placeholder if needed
     const normalizeItem = React.useCallback((item) => {
         if (!item) return null;
 
@@ -201,12 +208,6 @@ export default function MapContainer({
 
         // Field/Bidang Detection
         const field = item._field || item.bidang_fokus || item.skema || item.bidang || '-';
-
-        // Clean [M] and [U] from titles
-        const cleanJudul = (str) => {
-            if (!str || typeof str !== 'string') return str || '-';
-            return str.replace(/^\[[MU]\]\s*/i, '').trim();
-        };
 
         // Title Detection
         const judulRaw = item._judul || item.judul || item.judul_kegiatan || item.nama_produk || item.title || 'Detail';
@@ -396,50 +397,59 @@ export default function MapContainer({
     };
 
     const generateDetailPopup = (title, field, institusi, provinsi, tahun, id, color, tkt = null) => {
-        const safeValue = (val) => (val === null || val === undefined || val === '') ? '-' : val;
+        const safeValue = (val) => {
+            if (val === null || val === undefined || val === '') return '-';
+            const s = String(val).trim().toLowerCase();
+            if (s === 'tidak tersedia' || s === 'null' || s === 'undefined' || s === '-') return '-';
+            return val;
+        };
         const escField = safeValue(field).replace(/'/g, "\\'");
         const type = getCurrentDataType();
         const isProdukMode = type === 'produk';
         const isHilirisasiMode = type === 'hilirisasi';
 
         return `
-            <div style="padding: 10px; min-width: 280px; max-width: 350px; font-family: 'Inter', sans-serif; background: #ffffff;">
-                <div style="font-weight: 800; font-size: 15px; color: #3E7DCA; margin-bottom: 12px; line-height: 1.3; letter-spacing: -0.01em;">
-                    ${safeValue(title)}
-                </div>
-                <div style="height: 1px; background-color: #f1f5f9; margin-bottom: 12px;"></div>
-                <div style="margin-bottom: 15px;">
-                  <div style="display: flex; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 85px; flex-shrink: 0;">Institusi:</span>
-                    <span style="font-size: 12px; color: #4a5568;">${safeValue(institusi)}</span>
-                  </div>
-                  <div style="display: flex; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 85px; flex-shrink: 0;">Provinsi:</span>
-                    <span style="font-size: 12px; color: #4a5568;">${safeValue(provinsi)}</span>
-                  </div>
-                  ${isProdukMode ? `
-                  <div style="display: flex; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 85px; flex-shrink: 0;">TKT:</span>
-                    <span style="font-size: 12px; color: #4a5568;">${safeValue(tkt)}</span>
-                  </div>
-                  ` : `
-                  <div style="display: flex; margin-bottom: 6px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #2d3748; width: 85px; flex-shrink: 0;">Tahun:</span>
-                    <span style="font-size: 12px; color: #4a5568;">${safeValue(tahun)}</span>
-                  </div>
-                  `}
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                    ${!isHilirisasiMode ? `
-                    <div style="background-color: ${color || '#f43f5e'}; color: white; padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
-                        ${safeValue(field)}
-                    </div>
+            <div style="font-family: 'Inter', sans-serif; width: 240px; max-width: 260px; padding: 2px; overflow-wrap: break-word;">
+                <h3 style="margin: 0 0 8px 0; font-size: 13px; font-weight: 700; color: #3E7DCA; line-height: 1.4; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; word-break: break-word;">
+                    ${cleanJudul(title)}
+                </h3>
+                
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 10px;">
+                    <tr style="vertical-align: baseline;">
+                        <td style="color: #1e293b; font-weight: 700; width: 60px; padding: 2px 0;">Institusi:</td>
+                        <td style="color: #4a5568; font-weight: 400; padding: 2px 0;">${safeValue(institusi)}</td>
+                    </tr>
+                    <tr style="vertical-align: baseline;">
+                        <td style="color: #1e293b; font-weight: 700; padding: 2px 0;">Provinsi:</td>
+                        <td style="color: #4a5568; font-weight: 400; padding: 2px 0;">${safeValue(provinsi)}</td>
+                    </tr>
+                    ${isProdukMode ? `
+                    <tr style="vertical-align: baseline;">
+                        <td style="color: #1e293b; font-weight: 700; padding: 2px 0;">TKT:</td>
+                        <td style="color: #4a5568; font-weight: 400; padding: 2px 0;">${safeValue(tkt)}</td>
+                    </tr>
                     ` : `
-                    <div style="width: 25px; height: 8px; background: #3E7DCA; border-radius: 4px;"></div>
+                    <tr style="vertical-align: baseline;">
+                        <td style="color: #1e293b; font-weight: 700; padding: 2px 0;">Tahun:</td>
+                        <td style="color: #4a5568; font-weight: 400; padding: 2px 0;">${safeValue(tahun)}</td>
+                    </tr>
                     `}
+                </table>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 5px;">
+                    <div style="padding-bottom: 2px;">
+                        ${!isHilirisasiMode ? `
+                        <div style="background-color: ${color || '#3E7DCA'}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase;">
+                            ${safeValue(field)}
+                        </div>
+                        ` : `
+                        <div style="width: 18px; height: 7px; background: #3E7DCA; border-radius: 4px;" title="Bidang Hilirisasi"></div>
+                        `}
+                    </div>
+                    
                     <span onclick="window.openResearchDetail('${id}', '${escField}')" 
-                         style="color: #64748b; font-size: 11px; font-style: italic; cursor: pointer; hover: color: #3E7DCA;">
-                         Klik untuk detail
+                          style="color: #64748b; font-size: 10px; font-weight: 500; cursor: pointer; font-style: italic;">
+                        Klik untuk detail
                     </span>
                 </div>
             </div>
@@ -852,7 +862,7 @@ export default function MapContainer({
                                 bidang: item._field
                             }
                         });
-                        marker.bindPopup(generatePopupContent(rawItem), { maxWidth: 320, autoPanPadding: [50, 100] });
+                        marker.bindPopup(generatePopupContent(rawItem), { maxWidth: 260, autoPanPadding: [50, 100] });
 
                         marker.on('click', (e) => {
                             L.DomEvent.stopPropagation(e);
@@ -863,90 +873,57 @@ export default function MapContainer({
                         markersToAdd.push(marker);
                     } else {
                         for (let idx = 0; idx < count; idx++) {
+                            const type = getCurrentDataType();
                             let matchedColor = '#3E7DCA';
-                            const dataType = getCurrentDataType();
-                            if (dataType === 'hilirisasi' || dataType === 'produk') {
+                            const f = fields[idx] ? fields[idx].toString().toLowerCase() : '';
+
+                            // Force Blue for Hilirisasi & Produk
+                            if (type === 'hilirisasi' || type === 'produk') {
                                 matchedColor = '#3E7DCA';
-                            } else if (hasDetails) {
-                                const field = fields[idx];
+                            }
+                            // Color mapping logic sync with the badges for others
+                            else if (f.includes('pangan')) matchedColor = '#10b981';
+                            else if (f.includes('kesehatan')) matchedColor = '#f43f5e';
+                            else if (f.includes('energi')) matchedColor = '#f59e0b';
+                            else if (f.includes('transportasi')) matchedColor = '#6366f1';
+                            else if (f.includes('teknologi')) matchedColor = '#8b5cf6';
+                            else if (f.includes('pertahanan')) matchedColor = '#1e293b';
+                            else if (f.includes('kemaritiman')) matchedColor = '#0ea5e9';
+                            else if (f.includes('sosial') || f.includes('humaniora') || f.includes('seni') || f.includes('masyarakat') || f.includes('pemberdayaan')) matchedColor = '#a21caf';
+                            else {
                                 for (const [key, color] of Object.entries(FIELD_COLORS)) {
-                                    if (field && field.includes(key)) { matchedColor = color; break; }
+                                    if (f.includes(key.toLowerCase())) { matchedColor = color; break; }
                                 }
                             }
 
                             let coords;
-                            if (dataType === 'hilirisasi' || dataType === 'produk') {
-                                // Always place at same point → let spiderfy create flower pattern
-                                coords = [lat, lng];
-                            } else if (idx === 0) {
+                            if (idx === 0) {
                                 coords = [lat, lng];
                             } else {
                                 const radiusKm = 0.6;
-                                const radiusDegrees = radiusKm / 111;
+                                const radiusDegrees = radiusKm / 111.3;
                                 const angle = ((idx - 1) * (2 * Math.PI / (count - 1)));
-
                                 coords = [
                                     lat + radiusDegrees * Math.cos(angle),
                                     lng + radiusDegrees * Math.sin(angle)
                                 ];
                             }
 
-                            let marker;
-                            if (dataType === 'pengabdian') {
-                                marker = L.marker(coords, {
-                                    icon: L.divIcon({
-                                        className: 'research-circle-marker-premium custom-marker-individu',
-                                        html: `
-                                            <div class="individu-wrapper" style="width: 50px; height: 50px; position: relative;">
-                                                <div class="individu-dot" style="position: absolute; top: 17px; left: 17px; width: 16px; height: 16px; border-radius: 50%; background-color: ${matchedColor}; opacity: 0.8; border: 2px solid ${matchedColor};"></div>
-                                                <div class="individu-bubble" style="position: absolute; inset: 0; background-color: rgba(62, 125, 202, 0.7); width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">1</div>
-                                            </div>
-                                        `,
-                                        iconSize: L.point(50, 50),
-                                        iconAnchor: L.point(25, 25)
-                                    }),
-                                    penelitianCount: 1,
-                                    statsData: {
-                                        institusi: item._institusi,
-                                        provinsi: item._provinsi,
-                                        bidang: fields[idx]
-                                    }
-                                });
-                            } else if (dataType === 'hilirisasi' || dataType === 'produk') {
-                                marker = L.marker(coords, {
-                                    icon: L.divIcon({
-                                        className: 'research-circle-marker-premium custom-marker-individu',
-                                        html: `
-                                            <div class="individu-wrapper" style="width: 50px; height: 50px; position: relative;">
-                                                <div class="individu-dot" style="position: absolute; top: 17px; left: 17px; width: 16px; height: 16px; border-radius: 50%; background-color: #3E7DCA; opacity: 0.85;"></div>
-                                                <div class="individu-bubble" style="position: absolute; inset: 0; background-color: rgba(62, 125, 202, 0.7); width: 50px; height: 50px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">1</div>
-                                            </div>
-                                        `,
-                                        iconSize: L.point(50, 50),
-                                        iconAnchor: L.point(25, 25)
-                                    }),
-                                    penelitianCount: 1,
-                                    statsData: {
-                                        institusi: item._institusi,
-                                        provinsi: item._provinsi,
-                                        bidang: fields[idx]
-                                    }
-                                });
-                            } else {
-                                marker = L.circleMarker(coords, {
-                                    radius: 8,
-                                    fillColor: matchedColor,
-                                    fillOpacity: 0.8,
-                                    stroke: false,
-                                    className: 'research-circle-marker-premium',
-                                    penelitianCount: 1,
-                                    statsData: {
-                                        institusi: item._institusi,
-                                        provinsi: item._provinsi,
-                                        bidang: fields[idx]
-                                    }
-                                });
-                            }
+                            const marker = L.circleMarker(coords, {
+                                radius: 8.5,
+                                fillColor: matchedColor,
+                                fillOpacity: 0.9,
+                                stroke: true,
+                                color: 'white',
+                                weight: 2,
+                                className: 'research-circle-marker-premium',
+                                penelitianCount: 1,
+                                statsData: {
+                                    institusi: item._institusi,
+                                    provinsi: item._provinsi,
+                                    bidang: fields[idx]
+                                }
+                            });
                             const popup = hasDetails ?
                                 generateDetailPopup(
                                     titles[idx] || 'Detail',
@@ -960,7 +937,7 @@ export default function MapContainer({
                                 ) :
                                 generatePopupContent(rawItem);
 
-                            marker.bindPopup(popup, { maxWidth: 400, autoPanPadding: [50, 100] });
+                            marker.bindPopup(popup, { maxWidth: 260, autoPanPadding: [50, 100] });
 
                             marker.on('click', async (e) => {
                                 L.DomEvent.stopPropagation(e);

@@ -57,7 +57,8 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         router.get(route('penelitian.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            replace: true, // Use replace to avoid cluttered history for typing
+            replace: true, 
+            only: ['mapData', 'researches', 'stats'] // CRITICAL for SPA feel: only update data, not full page
         });
     };
 
@@ -253,6 +254,13 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         setIsModalOpen(true);
     };
 
+    const [filteredResearchesForMap, setFilteredResearchesForMap] = useState(researches);
+
+    // Sync filtered results when researches prop changes from server
+    useEffect(() => {
+        setFilteredResearchesForMap(researches);
+    }, [researches]);
+
     return (
         <MainLayout title="Peta Persebaran Penelitian BIMA Indonesia - Penelitian">
             <Toaster />
@@ -263,7 +271,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                 <Suspense fallback={<MapLoading />}>
                     <MapContainer
                         mapData={mapData}
-                        data={researches}
+                        data={filteredResearchesForMap}
                         displayMode={displayMode}
                         onStatsChange={handleStatsChange}
                         filters={filters}
@@ -294,6 +302,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                             <ResearchList
                                 researches={researches}
                                 onAdvancedSearch={handleAdvancedSearch}
+                                onFilteredResults={setFilteredResearchesForMap}
                                 isFiltered={isFiltered}
                                 isPenelitianPage={true}
                                 onItemClick={handleItemClick}

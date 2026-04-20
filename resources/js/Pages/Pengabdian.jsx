@@ -68,6 +68,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             preserveState: true,
             preserveScroll: true,
             replace: true,
+            only: ['mapData', 'researches', 'stats']
         });
     };
 
@@ -78,16 +79,18 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         router.get(route('pengabdian.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats'],
             replace: true,
+            only: ['mapData', 'researches', 'stats']
         });
     };
 
     const handleFilterChange = (newFilters) => {
         setFilters(newFilters);
-        router.get(route('pengabdian.index'), { ...newFilters }, {
+        router.get(route('pengabdian.index'), { ...newFilters, search: searchTerm }, {
             preserveState: true,
             preserveScroll: true,
+            replace: true,
+            only: ['mapData', 'researches', 'stats']
         });
     };
 
@@ -208,6 +211,12 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         }
     };
 
+    const [filteredResearchesForMap, setFilteredResearchesForMap] = useState(researches);
+
+    useEffect(() => {
+        setFilteredResearchesForMap(researches);
+    }, [researches]);
+
     return (
         <MainLayout title={title || "Peta Persebaran Penelitian BIMA Indonesia - Pengabdian"}>
             <Toaster />
@@ -217,6 +226,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
                 <Suspense fallback={<MapLoading />}>
                     <MapContainer 
                         mapData={mapData} 
+                        data={filteredResearchesForMap}
                         displayMode={displayMode} 
                         onStatsChange={handleStatsChange}
                         filters={filters} 
@@ -244,6 +254,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
                         <ResearchList
                             researches={researches}
                             onAdvancedSearch={handleAdvancedSearch}
+                            onFilteredResults={setFilteredResearchesForMap}
                             onItemClick={handleItemClick}
                             title="Daftar Pengabdian"
                             isFiltered={isFiltered}

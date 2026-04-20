@@ -196,41 +196,87 @@ class PermasalahanPageController extends Controller
             }
         });
 
-        // 3. Choropleth data
-        $displayNameMap = [
-            'sampah' => 'Sampah', 
-            'stunting' => 'Stunting', 
-            'gizi_buruk' => 'Gizi Buruk', 
-            'krisis_listrik' => 'Krisis Listrik', 
-            'ketahanan_pangan' => 'Ketahanan Pangan'
+        // 3. Load Stats from JSON files (Standardized source)
+        $jsonDir = base_path('../peta-bima/data/permasalahan/');
+        $filesMap = [
+            'Sampah' => 'data-permasalahan-sampah.json',
+            'Stunting' => 'data-permasalahan-stunting.json',
+            'Gizi Buruk' => 'data-permasalahan-gizi-buruk.json',
+            'Krisis Listrik' => 'data-permasalahan-krisis-listrik.json',
+            'Ketahanan Pangan' => 'data-permasalahan-ketahanan-pangan.json'
         ];
-        
-        $permasalahanStats = Cache::remember('permasalahan_choropleth_stats', 86400, function () use ($displayNameMap) {
-            return PermasalahanProvinsi::query()
-                ->selectRaw('jenis_permasalahan, provinsi, nilai, satuan, metrik, tahun')
-                ->get()
-                ->groupBy('jenis_permasalahan')
-                ->map(fn($items) => $items->map(fn($item) => [
-                    'provinsi' => $item->provinsi,
-                    'nilai'    => $item->nilai,
-                    'satuan'   => $item->satuan,
-                    'metrik'   => $item->metrik,
-                    'tahun'    => $item->tahun,
-                ])->values()->toArray())
-                ->mapWithKeys(fn($items, $jenis) => [
-                    $displayNameMap[$jenis] ?? $jenis => $items
-                ])
-                ->toArray();
+
+        $permasalahanStats = Cache::remember('permasalahan_json_provinsi_stats', 86400, function () use ($jsonDir, $filesMap) {
+            $result = [];
+            foreach ($filesMap as $label => $filename) {
+                $path = $jsonDir . $filename;
+                if (!file_exists($path)) continue;
+
+                $data = json_decode(file_get_contents($path), true);
+                // Handle both "Provinsi" and "Sheet1" (for electricity)
+                $list = $data['Provinsi'] ?? $data['Sheet1'] ?? [];
+                
+                $result[$label] = array_map(function($item) use ($label) {
+                    $valKey = match($label) {
+                        'Sampah' => 'Timbulan Sampah Tahunan(ton)',
+                        'Stunting', 'Gizi Buruk' => 'Persentase',
+                        'Krisis Listrik' => 'SAIDI (Jam/Pelanggan)',
+                        'Ketahanan Pangan' => 'IKP',
+                        default => 'Persentase'
+                    };
+                    
+                    return [
+                        'provinsi' => $item['Provinsi'] ?? '-',
+                        'nilai'    => (float)($item[$valKey] ?? 0),
+                        'satuan'   => match($label) {
+                            'Sampah' => 'ton',
+                            'Stunting', 'Gizi Buruk' => '%',
+                            'Krisis Listrik' => 'Jam/Pelanggan',
+                            'Ketahanan Pangan' => 'Indeks',
+                            default => ''
+                        },
+                        'metrik'   => $valKey,
+                        'tahun'    => 2024 // Default or extracted if available
+                    ];
+                }, $list);
+            }
+            return $result;
         });
 
-        $permasalahanKabupatenStats = Cache::remember('permasalahan_kabupaten_choropleth_stats', 86400, function () use ($displayNameMap) {
-            return PermasalahanKabupaten::all()->groupBy('jenis_permasalahan')->map(fn($items) => $items->map(fn($item) => [
-                'kabupaten_kota' => $item->kabupaten_kota,
-                'provinsi' => $item->provinsi, 
-                'nilai' => $item->nilai, 
-                'satuan' => $item->satuan, 
-                'tahun' => $item->tahun
-            ])->values()->toArray())->mapWithKeys(fn($items, $jenis) => [$displayNameMap[$jenis] ?? $jenis => $items])->toArray();
+        $permasalahanKabupatenStats = Cache::remember('permasalahan_json_kabupaten_stats', 86400, function () use ($jsonDir, $filesMap) {
+            $result = [];
+            foreach ($filesMap as $label => $filename) {
+                $path = $jsonDir . $filename;
+                if (!file_exists($path)) continue;
+
+                $data = json_decode(file_get_contents($path), true);
+                if (!isset($data['Kabupaten'])) continue;
+
+                $result[$label] = array_map(function($item) use ($label) {
+                    $valKey = match($label) {
+                        'Sampah' => 'Timbulan Sampah Tahunan(ton)',
+                        'Stunting', 'Gizi Buruk' => 'Persentase',
+                        'Krisis Listrik' => 'SAIDI (Jam/Pelanggan)',
+                        'Ketahanan Pangan' => 'IKP',
+                        default => 'Persentase'
+                    };
+
+                    return [
+                        'kabupaten_kota' => $item['Kabupaten/Kota'] ?? '-',
+                        'provinsi'       => $item['Provinsi'] ?? '-', // Note: some files might not have prov at kab level
+                        'nilai'          => (float)($item[$valKey] ?? 0),
+                        'satuan'         => match($label) {
+                            'Sampah' => 'ton',
+                            'Stunting', 'Gizi Buruk' => '%',
+                            'Krisis Listrik' => 'Jam/Pelanggan',
+                            'Ketahanan Pangan' => 'Indeks',
+                            default => ''
+                        },
+                        'tahun'          => 2024
+                    ];
+                }, $data['Kabupaten']);
+            }
+            return $result;
         });
 
         $jenisPermasalahan = array_keys($permasalahanStats);

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { getFieldColor } from '../Utils/fieldColors';
 
-export default function ResearchList({ researches = [], totalCount = 0, onAdvancedSearch, onItemClick, title = "Daftar Penelitian", isFiltered = false, isFasilitasLab = false, isPenelitianPage = false, isHilirisasiPage = false, isProdukPage = false, isPermasalahanPage = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
+export default function ResearchList({ researches = [], totalCount = 0, onAdvancedSearch, onItemClick, onFilteredResults, title = "Daftar Penelitian", isFiltered = false, isFasilitasLab = false, isPenelitianPage = false, isHilirisasiPage = false, isProdukPage = false, isPermasalahanPage = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
     const [searchRows, setSearchRows] = useState([
         { id: Date.now(), term: '', field: 'all', operator: 'AND' }
     ]);
@@ -26,9 +26,19 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
         }
     };
 
+    // USE DEBOUNCE to prevent lagging
+    const [debouncedRows, setDebouncedRows] = React.useState(searchRows);
+
+    React.useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedRows(searchRows);
+        }, 500); // Wait 500ms after user stops typing
+        return () => clearTimeout(handler);
+    }, [searchRows]);
+
     const normalizedRows = useMemo(
-        () => searchRows.map((row) => ({ ...row, term: (row.term || '').trim().toLowerCase() })),
-        [searchRows]
+        () => debouncedRows.map((row) => ({ ...row, term: (row.term || '').trim().toLowerCase() })),
+        [debouncedRows]
     );
 
     const hasActiveQuery = useMemo(
@@ -38,18 +48,18 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
 
     const getValueByField = (research, field) => {
         const valuesByField = {
-            title: research?.judul,
-            university: research?.institusi,
-            researcher: research?.nama,
+            title: research?.judul || research?.judul_kegiatan || research?.nama_produk,
+            university: research?.institusi || research?.nama_institusi || research?.perguruan_tinggi,
+            researcher: research?.nama || research?.nama_ketua || research?.nama_pengusul || research?.nama_inventor,
             field: research?.bidang_fokus || research?.bidang,
             priorityTheme: research?.tema_prioritas,
             category: research?.kategori_pt || research?.ptn_pts || research?.jenis_pt,
             cluster: research?.klaster,
             directorate: research?.direktorat,
-            skema: research?.skema,
+            skema: research?.skema || research?.nama_skema,
             tkt: research?.tkt,
-            provinsi: research?.provinsi,
-            tahun: research?.tahun || research?.thn_pelaksanaan,
+            provinsi: research?.provinsi || research?.prov_pt,
+            tahun: research?.tahun || research?.thn_pelaksanaan || research?.thn_pelaksanaan_kegiatan,
         };
 
         if (field === 'all') {
@@ -67,7 +77,7 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
 
     const filteredResearches = useMemo(() => {
         if (!Array.isArray(researches)) return [];
-        if (!hasActiveQuery) return researches;
+        if (!hasActiveQuery) return researches; // FIXED: show data from server if no local search active
 
         return researches.filter((research) => {
             let result = matchesRow(research, normalizedRows[0]);
@@ -88,6 +98,13 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
             return result;
         });
     }, [researches, normalizedRows, hasActiveQuery]);
+
+    // Lift state up whenever filteredResearches changes
+    React.useEffect(() => {
+        if (onFilteredResults) {
+            onFilteredResults(filteredResearches);
+        }
+    }, [filteredResearches, onFilteredResults]);
 
     const defaultFieldOptions = [
         { value: 'all', label: 'Semua' },
@@ -119,6 +136,15 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
         <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex lg:flex-row flex-col lg:gap-0 gap-2 justify-between items-center mb-6">
                 <h3 className="text-xl font-semibold text-slate-800">{title}</h3>
+                {hasActiveQuery && debouncedRows !== searchRows && (
+                    <div className="flex items-center gap-2 text-blue-500 animate-pulse text-sm font-medium">
+                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Mencari...
+                    </div>
+                )}
             </div>
 
             <div className="space-y-4 mb-6">

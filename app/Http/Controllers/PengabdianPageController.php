@@ -131,20 +131,23 @@ class PengabdianPageController extends Controller
             ? 'MAX(COALESCE(bidang_teknologi_inovasi, bidang_fokus, nama_skema)) as sample_theme'
             : 'MAX(COALESCE(bidang_fokus, nama_skema)) as sample_theme';
 
-        $cacheKey = 'map_data_pengabdian_v8_' . $v . '_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_pengabdian_v9_' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery, $themeSql) {
-            // PERFORMANCE OPTIMIZATION: Remove GROUP_CONCAT, load details on demand
-            // Only return summary data for map pins
+           DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
                 ->select(
-                    DB::raw('AVG(pt_latitude) as pt_latitude'),
+                   DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('nama_institusi as institusi_name'),
                     DB::raw('MAX(prov_pt) as provinsi'),
                     DB::raw('COUNT(*) as total_penelitian'),
-                    DB::raw('MAX(bidang_fokus) as sample_field'),
-                    DB::raw($themeSql),
-                    DB::raw('GROUP_CONCAT(DISTINCT nama_skema SEPARATOR "|") as skema_list')
+                    DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_fields'),
+                    DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as all_ids'),
+                    DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
+                    DB::raw('GROUP_CONCAT(COALESCE(nama_skema, "-") SEPARATOR "|") as all_skema'),
+                    DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan_kegiatan AS CHAR) SEPARATOR "|") as all_years'),
+                    DB::raw('GROUP_CONCAT(COALESCE(bidang_teknologi_inovasi, "-") SEPARATOR "|") as all_themes'),
+                    DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -158,14 +161,16 @@ class PengabdianPageController extends Controller
                     'pt_latitude' => (float)$item->pt_latitude,
                     'pt_longitude' => (float)$item->pt_longitude,
                     'provinsi' => $item->provinsi,
-                    'total_penelitian' => (int)$item->total_penelitian,
-                    'bidang_fokus' => $item->sample_field ?? '-',
-                    'skema_list' => $item->skema_list ?? '-',
-                    // REMOVED: ids, titles, researchers, etc.
-                    // Loaded via API when user clicks
+                    'total_pengabdian' => (int)$item->total_penelitian,
+                    'bidang_fokus' => $item->all_fields,
+                    'ids' => $item->all_ids,
+                    'titles' => $item->all_titles,
+                    'skema_list' => $item->all_skema,
+                    'tahun_list' => $item->all_years,
+                    'tema_list' => $item->all_themes,
+                    'jenis_pt_list' => $item->all_pt_types,
                 ];
-
-            })->all();
+            })->toArray();
         });
 
         // Only load list if specifically searched (keyword)
@@ -194,7 +199,7 @@ class PengabdianPageController extends Controller
                 if (file_exists($path)) {
                     $data = json_decode(file_get_contents($path), true);
                     return collect($data)
-                        ->map(fn($p) => str()->title($p['name']))
+                        ->map(fn($p) => \Illuminate\Support\Str::title($p['name']))
                         ->sort()
                         ->values()
                         ->all();
