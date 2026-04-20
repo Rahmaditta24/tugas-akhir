@@ -82,11 +82,14 @@ class FasilitasLabPageController extends Controller
         // so the map stays full and stats stay static as requested.
         $globalQuery = FasilitasLab::query();
 
-        $stats = [
-            'totalResearch' => (clone $globalQuery)->count(),
-            'totalUniversities' => (clone $globalQuery)->distinct('institusi')->count('institusi'),
-            'totalProvinces' => (clone $globalQuery)->distinct('provinsi')->count('provinsi'),
-        ];
+        $statsCacheKey = 'stats_fasilitas_lab_global_v1';
+        $stats = Cache::remember($statsCacheKey, 3600, function() use ($globalQuery) {
+            return [
+                'totalResearch' => (clone $globalQuery)->count(),
+                'totalUniversities' => (clone $globalQuery)->distinct('institusi')->count('institusi'),
+                'totalProvinces' => (clone $globalQuery)->distinct('provinsi')->count('provinsi'),
+            ];
+        });
 
         $cacheKey = 'map_data_fasilitas_lab_v8_global';
         $mapData = Cache::remember($cacheKey, 1800, function() use ($globalQuery) {
@@ -201,7 +204,7 @@ class FasilitasLabPageController extends Controller
                 if (file_exists($path)) {
                     $data = json_decode(file_get_contents($path), true);
                     return collect($data)
-                        ->map(fn($p) => str()->title($p['name']))
+                        ->map(fn($p) => \Illuminate\Support\Str::title($p['name']))
                         ->sort()
                         ->values()
                         ->all();

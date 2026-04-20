@@ -81,12 +81,16 @@ class ProdukPageController extends Controller
         }
 
         $statsQ = clone $baseQuery;
-        $stats = [
-            'totalResearch' => (clone $statsQ)->count(),
-            'totalUniversities' => (clone $statsQ)->distinct('institusi')->count('institusi'),
-            'totalProvinces' => (clone $statsQ)->distinct('provinsi')->count('provinsi'),
-            'totalFields' => (clone $statsQ)->distinct('bidang')->count('bidang'),
-        ];
+        $statsCacheKey = 'stats_produk_v1_' . md5(json_encode($request->all()));
+        $stats = Cache::remember($statsCacheKey, 3600, function() use ($baseQuery) {
+            $statsQ = clone $baseQuery;
+            return [
+                'totalResearch' => (clone $statsQ)->count(),
+                'totalUniversities' => (clone $statsQ)->distinct('institusi')->count('institusi'),
+                'totalProvinces' => (clone $statsQ)->distinct('provinsi')->count('provinsi'),
+                'totalFields' => (clone $statsQ)->distinct('bidang')->count('bidang'),
+            ];
+        });
 
         $cacheKey = 'map_data_produk_v6_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {

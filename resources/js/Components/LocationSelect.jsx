@@ -49,7 +49,15 @@ const LocationSelect = ({
             setLoadingProvinces(true);
             try {
                 const response = await axios.get('/api/provinces');
-                const titleCasedData = response.data.map(p => ({ ...p, name: toTitleCase(p.name) }));
+                const rawData = response.data;
+                
+                // Safety check: ensure rawData is an array
+                const dataArray = Array.isArray(rawData) ? rawData : Object.values(rawData || {});
+                
+                const titleCasedData = dataArray.map(p => ({ 
+                    ...p, 
+                    name: toTitleCase(p.name || '') 
+                }));
                 setProvinces(titleCasedData);
             } catch (error) {
                 console.error('Error fetching provinces:', error);
@@ -78,7 +86,15 @@ const LocationSelect = ({
             setLoadingRegencies(true);
             try {
                 const response = await axios.get(`/api/regencies/${provinceObj.id}`);
-                const titleCasedData = response.data.map(r => ({ ...r, name: normalizeRegencyName(r.name) }));
+                const rawData = response.data;
+                
+                // Safety check: ensure rawData is an array
+                const dataArray = Array.isArray(rawData) ? rawData : Object.values(rawData || {});
+                
+                const titleCasedData = dataArray.map(r => ({ 
+                    ...r, 
+                    name: normalizeRegencyName(r.name || '') 
+                }));
                 setRegencies(titleCasedData);
             } catch (error) {
                 console.error('Error fetching regencies:', error);

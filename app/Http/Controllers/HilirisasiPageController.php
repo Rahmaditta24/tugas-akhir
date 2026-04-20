@@ -86,12 +86,16 @@ class HilirisasiPageController extends Controller
         }
 
         $statsQ = clone $baseQuery;
-        $stats = [
-            'totalResearch' => (clone $statsQ)->count(),
-            'totalUniversities' => (clone $statsQ)->distinct('perguruan_tinggi')->count('perguruan_tinggi'),
-            'totalProvinces' => (clone $statsQ)->distinct('provinsi')->count('provinsi'),
-            'totalFields' => (clone $statsQ)->distinct('skema')->count('skema'),
-        ];
+        $statsCacheKey = 'stats_hilirisasi_v1_' . md5(json_encode($request->all()));
+        $stats = Cache::remember($statsCacheKey, 3600, function() use ($baseQuery) {
+            $statsQ = clone $baseQuery;
+            return [
+                'totalResearch' => (clone $statsQ)->count(),
+                'totalUniversities' => (clone $statsQ)->distinct('perguruan_tinggi')->count('perguruan_tinggi'),
+                'totalProvinces' => (clone $statsQ)->distinct('provinsi')->count('provinsi'),
+                'totalFields' => (clone $statsQ)->distinct('skema')->count('skema'),
+            ];
+        });
 
         $cacheKey = 'map_data_hilirisasi_v9_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {

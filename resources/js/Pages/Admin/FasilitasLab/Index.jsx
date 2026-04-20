@@ -610,14 +610,8 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                 ))}
                             </div>
                         </div>
-                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex justify-center items-center">
                             <span className="text-xs text-slate-500 font-medium">Total: {toolsModal.items.length} Alat</span>
-                            <button
-                                onClick={() => setToolsModal({ show: false, title: '', items: [] })}
-                                className="px-5 py-2 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm"
-                            >
-                                Tutup
-                            </button>
                         </div>
                     </div>
                 </div>

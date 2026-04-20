@@ -175,13 +175,26 @@ export default function Edit({ item, filters }) {
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Institusi Pilihan <span className="text-red-500">*</span>
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={data.institusi_pilihan}
                                         onChange={e => setData('institusi_pilihan', e.target.value)}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.institusi_pilihan ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         required
-                                    />
+                                    >
+                                        <option value="">Pilih Institusi</option>
+                                        {[
+                                            'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 
+                                            'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'
+                                        ].map((roman) => (
+                                            <option key={roman} value={`LLDIKTI Wilayah ${roman}`}>
+                                                LLDIKTI Wilayah {roman}
+                                            </option>
+                                        ))}
+                                        {data.institusi_pilihan && !['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'].some(r => `LLDIKTI Wilayah ${r}` === data.institusi_pilihan) && data.institusi_pilihan !== 'Lainnya' && (
+                                            <option value={data.institusi_pilihan}>{data.institusi_pilihan} (Data Lama)</option>
+                                        )}
+                                        <option value="Lainnya">Lainnya</option>
+                                    </select>
                                     {errors.institusi_pilihan && <p className="mt-1 text-sm text-red-600">{errors.institusi_pilihan}</p>}
                                 </div>
 

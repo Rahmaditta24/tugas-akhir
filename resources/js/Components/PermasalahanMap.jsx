@@ -185,7 +185,6 @@ export default function PermasalahanMap({
     const clusterGroupRef = useRef(null);
     const [geoJsonData, setGeoJsonData] = useState(null);
     const [geoJsonLoading, setGeoJsonLoading] = useState(true);
-    const [modalData, setModalData] = useState(null);
 
     const safe = (val) => (val === null || val === undefined || val === '') ? '-' : val;
     // Store computed colour-scale params so the slider effect can access them without re-running the heavy effect
@@ -231,7 +230,9 @@ export default function PermasalahanMap({
 
     // Fetch GeoJSON when viewMode changes
     useEffect(() => {
+        let isInstanceActive = true;
         setGeoJsonLoading(true);
+        
         const url = viewMode === 'kabupaten'
             ? '/assets/kabupaten-new.json'
             : '/assets/provinsi-new.json';
@@ -242,13 +243,18 @@ export default function PermasalahanMap({
                 return r.json();
             })
             .then((data) => {
-                setGeoJsonData(data);
-                setGeoJsonLoading(false);
+                if (isInstanceActive) {
+                    setGeoJsonData(data);
+                    // Force loading off on next tick to be sure
+                    setTimeout(() => setGeoJsonLoading(false), 50);
+                }
             })
             .catch((e) => {
                 console.error('PermasalahanMap – GeoJSON error:', e);
-                setGeoJsonLoading(false);
+                if (isInstanceActive) setGeoJsonLoading(false);
             });
+            
+        return () => { isInstanceActive = false; };
     }, [viewMode]);
 
     // Initialise the Leaflet map once
@@ -441,7 +447,6 @@ export default function PermasalahanMap({
     // ── Effect 1.5: Update Layer Properties when Stats change ──────────────
     useEffect(() => {
         if (!mapInstanceRef.current || !geoJsonLayerRef.current) return;
-        setModalData(null);
         
         const { dataLookup, dataMin, dataMax, satuan, activeDataType } = choroplethData;
 
@@ -634,45 +639,21 @@ export default function PermasalahanMap({
 
                 const marker = L.marker([lat, lng], { icon: sharedIcon });
 
-                // Optimized click handler with small delay to prevent immediate closing
+                // Optimized click handler
                 marker.on('click', (e) => {
                     if (!isActive) return;
-                    L.DomEvent.stopPropagation(e);
+                    L.DomEvent.stop(e); // Stop event from bubbling to map
 
                     const map = mapInstanceRef.current;
                     if (map) map.setView([lat, lng], 16, { animate: true });
 
-                    // Use a small timeout to ensure the modal doesn't immediately close 
-                    // if the click propagates or triggers the map background
-                    setTimeout(() => {
-                        if (!isActive) return;
-                        const d = item;
-
-                        if (onItemClick) {
-                            onItemClick({
-                                ...d,
-                                bubbleType: bubbleType
-                            });
-                        } else {
-                            setModalData({
-                                judul: safe(d.judul || d.judul_kegiatan),
-                                nama: safe(d.nama || d.nama_ketua),
-                                nidn: safe(d.nidn),
-                                nuptk: safe(d.nuptk),
-                                institusi: safe(d.institusi || d.perguruan_tinggi),
-                                kategori_pt: safe(d.ptn_pts || d.jenis_pt || d.kategori_pt),
-                                tahun: safe(d.tahun || d.thn_pelaksanaan),
-                                skema: safe(d.skema || d.nama_skema),
-                                klaster: safe(d.klaster),
-                                bidang_fokus: safe(d.bidang_fokus || d.bidang),
-                                tema_prioritas: safe(d.tema_prioritas),
-                                mitra: safe(d.mitra || (d.kab_mitra ? `${d.kab_mitra}, ${d.prov_mitra}` : d.prov_mitra)),
-                                luaran: safe(d.luaran),
-                                bubbleType: bubbleType,
-                                fullData: d
-                            });
-                        }
-                    }, 300);
+                    const d = item;
+                    if (onItemClick) {
+                        onItemClick({
+                            ...d,
+                            bubbleType: bubbleType
+                        });
+                    }
                 });
 
                 markers.push(marker);
@@ -708,200 +689,7 @@ export default function PermasalahanMap({
                 </div>
             )}
 
-            {/* Province click modal */}
-            {modalData && (
-                <div
-                    className="fixed inset-0 flex items-center justify-center z-[99999] bg-black/40 backdrop-blur-sm"
-                    style={{ cursor: 'default' }}
-                    onClick={() => setModalData(null)}
-                >
-                    <div
-                        className="bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col"
-                        style={{ minWidth: 320, maxWidth: 650, width: '90vw', padding: '30px', position: 'relative', overflow: 'hidden' }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Close button */}
-                        <button
-                            onClick={() => setModalData(null)}
-                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-200"
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1 }}
-                            aria-label="Tutup"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
 
-                        {modalData.judul || modalData.nama ? (
-                            <>
-                                {/* Header: Judul */}
-                                <div style={{ fontWeight: 700, fontSize: 24, color: '#1f2937', marginBottom: 12, lineHeight: 1.2 }}>
-                                    {`Detail ${modalData.bubbleType || 'Penelitian'}`}
-                                </div>
-                                <div style={{ fontWeight: 700, fontSize: 16, color: '#1f2937', marginBottom: 20, paddingRight: 20, lineHeight: 1.4, textTransform: 'uppercase' }}>
-                                    {modalData.judul}
-                                </div>
-
-                                {modalData.bubbleType === 'Hilirisasi' ? (
-                                    /* ─── Hilirisasi Layout ─────────────────────────────────── */
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: 13, color: '#374151' }}>
-                                        {/* Row 1: Pengusul | Perguruan Tinggi */}
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                                            <div>
-                                                <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Pengusul:</div>
-                                                <div style={{ fontWeight: 500 }}>{modalData.nama}</div>
-                                            </div>
-                                            <div>
-                                                <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Perguruan Tinggi:</div>
-                                                <div style={{ fontWeight: 500 }}>{modalData.institusi}</div>
-                                            </div>
-                                        </div>
-
-                                        {/* Row 2: Tahun | Skema */}
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                                            <div>
-                                                <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tahun:</div>
-                                                <div style={{ fontWeight: 500 }}>{modalData.tahun}</div>
-                                            </div>
-                                            <div>
-                                                <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Skema:</div>
-                                                <div style={{ fontWeight: 500 }}>{modalData.skema}</div>
-                                            </div>
-                                        </div>
-
-                                        {/* Row 3: Mitra */}
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Mitra:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.mitra}</div>
-                                        </div>
-
-                                        {/* Row 4: Luaran */}
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Luaran:</div>
-                                            <div style={{
-                                                maxHeight: '120px',
-                                                overflowY: 'auto',
-                                                paddingRight: '12px',
-                                                fontSize: '13px',
-                                                lineHeight: '1.6',
-                                                textAlign: 'justify',
-                                                scrollbarWidth: 'thin',
-                                                scrollbarColor: '#d1d5db transparent'
-                                            }}>
-                                                {modalData.luaran}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ) : modalData.bubbleType === 'Pengabdian' ? (
-                                    /* ─── Pengabdian Layout ────────────────── */
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 30px', fontSize: 13, color: '#374151' }}>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Pelaksana:</div>
-                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.nama}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NIDN:</div>
-                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.nidn}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NUPTK:</div>
-                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.nuptk}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Institusi:</div>
-                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.institusi}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tahun:</div>
-                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.tahun}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Skema:</div>
-                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.skema}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Bidang Fokus:</div>
-                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.bidang_fokus}</div>
-                                        </div>
-                                        <div style={{ gridColumn: 'span 2' }}>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Lokasi Mitra:</div>
-                                            <div style={{ fontWeight: 700, fontSize: 14 }}>{modalData.mitra}</div>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    /* Grid Style for Research Detail (Penelitian) */
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 30px', fontSize: 13, color: '#374151' }}>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Peneliti:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.nama}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NIDN:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.nidn}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>NUPTK:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.nuptk}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Institusi:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.institusi}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Kategori PT:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.kategori_pt}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tahun:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.tahun}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Skema:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.skema}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Klaster:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.klaster}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Bidang Fokus:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.bidang_fokus}</div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 11, color: '#6b7280', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Tema Prioritas:</div>
-                                            <div style={{ fontWeight: 500 }}>{modalData.tema_prioritas}</div>
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        ) : (
-                            // Province choropleth detail
-                            <div className="flex flex-col gap-4 text-[#374151] text-[15px] leading-relaxed">
-                                <div className="flex flex-col gap-1">
-                                    <span className="font-semibold text-gray-500 text-[12px] uppercase tracking-wider">
-                                        {modalData.activeDataType === 'Sampah' ? 'Timbulan Sampah' : (modalData.activeDataType || 'Nilai')}
-                                    </span>
-                                    <span className="text-2xl font-bold text-blue-600">
-                                        {modalData.nilai !== undefined
-                                            ? Number(modalData.nilai).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' ' + (modalData.satuan || '')
-                                            : 'Tidak ada data'}
-                                    </span>
-                                </div>
-                                {modalData.bubblesCount !== undefined && (
-                                    <div className="pt-4 border-t border-gray-100 flex flex-col gap-1">
-                                        <span className="font-semibold text-gray-500 text-[12px] uppercase tracking-wider">
-                                            Jumlah {modalData.bubbleLabel || 'Penelitian'}
-                                        </span>
-                                        <span className="text-xl font-bold text-gray-800">
-                                            {modalData.bubblesCount.toLocaleString('id-ID')}
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
 
             <div
                 ref={mapRef}

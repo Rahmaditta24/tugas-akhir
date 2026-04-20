@@ -212,6 +212,7 @@ export default function Permasalahan({
                         selectedMetrik={selectedMetrik}
                         onMetrikChange={setSelectedMetrik}
                         stats={stats}
+                        onItemClick={(research) => setSelectedResearch({ ...research, bubbleType: research.bubbleType || filters.bubbleType || 'Penelitian' })}
                     />
                 </Suspense>
 

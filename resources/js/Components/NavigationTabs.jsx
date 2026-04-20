@@ -66,6 +66,7 @@ export default function NavigationTabs({ activePage = 'penelitian' }) {
                                             <Link
                                                 key={item.key}
                                                 href={item.url}
+                                                prefetch="hover"
                                                 onClick={() => setOpenDropdown(null)}
                                                 className={`block px-4 py-3 text-sm transition-colors ${activePage === item.key
                                                     ? 'bg-gray-100 text-gray-900 font-bold'
@@ -82,11 +83,11 @@ export default function NavigationTabs({ activePage = 'penelitian' }) {
                     );
                 }
 
-                // Regular Tab
                 return (
                     <Link
                         key={tab.key}
                         href={tab.url}
+                        prefetch="hover"
                         className={`flex-1 min-w-[140px] max-w-[150px] lg:text-sm text-xs px-4 py-2 rounded-lg font-semibold text-center flex items-center justify-center ${activePage === tab.key
                             ? 'bg-yellow-400 text-black'
                             : 'bg-[#3E7DCA] text-white hover:bg-blue-900'

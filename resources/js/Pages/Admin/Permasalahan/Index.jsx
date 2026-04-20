@@ -367,24 +367,6 @@ export default function Index({
                                     </select>
                                 </div>
 
-                                {jenis === 'Krisis Listrik' && baseData !== 'statistik' && (
-                                    <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                                        <button
-                                            type="button"
-                                            onClick={() => handleListrikModeChange('SAIDI')}
-                                            className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${listrikMode === 'SAIDI' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                        >
-                                            SAIDI
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleListrikModeChange('SAIFI')}
-                                            className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${listrikMode === 'SAIFI' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                        >
-                                            SAIFI
-                                        </button>
-                                    </div>
-                                )}
 
                                 <div className="w-fit sm:ml-auto flex items-center gap-2">
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">Per halaman</span>

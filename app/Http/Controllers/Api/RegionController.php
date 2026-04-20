@@ -36,7 +36,9 @@ class RegionController extends Controller
     {
         $path = storage_path('provinces.json');
         if (file_exists($path)) {
-            return json_decode(file_get_contents($path), true);
+            $data = json_decode(file_get_contents($path), true);
+            // Ensure we return a flat array even if the JSON is an associative object
+            return array_values($data);
         }
         return [];
     }

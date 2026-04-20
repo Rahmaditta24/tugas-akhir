@@ -108,12 +108,18 @@ class PenelitianController extends Controller
         }
 
         $statsQuery = clone $baseQuery;
-        $totalStats = [
-            'totalResearch' => (clone $statsQuery)->count(),
-            'totalUniversities' => (clone $statsQuery)->distinct('institusi')->count('institusi'),
-            'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'),
-            'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
-        ];
+        // Versioned cache key for statistics
+        $v = (int) Cache::get('penelitian_cache_version', 1);
+        $statsCacheKey = 'stats_penelitian_v' . $v . '_' . md5(json_encode($request->all()));
+        
+        $totalStats = Cache::remember($statsCacheKey, 3600, function() use ($statsQuery) {
+            return [
+                'totalResearch' => (clone $statsQuery)->count(),
+                'totalUniversities' => (clone $statsQuery)->distinct('institusi')->count('institusi'),
+                'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'),
+                'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus'),
+            ];
+        });
 
         // For map: OPTIMIZED - Remove GROUP_CONCAT, load details on demand
         $cacheKey = 'map_data_cache_v6_' . md5(json_encode($request->all()));
