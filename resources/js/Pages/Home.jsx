@@ -155,8 +155,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             // Download file
             XLSX.writeFile(wb, filename);
 
-            // Remove loading toast and show success
-            toast.dismiss(loadingToast);
+            // Show success
             toast.success(`Berhasil export ${exportData.length} data penelitian!`, {
                 duration: 4000,
                 position: 'top-right',
@@ -172,12 +171,12 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             });
         } catch (error) {
             console.error('Error exporting data:', error);
-            toast.dismiss(loadingToast);
             toast.error('Gagal mengexport data. Silakan coba lagi.', {
                 duration: 4000,
                 position: 'top-right',
             });
         } finally {
+            toast.dismiss(loadingToast);
             setIsLoading(false);
         }
     };

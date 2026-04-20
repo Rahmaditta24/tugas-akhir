@@ -166,7 +166,9 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
 
             const allData = await response.json();
             if (!allData || allData.length === 0) {
+                toast.dismiss(loadingToast);
                 toast.error(`Tidak ada data ${label} untuk diexport.`);
+                setIsLoading(false);
                 return;
             }
 

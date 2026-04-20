@@ -190,16 +190,15 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
             const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
             XLSX.writeFile(wb, `data-hilirisasi${filterInfo}_${timestamp}.xlsx`);
 
-            toast.dismiss(loadingToast);
             toast.success(`Berhasil export ${exportData.length} data hilirisasi!`, {
                 duration: 4000, position: 'top-right',
                 style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
             });
         } catch (error) {
             console.error('Error exporting data:', error);
-            toast.dismiss(loadingToast);
             toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' });
         } finally {
+            toast.dismiss(loadingToast);
             setIsLoading(false);
         }
     };
