@@ -426,12 +426,10 @@ export default function Index({ penelitian, stats, filters }) {
                                     <span className="text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-wider">
                                         Data Terpilih
                                     </span>
-                                    {isAllSelectedGlobal ? (
-                                        <span className="text-[10px] text-blue-50 font-bold uppercase tracking-wider opacity-80">
-                                            Seluruh Halaman
-                                        </span>
-                                    ) : (
-                                        <span className="text-[10px] text-blue-50 font-medium whitespace-nowrap opacity-80 text-xs sm:text-[10px]">Aksi massal tersedia</span>
+                                    {isAllSelectedGlobal && (
+                                            <span className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">
+                                                Seluruh Halaman
+                                            </span>
                                     )}
                                 </div>
                             </div>

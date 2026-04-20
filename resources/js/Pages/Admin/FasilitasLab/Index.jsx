@@ -398,7 +398,6 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                         <span className="text-xs sm:text-sm font-black text-white leading-tight uppercase tracking-wider">
                                             Data Terpilih
                                         </span>
-                                        <span className="text-[10px] text-blue-100 font-medium">Aksi massal tersedia</span>
                                     </div>
                                 </div>
                                 
