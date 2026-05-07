@@ -4,10 +4,10 @@ export default function Toast({ message, type = 'success', onClose }) {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        // Trigger show animation
+        // Animasi tampil
         const showTimer = setTimeout(() => setVisible(true), 10);
         
-        // Auto hide after 5 seconds for errors, 3 seconds for others
+        // Sembunyikan otomatis setelah 5 detik untuk error, 3 detik untuk lainnya
         const duration = type === 'error' ? 5000 : 3500;
         const hideTimer = setTimeout(() => {
             setVisible(false);

@@ -45,7 +45,7 @@ class RumusanMasalahCategoryController extends Controller
             'image.max'             => 'Ukuran gambar maksimal 2MB.',
         ]);
 
-        // Upload image
+        // Unggah gambar
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('rumusan-masalah/categories', 'public');
         }
@@ -84,7 +84,7 @@ class RumusanMasalahCategoryController extends Controller
             'image.max'             => 'Ukuran gambar maksimal 2MB.',
         ]);
 
-        // Handle image upload
+        // Menangani pengunggahan gambar
         if ($request->hasFile('image')) {
             if ($category->image && Storage::disk('public')->exists($category->image)) {
                 Storage::disk('public')->delete($category->image);

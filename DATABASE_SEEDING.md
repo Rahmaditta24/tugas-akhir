@@ -8,11 +8,11 @@ Semua JSON files harus ditempatkan di folder `database/data/`:
 your-project/
 ├── database/
 │   └── data/                          ← PUT JSON FILES HERE
-│       ├── data-penelitian_clean.json
-│       ├── data-hilirisasi_clean.json
-│       ├── data-pengabdian_clean.json
-│       ├── data-fasilitas-lab_clean.json
-│       ├── data-produk-hilirisasi_clean.json
+│       ├── data-penelitian.json
+│       ├── data-hilirisasi.json
+│       ├── data-pengabdian.json
+│       ├── data-fasilitas-lab.json
+│       ├── data-produk-hilirisasi.json
 │       ├── kabupaten-new.json
 │       ├── data-permasalahan-sampah.json
 │       ├── data-permasalahan-stunting.json
@@ -91,11 +91,11 @@ php artisan db:seed
 
 | Seeder | File | Records |
 |--------|------|---------|
-| PenelitianSeeder | `data-penelitian_clean.json` | Research data |
-| HilirisasiSeeder | `data-hilirisasi_clean.json` | Hilirisasi data |
-| PengabdianSeeder | `data-pengabdian_clean.json` | Community service data |
-| FasilitasLabSeeder | `data-fasilitas-lab_clean.json` | Lab facilities |
-| ProdukSeeder | `data-produk-hilirisasi_clean.json` | Products |
+| PenelitianSeeder | `data-penelitian.json` | Research data |
+| HilirisasiSeeder | `data-hilirisasi.json` | Hilirisasi data |
+| PengabdianSeeder | `data-pengabdian.json` | Community service data |
+| FasilitasLabSeeder | `data-fasilitas-lab.json` | Lab facilities |
+| ProdukSeeder | `data-produk-hilirisasi.json` | Products |
 | PermasalahanSeeder | Multiple files (see below) | Problem data |
 
 ### PermasalahanSeeder Files
@@ -120,10 +120,10 @@ php artisan db:seed
 ### Seeding fails with JSON error
 ```bash
 # Validate JSON files
-php -l database/data/data-penelitian_clean.json
+php -l database/data/data-penelitian.json
 
 # Or use jq
-cat database/data/data-penelitian_clean.json | jq . > /dev/null
+cat database/data/data-penelitian.json | jq . > /dev/null
 ```
 
 ### Database connection error

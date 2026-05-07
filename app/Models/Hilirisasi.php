@@ -32,7 +32,7 @@ class Hilirisasi extends Model
         'pt_longitude' => 'float',
     ];
 
-    // Scopes
+    // Scope pencarian dan filter
     public function scopeByProvinsi($query, $provinsi)
     {
         return $query->where('provinsi', $provinsi);

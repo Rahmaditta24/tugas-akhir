@@ -30,14 +30,14 @@ const CampusSelect = ({
                     });
                     setCampuses((response.data || []).map(normalizeCampusName));
                 } catch (error) {
-                    console.error('Error fetching campuses:', error);
+                    console.error('Gagal mengambil data kampus:', error);
                 } finally {
                     setLoading(false);
                 }
             } else {
                 setCampuses([]);
             }
-        }, 200); // 200ms debounce
+        }, 200); // debounce 200ms
 
         return () => clearTimeout(timer);
     }, [value]);

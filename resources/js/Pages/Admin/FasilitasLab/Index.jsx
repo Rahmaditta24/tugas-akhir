@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -21,8 +21,6 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
     const [itemToDelete, setItemToDelete] = useState(null);
     const [columnFilters, setColumnFilters] = useState(filters.columns || {});
     const [toolsModal, setToolsModal] = useState({ show: false, title: '', items: [] });
-
-
 
     // --- Bulk selection ---
     const [selectedIds, setSelectedIds] = useState([]);
@@ -167,10 +165,9 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                     return;
                 }
 
-                // Fasilitas Lab has strict column validation in frontend
                 const requiredColumns = [
-                    'kodeuniversitas', 'institusi', 'kategoript', 'namalaboratorium',
-                    'provinsi', 'kota', 'latitude', 'longitude', 'totaljumlahalat',
+                    'kodeuniversitas', 'institusi', 'provinsi',
+                    'namalaboratorium', 'latitude', 'longitude', 'totaljumlahalat',
                     'namaalat', 'deskripsialat', 'kontak'
                 ];
                 
@@ -218,15 +215,15 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                 kode_universitas: found?.kode_universitas === 'null' ? '' : (found?.kode_universitas || ''),
                 institusi: found?.institusi === 'null' ? '' : (found?.institusi || ''),
                 kategori_pt: found?.kategori_pt === 'null' ? '' : (found?.kategori_pt || ''),
-                nama_laboratorium: found?.nama_laboratorium === 'null' ? '' : (found?.nama_laboratorium || ''),
                 provinsi: found?.provinsi === 'null' ? '' : (found?.provinsi || ''),
                 kota: found?.kota === 'null' ? '' : (found?.kota || ''),
+                nama_laboratorium: found?.nama_laboratorium === 'null' ? '' : (found?.nama_laboratorium || ''),
+                latitude: found?.latitude === 'null' ? '' : (found?.latitude || ''),
+                longitude: found?.longitude === 'null' ? '' : (found?.longitude || ''),
                 total_jumlah_alat: found?.total_jumlah_alat === 'null' ? '' : (found?.total_jumlah_alat || ''),
                 nama_alat: found?.nama_alat === 'null' ? '' : (found?.nama_alat || ''),
                 deskripsi_alat: found?.deskripsi_alat === 'null' ? '' : (found?.deskripsi_alat || ''),
-                kontak: found?.kontak === 'null' ? '' : (found?.kontak || ''),
-                latitude: found?.latitude === 'null' ? '' : (found?.latitude || ''),
-                longitude: found?.longitude === 'null' ? '' : (found?.longitude || '')
+                kontak: found?.kontak === 'null' ? '' : (found?.kontak || '')
             };
         });
         setItemsEdit(prefilled);
@@ -261,10 +258,8 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
         const dummyData = [{
             "Kode Universitas": "002001",
             "Institusi": "Institut Teknologi Bandung",
-            "Kategori PT": "PTNBH",
-            "Nama Laboratorium": "Laboratorium Kimia Terpadu",
             "Provinsi": "Jawa Barat",
-            "Kota": "Bandung",
+            "Nama Laboratorium": "Laboratorium Kimia Terpadu",
             "Latitude": -6.8903617,
             "Longitude": 107.6101912,
             "Total Jumlah Alat": 11,
@@ -678,16 +673,20 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kode Universitas</label>
                                 <input type="text" value={item.kode_universitas || ''} onChange={e => setItemField(item.id, 'kode_universitas', e.target.value.replace(/\D/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white" />
                             </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kategori PT</label>
-                                <input type="text" value={item.kategori_pt || ''} onChange={e => setItemField(item.id, 'kategori_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white" />
-                            </div>
                             <div className="md:col-span-2">
                                 <CampusSelect
                                     value={item.institusi}
                                     onChange={val => setItemField(item.id, 'institusi', val)}
                                     errors={{}}
                                 />
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kategori PT</label>
+                                <select value={item.kategori_pt || ''} onChange={e => setItemField(item.id, 'kategori_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
+                                    <option value="">Pilih Kategori PT</option>
+                                    <option value="PTNBH">PTNBH</option>
+                                    <option value="Non-PTNBH">Non-PTNBH</option>
+                                </select>
                             </div>
                             <div className="md:col-span-2">
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Nama Laboratorium</label>
@@ -740,5 +739,3 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
         </AdminLayout>
     );
 }
-
-

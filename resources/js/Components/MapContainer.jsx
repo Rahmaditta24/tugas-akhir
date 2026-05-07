@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { titleCase } from '../Utils/format';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -7,7 +8,7 @@ import 'leaflet.markercluster';
 import ResearchModal from './ResearchModal';
 import { FIELD_COLORS, getFieldColor } from '../Utils/fieldColors';
 
-// Clean [M] and [U] from titles
+// Bersihkan tag [M] dan [U] dari judul
 const cleanJudul = (str) => {
     if (!str || typeof str !== 'string') return str || '-';
     return str.replace(/^\[[MU]\]\s*/i, '').trim();
@@ -47,7 +48,7 @@ export default function MapContainer({
     const lastDataRef = useRef(null);
     const lastModeRef = useRef(null);
 
-    // FIX: Use refs to avoid stale closures in map event handlers
+    // Gunakan ref untuk menghindari stale closure di event handler peta
     const onStatsChangeRef = useRef(onStatsChange);
     const onCampusClickRef = useRef(onCampusClick);
     const filtersRef = useRef(filters);
@@ -57,7 +58,7 @@ export default function MapContainer({
     useEffect(() => { filtersRef.current = filters; }, [filters]);
 
     const getCurrentDataType = React.useCallback(() => {
-        // Prioritize explicit filter if available
+        // Prioritaskan filter eksplisit jika tersedia
         if (filters?.dataType) {
             const dt = String(filters.dataType).toLowerCase();
             if (dt.includes('hilirisasi')) return 'hilirisasi';
@@ -88,11 +89,11 @@ export default function MapContainer({
                     const isProduk = type === 'produk';
                     const isHilirisasi = type === 'hilirisasi';
                     const isPengabdian = type === 'pengabdian';
-                    // Create normalized data structure for the modal
+                    // Buat struktur data yang dinormalisasi untuk modal
                     const normalized = {
                         ...detailData,
                         isInstitusi: false,
-                        // Ensure common field names are available
+                        // Pastikan nama field umum tersedia
                         judul: detailData.judul || detailData.judul_kegiatan || detailData.nama_produk || '-',
                         nama: detailData.nama || detailData.nama_ketua || detailData.nama_pengusul || detailData.nama_inventor || '-',
                         institusi: detailData.institusi || detailData.nama_institusi || detailData.perguruan_tinggi || '-',
@@ -100,7 +101,7 @@ export default function MapContainer({
                         skema: detailData.skema || detailData.nama_skema || '-',
                         tahun: detailData.tahun || detailData.thn_pelaksanaan || detailData.thn_pelaksanaan_kegiatan || '-',
                         bidang_fokus: field || detailData.bidang_fokus || detailData.bidang || detailData.skema || detailData.nama_skema || '-',
-                        // Produk-specific aliases for modal rendering
+                        // Alias khusus Produk untuk render modal
                         isProduk,
                         isHilirisasi,
                         nama_produk: detailData.nama_produk || '-',
@@ -110,11 +111,11 @@ export default function MapContainer({
                         nama_inventor: detailData.nama_inventor || detailData.nama || '-',
                         email_inventor: detailData.email_inventor || '-',
                         nomor_paten: detailData.nomor_paten || '-',
-                        // Hilirisasi-specific aliases for modal rendering
+                        // Alias khusus Hilirisasi untuk render modal
                         nama_peneliti: detailData.nama || detailData.nama_ketua || detailData.nama_pengusul || '-',
                         skema_hilirisasi: detailData.skema || detailData.nama_skema || '-',
                         tahun_hilirisasi: detailData.tahun || detailData.thn_pelaksanaan || detailData.thn_pelaksanaan_kegiatan || '-',
-                        // Pengabdian-specific aliases for modal rendering
+                        // Alias khusus Pengabdian untuk render modal
                         isPengabdian,
                         pengabdian_nama: detailData.nama || '-',
                         pengabdian_institusi: detailData.nama_institusi || detailData.institusi || '-',
@@ -137,7 +138,7 @@ export default function MapContainer({
                 }
             }
         } catch (error) {
-            console.error('Error fetching research detail:', error);
+            console.error('Gagal mengambil detail penelitian:', error);
         }
     }, [getCurrentDataType, setSelectedResearch, setIsModalOpen]);
 
@@ -163,53 +164,43 @@ export default function MapContainer({
                 setSelectedResearch({ ...data, isInstitusi: true, currentDataType });
                 setIsModalOpen(true);
 
-                // Trigger parent callback if provided
+                // Panggil callback parent jika tersedia
                 if (onCampusClick && data.institusi) {
                     onCampusClick(data.institusi);
                 }
             } catch (e) {
-                console.error("Error parsing institusi data", e);
+                console.error("Gagal memparse data institusi", e);
             }
         };
 
         return () => {
-            // Keep globals for Leaflet popups unless unmounting completely
-            // Actually, usually safe to keep them or just re-assign.
+            // Variabel global untuk popup Leaflet dibiarkan tetap saat unmount
         };
     }, [fetchDetail]);
 
-    const fetechDetailCallback = fetchDetail; // Just a placeholder if needed
+    const fetechDetailCallback = fetchDetail; // Placeholder jika dibutuhkan
     const normalizeItem = React.useCallback((item) => {
         if (!item) return null;
 
-        // ID Detection (Priority: Specific IDs, then generic ID, then split IDS)
+        // Deteksi ID (Prioritas: ID spesifik, lalu ID generik, lalu ID yang dipisah)
         const id = item._id || item.hilirisasi_id || item.pengabdian_id || item.produk_id || item.id || (item.ids ? item.ids.split('|')[0] : null);
 
-        // Institution Detection
+        // Deteksi Institusi
         const institusi = (item._institusi && item._institusi !== 'undefined' && item._institusi !== '-') ? item._institusi : (item.institusi || item.nama_institusi || item.perguruan_tinggi || item.pt || '-');
 
-        const toTitleCase = (str) => {
-            if (!str || typeof str !== 'string' || str === '-') return str;
-            const specialWords = ['DKI', 'DI', 'DIY', 'PAPUA'];
-            return str.split(' ').map(word => {
-                if (specialWords.includes(word.toUpperCase())) {
-                    return word.toUpperCase();
-                }
-                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-            }).join(' ');
-        };
 
-        // Province Detection
+
+        // Deteksi Provinsi
         const rawProvinsi = (item._provinsi && item._provinsi !== 'undefined' && item._provinsi !== '-') ? item._provinsi : (item.provinsi || item.prov_pt || item.prov_mitra || '-');
-        const provinsi = toTitleCase(rawProvinsi);
+        const provinsi = titleCase(rawProvinsi);
 
-        // Count Detection
+        // Deteksi Jumlah
         const count = item._count || item.total_produk || item.total_penelitian || item.total_hilirisasi || item.total_pengabdian || 1;
 
-        // Field/Bidang Detection
+        // Deteksi Bidang/Field
         const field = item._field || item.bidang_fokus || item.skema || item.bidang || '-';
 
-        // Title Detection
+        // Deteksi Judul
         const judulRaw = item._judul || item.judul || item.judul_kegiatan || item.nama_produk || item.title || 'Detail';
         const judul = cleanJudul(judulRaw);
 
@@ -245,7 +236,7 @@ export default function MapContainer({
             preferCanvas: true,
             maxBounds: CONFIG.INDONESIA_BOUNDS,
             maxBoundsViscosity: 0.8,
-            // ── Smooth zoom & pan ──────────────────────────────────────
+            // ── Zoom & pan yang halus ──────────────────────────────────
             zoomAnimation: true,
             zoomAnimationThreshold: 4,
             markerZoomAnimation: true,
@@ -267,7 +258,7 @@ export default function MapContainer({
         }).addTo(map);
 
         map.on('click', (e) => {
-            // If click is on map background (not on a marker/cluster), reset stats
+            // Jika klik pada latar peta (bukan marker/kluster), reset statistik
             if (onStatsChangeRef.current) onStatsChangeRef.current(null);
         });
 
@@ -300,7 +291,7 @@ export default function MapContainer({
                 });
 
                 if (markers.length > 0) {
-                    // Call by ref to avoid stale calculation logic
+                    // Panggil via ref untuk menghindari logika kalkulasi yang basi
                     if (latestStatsCalcRef.current) {
                         latestStatsCalcRef.current(markers);
                     } else {
@@ -459,7 +450,7 @@ export default function MapContainer({
     const calculateStatsFromMarkers = (markers) => {
         if (!onStatsChange) return;
 
-        // Use setTimeout to allow the popup to open before a potential re-render triggers
+        // Gunakan setTimeout agar popup terbuka sebelum re-render terjadi
         setTimeout(() => {
             let totalResearch = 0;
             const institutions = new Set();
@@ -511,13 +502,13 @@ export default function MapContainer({
         const fullSource = (mapData && mapData.length) ? mapData : data;
         if (!mapInstanceRef.current) return;
 
-        // PREVENT UNNECESSARY REDRAWS: 
-        // Only clear and redraw if the displayMode has changed OR the data content has changed
+        // CEGAH REDRAW TIDAK PERLU:
+        // Hanya hapus dan gambar ulang jika displayMode berubah ATAU konten data berubah
         const dataKey = JSON.stringify({
             len: fullSource.length,
             mode: displayMode,
             bubbles: showBubbles,
-            dataType: filters?.dataType, // IMPORTANT: track dataType changes
+            dataType: filters?.dataType, // PENTING: pantau perubahan dataType
             firstId: fullSource[0]?.id || fullSource[0]?._id
         });
 
@@ -539,7 +530,7 @@ export default function MapContainer({
 
         mapInstanceRef.current.eachLayer((layer) => {
             if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.GeoJSON) {
-                if (!layer.options?.permanent) { // Protection for base layers if any
+                if (!layer.options?.permanent) { // Proteksi untuk layer dasar jika ada
                     mapInstanceRef.current.removeLayer(layer);
                 }
             }
@@ -553,7 +544,7 @@ export default function MapContainer({
                 iconCreateFunction: function (cluster) {
                     const total = cluster.getAllChildMarkers().reduce((sum, m) => sum + (m.options.penelitianCount || 0), 0);
 
-                    // Set constant size for all bubbles (Matching original: 50px)
+                    // Ukuran tetap untuk semua gelembung (sesuai desain asli: 50px)
                     const radius = 25;
                     const fontSize = 14;
                     return L.divIcon({
@@ -569,7 +560,7 @@ export default function MapContainer({
                 spiderLegPolylineOptions: { weight: 0, color: 'transparent', opacity: 0 }
             });
 
-            // Intercept cluster click: zoom in first, spiderfy only at high zoom
+            // Intersepsi klik kluster: zoom in dulu, spiderfy hanya di zoom tinggi
             clusterGroup.on('clusterclick', function (event) {
                 const cluster = event.layer;
                 const map = mapInstanceRef.current;
@@ -577,8 +568,8 @@ export default function MapContainer({
                 const currentZoom = map.getZoom();
                 const maxZoom = map.getMaxZoom();
 
-                // For clusters that contain same-point markers (hilirisasi/produk):
-                // force zoom-in until high enough, then let spiderfy happen
+                // Untuk kluster yang berisi marker pada titik yang sama (hilirisasi/produk):
+                // paksa zoom-in sampai cukup tinggi, lalu biarkan spiderfy terjadi
                 const childMarkers = cluster.getAllChildMarkers();
                 const hasSamePointMarkers = childMarkers.length > 0 &&
                     childMarkers[0].options?.icon?.options?.className?.includes('custom-marker-individu');
@@ -587,7 +578,7 @@ export default function MapContainer({
                     L.DomEvent.stopPropagation(event);
                     map.flyTo(cluster.getLatLng(), 14, { duration: 0.6 });
                 }
-                // At zoom >= 14 → default spiderfy behavior
+                // Pada zoom >= 14 → perilaku spiderfy default
             });
 
             clusterGroupRef.current = clusterGroup;
@@ -676,10 +667,10 @@ export default function MapContainer({
                 const lng = parseFloat(rawItem.pt_longitude ?? rawItem.longitude);
                 if (isNaN(lat) || isNaN(lng)) continue;
 
-                // ── FasilitasLab: grouped per institusi ──────────────────
+                // ── FasilitasLab: dikelompokkan per institusi ──────────────
                 if (rawItem.isFasilitasLab) {
                     const count = item._count;
-                    // Logo file named exactly as institusi name, stored in public/assets/logos/
+                    // File logo dinamai persis sesuai nama institusi, disimpan di public/assets/logos/
                     const logoUrl = item._institusi
                         ? `/assets/logos/${encodeURIComponent(item._institusi)}.webp`
                         : null;
@@ -877,11 +868,11 @@ export default function MapContainer({
                             let matchedColor = '#3E7DCA';
                             const f = fields[idx] ? fields[idx].toString().toLowerCase() : '';
 
-                            // Force Blue for Hilirisasi & Produk
+                            // Paksa warna biru untuk Hilirisasi & Produk
                             if (type === 'hilirisasi' || type === 'produk') {
                                 matchedColor = '#3E7DCA';
                             }
-                            // Color mapping logic sync with the badges for others
+                            // Logika pemetaan warna sinkron dengan badge untuk jenis lainnya
                             else if (f.includes('pangan')) matchedColor = '#10b981';
                             else if (f.includes('kesehatan')) matchedColor = '#f43f5e';
                             else if (f.includes('energi')) matchedColor = '#f59e0b';
@@ -943,7 +934,7 @@ export default function MapContainer({
                                 L.DomEvent.stopPropagation(e);
                                 calculateStatsFromMarkers([marker]);
 
-                                // AUTO-FETCH: Get TKT from API if missing in summary data
+                                // AMBIL OTOMATIS: Dapatkan TKT dari API jika tidak ada di data ringkasan
                                 const type = getCurrentDataType();
                                 const currentTkt = tkts[idx];
                                 if ((type === 'produk' || type === 'hilirisasi') && (currentTkt === '-' || currentTkt === 'undefined')) {
@@ -964,7 +955,7 @@ export default function MapContainer({
                                             );
                                             marker.setPopupContent(updatedPopup);
                                         }
-                                    } catch (err) { console.error("Error fetching popup TKT:", err); }
+                                    } catch (err) { console.error("Gagal mengambil TKT untuk popup:", err); }
                                 }
 
                                 marker.openPopup();
@@ -1029,7 +1020,7 @@ export default function MapContainer({
                 .leaflet-cluster-spider-leg { display: none !important; }
             `}</style>
             <section className="relative bg-white flex justify-center mb-4 mt-4">
-                <div id="map" ref={mapRef} className="lg:w-[90%] w-full h-[65vh] border relative z-0 rounded-lg shadow-inner overflow-hidden" />
+                <div id="map" ref={mapRef} className="lg:w-[90%] w-full h-[65vh] relative z-0 rounded-lg shadow-inner overflow-hidden" />
             </section>
             <ResearchModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} data={selectedResearch} />
         </>

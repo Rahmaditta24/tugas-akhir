@@ -47,7 +47,7 @@ class RumusanMasalahStatement extends Model
     }
 
     /**
-     * Get formatted full number untuk display
+     * Nomor lengkap terformat untuk tampilan
      */
     public function getFormattedNumberAttribute(): string
     {

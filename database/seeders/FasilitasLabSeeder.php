@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\FasilitasLab;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -101,30 +100,18 @@ class FasilitasLabSeeder extends Seeder
                 }
 
                 $insertData[] = [
+                    'kode_universitas' => $normalize($item['Kode Universitas'] ?? null),
                     'institusi' => $institusi,
+                    'kategori_pt' => $normalize($item['Kategori PT'] ?? null),
                     'latitude' => $lat,
                     'longitude' => $lon,
                     'provinsi' => $item['Provinsi'] ? $toTitleCase($normalize($item['Provinsi'])) : null,
-                    'status_akses' => $normalize($item['Status Akses'] ?? null),
-                    // new structure mapping (best-effort from JSON)
-                    'kode_universitas' => $normalize($item['Kode Universitas'] ?? null),
-                    'kategori_pt' => $normalize($item['Kategori PT'] ?? null),
-                    'fakultas' => $normalize($item['Fakultas'] ?? null),
-                    'departemen' => $normalize($item['Departemen'] ?? null),
-                    'nama_laboratorium' => $namaLab ? $toTitleCase($namaLab) : null,
-                    'jenis_laboratorium' => $normalize($item['Jenis Labolatorium'] ?? null),
-                    'standar_akreditasi' => $normalize($item['Standar Akreditasi / Sertifikasi'] ?? null),
-                    'jam_mulai' => $normalize($item['Jam Mulai Operasional'] ?? null),
-                    'jam_selesai' => $normalize($item['Jam Selesai Operasional'] ?? null),
-                    'jumlah_akses' => isset($item['Jumlah Akses']) && is_numeric($item['Jumlah Akses']) ? (int)$item['Jumlah Akses'] : null,
                     'kota' => $normalize($item['Kota'] ?? null),
-                    'kecamatan' => $normalize($item['Kecamatan'] ?? null),
+                    'nama_laboratorium' => $namaLab ? $toTitleCase($namaLab) : null,
                     'total_jumlah_alat' => isset($item['Total Jumlah Alat']) && is_numeric($item['Total Jumlah Alat']) ? (int)$item['Total Jumlah Alat'] : null,
                     'nama_alat' => $normalize($item['Nama Alat'] ?? null),
                     'deskripsi_alat' => $normalize($item['Deskripsi Alat'] ?? null),
-                    'tautan_gambar' => $normalize($item['Tautan Gambar'] ?? null),
                     'kontak' => $normalize($item['Kontak'] ?? null),
-                    'tautan' => $normalize($item['Tautan'] ?? null),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

@@ -6,7 +6,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import { getFieldColor } from '../Utils/fieldColors';
 
-// ─── Color helpers ────────────────────────────────────────────────────────────
+// ─── Fungsi bantu warna ───────────────────────────────────────────────────────
 function hexToRgb(hex) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -26,8 +26,8 @@ function interpolateColor(hex1, hex2, t) {
 }
 
 /**
- * Green → Yellow → Red gradient, identical to the PermasalahanLegend gradient bar.
- * minPct / maxPct (0-100) allow the legend sliders to trim the scale.
+ * Gradien Hijau → Kuning → Merah, identik dengan bar gradien PermasalahanLegend.
+ * minPct / maxPct (0-100) mengizinkan slider legenda untuk memangkas skala.
  */
 function getChoroColor(value, dataMin, dataMax, minPct, maxPct, activeDataType = 'Sampah') {
     if (value === null || value === undefined || isNaN(value)) return '#cccccc';
@@ -35,14 +35,14 @@ function getChoroColor(value, dataMin, dataMax, minPct, maxPct, activeDataType =
     const lo = dataMin + (dataMax - dataMin) * (minPct / 100);
     const hi = dataMin + (dataMax - dataMin) * (maxPct / 100);
 
-    // Any value strictly outside the selected slider range is shown in grey
+    // Nilai yang benar-benar di luar rentang slider ditampilkan dengan warna abu-abu
     if (value < lo || value > hi) {
         return '#d1d5db'; // GRAY_300
     }
 
     const typeLower = activeDataType.toLowerCase();
 
-    // 1. Special logic for SAMPAH (Trash) - Remains as discrete color steps for better UI visibility
+    // 1. Logika khusus untuk SAMPAH - Tetap menggunakan langkah warna diskrit agar lebih terlihat di UI
     if (typeLower === 'sampah') {
         const effectiveMax = hi + 5;
         const scaleFactor = Math.max(0.1, effectiveMax / 1000000);
@@ -58,17 +58,17 @@ function getChoroColor(value, dataMin, dataMax, minPct, maxPct, activeDataType =
         return '#dc2626'; // red-600
     }
 
-    // 2. Default logic (Stunting, Gizi Buruk, Krisis Listrik, Ketahanan Pangan)
-    // normalized: 0 is "Good/Green", 1 is "Bad/Red"
+    // 2. Logika default (Stunting, Gizi Buruk, Krisis Listrik, Ketahanan Pangan)
+    // dinormalisasi: 0 adalah "Baik/Hijau", 1 adalah "Buruk/Merah"
     let normalized = hi === lo ? 0 : Math.max(0, Math.min(1, (value - lo) / (hi - lo)));
 
-    // For Ketahanan Pangan, Higher value is Better (Secure), so we reverse the index
-    // so that higher values result in Green (normalized near 0).
+    // Untuk Ketahanan Pangan, nilai lebih tinggi artinya lebih baik (Aman), jadi kita balik indeksnya
+    // sehingga nilai lebih tinggi menghasilkan Hijau (normalized mendekati 0).
     if (typeLower === 'ketahanan pangan') {
         normalized = 1 - normalized;
     }
 
-    // Use Legacy RGB logic from the old project for consistent aesthetics
+    // Gunakan logika RGB lama dari proyek sebelumnya untuk estetika yang konsisten
     const red = Math.round(normalized * 255);
     const green = Math.round((1 - normalized) * 255);
     const blue = 50;
@@ -76,7 +76,7 @@ function getChoroColor(value, dataMin, dataMax, minPct, maxPct, activeDataType =
     return `rgb(${red}, ${green}, ${blue})`;
 }
 
-// ─── Province name normalisation ──────────────────────────────────────────────
+// ─── Normalisasi nama provinsi ───────────────────────────────────────────────
 function normProv(name) {
     if (!name) return '';
     return name
@@ -88,7 +88,7 @@ function normProv(name) {
         .trim();
 }
 
-// Explicit aliases: DB form → GeoJSON `state` value
+// Alias eksplisit: bentuk DB → nilai `state` di GeoJSON
 const PROV_ALIAS = {
     'aceh': 'Aceh',
     'sumatera utara': 'Sumatera Utara',
@@ -151,31 +151,30 @@ function getBubblesCount(geoName, viewMode, mapData) {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function PermasalahanMap({
-    /** Permasalahan stats: { 'Sampah': [{provinsi, nilai, satuan, tahun}], ... } */
+    /** Statistik permasalahan: { 'Sampah': [{provinsi, nilai, satuan, tahun}], ... } */
     permasalahanStats = {},
-    /** Permasalahan stats for kabupaten/kota */
+    /** Statistik permasalahan untuk kabupaten/kota */
     permasalahanKabupatenStats = {},
-    /** Currently selected jenis permasalahan, e.g. 'Sampah' */
+    /** Jenis permasalahan yang aktif saat ini, mis. 'Sampah' */
     activeDataType = 'Sampah',
-    /** Type of bubble markers, e.g., 'Penelitian', 'Inovasi' */
+    /** Jenis penanda gelembung, mis. 'Penelitian', 'Inovasi' */
     bubbleType = 'Penelitian',
-    /** Bubble markers (existing mapData from controller) */
+    /** Penanda gelembung (mapData yang ada dari controller) */
     mapData = [],
-    /** Statistics data */
+    /** Data statistik */
     stats = {},
-    /** Show / hide bubble layer */
+    /** Tampilkan / sembunyikan layer gelembung */
     showBubbles = true,
     /** 'provinsi' | 'kabupaten' */
     viewMode = 'provinsi',
-    /** Percentile trimming from legend s
-     * sliders (0-100) */
+    /** Pemangkasan persentil dari slider legenda (0-100) */
     minPct = 0,
     maxPct = 100,
-    /** Callback to inform parent about computed min/max/satuan so the legend can display them */
+    /** Callback untuk memberi tahu parent tentang min/max/satuan agar legenda dapat menampilkannya */
     onLegendUpdate,
-    /** Selected metric for Krisis Listrik (saidi or saifi) */
+    /** Metrik yang dipilih untuk Krisis Listrik (saidi atau saifi) */
     selectedMetrik = 'saidi',
-    /** Callback when metric changes */
+    /** Callback saat metrik berubah */
     onMetrikChange,
     onItemClick,
 }) {
@@ -187,7 +186,7 @@ export default function PermasalahanMap({
     const [geoJsonLoading, setGeoJsonLoading] = useState(true);
 
     const safe = (val) => (val === null || val === undefined || val === '') ? '-' : val;
-    // Store computed colour-scale params so the slider effect can access them without re-running the heavy effect
+    // Simpan parameter skala warna yang sudah dihitung agar efek slider bisa mengaksesnya tanpa menjalankan ulang efek berat
     const choroplethMetaRef = useRef({ dataLookup: {}, dataMin: 0, dataMax: 1, satuan: '' });
     const cachedMarkersRef = useRef([]);
     const lastMapDataRef = useRef(null);
@@ -206,7 +205,7 @@ export default function PermasalahanMap({
             if (type === 'Polygon') {
                 flatPoints = coords[0];
             } else if (type === 'MultiPolygon') {
-                // Take the largest polygon or just the first one
+                // Ambil poligon terbesar atau cukup yang pertama
                 flatPoints = coords[0][0];
             }
 
@@ -223,12 +222,12 @@ export default function PermasalahanMap({
                 if (count > 0) return [sumLat / count, sumLng / count];
             }
         } catch (e) {
-            console.error('Centroid calculation error:', e);
+            console.error('Kesalahan menghitung centroid:', e);
         }
         return null;
     }
 
-    // Fetch GeoJSON when viewMode changes
+    // Ambil GeoJSON saat viewMode berubah
     useEffect(() => {
         let isInstanceActive = true;
         setGeoJsonLoading(true);
@@ -239,25 +238,25 @@ export default function PermasalahanMap({
 
         fetch(url)
             .then((r) => {
-                if (!r.ok) throw new Error('GeoJSON fetch failed: ' + r.status);
+                if (!r.ok) throw new Error('Gagal mengambil GeoJSON: ' + r.status);
                 return r.json();
             })
             .then((data) => {
                 if (isInstanceActive) {
                     setGeoJsonData(data);
-                    // Force loading off on next tick to be sure
+                    // Paksa loading off di tick berikutnya agar pasti
                     setTimeout(() => setGeoJsonLoading(false), 50);
                 }
             })
             .catch((e) => {
-                console.error('PermasalahanMap – GeoJSON error:', e);
+                console.error('PermasalahanMap – Gagal memuat GeoJSON:', e);
                 if (isInstanceActive) setGeoJsonLoading(false);
             });
             
         return () => { isInstanceActive = false; };
     }, [viewMode]);
 
-    // Initialise the Leaflet map once
+    // Inisialisasi peta Leaflet sekali saja
     useEffect(() => {
         if (!mapRef.current || mapInstanceRef.current) return;
 
@@ -283,7 +282,7 @@ export default function PermasalahanMap({
             zoomDelta: 1,
         });
 
-        // Use OpenStreetMap tiles (consistent with other tabs)
+        // Gunakan tile OpenStreetMap (konsisten dengan tab lain)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 19,
@@ -295,14 +294,14 @@ export default function PermasalahanMap({
 
         return () => {
             if (mapInstanceRef.current) {
-                // Simply remove the map - Leaflet handles all cleanup
+                // Hapus peta saja - Leaflet menangani semua pembersihan
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
             }
         };
     }, []);
 
-    // ── Pre-calculate lookup data (useMemo for efficiency/immediate availability) ────
+    // ── Pra-hitung data lookup (useMemo untuk efisiensi/ketersediaan langsung) ───
     const choroplethData = React.useMemo(() => {
         const statsSource = (viewMode === 'provinsi' ? permasalahanStats : (permasalahanKabupatenStats || {})) || {};
         const rawActiveDataType = activeDataType || 'Sampah';
@@ -336,7 +335,7 @@ export default function PermasalahanMap({
                 const name = s[keyName].toLowerCase().trim();
                 const normName = normProv(name);
                 dataLookup[normName] = s.nilai;
-                // Keep backward compatibility for non-normalized keys if any
+                // Pertahankan kompatibilitas ke belakang untuk key yang belum dinormalisasi
                 if (!dataLookup[name]) {
                     dataLookup[name] = s.nilai;
                 }
@@ -346,7 +345,7 @@ export default function PermasalahanMap({
         return { dataLookup, dataMin, dataMax, satuan, activeDataType: finalActiveDataType };
     }, [permasalahanStats, permasalahanKabupatenStats, activeDataType, viewMode, selectedMetrik]);
 
-    // Update legend parent whenever choroplethData changes
+    // Perbarui parent legenda setiap kali choroplethData berubah
     useEffect(() => {
         if (onLegendUpdate) {
             onLegendUpdate({
@@ -358,12 +357,12 @@ export default function PermasalahanMap({
         }
     }, [choroplethData, onLegendUpdate]);
 
-    // Sync choroplethMetaRef for the slider effect
+    // Sinkronkan choroplethMetaRef untuk efek slider
     useEffect(() => {
         choroplethMetaRef.current = choroplethData;
     }, [choroplethData]);
 
-    // Helper to generate popup HTML reliably
+    // Fungsi pembantu untuk menghasilkan HTML popup secara andal
     const generateGeoJsonPopup = (feature, rawName, viewMode, activeDataType, dataLookup) => {
         const geoName = normProv(rawName);
         const nilai = dataLookup[geoName] ?? dataLookup[rawName.toLowerCase().trim()] ?? dataLookup[resolveGeoJsonName(rawName)?.toLowerCase()];
@@ -392,11 +391,11 @@ export default function PermasalahanMap({
         `;
     };
 
-    // ── Effect 1: Manage GeoJSON Layer Lifecycle ─────────────────────────────
+    // ── Efek 1: Kelola Siklus Hidup Layer GeoJSON ────────────────────────────
     useEffect(() => {
         if (!mapInstanceRef.current || !geoJsonData) return;
 
-        // Rebuild only when geometry changes (viewMode or geoJsonData)
+        // Bangun ulang hanya saat geometri berubah (viewMode atau geoJsonData)
         if (geoJsonLayerRef.current) {
             mapInstanceRef.current.removeLayer(geoJsonLayerRef.current);
             geoJsonLayerRef.current = null;
@@ -426,8 +425,8 @@ export default function PermasalahanMap({
                 };
             },
             onEachFeature: (feature, layer) => {
-                layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1.5 }));
-                layer.on('mouseout', () => layer.setStyle({ fillOpacity: 0.75, weight: 0.8 }));
+                layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1 }));
+                layer.on('mouseout', () => layer.setStyle({ fillOpacity: 0.75, weight: 1 }));
 
                 let rawName = '';
                 if (viewMode === 'kabupaten') {
@@ -444,13 +443,13 @@ export default function PermasalahanMap({
         layer.bringToBack();
     }, [geoJsonData, viewMode]);
 
-    // ── Effect 1.5: Update Layer Properties when Stats change ──────────────
+    // ── Efek 1.5: Perbarui Properti Layer saat Statistik Berubah ──────────────
     useEffect(() => {
         if (!mapInstanceRef.current || !geoJsonLayerRef.current) return;
         
         const { dataLookup, dataMin, dataMax, satuan, activeDataType } = choroplethData;
 
-        // Update styles & popups on existing layer
+        // Perbarui style & popup pada layer yang ada
         geoJsonLayerRef.current.eachLayer((layer) => {
             const feature = layer.feature;
             let rawName = '';
@@ -462,14 +461,14 @@ export default function PermasalahanMap({
             const geoName = normProv(rawName);
             const nilai = dataLookup[geoName] ?? dataLookup[rawName.toLowerCase().trim()];
 
-            // Update Style
+            // Perbarui Style
             layer.setStyle({
                 fillColor: nilai !== undefined
                     ? getChoroColor(nilai, dataMin, dataMax, minPct, maxPct, activeDataType)
                     : '#e5e7eb',
             });
 
-            // Update Popup
+            // Perbarui Popup
             const popupContent = generateGeoJsonPopup(feature, rawName, viewMode, activeDataType, dataLookup);
             if (layer.getPopup()) {
                 layer.setPopupContent(popupContent);
@@ -480,7 +479,7 @@ export default function PermasalahanMap({
     }, [choroplethData, viewMode]);
 
 
-    // ── Effect 2: Only update colours when slider changes (real-time) ────────
+    // ── Efek 2: Hanya perbarui warna saat slider berubah (real-time) ─────────
     useEffect(() => {
         if (!geoJsonLayerRef.current) return;
         const { dataLookup, dataMin, dataMax } = choroplethMetaRef.current;
@@ -505,11 +504,11 @@ export default function PermasalahanMap({
         });
     }, [minPct, maxPct]);
 
-    // ── Effect 3: Marker Cluster (with cache & lazy loading) ─────────────────
+    // ── Efek 3: Kluster Marker (dengan cache & lazy loading) ──────────────────
     useEffect(() => {
         if (!mapInstanceRef.current) return;
 
-        // 1. Hide bubbles
+        // 1. Sembunyikan gelembung
         if (!showBubbles) {
             if (clusterGroupRef.current) {
                 mapInstanceRef.current.removeLayer(clusterGroupRef.current);
@@ -517,7 +516,7 @@ export default function PermasalahanMap({
             return;
         }
 
-        // 2. Show cached bubbles (if data hasn't changed)
+        // 2. Tampilkan gelembung dari cache (jika data tidak berubah)
         const dataKey = mapData.length + (mapData[0]?.id || mapData[0]?._id || '');
         if (clusterGroupRef.current && lastMapDataRef.current === dataKey && lastActiveDataTypeRef.current === activeDataType) {
             if (!mapInstanceRef.current.hasLayer(clusterGroupRef.current)) {
@@ -527,7 +526,7 @@ export default function PermasalahanMap({
             return;
         }
 
-        // 3. Full rebuild
+        // 3. Bangun ulang penuh
         if (clusterGroupRef.current) {
             mapInstanceRef.current.removeLayer(clusterGroupRef.current);
         }
@@ -540,7 +539,7 @@ export default function PermasalahanMap({
         const clusterGroup = L.markerClusterGroup({
             maxClusterRadius: 80,
             zoomToBoundsOnClick: true,
-            showCoverageOnHover: false, // Performance
+            showCoverageOnHover: false, // Performa
             spiderfyOnMaxZoom: true,
             chunkedLoading: true,
             chunkSize: 500,
@@ -548,11 +547,11 @@ export default function PermasalahanMap({
             iconCreateFunction: (cluster) => {
                 const total = cluster.getAllChildMarkers().length;
                 const size = 46;
-                let bubbleColor = 'rgba(62, 125, 202, 0.7)'; // Default Blue
+                let bubbleColor = 'rgba(62, 125, 202, 0.7)'; // Biru default
                 if (bubbleType === 'Hilirisasi') {
-                    bubbleColor = 'rgba(250, 204, 21, 0.7)'; // Yellow/Gold
+                    bubbleColor = 'rgba(250, 204, 21, 0.7)'; // Kuning/Emas
                 } else if (bubbleType === 'Pengabdian') {
-                    bubbleColor = 'rgba(40, 167, 69, 0.7)'; // Green
+                    bubbleColor = 'rgba(40, 167, 69, 0.7)'; // Hijau
                 }
                 return L.divIcon({
                     html: `<div style="
@@ -622,7 +621,7 @@ export default function PermasalahanMap({
                 let lat = parseFloat(item.pt_latitude ?? item.latitude);
                 let lng = parseFloat(item.pt_longitude ?? item.longitude);
 
-                // For kabupaten mode, fallback to regency centroid if PT coords are missing
+                // Untuk mode kabupaten, gunakan centroid kecamatan jika koordinat PT tidak ada
                 if (viewMode === 'kabupaten' && (isNaN(lat) || isNaN(lng))) {
                     const kabName = item.kabupaten_kota || item.kab_mitra || item.lokus;
                     if (kabName) {
@@ -639,10 +638,10 @@ export default function PermasalahanMap({
 
                 const marker = L.marker([lat, lng], { icon: sharedIcon });
 
-                // Optimized click handler
+                // Handler klik yang dioptimalkan
                 marker.on('click', (e) => {
                     if (!isActive) return;
-                    L.DomEvent.stop(e); // Stop event from bubbling to map
+                    L.DomEvent.stop(e); // Hentikan event agar tidak menyebar ke peta
 
                     const map = mapInstanceRef.current;
                     if (map) map.setView([lat, lng], 16, { animate: true });
@@ -693,7 +692,7 @@ export default function PermasalahanMap({
 
             <div
                 ref={mapRef}
-                className="lg:w-[90%] w-full h-[65vh] border border-black relative z-0 rounded-lg shadow-inner overflow-hidden"
+                className="lg:w-[90%] w-full h-[65vh] relative z-0 rounded-lg shadow-inner overflow-hidden"
             />
         </section>
     );

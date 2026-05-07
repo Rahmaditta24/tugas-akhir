@@ -19,9 +19,8 @@ export default function PermasalahanLegend({
 
     return (
         <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden mb-2">
-            {/* Legend Content */}
             <div className="p-4 space-y-4">
-                {/* Title */}
+                {/* Judul */}
                 <h3 className="font-bold text-gray-900 text-sm">
                     {(() => {
                         const lower = activeData.toLowerCase();
@@ -35,7 +34,7 @@ export default function PermasalahanLegend({
                     })()} {unit ? `(${unit})` : ''}
                 </h3>
 
-                {/* Gradient Bar with Labels */}
+                {/* Bar Gradien dengan Label */}
                 <div className="space-y-1">
                     <div
                         className="h-6 w-full rounded-md border border-gray-400"
@@ -44,7 +43,7 @@ export default function PermasalahanLegend({
                                 const isPangan = activeData.toLowerCase() === 'ketahanan pangan';
                                 const GRAY = '#d1d5db';
                                 
-                                // Hex colors from legacy script-permasalahan.js
+                                // Warna hex dari script-permasalahan.js lama
                                 const GREEN_400 = '#4ade80';
                                 const YELLOW_400 = '#fbbf24';
                                 const RED_400 = '#f87171';
@@ -70,15 +69,15 @@ export default function PermasalahanLegend({
                     </div>
                 </div>
 
-                {/* Range Labels Row */}
+                {/* Baris Label Rentang */}
                 <div className="flex flex-col text-[11px] font-bold text-gray-700 leading-tight">
                     <p>Min: <span className="text-gray-900">{fmtNum(minValue)}</span></p>
                     <p>Max: <span className="text-gray-900">{fmtNum(maxValue)}</span></p>
                 </div>
 
-                {/* Sliders Area */}
+                {/* Area Slider */}
                 <div className="space-y-5 pt-1">
-                    {/* Min Slider */}
+                    {/* Slider Minimum */}
                     <div className="relative">
                         <div className="flex justify-between items-end">
                             <label className="text-xs font-bold text-gray-800">Atur skala minimum</label>
@@ -103,7 +102,7 @@ export default function PermasalahanLegend({
                         </div>
                     </div>
 
-                    {/* Max Slider */}
+                    {/* Slider Maksimum */}
                     <div className="relative">
                         <div className="flex justify-between items-end">
                             <label className="text-xs font-bold text-gray-800">Atur skala maksimum</label>
@@ -129,7 +128,7 @@ export default function PermasalahanLegend({
                     </div>
                 </div>
 
-                {/* Action Buttons Row */}
+                {/* Baris Tombol Aksi */}
                 <div className="space-y-2 pt-2">
                     <div className="flex items-center gap-2">
                         <button

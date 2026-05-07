@@ -3,23 +3,23 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use App\Http\Controllers\PenelitianController;
-use App\Http\Controllers\PengabdianPageController;
-use App\Http\Controllers\HilirisasiPageController;
-use App\Http\Controllers\FasilitasLabPageController;
-use App\Http\Controllers\PermasalahanPageController;
-use App\Http\Controllers\RumusanMasalahPageController;
-use App\Http\Controllers\ProdukPageController;
+use App\Http\Controllers\Frontend\PenelitianPageController;
+use App\Http\Controllers\Frontend\PengabdianPageController;
+use App\Http\Controllers\Frontend\HilirisasiPageController;
+use App\Http\Controllers\Frontend\FasilitasLabPageController;
+use App\Http\Controllers\Frontend\PermasalahanPageController;
+use App\Http\Controllers\Frontend\RumusanMasalahPageController;
+use App\Http\Controllers\Frontend\ProdukPageController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RumusanMasalahCategoryController;
 use App\Http\Controllers\Admin\RumusanMasalahStatementController;
 
-Route::get('/', [PenelitianController::class, 'index'])->name('penelitian.index');
+Route::get('/', [PenelitianPageController::class, 'index'])->name('penelitian.index');
 
 // API routes for export
-Route::get('/api/penelitian/export', [PenelitianController::class, 'export'])->name('penelitian.export');
-Route::get('/api/research/{type}/{id}', [PenelitianController::class, 'getDetail'])->name('research.detail');
+Route::get('/api/penelitian/export', [PenelitianPageController::class, 'export'])->name('penelitian.export');
+Route::get('/api/research/{type}/{id}', [PenelitianPageController::class, 'getDetail'])->name('research.detail');
 
 
 Route::get('/pengabdian', [PengabdianPageController::class, 'index'])->name('pengabdian.index');
@@ -105,9 +105,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
 
     // Rumusan Masalah Management
     Route::prefix('rumusan-masalah')->name('rumusan-masalah.')->group(function () {
-        
+
         // Redirect /admin/rumusan-masalah to /admin/rumusan-masalah/categories
-        Route::get('/', function() {
+        Route::get('/', function () {
             return redirect()->route('admin.rumusan-masalah.categories.index');
         });
 
@@ -118,19 +118,19 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/categories/{category}/edit', [RumusanMasalahCategoryController::class, 'edit'])->name('categories.edit');
         Route::put('/categories/{category}', [RumusanMasalahCategoryController::class, 'update'])->name('categories.update');
         Route::delete('/categories/{category}', [RumusanMasalahCategoryController::class, 'destroy'])->name('categories.destroy');
-        
+
         // Statements Routes (Nested Index)
         // Access via: admin/rumusan-masalah/categories/{slug}/statements
         Route::get('/categories/{category:slug}/statements', [RumusanMasalahStatementController::class, 'index'])
             ->name('category.statements.index');
-        
+
         // Statements Actions
         Route::post('/categories/{category:slug}/statements', [RumusanMasalahStatementController::class, 'store'])
             ->name('category.statements.store');
-            
+
         Route::put('/categories/{slug}/statements/{id}', [RumusanMasalahStatementController::class, 'update'])
             ->name('category.statements.update');
-            
+
         Route::delete('/categories/{slug}/statements/{id}', [RumusanMasalahStatementController::class, 'destroy'])
             ->name('category.statements.destroy');
     });
@@ -139,7 +139,7 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     // Profile Management
     Route::get('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'showProfile'])->name('profile.show');
     Route::put('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('profile.update');
-    
+
     // Password Change
     Route::put('/change-password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('change-password.update');
     */

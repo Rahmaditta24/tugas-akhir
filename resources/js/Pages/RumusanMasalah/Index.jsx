@@ -10,7 +10,7 @@ export default function RumusanMasalahIndex({ categories }) {
     );
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // Update selected category if categories prop changes
+    // Perbarui kategori yang dipilih jika prop categories berubah
     useEffect(() => {
         if (categories.length > 0 && !selectedCategory) {
             setSelectedCategory(categories[0]);
@@ -27,7 +27,7 @@ export default function RumusanMasalahIndex({ categories }) {
             title="Rumusan Masalah 8 Industri Strategis (Beta)"
             headerTitle={<>Rumusan Masalah 8 Industri Strategis <span className="font-normal text-gray-800">(Beta)</span></>}
         >
-            <Head title="Rumusan Masalah" />
+            <Head title="Rumusan Masalah 8 Industri Strategis" />
 
             <NavigationTabs activePage="rumusan-masalah" />
 
@@ -41,7 +41,7 @@ export default function RumusanMasalahIndex({ categories }) {
                 </svg>
             </button>
 
-            {/* Mobile Drawer Overlay */}
+            {/* Overlay Drawer Mobile */}
             {sidebarOpen && (
                 <div
                     className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 lg:hidden animate-fade-in"
@@ -49,10 +49,10 @@ export default function RumusanMasalahIndex({ categories }) {
                 />
             )}
 
-            {/* Mobile Drawer Content */}
+            {/* Konten Drawer Mobile */}
             <div className={`fixed top-0 right-0 h-full w-[300px] bg-white z-[60] transform transition-transform duration-300 ease-in-out lg:hidden shadow-[-4px_0_20px_rgba(0,0,0,0.1)] ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="p-0 flex flex-col h-full">
-                    {/* Header with Title and Close Button */}
+                    {/* Header dengan Judul dan Tombol Tutup */}
                     <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                         <h2 className="font-bold text-gray-800 text-lg">Pilih Bidang</h2>
                         <button 
@@ -153,7 +153,7 @@ export default function RumusanMasalahIndex({ categories }) {
                                     {selectedCategory.statements && selectedCategory.statements.length > 0 ? (
                                         selectedCategory.statements.map((statement, index) => (
                                             <div key={statement.id} className="relative pl-0">
-                                                {/* Header Bar */}
+                                                {/* Bar Header */}
                                                 <div className="flex items-center gap-3 mb-3">
                                                     <div className="flex-shrink-0 w-9 h-9 bg-[#3E7DCA] text-white rounded-md flex items-center justify-center font-bold text-sm shadow-sm">
                                                         {statement.full_number}
@@ -165,7 +165,7 @@ export default function RumusanMasalahIndex({ categories }) {
                                                     </div>
                                                 </div>
 
-                                                {/* Description Box */}
+                                                {/* Kotak Deskripsi */}
                                                 {statement.description && statement.description !== '-' && (
                                                     <div className="lg:ml-12 bg-gray-50/80 rounded-lg p-5 border border-gray-100 text-gray-600 leading-relaxed text-[14px] text-justify shadow-sm">
                                                         {statement.description}

@@ -26,7 +26,7 @@ class ProdukController extends Controller
             });
         }
 
-        // Handle column filters
+        // Tangani filter kolom
         $filters = $request->input('filters', []);
         if (is_array($filters)) {
             foreach ($filters as $column => $value) {
@@ -38,12 +38,12 @@ class ProdukController extends Controller
 
         $perPage = $request->input('perPage', 20);
 
-        // Whitelisted sorting
+        // Pengurutan
         $allowedSorts = ['id', 'nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten', 'detail_paten'];
         $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
 
-        // Cache Versioning
+        // Versi Cache
         $v = Cache::get('produk_admin_v', 1);
         $cacheKey = 'produk_admin_v' . $v . '_' . md5(json_encode($request->all()));
 
@@ -59,7 +59,7 @@ class ProdukController extends Controller
                     $item->nama_inventor = $this->formatName($item->nama_inventor);
                 }
                 
-                // Self-healing for empty states
+                // Pemulihan otomatis (self-healing) untuk state kosong
                 $clean = function($v, $isNumeric = false) {
                     if (is_string($v)) $v = ltrim(trim($v), "'");
                     if ($v === null || $v === '' || (is_numeric($v) && is_nan((float)$v)) || $v === 'NaN') {
@@ -215,7 +215,7 @@ class ProdukController extends Controller
         foreach ($request->items as $itemData) {
             $produk = Produk::find($itemData['id']);
             if ($produk) {
-                // Standardize province if present in update
+                // Standarisasi nama provinsi jika terdapat di update
                 if (isset($itemData['provinsi'])) {
                     $itemData['provinsi'] = trim(str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower(trim($itemData['provinsi'])))));
                 }
@@ -343,7 +343,7 @@ class ProdukController extends Controller
         $filterLabel = ($request->filled('search') || $request->filled('filters')) ? '_filtered' : '';
         $filename = 'data-produk' . $filterLabel . '_' . date('Y-m-d') . '.csv';
 
-        // Defined columns in exact match to fputcsv order
+        // Kolom yang didefinisikan dalam urutan yang tepat dengan urutan `fputcsv
         $columns = [
             'ID', 
             'Nama Produk', 
@@ -363,10 +363,10 @@ class ProdukController extends Controller
         $callback = function () use ($columns, $query) {
             $file = fopen('php://output', 'w');
             
-            // Add UTF-8 BOM
+            // Tambahkan UTF-8 BOM
             fwrite($file, "\xEF\xBB\xBF");
             
-            // Use Semicolon (;) for Indonesian Excel compatibility
+            // Gunakan Titik Koma (;) untuk kompatibilitas Excel bahasa Indonesia
             fputcsv($file, $columns, ';');
 
             $query->orderBy('nama_produk', 'asc')->chunk(1000, function ($data) use ($file) {
@@ -376,7 +376,7 @@ class ProdukController extends Controller
                         return trim(str_replace(["\r", "\n", ";"], ' ', (string)$val));
                     };
 
-                    // Format Lat/Long with comma for Indonesian Excel 
+                    // Format Lat/Long dengan koma untuk Excel bahasa Indonesia
                     $lat = str_replace('.', ',', (string)$row->latitude);
                     $lng = str_replace('.', ',', (string)$row->longitude);
 
@@ -445,7 +445,7 @@ class ProdukController extends Controller
             $errors = [];
             $batch = [];
 
-            // Strict Header Validation
+            // Validasi Header Ketat
             if (!empty($request->data)) {
             }
 
@@ -470,7 +470,7 @@ class ProdukController extends Controller
                 $nomorPatenRaw = '';
                 $detailPatenRaw = '';
 
-                // Broad keyword matching for each field
+                // Pencocokan kata kunci luas untuk setiap field
                 foreach ($normalizedRow as $slug => $val) {
                     // Nama Produk
                     if (str_contains($slug, 'namaproduk') || str_contains($slug, 'investasi') || str_contains($slug, 'produk')) {
@@ -480,10 +480,10 @@ class ProdukController extends Controller
                     if (str_contains($slug, 'institusi') || str_contains($slug, 'universitas') || str_contains($slug, 'perguruan')) {
                         if (empty($institusi)) $institusi = trim((string)$val);
                     }
-                    // Coordinates
+                    // Koordinat
                     if (str_contains($slug, 'latitude') || $slug === 'lat') $latRaw = $val;
                     if (str_contains($slug, 'longitude') || $slug === 'lng' || $slug === 'long') $lngRaw = $val;
-                    // Other fields
+                    // Field lainnya
                     if (str_contains($slug, 'provinsi')) $provRaw = $val;
                     if (str_contains($slug, 'deskripsiproduk') || $slug === 'deskripsi') $deskProdukRaw = $val;
                     if (str_contains($slug, 'tkt') || str_contains($slug, 'tingkatkesiap')) $tktRaw = $val;
@@ -500,7 +500,7 @@ class ProdukController extends Controller
                     $errors[] = "Baris #{$rowNum}: Kolom '{$missing}' tidak ditemukan. Header terdeteksi: [{$keysFound}]";
                     continue;
                 }
-                // Smart coordinate parsing (handles comma or dot)
+                // Parsing koordinat cerdas (menangani koma atau titik)
                 $parseCoord = function($val, $default) {
                     if (empty($val)) return $default;
                     $val = str_replace(',', '.', (string)$val);
@@ -565,8 +565,8 @@ class ProdukController extends Controller
     public function getProvinces()
     {
         $provinces = Cache::remember('provinces', 86400, function () {
-            // Use local data directly - more reliable for production
-            $path = storage_path('provinces.json');
+            // Gunakan data lokal secara langsung - lebih dapat diandalkan untuk produksi
+            $path = database_path('data/provinces.json');
             if (file_exists($path)) {
                 return json_decode(file_get_contents($path), true);
             }

@@ -55,7 +55,7 @@ echo 'Penelitian: ' . DB::table('penelitian')->count() . ' (expected: 66,669)' .
 echo 'Hilirisasi: ' . DB::table('hilirisasi')->count() . ' (expected: 2,572)' . PHP_EOL;
 echo 'Pengabdian: ' . DB::table('pengabdian')->count() . ' (expected: 11,588)' . PHP_EOL;
 echo 'Produk: ' . DB::table('produk')->count() . ' (expected: 812)' . PHP_EOL;
-echo 'FasilitasLab: ' . DB::table('fasilitas_lab')->count() . ' (expected: 115)' . PHP_EOL;
+echo 'FasilitasLab: ' . DB::table('fasilitas_lab')->count() . ' (expected: 1,345)' . PHP_EOL;
 echo 'Permasalahan Provinsi: ' . DB::table('permasalahan_provinsi')->count() . ' (expected: ~212)' . PHP_EOL;
 echo 'Permasalahan Kabupaten: ' . DB::table('permasalahan_kabupaten')->count() . ' (expected: 1,883)' . PHP_EOL;
 "
@@ -63,10 +63,10 @@ echo 'Permasalahan Kabupaten: ' . DB::table('permasalahan_kabupaten')->count() .
 
 **Expected Results:**
 - ✅ Penelitian: 66,669
-- ✅ Hilirisasi: 2,572
-- ✅ Pengabdian: 11,588
+- ✅ Hilirisasi: 2,571
+- ✅ Pengabdian: 11,346
 - ✅ Produk: 812
-- ✅ FasilitasLab: 115
+- ✅ FasilitasLab: 1,345
 - ✅ Permasalahan Provinsi: ~212
 - ✅ Permasalahan Kabupaten: 1,883
 
@@ -80,14 +80,14 @@ echo 'Permasalahan Kabupaten: ' . DB::table('permasalahan_kabupaten')->count() .
 
 ## 📦 Data Source
 
-Semua data berasal dari JSON files di `../peta-bima/data/`:
+Semua data berasal dari JSON files di `database/data/`:
 
 ### Main Data Files
 - `data-penelitian.json` → 66,669 records
 - `data-hilirisasi.json` → 2,572 records
-- `data-pengabdian.json` → 11,588 records
+- `data-pengabdian.json` → 11,346 records
 - `data-produk-hilirisasi.json` → 812 records
-- `data-fasilitas-lab.json` → 115 records
+- `data-fasilitas-lab.json` → 1,345 records
 
 ### Permasalahan Data Files
 - `permasalahan/data-permasalahan-sampah.json` → 323 kabupaten
@@ -206,7 +206,7 @@ php artisan db:seed --class=PenelitianSeeder
 ## 🔍 Troubleshooting
 
 ### Data tidak muncul setelah seeding
-1. Pastikan semua JSON files ada di `../peta-bima/data/`
+1. Pastikan semua JSON files ada di `database/data/`
 2. Check database connection di `.env`
 3. Run `composer dump-autoload`
 4. Run `php artisan optimize:clear`

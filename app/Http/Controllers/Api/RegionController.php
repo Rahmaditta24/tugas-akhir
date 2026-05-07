@@ -12,7 +12,7 @@ class RegionController extends Controller
     public function provinces()
     {
         return Cache::remember('provinces', 86400, function () {
-            // Try API only in development/local
+            // Coba API hanya di lingkungan pengembangan/lokal
             if (app()->environment('local')) {
                 try {
                     $response = Http::timeout(10)->retry(2, 1000)->withOptions([
@@ -27,17 +27,17 @@ class RegionController extends Controller
                 }
             }
             
-            // Always use local data (more reliable)
+            // Selalu gunakan data lokal (lebih andal)
             return $this->getLocalProvinces();
         });
     }
     
     private function getLocalProvinces()
     {
-        $path = storage_path('provinces.json');
+        $path = database_path('data/provinces.json');
         if (file_exists($path)) {
             $data = json_decode(file_get_contents($path), true);
-            // Ensure we return a flat array even if the JSON is an associative object
+            // Pastikan kita mengembalikan array datar meskipun JSON berupa objek asosiatif
             return array_values($data);
         }
         return [];
@@ -56,7 +56,7 @@ class RegionController extends Controller
                 \Log::warning("Failed to fetch regencies for province {$provinceId}", ['error' => $e->getMessage()]);
             }
             
-            // Return empty array if API fails - frontend should handle gracefully
+            // Kembalikan array kosong jika API gagal - frontend harus menanganinya dengan baik
             return [];
         });
     }
@@ -71,9 +71,9 @@ class RegionController extends Controller
 
         $results = [];
 
-        // 1. Try PDDIKTI API (More complete for Indonesian campuses)
+        // 1. Coba API PDDIKTI (Lebih lengkap untuk kampus di Indonesia)
         try {
-            // Added User-Agent and timeout for better reliability
+            // Tambahkan User-Agent dan batas waktu (timeout) untuk keandalan yang lebih baik
             $response = Http::withHeaders([
                 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             ])->timeout(5)->get("https://api-frontend.kemdikbud.go.id/hit_mhs/{$query}");
@@ -89,17 +89,16 @@ class RegionController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            // Log or ignore
         }
 
-        // 2. Fallback to Hipolabs if PDDIKTI is empty or fails
+        // 2. Cadangan ke Hipolabs jika PDDIKTI kosong atau gagal
         if (empty($results)) {
             try {
                 $response = Http::get("http://universities.hipolabs.com/search?country=Indonesia&name={$query}");
                 $hipoData = $response->json() ?? [];
                 
-                // Special case: IPB is "Bogor Agricultural University" in Hipolabs.
-                // It doesn't contain "Institut", so it won't show up when searching "Institut".
+                // Kasus khusus: IPB adalah "Bogor Agricultural University" di Hipolabs.
+                // Tidak mengandung kata "Institut", sehingga tidak akan muncul saat mencari "Institut".
                 $qLower = strtolower($query);
                 if (str_contains('institut pertanian bogor', $qLower) || $qLower === 'ipb') {
                     $ipbResponse = Http::get("http://universities.hipolabs.com/search?country=Indonesia&name=Bogor%20Agricultural");
@@ -110,7 +109,7 @@ class RegionController extends Controller
 
                 foreach ($hipoData as $item) {
                     $name = $item['name'];
-                    // Basic normalization for common university names from English to Indonesian
+                    // Normalisasi dasar untuk nama universitas umum dari bahasa Inggris ke Bahasa Indonesia
                     if (strtolower($name) === 'bogor agricultural university') $name = 'Institut Pertanian Bogor';
                     if (strtolower($name) === 'bandung institute of technology') $name = 'Institut Teknologi Bandung';
                     if (strtolower($name) === 'university of indonesia') $name = 'Universitas Indonesia';
@@ -119,7 +118,7 @@ class RegionController extends Controller
                     $results[] = $name;
                 }
             } catch (\Exception $e) {
-                // Ignore
+                // Abaikan
             }
         }
 

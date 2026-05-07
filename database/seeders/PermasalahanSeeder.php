@@ -52,7 +52,7 @@ class PermasalahanSeeder extends Seeder
         }
         $raw = json_decode(file_get_contents($kabPath), true);
         
-        // Handle GeoJSON format (FeatureCollection)
+        // Menangani format GeoJSON (FeatureCollection)
         if (isset($raw['type']) && $raw['type'] === 'FeatureCollection' && isset($raw['features'])) {
             foreach ($raw['features'] as $feature) {
                 if (isset($feature['properties'])) {
@@ -66,7 +66,7 @@ class PermasalahanSeeder extends Seeder
                 }
             }
         } 
-        // Handle simple array format (fallback)
+        // Menangani format array sederhana (cadangan)
         else if (is_array($raw)) {
             foreach ($raw as $row) {
                 $kab = $this->normalize($row['kabupaten_kota'] ?? $row['WADMKK'] ?? '');

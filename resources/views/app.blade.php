@@ -7,8 +7,8 @@
 
         <title inertia>{{ str_starts_with(request()->getPathInfo(), '/admin') ? 'Admin Panel' : config('app.name', 'Peta BIMA') }}</title>
 
-        <!-- Favicon (use public/) -->
-        <link rel="icon" href="/favicon.ico" />
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="/assets/images/logo/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg.png" />
 
         <!-- Leaflet CSS -->
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />

@@ -14,7 +14,7 @@ function AnimatedCounter({ value, duration = 300 }) {
             const elapsed = now - startTime;
             const progress = Math.min(elapsed / duration, 1);
 
-            // Easing function (easeOutQuad)
+            // Fungsi easing (easeOutQuad)
             const easeProgress = 1 - (1 - progress) * (1 - progress);
 
             const current = Math.floor(start + range * easeProgress);
@@ -96,7 +96,7 @@ function StatisticsCards({ stats, labels = {} }) {
         },
     ];
 
-    // Filter logic: show a card if its key is present in stats OR if it's explicitly labeled
+    // Logika filter: tampilkan kartu jika key-nya ada di stats ATAU jika ada label eksplisit
     const activeCards = cardConfigs.filter(card => (stats && stats[card.key] !== undefined) || (labels && labels[card.key]));
 
     const gridCols = activeCards.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4';

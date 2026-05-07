@@ -7,7 +7,7 @@ export default function Panduan({ categories }) {
     const [loading, setLoading] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // Data dari data-aliran.js - Renamed to chartCategories to avoid conflict with Prop
+    // Data dari data-aliran.js - Diubah namanya menjadi chartCategories untuk menghindari konflik dengan Prop
     const chartCategories = [
         "Ketahanan Pangan", "Kesehatan", "Energi", "Maritim",
         "Pertahanan", "AI & Semikonduktor", "Material & Manufaktur",
@@ -161,7 +161,7 @@ export default function Panduan({ categories }) {
     ];
 
     useEffect(() => {
-        // Load Plotly from CDN if not available
+        // Muat Plotly dari CDN jika belum tersedia
         if (!window.Plotly) {
             const script = document.createElement('script');
             script.src = 'https://cdn.plot.ly/plotly-latest.min.js';
@@ -179,7 +179,7 @@ export default function Panduan({ categories }) {
         function renderCharts() {
             if (!window.Plotly) return;
 
-            // 1. SANKEY LOGIC
+            // 1. LOGIKA SANKEY
             const topics = Object.keys(data_matrix);
             const matrix = topics.map(topic =>
                 chartCategories.map((_, catIndex) => (data_matrix[topic][catIndex] || []).length)
@@ -228,7 +228,7 @@ export default function Panduan({ categories }) {
             if (document.getElementById("sankey-desktop")) window.Plotly.newPlot("sankey-desktop", [sankeyData], sankeyLayoutDesktop);
             if (document.getElementById("sankey-mobile")) window.Plotly.newPlot("sankey-mobile", [sankeyData], sankeyLayoutMobile);
 
-            // 2. HEATMAP LOGIC
+            // 2. LOGIKA HEATMAP
             const intensityMatrix = topics.map(topic => chartCategories.map((_, j) => (data_matrix[topic][j] || []).length));
             const heatmapHoverText = topics.map(topic => chartCategories.map(cat => {
                 const codes = data_matrix[topic][chartCategories.indexOf(cat)] || [];
@@ -280,7 +280,7 @@ export default function Panduan({ categories }) {
                 </svg>
             </button>
 
-            {/* Mobile Drawer Overlay */}
+            {/* Overlay Drawer Mobile */}
             {sidebarOpen && (
                 <div
                     className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 lg:hidden animate-fade-in"
@@ -288,7 +288,7 @@ export default function Panduan({ categories }) {
                 />
             )}
 
-            {/* Mobile Drawer Content */}
+            {/* Konten Drawer Mobile */}
             <div className={`fixed top-0 right-0 h-full w-[280px] bg-white z-50 transform transition-transform duration-300 ease-in-out lg:hidden shadow-2xl ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="p-4 flex flex-col h-full overflow-y-auto">
                     <div className="flex justify-between items-center mb-6">
@@ -366,7 +366,7 @@ export default function Panduan({ categories }) {
                                 ) : (
                                     <div className="p-4 bg-blue-50/50">
                                         <ul className="space-y-4">
-                                            {/* (Fallback hardcoded list if categories prop is missing) */}
+                                            {/* (Daftar hardcoded cadangan jika prop categories tidak ada) */}
                                             {['Kesehatan', 'Pangan', 'Energi', 'Maritim', 'Pertahanan', 'Digitalisasi: AI & Semikonduktor', 'Manufaktur & Material Maju', 'Hilirisasi & Industrialisasi'].map((f, i) => (
                                                 <li key={i} className="flex items-center gap-3 text-sm font-medium text-gray-700">
                                                     <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded flex items-center justify-center text-xs">{i + 1}</div>
@@ -383,7 +383,7 @@ export default function Panduan({ categories }) {
                     {/* Konten Kanan */}
                     <div className="w-full lg:w-3/4 space-y-12">
 
-                        {/* Section 1: Intro */}
+                        {/* Bagian 1: Pengantar */}
                         <div className="bg-white rounded-xl shadow-lg border border-gray-500/10 p-8 animate-fade-in">
                             <h1 className="lg:text-2xl text-xl font-bold mb-6 text-gray-900">
                                 Panduan Pemilihan Rumusan Masalah
@@ -428,7 +428,7 @@ export default function Panduan({ categories }) {
                             </div>
                         </div>
 
-                        {/* Section 2: Sankey Charts */}
+                        {/* Bagian 2: Grafik Sankey */}
                         <div className="bg-white rounded-xl shadow-lg border border-gray-500/10 p-8">
                             <h2 className="lg:text-2xl text-xl font-bold mb-4 flex items-center gap-3">
                                 Aliran Keterhubungan
@@ -447,7 +447,7 @@ export default function Panduan({ categories }) {
                             )}
                         </div>
 
-                        {/* Section 3: Heatmap */}
+                        {/* Bagian 3: Heatmap */}
                         <div className="bg-white rounded-xl shadow-lg border border-gray-500/10 p-8">
                             <h2 className="lg:text-2xl text-xl font-bold mb-4 flex items-center gap-3">
                                 Pemetaan Kepadatan Riset
@@ -466,7 +466,7 @@ export default function Panduan({ categories }) {
                             )}
                         </div>
 
-                        {/* Section 4: Contoh Topik */}
+                        {/* Bagian 4: Contoh Topik */}
                         <div className="bg-white rounded-xl shadow-lg border border-gray-500/10 p-8">
                             <h2 className="lg:text-2xl text-xl font-bold mb-8 flex items-center gap-3">
                                 Berikut Beberapa Contoh
@@ -509,7 +509,7 @@ export default function Panduan({ categories }) {
                             </div>
                         </div>
 
-                        {/* Section 5: Langkah Praktis */}
+                        {/* Bagian 5: Langkah Praktis */}
                         <div className="bg-white rounded-xl shadow-lg border border-gray-500/10 p-8">
                             <h2 className="lg:text-2xl text-xl font-bold mb-8 text-gray-900">
                                 Langkah Praktis Penyelarasan

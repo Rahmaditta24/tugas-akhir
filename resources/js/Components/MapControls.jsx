@@ -31,10 +31,10 @@ export default function MapControls({
     onFilterChange = () => { },
     searchTerm = '',
     filterFields: customFilterFields = [],
-    hideDisplayMode = false, // Hide Peneliti/Institusi buttons
-    hideDownload = false, // Hide Excel download button
-    hideSearch = false, // Hide search bar
-    showPermasalahanControls = false, // Show Hide Bubbles & Mode buttons
+    hideDisplayMode = false, // Sembunyikan tombol Peneliti/Institusi
+    hideDownload = false, // Sembunyikan tombol download Excel
+    hideSearch = false, // Sembunyikan kotak pencarian
+    showPermasalahanControls = false, // Tampilkan tombol Sembunyikan Gelembung & Mode
     showBubbles = true,
     onToggleBubbles = () => { },
     viewMode = 'provinsi',
@@ -70,8 +70,8 @@ export default function MapControls({
     const handleFilterSelect = (key, value, isChecked, type = 'multi') => {
         if (type === 'single') {
             const newFilters = { ...filters };
-            // For single select, we don't allow 'Semua' anymore based on requirement 
-            // but we keep the logic flexible: if a value is passed, use it.
+            // Untuk single select, nilai selalu wajib diisi
+            // logika tetap fleksibel: jika value dikirim, gunakan.
             if (value) {
                 newFilters[key] = value;
             }
@@ -124,7 +124,7 @@ export default function MapControls({
 
     const [openDropdown, setOpenDropdown] = useState(null);
 
-    // Close dropdown when clicking outside
+    // Tutup dropdown saat klik di luar
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (openDropdown && !event.target.closest('.dropdown-container')) {
@@ -171,7 +171,7 @@ export default function MapControls({
 
                 {openDropdown === field.requestKey && (
                     <div className="absolute top-full left-0 w-full mt-1 bg-white border-2 border-gray-200 rounded-lg shadow-xl z-[999] max-h-60 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
-                        {/* 'Semua' Toggle Option */}
+                        {/* Opsi Toggle 'Semua' */}
                         {(() => {
                             const isAllSelected = !filters[field.requestKey] || (Array.isArray(filters[field.requestKey]) && filters[field.requestKey].length === 0);
                             const shoudHideIcon = field.hideIcon || (typeof hideFilterIcons !== 'undefined' && hideFilterIcons);
@@ -263,7 +263,7 @@ export default function MapControls({
 
     return (
         <>
-            {/* Search Box - Positioned over map */}
+                        {/* Kotak Pencarian - Diposisikan di atas peta */}
             {!hideSearch && (
                 <div className="absolute z-20 top-5 left-[52%] sm:left-1/2 -translate-x-1/2 lg:w-1/2 w-[75%]">
                     <div className="relative w-full px-3">
@@ -299,14 +299,14 @@ export default function MapControls({
                 </div>
             )}
 
-            {/* Advanced Search Panel */}
+                        {/* Panel Pencarian Lanjutan */}
             {isAdvancedSearchOpen && (
                 <div className={`absolute z-30 bottom-24 left-1/2 -translate-x-1/2 ${widthClass} bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] p-4 lg:p-5 animate-fade-in-up border border-gray-100`}>
 
-                    {/* Render fields with better layout logic */}
+                    {/* Render field dengan logika tata letak yang lebih baik */}
                     {showPermasalahanControls ? (
                         <div className="flex flex-col gap-4">
-                            {/* Special Top Section for Permasalahan */}
+                            {/* Bagian Atas Khusus untuk Permasalahan */}
                             <div className="flex flex-col gap-4">
                                 <div className={`grid grid-cols-1 ${filters.dataType === 'Krisis Listrik' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-x-8 gap-y-3`}>
                                     {filterFields.slice(0, 2).map((field) => (
@@ -345,7 +345,7 @@ export default function MapControls({
                                     )}
                                 </div>
 
-                                {/* Jenis Pengabdian ONLY if active and above the line */}
+                                {/* Jenis Pengabdian HANYA jika aktif dan berada di atas garis */}
                                 {filters.bubbleType === 'Pengabdian' && filterFields[2] && (
                                     <div className="flex flex-col gap-1">
                                         <label className="text-[12px] font-bold text-gray-800 ml-1">{filterFields[2].label}</label>
@@ -354,10 +354,10 @@ export default function MapControls({
                                 )}
                             </div>
 
-                            {/* Visual Divider */}
+                            {/* Garis Pemisah Visual */}
                             <div className="h-px bg-slate-200/60 w-full my-0.5" />
 
-                            {/* Rest of the Fields */}
+                            {/* Sisa Field */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-3">
                                 {(() => {
                                     const isPengabdian = filters.bubbleType === 'Pengabdian';
@@ -384,11 +384,11 @@ export default function MapControls({
                 </div>
             )}
 
-            {/* Control Buttons - Positioned at bottom of map */}
+            {/* Tombol Kontrol - Diposisikan di bagian bawah peta */}
             <div className="absolute z-20 bottom-5 left-1/2 -translate-x-1/2 w-[95%] lg:w-auto px-1">
                 <div className="flex flex-col md:flex-row items-center justify-center gap-2 lg:gap-3">
                     
-                    {/* TOP ROW (Mobile) / Left Group (Desktop) - MODES & TOGGLES */}
+                    {/* BARIS ATAS (Mobile) / Grup Kiri (Desktop) - MODE & TOGGLE */}
                     <div className="flex items-center justify-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
                         {!hideDisplayMode && (
                             <>
@@ -443,7 +443,7 @@ export default function MapControls({
                         )}
                     </div>
 
-                    {/* BOTTOM ROW (Mobile) / Right Group (Desktop) - ACTIONS */}
+                    {/* BARIS BAWAH (Mobile) / Grup Kanan (Desktop) - AKSI */}
                     <div className="flex items-center justify-center gap-2 w-full md:w-auto">
                         <button
                             onClick={() => setIsAdvancedSearchOpen(!isAdvancedSearchOpen)}

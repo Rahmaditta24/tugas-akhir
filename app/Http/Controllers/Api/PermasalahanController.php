@@ -23,19 +23,19 @@ class PermasalahanController extends Controller
             $query = PermasalahanKabupaten::query();
         }
 
-        // Filter by jenis permasalahan
+        // Filter berdasarkan jenis permasalahan
         if ($jenisPermasalahan) {
             $query->byJenisPermasalahan($jenisPermasalahan);
         }
 
-        // Filter by metrik (untuk krisis listrik: saidi/saifi)
+        // Filter berdasarkan metrik (untuk krisis listrik: saidi/saifi)
         if ($request->has('metrik')) {
             $query->byMetrik($request->metrik);
         }
 
         $data = $query->get();
 
-        // Format data untuk frontend (grouping by provinsi/kabupaten)
+        // Format data untuk frontend (dikelompokkan berdasarkan provinsi/kabupaten)
         $formattedData = $data->mapWithKeys(function ($item) use ($level) {
             $key = $level === 'provinsi' ? $item->provinsi : $item->kabupaten_kota;
             return [$key => $item->nilai];

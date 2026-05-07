@@ -8,11 +8,11 @@ import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
 import StatisticsCards from '../Components/StatisticsCards';
 
-// Lazy-loaded components
+// Komponen lazy-loaded
 const MapContainer = lazy(() => import('../Components/MapContainer'));
 const ResearchModal = lazy(() => import('../Components/ResearchModal'));
 
-// Loading fallback
+// Tampilan loading fallback
 const MapLoading = () => (
     <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
         <div className="text-gray-400 font-medium">Memuat peta...</div>
@@ -27,18 +27,18 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     const [selectedResearch, setSelectedResearch] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Update currentStats when global stats from props change
+    // Perbarui currentStats saat stats global dari props berubah
     useEffect(() => {
         setCurrentStats(stats);
     }, [stats]);
 
-    // Sync state with props when they change
+    // Sinkronisasi state dengan props saat ada perubahan
     useEffect(() => {
         setFilters(initialFilters);
         setSearchTerm(initialFilters.search || '');
     }, [initialFilters]);
 
-    // Mock options for Pengabdian
+    // Opsi filter statis untuk Pengabdian
     const allSkemas = [
         'KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW',
         'Pemberdayaan Desa Binaan',
@@ -122,7 +122,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             pengabdian_kabupaten: r.pengabdian_kabupaten || r.kabupaten_kota || r.kab_pt || '-',
             pengabdian_klaster: r.pengabdian_klaster || r.klaster || '-',
             pengabdian_status_pt: r.pengabdian_status_pt || r.ptn_pts || r.kategori_pt || '-',
-            // Kosabangsa Fields mapping
+            // Pemetaan field Kosabangsa
             pengabdian_nama_pendamping: r.pengabdian_nama_pendamping || r.nama_pendamping || '-',
             pengabdian_institusi_pendamping: r.pengabdian_institusi_pendamping || r.institusi_pendamping || '-',
             pengabdian_bidang_teknologi: r.pengabdian_bidang_teknologi || r.bidang_teknologi_inovasi || '-',

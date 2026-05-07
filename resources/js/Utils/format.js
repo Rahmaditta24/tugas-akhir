@@ -55,15 +55,39 @@ export const display = (v, fallback = '-') => {
  * @returns {string}
  */
 export const titleCase = (v) => {
-    const raw = fmt(v).toLowerCase();
-    if (!raw) return '-';
-    const s = raw.replace(/_/g, ' ');
+    const s = fmt(v).trim();
+    if (!s) return '-';
 
-    const acronyms = ['pt', 'cv', 'pens', 'ui', 'ugm', 'itb', 'ipb', 'ptn', 'pts', 'ptnbh', 'blu', 'satker', 'ii', 'iii', 'iv', 'vi', 'vii', 'viii', 'ix', 'kbm', 'pdb', 'pkm', 'pm-upud', 'pmm', 'pmp', 'puk', 'pw', 'diksi', 'dikti'];
-    return s.split(/\s+/).map(word => {
-        if (!word) return '';
-        if (acronyms.includes(word)) return word.toUpperCase();
-        return word.charAt(0).toUpperCase() + word.slice(1);
+    const conjunctions = ['dan', 'atau', 'tetapi', 'namun', 'melainkan', 'sedangkan', 'di', 'ke', 'dari', 'pada', 'dalam', 'yang', 'untuk', 'bagi', 'guna', 'buat', 'sebagai', 'dengan', 'secara', 'oleh', 'tentang', 'terhadap', 'daripada'];
+    const acronyms = ['dki', 'diy', 'pt', 'cv', 'pens', 'ui', 'ugm', 'itb', 'ipb', 'ptn', 'pts', 'ptnbh', 'blu', 'satker', 'ii', 'iii', 'iv', 'vi', 'vii', 'viii', 'ix', 'kbm', 'pdb', 'pkm', 'pm-upud', 'pmm', 'pmp', 'puk', 'pw', 'diksi', 'dikti'];
+
+    const words = s.split(/\s+/);
+    return words.map((word, index) => {
+        const lowerWord = word.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, "");
+        const upperWord = word.toUpperCase();
+
+        // Selalu kapital untuk kata pertama
+        if (index === 0) {
+            if (lowerWord === 'dki' || lowerWord === 'diy') return 'DKI';
+            if (lowerWord === 'di') return 'DI'; // Khusus untuk DI Yogyakarta di dropdown
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        }
+
+        // Penanganan khusus untuk singkatan wilayah
+        if (lowerWord === 'dki') return 'DKI';
+        if (lowerWord === 'diy') return 'DIY';
+        
+        // DI menjadi kapital jika diikuti Yogyakarta
+        if (lowerWord === 'di' && words[index + 1]?.toLowerCase().includes('yogyakarta')) return 'DI';
+
+        // Penanganan akronim lainnya
+        if (acronyms.includes(lowerWord)) return upperWord;
+
+        // Penanganan kata penghubung (tetap kecil)
+        if (conjunctions.includes(lowerWord)) return lowerWord;
+
+        // Default: Huruf kapital di awal
+        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     }).filter(Boolean).join(' ');
 };
 

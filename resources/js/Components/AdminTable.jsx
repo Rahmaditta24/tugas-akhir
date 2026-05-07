@@ -4,19 +4,19 @@ import { display } from '../Utils/format';
 export default function AdminTable({
     columns = [], // [{ key, title, className, sortable }]
     data = [],
-    sort = null, // string matching column.key
+    sort = null, // string yang cocok dengan column.key
     direction = null, // 'asc' | 'desc'
-    onSort = null, // returns just the column.key string
-    footer = null, // optional JSX
+    onSort = null, // mengembalikan string column.key
+    footer = null, // JSX opsional
     striped = false,
     emptyText = 'Tidak ada data',
     localFilterEnabled = false,
     filterPlaceholder = 'Cari di tabel ini...',
-    filterKeys = [], // keys to search; defaults to all visible columns
+    filterKeys = [], // kolom yang dicari; default semua kolom yang terlihat
     columnFilterEnabled = false,
-    filters = null, // External filter state
-    onFilterChange = null, // External change handler
-    // --- Bulk selection ---
+    filters = null, // state filter eksternal
+    onFilterChange = null, // handler perubahan filter eksternal
+    // --- Seleksi massal ---
     selectionEnabled = false,
     selectedItemIds = [],
     onSelectionChange = null,
@@ -28,7 +28,7 @@ export default function AdminTable({
     const [query, setQuery] = useState('');
     const [internalFilterValues, setFilterValues] = useState({});
 
-    // Controlled vs uncontrolled filter mode
+    // Mode filter dikontrol vs tidak dikontrol
     const isControlled = !!onFilterChange;
     const filterValues = isControlled ? (filters || {}) : internalFilterValues;
 
@@ -45,7 +45,7 @@ export default function AdminTable({
         onSort(col.key);
     };
 
-    // --- Selection helpers ---
+    // --- Fungsi seleksi ---
     const allIds = useMemo(() => data.map((r) => r.id).filter(Boolean), [data]);
     const allSelected = allIds.length > 0 && allIds.every((id) => selectedItemIds.includes(id));
     const someSelected = allIds.some((id) => selectedItemIds.includes(id));
@@ -67,7 +67,7 @@ export default function AdminTable({
             onSelectionChange([...selectedItemIds, id]);
         }
     };
-    // --- End selection helpers ---
+    // --- Akhir fungsi seleksi ---
 
     const visibleKeys = useMemo(() => (columns || []).map((c) => c.key), [columns]);
     const effectiveKeys = filterKeys && filterKeys.length > 0 ? filterKeys : visibleKeys;

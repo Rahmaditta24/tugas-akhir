@@ -10,21 +10,23 @@ use App\Models\Pengabdian;
 use App\Models\PermasalahanKabupaten;
 use App\Models\PermasalahanProvinsi;
 use App\Models\Produk;
+use App\Models\RumusanMasalahCategory;
+use App\Models\RumusanMasalahStatement;
 
 class AdminStatsController extends Controller
 {
     public function index()
     {
         return response()->json([
-            'penelitian' => \App\Models\Penelitian::count(),
-            'pengabdian' => \App\Models\Pengabdian::count(),
-            'hilirisasi' => \App\Models\Hilirisasi::count(),
-            'produk' => \App\Models\Produk::count(),
-            'fasilitas' => \App\Models\FasilitasLab::count(),
-            'permasalahan_prov' => \App\Models\PermasalahanProvinsi::count(),
-            'permasalahan_kab' => \App\Models\PermasalahanKabupaten::count(),
-            'rumusan_masalah_category' => \App\Models\RumusanMasalahCategory::count(),
-            'rumusan_masalah_statement' => \App\Models\RumusanMasalahStatement::count(),
+            'penelitian' => Penelitian::whereNotNull('judul')->where('judul', '!=', '')->count(),
+            'pengabdian' => Pengabdian::count(),
+            'hilirisasi' => Hilirisasi::count(),
+            'produk' => Produk::count(),
+            'fasilitas' => FasilitasLab::count(),
+            'permasalahan_prov' => PermasalahanProvinsi::count(),
+            'permasalahan_kab' => PermasalahanKabupaten::count(),
+            'rumusan_masalah_category' => RumusanMasalahCategory::count(),
+            'rumusan_masalah_statement' => RumusanMasalahStatement::count(),
             'timestamp' => now()->toISOString(),
         ]);
     }

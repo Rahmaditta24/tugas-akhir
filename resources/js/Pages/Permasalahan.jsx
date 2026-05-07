@@ -9,11 +9,11 @@ import PermasalahanLegend from '../Components/PermasalahanLegend';
 import ResearchList from '../Components/ResearchList';
 import PermasalahanDataTable from '../Components/PermasalahanDataTable';
 
-// Lazy-loaded components
+// Komponen lazy-loaded
 const PermasalahanMap = lazy(() => import('../Components/PermasalahanMap'));
 const PermasalahanDetailModal = lazy(() => import('../Components/PermasalahanDetailModal'));
 
-// Loading fallback
+// Tampilan loading fallback
 const MapLoading = () => (
     <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
         <div className="text-gray-400 font-medium">Memuat peta...</div>
@@ -46,14 +46,14 @@ export default function Permasalahan({
     const [selectedResearch, setSelectedResearch] = useState(null);
     const [provinces, setProvinces] = useState([]);
 
-    // Fetch provinces from API (Emsifa via backend, cached)
+    // Ambil provinsi dari API (Emsifa via backend, dicache)
     useEffect(() => {
         axios.get('/api/provinces')
             .then(res => setProvinces(res.data.map(p => p.name)))
             .catch(() => {});
     }, []);
 
-    // Sync state with props
+    // Sinkronisasi state dengan props
     useEffect(() => {
         setFilters(prev => ({
             ...prev,
@@ -64,25 +64,25 @@ export default function Permasalahan({
         setSearchTerm(initialFilters.search || '');
     }, [initialFilters]);
 
-    // Dynamic filter options based on bubbleType
+    // Opsi filter dinamis berdasarkan bubbleType
     const filterOptions = {
         dataType: jenisPermasalahan.length ? jenisPermasalahan : ['Sampah', 'Stunting', 'Gizi Buruk', 'Krisis Listrik', 'Ketahanan Pangan'],
         bubbleType: ['Penelitian', 'Pengabdian', 'Hilirisasi'],
         ...(allFilterOptions[filters.bubbleType] || {})
     };
 
-    // Ensure provinces are available if the controller didn't provide them (fallback)
+    // Pastikan provinsi tersedia jika controller tidak menyediakannya (fallback)
     if (!filterOptions.provinsi || filterOptions.provinsi.length === 0) {
         filterOptions.provinsi = provinces;
     }
 
-    // Dynamic filter fields based on bubbleType
+    // Kolom filter dinamis berdasarkan bubbleType
     const filterFields = [
         { label: 'Pilih Data', requestKey: 'dataType', optionKey: 'dataType', type: 'single', hideAllOption: true },
         { label: 'Pilih Jenis Bubble', requestKey: 'bubbleType', optionKey: 'bubbleType', type: 'single', hideAllOption: true },
     ];
 
-    // Add specific fields based on bubbleType
+    // Tambahkan kolom spesifik berdasarkan bubbleType
     if (filters.bubbleType === 'Penelitian') {
         filterFields.push(
             { label: 'Bidang Fokus', requestKey: 'bidang_fokus', optionKey: 'bidangFokus' },
@@ -137,19 +137,19 @@ export default function Permasalahan({
     };
 
     const handleFilterChange = (newFilters) => {
-        // Automatically set default batch_type if switched to Pengabdian and it's not set
+        // Setel batch_type default secara otomatis jika beralih ke Pengabdian dan belum disetel
         if (newFilters.bubbleType === 'Pengabdian' && filters.bubbleType !== 'Pengabdian') {
             newFilters.batch_type = 'Multitahun, Batch I & Batch II';
         }
 
-        // Clean up irrelevant filters when bubbleType changes
+        // Bersihkan filter yang tidak relevan saat bubbleType berubah
         if (newFilters.bubbleType !== filters.bubbleType) {
-            // Remove batch_type if not in Pengabdian
+            // Hapus batch_type jika bukan di Pengabdian
             if (newFilters.bubbleType !== 'Pengabdian') {
                 delete newFilters.batch_type;
             }
 
-            // Remove other category-specific filters to prevent messy URLs and filter conflicts
+            // Hapus filter spesifik kategori lainnya untuk mencegah URL berantakan dan konflik filter
             const commonKeys = ['dataType', 'bubbleType', 'search'];
             Object.keys(newFilters).forEach(key => {
                 if (!commonKeys.includes(key) && key !== 'batch_type') {
@@ -241,7 +241,7 @@ export default function Permasalahan({
                 />
             </div>
 
-            {/* Data Info Bar */}
+            {/* Bar Info Data */}
             <div className="w-full lg:max-w-[90%] mx-auto mt-4 px-4 py-3 bg-[#f8fbff] border border-blue-200 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-2 shadow-sm text-sm">
                 <div className="space-y-1">
                     <p className="text-gray-700">

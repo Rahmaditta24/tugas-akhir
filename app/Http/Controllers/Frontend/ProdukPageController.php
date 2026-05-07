@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Produk;
 use Inertia\Inertia;
@@ -14,34 +16,35 @@ class ProdukPageController extends Controller
     public function index(Request $request)
     {
         $baseQuery = Produk::query();
-        
-        // Apply simple search
+
+        // Menerapkan pencarian sederhana
         if ($request->filled('search')) {
             $baseQuery->search($request->search);
         }
 
-        // Apply advanced multi-row queries
+        // Menerapkan kueri tingkat lanjut multi baris
         if ($request->filled('queries')) {
             $queries = json_decode($request->queries, true);
             if (is_array($queries)) {
                 $baseQuery->where(function ($q) use ($queries) {
                     foreach ($queries as $index => $row) {
                         $term = trim($row['term'] ?? '');
-                        if (empty($term)) continue;
+                        if (empty($term))
+                            continue;
 
                         $field = $row['field'] ?? 'all';
                         $operator = strtoupper($row['operator'] ?? 'AND');
 
-                        $applyCondition = function($query) use ($term, $field) {
+                        $applyCondition = function ($query) use ($term, $field) {
                             if ($field === 'all') {
-                                $query->where(function($sub) use ($term) {
+                                $query->where(function ($sub) use ($term) {
                                     $sub->where('nama_produk', 'like', "%$term%")
                                         ->orWhere('nama_inventor', 'like', "%$term%")
                                         ->orWhere('institusi', 'like', "%$term%")
                                         ->orWhere('bidang', 'like', "%$term%");
                                 });
                             } else {
-                                $dbField = match($field) {
+                                $dbField = match ($field) {
                                     'title' => 'nama_produk',
                                     'university' => 'institusi',
                                     'researcher' => 'nama_inventor',
@@ -56,11 +59,14 @@ class ProdukPageController extends Controller
                             $applyCondition($q);
                         } else {
                             if ($operator === 'OR') {
-                                $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->orWhere(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             } elseif ($operator === 'AND NOT') {
-                                $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
-                            } else { 
-                                $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->whereNot(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
+                            } else {
+                                $q->where(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             }
                         }
                     }
@@ -82,7 +88,7 @@ class ProdukPageController extends Controller
 
         $statsQ = clone $baseQuery;
         $statsCacheKey = 'stats_produk_v1_' . md5(json_encode($request->all()));
-        $stats = Cache::remember($statsCacheKey, 3600, function() use ($baseQuery) {
+        $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
             $statsQ = clone $baseQuery;
             return [
                 'totalResearch' => (clone $statsQ)->count(),
@@ -93,7 +99,7 @@ class ProdukPageController extends Controller
         });
 
         $cacheKey = 'map_data_produk_v6_' . md5(json_encode($request->all()));
-        $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
+        $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery) {
             $mapDataArray = [];
             $query = (clone $baseQuery)->select(
                 'id',
@@ -105,15 +111,15 @@ class ProdukPageController extends Controller
                 'nama_inventor',
                 DB::raw('SUBSTRING(nama_produk, 1, 150) as judul_short')
             )
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude');
-            
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude');
+
             foreach ($query->cursor() as $item) {
                 $mapDataArray[] = [
                     'id' => $item->id,
                     'institusi' => $item->institusi,
-                    'pt_latitude' => (float)$item->pt_latitude,
-                    'pt_longitude' => (float)$item->pt_longitude,
+                    'pt_latitude' => (float) $item->pt_latitude,
+                    'pt_longitude' => (float) $item->pt_longitude,
                     'provinsi' => $item->provinsi,
                     'bidang_fokus' => $item->bidang_fokus,
                     'nama_inventor' => $item->nama_inventor,
@@ -124,8 +130,8 @@ class ProdukPageController extends Controller
             return collect($mapDataArray)->values()->all();
         });
 
-        // Only load list if filtered/searched
-        $isFiltered = $request->filled('search') 
+        // Hanya muat data list jika terfilter/tersaring
+        $isFiltered = $request->filled('search')
             || $request->filled('queries')
             || $request->filled('bidang')
             || $request->filled('tkt')
@@ -139,9 +145,9 @@ class ProdukPageController extends Controller
                 ->values()
             : collect()->values();
 
-        // Get filter options (cached)
+        // Dapatkan opsi filter (di-cache)
         $filterOptions = [
-            'bidang' => Cache::remember('filter_produk_bidang', 7200, function() {
+            'bidang' => Cache::remember('filter_produk_bidang', 7200, function () {
                 return DB::table('produk')
                     ->select('bidang')
                     ->whereNotNull('bidang')
@@ -151,7 +157,7 @@ class ProdukPageController extends Controller
                     ->filter()
                     ->values();
             }),
-            'tkt' => Cache::remember('filter_produk_tkt', 7200, function() {
+            'tkt' => Cache::remember('filter_produk_tkt', 7200, function () {
                 return DB::table('produk')
                     ->select('tkt')
                     ->whereNotNull('tkt')
@@ -161,13 +167,13 @@ class ProdukPageController extends Controller
                     ->filter()
                     ->values();
             }),
-            'provinsi' => Cache::remember('global_provinces_list', 86400, function() {
-                // Use local data directly - more reliable for production
-                $path = storage_path('provinces.json');
+            'provinsi' => Cache::remember('global_provinces_final_v1', 86400, function () {
+                $path = database_path('data/provinces.json');
                 if (file_exists($path)) {
                     $data = json_decode(file_get_contents($path), true);
                     return collect($data)
-                        ->map(fn($p) => \Illuminate\Support\Str::title($p['name']))
+                        ->map(fn($p) => trim($p['name']))
+                        ->unique()
                         ->sort()
                         ->values()
                         ->all();

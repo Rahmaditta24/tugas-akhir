@@ -47,7 +47,7 @@ class Pengabdian extends Model
         'thn_pelaksanaan_kegiatan' => 'integer',
     ];
 
-    // Scopes
+    // Scope pencarian dan filter
     public function scopeByBatchType($query, $batchType)
     {
         return $query->where('batch_type', $batchType);

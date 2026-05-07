@@ -11,19 +11,44 @@ class HilirisasiSeeder extends Seeder
     public function run(): void
     {
         $jsonPath = database_path('data/data-hilirisasi.json');
-        $toTitleCase = function ($str) {
+        $conjunctions = ['dan', 'atau', 'tetapi', 'namun', 'melainkan', 'sedangkan', 'di', 'ke', 'dari', 'pada', 'dalam', 'yang', 'untuk', 'bagi', 'guna', 'buat', 'sebagai', 'dengan', 'secara', 'oleh', 'tentang', 'terhadap', 'daripada'];
+
+        $toTitleCase = function ($str) use ($conjunctions) {
             if (!$str || $str === 'tidak tersedia') return $str;
-            $res = mb_convert_case($str, MB_CASE_TITLE, "UTF-8");
-            // Fix PT and CV capitalization including with dots
-            $res = preg_replace('/\bPt\.?\b/i', 'PT', $res);
-            $res = preg_replace('/\bCv\.?\b/i', 'CV', $res);
-            return $res;
+            
+            // 1. Bersihkan simbol di awal judul
+            $s = preg_replace('/^[.\s…“"\'‘`]+/', '', $str);
+            $s = trim($s);
+            if (empty($s)) return $str;
+
+            // 2. Pisahkan per kata
+            $words = explode(' ', $s);
+            $formattedWords = [];
+            
+            foreach ($words as $i => $word) {
+                if ($word === '') continue;
+                $wordLower = strtolower($word);
+                
+                // Kata pertama atau bukan kata penghubung
+                if ($i === 0 || !in_array($wordLower, $conjunctions)) {
+                    $res = mb_convert_case($wordLower, MB_CASE_TITLE, "UTF-8");
+                    // Perbaiki penulisan PT dan CV
+                    $res = preg_replace('/\bPt\.?\b/i', 'PT', $res);
+                    $res = preg_replace('/\bCv\.?\b/i', 'CV', $res);
+                    $formattedWords[] = $res;
+                } else {
+                    $formattedWords[] = $wordLower;
+                }
+            }
+            return implode(' ', $formattedWords);
         };
 
         $normalize = function ($value) {
             if ($value === null) return null;
             if (is_string($value)) {
                 $v = trim($value);
+                // Tangani karakter kontrol
+                $v = preg_replace('/[[:cntrl:]]/', '', $v);
                 if ($v === '' || $v === '-' || $v === '—' || $v === '?' || strcasecmp($v, 'na') === 0 || strcasecmp($v, 'n/a') === 0) {
                     return null;
                 }
@@ -99,7 +124,7 @@ class HilirisasiSeeder extends Seeder
             return [$lat, $lon];
         };
 
-        $seen = []; // Array map untuk melacak judul+institusi duplikat
+        $seen = []; // Peta array untuk melacak duplikat judul+institusi
 
         foreach (array_chunk($hilirisasiData, $chunkSize) as $chunk) {
             $insertData = [];
@@ -115,12 +140,12 @@ class HilirisasiSeeder extends Seeder
                 }
 
                 $namaField = $normalize($item['Nama Pengusul'] ?? null) ?? '';
-                // Create unique key from Judul and Pengusul
+                // Buat kunci unik dari Judul dan Pengusul
                 $uniqueKey = md5(strtolower($judul . '|' . $namaField));
                 if (isset($seen[$uniqueKey])) {
                     $duplikasi++;
                     $bar->advance();
-                    continue; // Skip duplicate
+                    continue; // Lewati duplikat
                 }
                 $seen[$uniqueKey] = true;
 

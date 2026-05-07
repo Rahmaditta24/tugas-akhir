@@ -26,13 +26,13 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
         }
     };
 
-    // USE DEBOUNCE to prevent lagging
+    // GUNAKAN DEBOUNCE untuk mencegah lag
     const [debouncedRows, setDebouncedRows] = React.useState(searchRows);
 
     React.useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedRows(searchRows);
-        }, 500); // Wait 500ms after user stops typing
+        }, 500); // Tunggu 500ms setelah pengguna berhenti mengetik
         return () => clearTimeout(handler);
     }, [searchRows]);
 
@@ -77,7 +77,7 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
 
     const filteredResearches = useMemo(() => {
         if (!Array.isArray(researches)) return [];
-        if (!hasActiveQuery) return researches; // FIXED: show data from server if no local search active
+        if (!hasActiveQuery) return researches; // DIPERBAIKI: tampilkan data dari server jika tidak ada pencarian lokal yang aktif
 
         return researches.filter((research) => {
             let result = matchesRow(research, normalizedRows[0]);
@@ -99,7 +99,7 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
         });
     }, [researches, normalizedRows, hasActiveQuery]);
 
-    // Lift state up whenever filteredResearches changes
+    // Naikkan state setiap kali filteredResearches berubah
     React.useEffect(() => {
         if (onFilteredResults) {
             onFilteredResults(filteredResearches);
@@ -279,9 +279,6 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
 
                                     <div className="space-y-0.5 text-[12.5px] text-slate-600">
                                         <p><span className="font-bold text-slate-700">Institusi:</span> {research.institusi || '-'}</p>
-                                        {/* <p><span className="font-bold text-slate-700">Fakultas:</span> {research.fakultas || '-'}</p>
-                                        <p><span className="font-bold text-slate-700">Departemen:</span> {research.departemen || '-'}</p>
-                                        <p><span className="font-bold text-slate-700">Status Akses:</span> {research.status_akses || '-'}</p> */}
                                     </div>
 
                                     <div className="mt-4 flex justify-between items-end">

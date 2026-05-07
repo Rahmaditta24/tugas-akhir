@@ -53,11 +53,11 @@ class PengabdianController extends Controller
     {
         if (empty($name)) return $name;
         
-        // Trim whitespace first
+        // Potong spasi di awal dan akhir
         $name = trim($name);
         
-        // If it's already mixed case, assume it's possibly formatted correctly
-        // Only format if it's all uppercase OR all lowercase
+        // Jika teks sudah campuran huruf besar/kecil, asumsikan formatnya sudah benar
+        // Hanya format jika semua huruf besar ATAU semua huruf kecil
         if ($name !== mb_strtoupper($name) && $name !== mb_strtolower($name)) {
             return $name;
         }
@@ -80,7 +80,7 @@ class PengabdianController extends Controller
 
         foreach ($replacements as $search => $replace) {
             $formatted = preg_replace('/\b' . preg_quote($search) . '\b/u', $replace, $formatted);
-            // Also handle cases with comma or end of string
+            // Menangani huruf yang diikuti koma atau di akhir teks
             $formatted = str_replace($search, $replace, $formatted);
         }
 
@@ -105,7 +105,6 @@ class PengabdianController extends Controller
     public function index(Request $request)
     {
         $type = $request->get('type', 'batch');
-        $type = $request->get('type', 'batch');
 
         $query = Pengabdian::query();
         if ($type === 'kosabangsa') {
@@ -114,13 +113,11 @@ class PengabdianController extends Controller
                   ->orWhere('nama_skema', 'like', '%Kosabangsa%');
             });
         } else {
-            // Include both old batch and multitahun types in the default tab
-            $query->whereIn('batch_type', ['batch_i', 'batch_ii', 'batch', 'multitahun', 'multitahun_lanjutan']);
-            // Include both old batch and multitahun types in the default tab
+            // Masukkan batch lama dan tipe multitahun di tab default
             $query->whereIn('batch_type', ['batch_i', 'batch_ii', 'batch', 'multitahun', 'multitahun_lanjutan']);
         }
 
-        // Apply global search
+        // Pencarian global
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
@@ -131,7 +128,7 @@ class PengabdianController extends Controller
             });
         }
 
-        // Column-specific filters
+        // Filter berbasis kolom
         if ($request->filled('filters')) {
             $filters = $request->filters;
             foreach ($filters as $key => $value) {
@@ -150,17 +147,12 @@ class PengabdianController extends Controller
         if ($perPage < 10) $perPage = 10;
         if ($perPage > 100) $perPage = 100;
 
-        // Whitelisted sorting
+        // Daftar pengurutan 
         $allowedSorts = ['id', 'nama', 'nidn', 'nama_institusi', 'judul', 'prov_pt', 'kab_pt', 'thn_pelaksanaan_kegiatan', 'nama_skema'];
         $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
 
-        // Whitelisted sorting
-        $allowedSorts = ['id', 'nama', 'nidn', 'nama_institusi', 'judul', 'prov_pt', 'kab_pt', 'thn_pelaksanaan_kegiatan', 'nama_skema'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
-        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
-
-        // Cache Versioning
+        // Versi Cache
         $v = Cache::get('pengabdian_admin_v', 1);
         $cacheKey = 'pengabdian_admin_v' . $v . '_' . md5(json_encode($request->all()));
 
@@ -205,8 +197,6 @@ class PengabdianController extends Controller
                 'type' => $type,
                 'perPage' => $perPage,
                 'columns' => $request->filters ?? [],
-                'sort' => $sort,
-                'direction' => $direction,
                 'sort' => $sort,
                 'direction' => $direction,
             ],
@@ -261,7 +251,7 @@ class PengabdianController extends Controller
             'kab_mitra' => ['nullable', 'string', 'max:100'],
             'batch_type' => ['required', 'string', 'in:multitahun,batch,kosabangsa'],
             
-            // Kosabangsa specific fields
+            // Kolom spesifik Kosabangsa
             'nama_pendamping' => ['nullable', 'string', 'max:255'],
             'nidn_pendamping' => ['nullable', 'string', 'max:50'],
             'kd_perguruan_tinggi_pendamping' => ['nullable', 'string', 'max:50'],
@@ -274,7 +264,7 @@ class PengabdianController extends Controller
         $validated['prov_pt'] = $this->formatProvinsi($validated['prov_pt'] ?? '');
         $validated['prov_mitra'] = $this->formatProvinsi($validated['prov_mitra'] ?? '');
 
-        // Auto-clean empty text fields and detect PTN/PTS
+        // Bersihkan kolom teks kosong dan deteksi PTN/PTS secara otomatis
         $fieldsToClean = ['klaster', 'wilayah_lldikti', 'bidang_fokus', 'nama_singkat_skema', 'urutan_thn_kegitan'];
         foreach ($fieldsToClean as $f) {
             if (empty($validated[$f]) || strtolower((string)$validated[$f]) === 'nan') {
@@ -296,7 +286,7 @@ class PengabdianController extends Controller
     {
         if (is_string($id) && str_starts_with($id, 'json_')) {
             $index = (int) str_replace('json_', '', $id);
-            $path = base_path('peta-bima/data/data-pengabdian_clean.json');
+            $path = database_path('data/data-pengabdian.json');
             if (is_file($path)) {
                 $json = json_decode(file_get_contents($path), true);
                 if (is_array($json)) {
@@ -329,7 +319,7 @@ class PengabdianController extends Controller
                         $it = $targetItem;
                         $isKosabangsa = ($targetBatchType === 'kosabangsa');
 
-                        // Helper to clean/sanitize data
+                        // Fungsi untuk membersihkan data
                         $clean = function($v) {
                             if (is_string($v)) {
                                 $v = trim($v);
@@ -339,7 +329,7 @@ class PengabdianController extends Controller
                             return $v;
                         };
 
-                        // Map JSON fields to model fields (consistent with index())
+                        // Petakan kolom JSON ke kolom model (konsisten dengan index())
                         $item = (object) [
                             'id' => $id,
                             'batch_type' => $targetBatchType,
@@ -363,7 +353,7 @@ class PengabdianController extends Controller
                             'prov_mitra' => $clean($it['prov_mitra'] ?? ($it['provinsi_mitra'] ?? null)),
                             'kab_mitra' => $clean($it['kab_mitra'] ?? ($it['lokus'] ?? null)),
                             
-                            // Kosabangsa fields
+                            // Kolom Kosabangsa
                             'nama_pendamping' => $clean($it['nama_pendamping'] ?? null),
                             'nidn_pendamping' => $clean($it['nidn_pendamping'] ?? null),
                             'kd_perguruan_tinggi_pendamping' => $clean($it['kd_perguruan_tinggi_pendamping'] ?? null),
@@ -385,7 +375,7 @@ class PengabdianController extends Controller
 
         $pengabdian = Pengabdian::findOrFail($id);
         
-        // Helper to clean/sanitize data
+        // Fungsi untuk membersihkan data
         $clean = function($v) {
             if (is_string($v)) {
                 $v = trim($v);
@@ -395,14 +385,14 @@ class PengabdianController extends Controller
             return $v;
         };
 
-        // Try to find missing info in JSON for ANY record (especially if coordinates or mitra details are missing)
+        // Coba cari informasi yang kurang dari JSON untuk SETIAP baris (terutama jika koordinat atau mitra tidak ada)
         $needsInfo = empty($pengabdian->pt_latitude) || empty($pengabdian->pt_longitude) || 
                      empty($pengabdian->prov_mitra) || empty($pengabdian->kab_mitra) ||
                      empty($pengabdian->ptn_pts) || empty($pengabdian->klaster) ||
                      ($pengabdian->nama_skema === 'Kosabangsa' && empty($pengabdian->nama_pendamping));
 
         if ($needsInfo) {
-            $path = base_path('peta-bima/data/data-pengabdian_clean.json');
+            $path = database_path('data/data-pengabdian.json');
             if (is_file($path)) {
                 $json = json_decode(file_get_contents($path), true);
                 if (is_array($json)) {
@@ -414,23 +404,23 @@ class PengabdianController extends Controller
                             $jsonNidn = $clean($it['nidn'] ?? ($it['nidn_pelaksana'] ?? ($it['nidn_ketua'] ?? '')));
                             
                             if ($jsonNama === $pengabdian->nama || ($jsonNidn && $jsonNidn == $pengabdian->nidn)) {
-                                // Found a match in JSON, fill in missing fields if they are empty in DB
+                                // Ditemukan kecocokan di JSON, isi data jika di DB kosong
                                 if (empty($pengabdian->pt_latitude)) $pengabdian->pt_latitude = $clean($it['pt_latitude'] ?? null);
                                 if (empty($pengabdian->pt_longitude)) $pengabdian->pt_longitude = $clean($it['pt_longitude'] ?? null);
                                 if (empty($pengabdian->prov_pt)) $pengabdian->prov_pt = $clean($it['Prov PT'] ?? ($it['prov_pt'] ?? null));
                                 if (empty($pengabdian->kab_pt)) $pengabdian->kab_pt = $clean($it['Kab PT'] ?? ($it['kab_pt'] ?? null));
                                 
-                                // Mapping for PTN/PTS
+                                // Pemetaan PTN/PTS
                                 if (empty($pengabdian->ptn_pts)) {
                                     $pengabdian->ptn_pts = $clean($it['status PT'] ?? ($it['status_PT'] ?? ($it['ptn/pts'] ?? ($it['ptn_pts'] ?? ($it['ptn/pts_pelaksana'] ?? ($it['ptn_pts_pelaksana'] ?? null))))));
                                 }
                                 
-                                // Mapping for Klaster
+                                // Pemetaan Klaster
                                 if (empty($pengabdian->klaster)) {
                                     $pengabdian->klaster = $clean($it['nama_klaster'] ?? ($it['klaster'] ?? null));
                                 }
                                 
-                                // Mapping for LLDIKTI
+                                // Pemetaan LLDIKTI
                                 if (empty($pengabdian->wilayah_lldikti)) {
                                     $pengabdian->wilayah_lldikti = $clean($it['kd_lldikti'] ?? ($it['wilayah_lldikti'] ?? ($it['lldikti_wilayah_pelaksana'] ?? null)));
                                 }
@@ -456,7 +446,7 @@ class PengabdianController extends Controller
             }
         }
 
-        // Apply cleaning to all fields
+        // Bersihkan semua kolom
         $fields = [
             'nidn', 'nama', 'judul', 'nama_institusi', 'kd_perguruan_tinggi', 
             'wilayah_lldikti', 'ptn_pts', 'kab_pt', 'prov_pt', 'klaster', 
@@ -475,13 +465,13 @@ class PengabdianController extends Controller
             $pengabdian->kd_perguruan_tinggi = '0';
         }
 
-        // Ensure Title Case and proper prefix for locations to help with matching in frontend
+        // Pastikan Huruf Kapital Di Awal dan awalan wilayah yang tepat agar pencarian frontend lebih mudah
         $normalizeLoc = function($s) {
             if (!$s) return $s;
             $s = trim($s);
-            // Replace "Kab." or "Kab " with "Kabupaten "
+            // Ganti "Kab." atau "Kab " menjadi "Kabupaten "
             $s = preg_replace('/^kab\.?\s+/i', 'Kabupaten ', $s);
-            // Replace "Kota " with "Kota " (ensuring standard)
+            // Ganti "Kota " menjadi "Kota " (pastikan terstandar)
             $s = preg_replace('/^kota\s+/i', 'Kota ', $s);
             return mb_convert_case($s, MB_CASE_TITLE);
         };
@@ -541,7 +531,7 @@ class PengabdianController extends Controller
             'kab_mitra' => ['nullable', 'string', 'max:100'],
             'batch_type' => ['required', 'string', 'in:multitahun,batch,kosabangsa'],
 
-            // Kosabangsa specific fields
+            // Kolom spesifik Kosabangsa
             'nama_pendamping' => ['nullable', 'string', 'max:255'],
             'nidn_pendamping' => ['nullable', 'string', 'max:50'],
             'kd_perguruan_tinggi_pendamping' => ['nullable', 'string', 'max:50'],
@@ -566,9 +556,6 @@ class PengabdianController extends Controller
         }
 
         $pengabdian = Pengabdian::findOrFail($id);
-        if (empty($validated['ptn_pts'])) {
-            $validated['ptn_pts'] = $this->isPTN($validated['nama_institusi']) ? 'PTN' : 'PTS';
-        }
         $pengabdian->update($validated);
         $this->clearModuleCache();
 
@@ -632,7 +619,7 @@ class PengabdianController extends Controller
             $pengabdian = Pengabdian::find($itemData['id']);
             if (!$pengabdian) continue;
 
-            // Sanitize coordinates
+            // Bersihkan koordinat
             if (isset($itemData['pt_latitude'])) {
                 $itemData['pt_latitude'] = is_string($itemData['pt_latitude'])
                     ? str_replace(',', '.', $itemData['pt_latitude'])
@@ -643,18 +630,18 @@ class PengabdianController extends Controller
                     ? str_replace(',', '.', $itemData['pt_longitude'])
                     : $itemData['pt_longitude'];
             }
-            // Normalize kab prefix
+            // Normalisasi awalan kabupaten
             foreach (['kab_pt', 'kab_mitra'] as $field) {
                 if (isset($itemData[$field]) && is_string($itemData[$field])) {
                     $itemData[$field] = preg_replace(['/^kab\.\s*/i', '/^kab\s+/i'], ['Kabupaten ', 'Kabupaten '], trim($itemData[$field]));
                 }
             }
             
-            // Format provinces
+            // Format provinsi
             if (isset($itemData['prov_pt'])) $itemData['prov_pt'] = $this->formatProvinsi($itemData['prov_pt']);
             if (isset($itemData['prov_mitra'])) $itemData['prov_mitra'] = $this->formatProvinsi($itemData['prov_mitra']);
 
-            // Remove id from data to avoid overwriting
+            // Hapus ID dari data untuk menghindari overwrite
             unset($itemData['id']);
 
             $pengabdian->update($itemData);
@@ -834,7 +821,7 @@ class PengabdianController extends Controller
             $errors = [];
             $batch = [];
 
-            // Strict Header Validation (Tolak jika kolom tidak sesuai)
+            // Validasi Header Ketat (Tolak jika kolom tidak sesuai)
             if (!empty($request->data)) {
                 $firstRow = $request->data[0];
                 $foundKeys = array_map(function($k) {
@@ -845,7 +832,7 @@ class PengabdianController extends Controller
                 $missing = [];
                 foreach ($required as $req) {
                     if (!in_array($req, $foundKeys)) {
-                        // Try to map alias if missing
+                        // Sesuaikan dengan alias jika tidak ditemukan
                         $aliases = [
                             'namainstitusi' => ['institusi', 'perguruantinggi'],
                             'thnpelaksanaankegiatan' => ['tahun']

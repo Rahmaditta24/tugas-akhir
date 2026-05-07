@@ -24,7 +24,7 @@ Route::get('/provinces', [RegionController::class, 'provinces']);
 Route::get('/regencies/{provinceId}', [RegionController::class, 'regencies']);
 Route::get('/campuses/search', [RegionController::class, 'searchCampus']);
 
-// Penelitian endpoints
+// Endpoint Penelitian
 Route::prefix('penelitian')->group(function () {
     Route::get('/', [PenelitianController::class, 'index']);
     Route::get('/export', [PenelitianController::class, 'export']);
@@ -32,28 +32,28 @@ Route::prefix('penelitian')->group(function () {
     Route::get('/{id}', [PenelitianController::class, 'show']);
 });
 
-// Hilirisasi endpoints
+// Endpoint Hilirisasi
 Route::prefix('hilirisasi')->group(function () {
     Route::get('/', [HilirisasiController::class, 'index']);
     Route::get('/export', [HilirisasiController::class, 'export']);
     Route::get('/{id}', [HilirisasiController::class, 'show']);
 });
 
-// Pengabdian endpoints
+// Endpoint Pengabdian
 Route::prefix('pengabdian')->group(function () {
     Route::get('/', [PengabdianController::class, 'index']);
     Route::get('/export', [PengabdianController::class, 'export']);
     Route::get('/{id}', [PengabdianController::class, 'show']);
 });
 
-// Permasalahan endpoints
+// Endpoint Permasalahan
 Route::prefix('permasalahan')->group(function () {
     Route::get('/', [PermasalahanController::class, 'index']);
     Route::get('/provinsi/{provinsi}', [PermasalahanController::class, 'byProvinsi']);
     Route::get('/statistics', [PermasalahanController::class, 'statistics']);
 });
 
-// Produk endpoints
+// Endpoint Produk
 Route::prefix('produk')->group(function () {
     Route::get('/', [ProdukController::class, 'index']);
     Route::get('/export', [ProdukController::class, 'export']);

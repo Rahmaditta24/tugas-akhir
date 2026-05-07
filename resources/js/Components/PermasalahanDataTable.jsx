@@ -4,9 +4,9 @@ import { titleCase } from '../Utils/format';
 
 
 export default function PermasalahanDataTable({
-    /** permasalahanStats[activeDataType] – array of {provinsi, nilai, satuan} */
+    /** permasalahanStats[activeDataType] – array berisi {provinsi, nilai, satuan} */
     rows = [],
-    /** kabupaten rows – array of {kabupaten_kota, provinsi, nilai, satuan} */
+    /** baris kabupaten – array berisi {kabupaten_kota, provinsi, nilai, satuan} */
     kabupatenRows = [],
     activeDataType = 'Sampah',
     satuan = '',
@@ -87,7 +87,7 @@ export default function PermasalahanDataTable({
                 </h2>
             </div>
 
-            {/* Search + Buttons */}
+            {/* Pencarian + Tombol */}
             <div className="bg-gray-50/50 px-4 py-3 border-b border-gray-200 flex flex-wrap gap-3 items-center">
                 <div className="relative flex-1 min-w-[250px]">
                     <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
@@ -132,7 +132,7 @@ export default function PermasalahanDataTable({
                 </button>
             </div>
 
-            {/* Summary */}
+            {/* Ringkasan */}
             <div className="px-6 py-4 text-[13px] text-gray-700 border-b border-gray-200 flex flex-wrap justify-center gap-x-6 gap-y-2">
                 <span>Total Data: <strong>{total}</strong></span>
                 <span>Rata-rata: <strong>{fmt(avg)} {satuan}</strong></span>
@@ -158,7 +158,7 @@ export default function PermasalahanDataTable({
                 )}
             </div>
 
-            {/* Table */}
+            {/* Tabel */}
             <div className="overflow-x-auto bg-[#F8FAFC]">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F8FAFC] border-b-2 border-slate-200 shadow-sm">
@@ -208,7 +208,7 @@ export default function PermasalahanDataTable({
                 </table>
             </div>
 
-            {/* Pagination */}
+            {/* Paginasi */}
             <div className="px-6 py-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                     <span>Tampilkan:</span>

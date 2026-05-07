@@ -27,9 +27,9 @@ export default function NavigationTabs({ activePage = 'penelitian' }) {
     return (
         <div className="flex justify-center flex-wrap gap-3 mb-2">
             {tabs.map((tab) => {
-                // Check if this tab is a dropdown group
+                // Periksa apakah tab ini adalah grup dropdown
                 if (tab.items) {
-                    // Check if any child is currently active
+                    // Periksa apakah ada anak yang aktif saat ini
                     const isActive = tab.items.some(t => t.key === activePage);
 
                     return (
@@ -53,10 +53,10 @@ export default function NavigationTabs({ activePage = 'penelitian' }) {
                                 </svg>
                             </button>
 
-                            {/* Dropdown Menu */}
+                            {/* Menu Dropdown */}
                             {openDropdown === tab.key && (
                                 <>
-                                    {/* Overlay for closing when clicking outside */}
+                                    {/* Overlay untuk menutup saat klik di luar */}
                                     <div
                                         className="fixed inset-0 z-40"
                                         onClick={() => setOpenDropdown(null)}

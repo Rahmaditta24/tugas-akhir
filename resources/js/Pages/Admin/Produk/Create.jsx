@@ -23,7 +23,7 @@ export default function Create() {
     });
 
     useEffect(() => {
-        // Fetch provinces from API
+        // Ambil data provinsi dari API
         fetch('/admin/produk/provinces')
             .then(res => res.json())
             .then(data => {

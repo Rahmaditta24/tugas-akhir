@@ -9,7 +9,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [toast, setToast] = useState(null);
 
-    // Watch for flash messages
+    // Pesan flash
     useEffect(() => {
         if (props.flash?.success) {
             setToast({ message: props.flash.success, type: 'success' });
@@ -18,7 +18,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
         }
     }, [props.flash]);
 
-    // Close dropdown when clicking outside
+    // Tutup dropdown saat mengklik di luar area
     useEffect(() => {
         const handleClickOutside = (event) => {
             const dropdown = document.getElementById('user-dropdown');
@@ -65,11 +65,11 @@ export default function AdminLayout({ title = 'Admin', children }) {
             <Head>
                 <title>{title}</title>
             </Head>
-            {/* Top Navbar */}
+            {/* Navbar Atas */}
             <header className="bg-white border-b border-slate-200/60 sticky top-0 z-40 shadow-sm">
                 <div className="px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
-                        {/* Left: Logo & Menu Toggle */}
+                        {/* Kiri: Logo & Tombol Menu */}
                         <div className="flex items-center">
                             <button
                                 onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -85,9 +85,9 @@ export default function AdminLayout({ title = 'Admin', children }) {
                             </a>
                         </div>
 
-                        {/* Right: User Menu */}
+                        {/* Kanan: Menu Pengguna */}
                         <div className="flex items-center gap-2">
-                            {/* User Dropdown */}
+                            {/* Dropdown Pengguna */}
                             <div className="relative ml-2">
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -102,7 +102,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
                                     </svg>
                                 </button>
 
-                                {/* Dropdown Menu */}
+                                {/* Menu Dropdown */}
                                 {isDropdownOpen && (
                                     <div
                                         id="user-dropdown"
@@ -157,7 +157,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
                             })}
                         </nav>
 
-                        {/* Sidebar Footer */}
+                        {/* Footer Sidebar */}
                         <div className="px-3 py-3 border-t border-slate-200/60">
                             <Link
                                 href="/"
@@ -172,7 +172,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
                     </div>
                 </aside>
 
-                {/* Overlay for mobile */}
+                {/* Overlay untuk tampilan mobile */}
                 {isSidebarOpen && (
                     <div
                         className="fixed inset-0 bg-slate-900/25 backdrop-blur-[2px] z-20 lg:hidden"
@@ -180,23 +180,23 @@ export default function AdminLayout({ title = 'Admin', children }) {
                     ></div>
                 )}
 
-                {/* Main Content */}
+                {/* Konten Utama */}
                 <main className="flex-1 w-full max-w-full overflow-x-hidden p-6 lg:p-8 lg:ml-64">
                     <div className="max-w-7xl mx-auto">
-                        {/* Page Title (optional) */}
+                        {/* Judul Halaman (opsional) */}
                         {title ? (
                             <div className="mb-6">
                                 <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">{title}</h2>
                             </div>
                         ) : null}
 
-                        {/* Content */}
+                        {/* Konten */}
                         {children}
                     </div>
                 </main>
             </div>
 
-            {/* Toast Notification */}
+            {/* Notifikasi Toast */}
             {toast && (
                 <Toast
                     message={toast.message}

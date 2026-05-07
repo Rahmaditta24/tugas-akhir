@@ -21,7 +21,7 @@ class DashboardController extends Controller
     {
         $stats = Cache::remember('admin_dashboard_stats', 600, function() {
             return [
-                'penelitian' => Penelitian::count(),
+                'penelitian' => Penelitian::whereNotNull('judul')->where('judul', '!=', '')->count(),
                 'hilirisasi' => Hilirisasi::count(),
                 'pengabdian' => Pengabdian::count(),
                 'produk' => Produk::count(),

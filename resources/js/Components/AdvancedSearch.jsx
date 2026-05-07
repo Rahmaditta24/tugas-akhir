@@ -16,7 +16,7 @@ const FIELD_COLORS = {
 };
 
 export default function AdvancedSearch({ filterOptions, onFilterChange, show }) {
-    // Temporary filter state (not applied yet)
+    // State filter sementara (belum diterapkan)
     const [tempFilters, setTempFilters] = useState({
         bidang_fokus: [],
         tema_prioritas: [],
@@ -26,7 +26,7 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
         tahun: []
     });
 
-    // Applied filters (sent to parent)
+    // Filter yang diterapkan (dikirim ke parent)
     const [appliedFilters, setAppliedFilters] = useState({
         bidang_fokus: [],
         tema_prioritas: [],
@@ -39,7 +39,7 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
     const [openDropdown, setOpenDropdown] = useState(null);
     const dropdownRefs = useRef({});
 
-    // Close dropdown when clicking outside
+    // Tutup dropdown saat klik di luar
     useEffect(() => {
         function handleClickOutside(event) {
             if (openDropdown && dropdownRefs.current[openDropdown]) {
@@ -63,13 +63,12 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
 
             return { ...prev, [filterType]: newValues };
         });
-        // Don't close dropdown after selection for better UX
     };
 
     const handleApplyFilters = () => {
         setAppliedFilters(tempFilters);
         onFilterChange(tempFilters);
-        setOpenDropdown(null); // Close any open dropdown
+        setOpenDropdown(null); // Tutup dropdown yang sedang terbuka
     };
 
     const handleResetFilters = () => {
@@ -125,7 +124,7 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
                     <div className="absolute top-full left-0 w-full bg-white rounded-lg shadow-lg mt-1 z-10 max-h-48 overflow-y-auto">
                         {options && options.length > 0 ? (
                             options.map((option, index) => {
-                                // Determine color for Bidang Fokus or Skema
+                                // Tentukan warna untuk Bidang Fokus atau Skema
                                 let optionColor = null;
                                 if (filterType === 'bidang_fokus' || filterType === 'skema') {
                                     for (const [key, color] of Object.entries(FIELD_COLORS)) {
@@ -171,7 +170,7 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
     return (
         <div className="w-full mx-auto mb-5 translate-x-[-7px]">
             <div className="bg-gray-100 rounded-xl p-4 shadow-sm">
-                {/* Filter Controls */}
+                                {/* Kontrol Filter */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 items-end">
                     {renderDropdown('bidang_fokus', 'Bidang Fokus', filterOptions?.bidangFokus)}
                     {renderDropdown('tema_prioritas', 'Tema Prioritas', filterOptions?.temaPrioritas)}
@@ -181,7 +180,7 @@ export default function AdvancedSearch({ filterOptions, onFilterChange, show }) 
                     {renderDropdown('tahun', 'Tahun', filterOptions?.tahun)}
                 </div>
 
-                {/* Action Buttons */}
+                {/* Tombol Aksi */}
                 <div className="flex gap-3 mt-5">
                     <button
                         onClick={handleApplyFilters}

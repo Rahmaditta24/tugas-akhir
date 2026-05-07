@@ -62,16 +62,16 @@ class PenelitianSeeder extends Seeder
             return $value;
         };
 
-        // Step 1: Build Reference Map for Institution Data
+        // Langkah 1: Bangun Peta Referensi untuk Data Institusi
         $referenceMap = [];
         $this->command->info("Building reference map for incomplete data...");
         
-        // Scan full data once to build map
+        // Pindai seluruh data sekali untuk membangun peta
         foreach ($penelitianData as $item) {
             if (empty($item['institusi'])) continue;
             
             $name = trim($item['institusi']);
-            // Initialize if not exists
+            // Inisialisasi jika belum ada
             if (!isset($referenceMap[$name])) {
                 $referenceMap[$name] = [
                     'kota' => null,
@@ -83,10 +83,10 @@ class PenelitianSeeder extends Seeder
                 ];
             }
 
-            // Update reference if current item has data and reference is null
+            // Perbarui referensi jika item saat ini memiliki data dan referensi bernilai null
             foreach (['kota', 'kategori_pt', 'jenis_pt', 'klaster', 'provinsi', 'kode_pt'] as $field) {
                 $val = $item[$field] ?? null;
-                // Check if raw value is valid (not null and not 'NaN')
+                // Periksa apakah nilai mentah valid (tidak null dan bukan 'NaN')
                 if ($val !== null && $val !== 'NaN' && $referenceMap[$name][$field] === null) {
                     $referenceMap[$name][$field] = $val;
                 }
@@ -96,9 +96,9 @@ class PenelitianSeeder extends Seeder
         $validateCoords = function ($lat, $lon) {
             $lat = (float) $lat;
             $lon = (float) $lon;
-            // Latitude must be between -90 and 90
-            // Longitude must be between -180 and 180
-            // Also check if it fits in decimal(10,7) which allows max 3 digits before decimal
+            // Latitude harus antara -90 dan 90
+            // Longitude harus antara -180 dan 180
+            // Periksa juga apakah sesuai dengan format decimal(10,7) yang memperbolehkan maksimal 3 digit sebelum desimal
             if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
                 return [null, null];
             }
@@ -110,19 +110,18 @@ class PenelitianSeeder extends Seeder
 
             foreach ($chunk as $item) {
                 // Sama seperti peta-bima: ambil semua data tanpa filter
-                // (peta-bima/js/script.js line 606: "Tidak filter lagi, ambil semua data")
+                // Ambil semua data")
                 $institusi = $normalize($item['institusi'] ?? null) ?? '';
                 $judul = $normalize($item['judul'] ?? null) ?? '';
                 
                 // Hanya skip jika KEDUA field benar-benar kosong (null/empty setelah trim)
-                // Ini lebih longgar daripada sebelumnya yang skip jika SALAH SATU kosong
                 if (empty($institusi) && empty($judul)) {
                     $skipped++;
                     $bar->advance();
                     continue;
                 }
 
-                // Try to fill missing data from reference map
+                // Mencoba mengisi data yang hilang dari peta referensi
                 $ref = $referenceMap[$institusi] ?? [];
 
                 $kategori_pt = $normalize($item['kategori_pt'] ?? null) ?? $normalize($ref['kategori_pt'] ?? null);

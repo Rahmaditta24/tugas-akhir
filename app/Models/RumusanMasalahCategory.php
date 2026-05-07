@@ -57,7 +57,7 @@ class RumusanMasalahCategory extends Model
     }
 
     /**
-     * Get full URL image
+     * Mendapatkan URL gambar lengkap
      */
     public function getImageUrlAttribute(): ?string
     {

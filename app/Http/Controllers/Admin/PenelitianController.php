@@ -161,7 +161,7 @@ class PenelitianController extends Controller
 
     public function index(Request $request)
     {
-        $query = Penelitian::query();
+        $query = Penelitian::whereNotNull('judul')->where('judul', '!=', '');
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -177,12 +177,12 @@ class PenelitianController extends Controller
             });
         }
 
-        // Column filters
+        // Filter kolom
         if ($request->filled('filters')) {
             $filters = $request->filters;
             foreach ($filters as $key => $value) {
                 if (!empty($value)) {
-                    // Check if column exists in table to avoid errors, or whitelist
+                    // Periksa apakah kolom ada dalam tabel untuk mencegah error, atau gunakan daftar whitelist
                     if (
                         in_array($key, [
                             'nama',
@@ -208,7 +208,7 @@ class PenelitianController extends Controller
             }
         }
 
-        // Per page
+        // Batas data per halaman
         $perPage = (int) $request->get('perPage', 20);
         if ($perPage < 10) {
             $perPage = 10;
@@ -217,13 +217,13 @@ class PenelitianController extends Controller
             $perPage = 100;
         }
 
-        // Whitelisted sorting and pagination
+        // Daftar pengurutan (sorting) dan paginasi yang diizinkan (whitelisted)
         $allowedSorts = ['id', 'nama', 'nidn', 'institusi', 'judul', 'skema', 'thn_pelaksanaan', 'bidang_fokus', 'tema_prioritas', 'provinsi'];
         $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
 
-        // Cache Versioning for instant invalidation
-        $v = Cache::get('penelitian_admin_v', 1);
+        // Versi cache untuk invalidasi instan
+        $v = Cache::get('penelitian_admin_v', 2);
         $cacheKey = 'penelitian_admin_v' . $v . '_' . md5(json_encode($request->all()));
 
         $data = Cache::remember($cacheKey, 600, function () use ($query, $perPage, $sort, $direction) {
@@ -234,10 +234,10 @@ class PenelitianController extends Controller
                 ->withQueryString();
 
             $penelitian->getCollection()->transform(function ($item) {
-                // Formatting name
+                // Format penulisan nama
                 $item->nama = $this->formatName($item->nama);
 
-                // Self-healing rules for display consistency
+                // Untuk konsistensi tampilan
                 $clean = function($v, $isNumeric = false) {
                     if (is_string($v)) $v = ltrim(trim($v), "'");
                     if ($v === null || $v === '') return $isNumeric ? '0' : '-';
@@ -266,12 +266,12 @@ class PenelitianController extends Controller
             return $penelitian;
         });
 
-        // Cache statistics separately (longer duration)
+        // Simpan statistik ke dalam cache secara terpisah (durasi lebih lama)
         $stats = Cache::remember('penelitian_admin_stats', 3600, function () {
             return [
-                'total' => Penelitian::count(),
-                'thisYear' => Penelitian::whereYear('created_at', date('Y'))->count(),
-                'withCoordinates' => Penelitian::whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count(),
+                'total' => Penelitian::whereNotNull('judul')->where('judul', '!=', '')->count(),
+                'thisYear' => Penelitian::whereNotNull('judul')->where('judul', '!=', '')->whereYear('created_at', date('Y'))->count(),
+                'withCoordinates' => Penelitian::whereNotNull('judul')->where('judul', '!=', '')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count(),
             ];
         });
 
@@ -280,7 +280,7 @@ class PenelitianController extends Controller
             'stats' => $stats,
             'filters' => [
                 'search' => $request->search,
-                'columns' => $request->filters ?? [], // Pass column filters back
+                'columns' => $request->filters ?? [], // Kembalikan filter kolom
                 'perPage' => $perPage,
                 'sort' => $sort,
                 'direction' => $direction,
@@ -341,7 +341,7 @@ class PenelitianController extends Controller
 
     public function edit(Request $request, Penelitian $penelitian)
     {
-        // Clean data from DB
+        // Bersihkan data dari DB
         $clean = function($v, $isNumeric = false) {
             if (is_string($v)) {
                 $v = ltrim(trim($v), "'");
@@ -497,11 +497,11 @@ class PenelitianController extends Controller
 
     public function exportCsv(Request $request)
     {
-        // Allow large exports to complete
+        // Izinkan proses ekspor berukuran besar selesai
         set_time_limit(300);
         ini_set('memory_limit', '512M');
 
-        // Build query using same filters as index
+        // Bangun kueri menggunakan filter yang sama dengan index
         $query = Penelitian::select(
             'id',
             'nama',
@@ -583,7 +583,7 @@ class PenelitianController extends Controller
 
         $callback = function () use ($columns, $query) {
             $file = fopen('php://output', 'w');
-            // UTF-8 BOM so Excel handles Indonesian characters correctly
+            // Format UTF-8 BOM agar Excel dapat menampilkan karakter Indonesia dengan benar
             fwrite($file, "\xEF\xBB\xBF");
             fputcsv($file, $columns);
 
@@ -623,7 +623,7 @@ class PenelitianController extends Controller
 
     public function exportJson(Request $request)
     {
-        // Same filter logic as index / exportCsv
+        // Logika filter yang sama seperti index / exportCsv
         $query = Penelitian::query();
 
         if ($request->filled('search')) {
@@ -664,14 +664,14 @@ class PenelitianController extends Controller
             }
         }
 
-        // Cap at 100k rows for safety
+        // Batasi hingga 100rb baris demi keamanan
         $cap = 100000;
         $total = (clone $query)->count();
         if ($total > $cap) {
             return response()->json(['error' => "Data terlalu besar ({$total} baris, maks {$cap}). Silakan gunakan filter terlebih dahulu."], 422);
         }
 
-        // Use chunked retrieval to avoid memory exhaustion
+        // Gunakan pemuatan bertahap (chunk) untuk mencegah kehabisan memori
         $columns = [
             'id',
             'nama',
@@ -715,7 +715,7 @@ class PenelitianController extends Controller
             $errors = [];
             $batch = [];
 
-            // Strict Header Validation
+            // Validasi header 
             if (!empty($request->data)) {
                 $firstRow = $request->data[0];
                 $foundKeys = array_map(function($k) {
@@ -726,7 +726,7 @@ class PenelitianController extends Controller
                 $missing = [];
                 foreach ($required as $req) {
                      if (!in_array($req, $foundKeys)) {
-                         // Check aliases
+                         // Cek nama alternatif (alias)
                          $aliases = [
                              'thnpelaksanaan' => ['tahun', 'thnpelaksanaankegiatan', 'thnpelaksanaan'],
                              'institusi' => ['namainstitusi', 'perguruantinggi'],
@@ -787,7 +787,7 @@ class PenelitianController extends Controller
 
                 // LOGIKA UPDATE:
                 // 1. Cari berdasarkan ID (jika ada di excel)
-                // 2. Jika ID kosong, cari berdasarkan Judul + Nama (Smart Match)
+                // 2. Jika ID kosong, cari berdasarkan Judul + Nama (Pencocokan Cerdas)
                 $existing = null;
                 if ($id) {
                     $existing = Penelitian::find($id);

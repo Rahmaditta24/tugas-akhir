@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\FasilitasLab;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
 class FasilitasLabPageController extends Controller
@@ -14,13 +15,13 @@ class FasilitasLabPageController extends Controller
     public function index(Request $request)
     {
         $baseQuery = FasilitasLab::query();
-        
-        // Apply simple search
+
+        // Pencarian sederhana
         if ($request->filled('search')) {
             $baseQuery->search($request->search);
         }
 
-        // Apply advanced multi-row queries
+        // Pencarian multi-baris lanjutan
         if ($request->filled('queries')) {
             $queries = json_decode($request->queries, true);
             if (is_array($queries)) {
@@ -29,23 +30,21 @@ class FasilitasLabPageController extends Controller
                         $term = trim($row['term'] ?? '');
                         if (empty($term)) continue;
 
-                        $field = $row['field'] ?? 'all';
+                        $field    = $row['field']    ?? 'all';
                         $operator = strtoupper($row['operator'] ?? 'AND');
 
-                        $applyCondition = function($query) use ($term, $field) {
+                        $applyCondition = function ($query) use ($term, $field) {
                             if ($field === 'all') {
-                                $query->where(function($sub) use ($term) {
+                                $query->where(function ($sub) use ($term) {
                                     $sub->where('nama_laboratorium', 'like', "%$term%")
                                         ->orWhere('nama_alat', 'like', "%$term%")
-                                        ->orWhere('institusi', 'like', "%$term%")
-                                        ->orWhere('jenis_laboratorium', 'like', "%$term%");
+                                        ->orWhere('institusi', 'like', "%$term%");
                                 });
                             } else {
-                                $dbField = match($field) {
-                                    'title' => 'nama_laboratorium',
+                                $dbField = match ($field) {
+                                    'title'      => 'nama_laboratorium',
                                     'university' => 'institusi',
-                                    'field' => 'jenis_laboratorium',
-                                    default => 'nama_laboratorium'
+                                    default      => 'nama_laboratorium',
                                 };
                                 $query->where($dbField, 'like', "%$term%");
                             }
@@ -53,14 +52,12 @@ class FasilitasLabPageController extends Controller
 
                         if ($index === 0) {
                             $applyCondition($q);
+                        } elseif ($operator === 'OR') {
+                            $q->orWhere(fn($sub) => $applyCondition($sub));
+                        } elseif ($operator === 'AND NOT') {
+                            $q->whereNot(fn($sub) => $applyCondition($sub));
                         } else {
-                            if ($operator === 'OR') {
-                                $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
-                            } elseif ($operator === 'AND NOT') {
-                                $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
-                            } else { 
-                                $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
-                            }
+                            $q->where(fn($sub) => $applyCondition($sub));
                         }
                     }
                 });
@@ -77,30 +74,26 @@ class FasilitasLabPageController extends Controller
             $baseQuery->whereIn('provinsi', $values);
         }
 
-
-        // For map and stats, we use the global query (without filters)
-        // so the map stays full and stats stay static as requested.
+        // Stats & map data menggunakan global query (tanpa filter)
         $globalQuery = FasilitasLab::query();
 
-        $statsCacheKey = 'stats_fasilitas_lab_global_v1';
-        $stats = Cache::remember($statsCacheKey, 3600, function() use ($globalQuery) {
+        $stats = Cache::remember('stats_fasilitas_lab_global_v1', 3600, function () use ($globalQuery) {
             return [
-                'totalResearch' => (clone $globalQuery)->count(),
-                'totalUniversities' => (clone $globalQuery)->distinct('institusi')->count('institusi'),
-                'totalProvinces' => (clone $globalQuery)->distinct('provinsi')->count('provinsi'),
+                'totalResearch'    => (clone $globalQuery)->count(),
+                'totalUniversities'=> (clone $globalQuery)->distinct('institusi')->count('institusi'),
+                'totalProvinces'   => (clone $globalQuery)->distinct('provinsi')->count('provinsi'),
             ];
         });
 
-        $cacheKey = 'map_data_fasilitas_lab_v8_global';
-        $mapData = Cache::remember($cacheKey, 1800, function() use ($globalQuery) {
+        $mapData = Cache::remember('map_data_fasilitas_lab_v9_global', 1800, function () use ($globalQuery) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
+
             $rows = (clone $globalQuery)->select(
                 'institusi',
                 'kode_universitas',
                 'latitude',
                 'longitude',
                 'provinsi',
-                'kategori_pt',
                 'nama_laboratorium',
                 'nama_alat',
             )
@@ -118,7 +111,6 @@ class FasilitasLabPageController extends Controller
                         'pt_latitude'      => (float) $item->latitude,
                         'pt_longitude'     => (float) $item->longitude,
                         'provinsi'         => $item->provinsi,
-                        'kategori_pt'      => $item->kategori_pt,
                         'total_penelitian' => 0,
                         'lab_names'        => [],
                         'tool_names'       => [],
@@ -143,14 +135,12 @@ class FasilitasLabPageController extends Controller
             foreach ($grouped as $entry) {
                 $tools = $entry['tool_names'];
                 sort($tools);
-
                 $result[] = [
                     'institusi'        => $entry['institusi'],
                     'kode_universitas' => $entry['kode_universitas'],
                     'pt_latitude'      => $entry['pt_latitude'],
                     'pt_longitude'     => $entry['pt_longitude'],
                     'provinsi'         => $entry['provinsi'],
-                    'kategori_pt'      => $entry['kategori_pt'],
                     'total_penelitian' => $entry['total_penelitian'],
                     'lab_list'         => implode('|', $entry['lab_names']),
                     'tool_list'        => implode('|', $tools),
@@ -160,22 +150,18 @@ class FasilitasLabPageController extends Controller
             return $result;
         });
 
-        // Only load list if filtered/searched
-        $isFiltered = $request->filled('search') 
+        $isFiltered = $request->filled('search')
             || $request->filled('queries')
             || $request->filled('kampus_ptnbh')
             || $request->filled('provinsi');
 
         $items = $isFiltered
             ? (clone $baseQuery)->select(
-                'id', 
-                'nama_laboratorium as judul', 
-                'institusi', 
-                'provinsi', 
-                'jenis_laboratorium as bidang_fokus',
-                'fakultas',
-                'departemen',
-                'status_akses',
+                'id',
+                'nama_laboratorium as judul',
+                'institusi',
+                'kategori_pt',
+                'provinsi',
                 'kota',
                 'nama_alat',
                 'total_jumlah_alat',
@@ -188,7 +174,7 @@ class FasilitasLabPageController extends Controller
             : collect()->values();
 
         $filterOptions = [
-            'kampus_ptnbh' => Cache::remember('filter_fasilitas_kampus', 7200, function() {
+            'kampus_ptnbh' => Cache::remember('filter_fasilitas_kampus', 7200, function () {
                 return DB::table('fasilitas_lab')
                     ->select('institusi')
                     ->whereNotNull('institusi')
@@ -198,13 +184,13 @@ class FasilitasLabPageController extends Controller
                     ->filter()
                     ->values();
             }),
-            'provinsi' => Cache::remember('global_provinces_list', 86400, function() {
-                // Use local data directly - more reliable for production
-                $path = storage_path('provinces.json');
+            'provinsi' => Cache::remember('global_provinces_final_v1', 86400, function () {
+                $path = database_path('data/provinces.json');
                 if (file_exists($path)) {
                     $data = json_decode(file_get_contents($path), true);
                     return collect($data)
-                        ->map(fn($p) => \Illuminate\Support\Str::title($p['name']))
+                        ->map(fn($p) => trim($p['name']))
+                        ->unique()
                         ->sort()
                         ->values()
                         ->all();
@@ -214,15 +200,13 @@ class FasilitasLabPageController extends Controller
         ];
 
         return Inertia::render('FasilitasLab', [
-            'mapData' => $mapData,
-            'researches' => $items,
-            'stats' => $stats,
-            'filters' => $request->all(),
+            'mapData'       => $mapData,
+            'researches'    => $items,
+            'stats'         => $stats,
+            'filters'       => $request->all(),
             'filterOptions' => $filterOptions,
-            'isFiltered' => $isFiltered,
-            'title' => 'Peta Persebaran Penelitian BIMA Indonesia - Fasilitas Lab'
+            'isFiltered'    => $isFiltered,
+            'title'         => 'Peta Persebaran Penelitian BIMA Indonesia - Fasilitas Lab',
         ]);
     }
 }
-
-

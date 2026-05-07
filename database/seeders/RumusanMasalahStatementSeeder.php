@@ -12,7 +12,7 @@ class RumusanMasalahStatementSeeder extends Seeder
      */
     public function run(): void
     {
-        // Load statements data from generated file
+        // Memuat data pernyataan dari file yang dibuat
         $statements = require __DIR__ . '/RumusanMasalahStatementData.php';
         
         // Insert in chunks for better performance

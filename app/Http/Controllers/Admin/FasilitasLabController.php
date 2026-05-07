@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\FasilitasLab;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-
 use Illuminate\Support\Facades\Cache;
 
 class FasilitasLabController extends Controller
@@ -15,27 +14,26 @@ class FasilitasLabController extends Controller
     {
         $query = FasilitasLab::query();
 
-        // Global search
+        // Pencarian global
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('nama_laboratorium', 'like', "%{$search}%")
                   ->orWhere('institusi', 'like', "%{$search}%")
                   ->orWhere('provinsi', 'like', "%{$search}%")
-                  ->orWhere('kota', 'like', "%{$search}%")
                   ->orWhere('nama_alat', 'like', "%{$search}%")
                   ->orWhere('kontak', 'like', "%{$search}%");
             });
         }
 
-        // Column filters
+        // Filter kolom
         if ($request->filled('filters')) {
             $columnFilters = $request->filters;
             foreach ($columnFilters as $key => $value) {
                 if (!empty($value)) {
                     if (in_array($key, [
                         'nama_laboratorium', 'institusi', 'total_jumlah_alat', 
-                        'kontak', 'provinsi', 'kota', 'kode_universitas', 'kategori_pt', 'nama_alat'
+                        'kontak', 'provinsi', 'kode_universitas', 'nama_alat'
                     ])) {
                         $query->where($key, 'like', "%{$value}%");
                     }
@@ -43,7 +41,7 @@ class FasilitasLabController extends Controller
             }
         }
 
-        // Whitelisted sorting and pagination
+        // Pengurutan dan paginasi
         $allowedSorts = ['id', 'nama_laboratorium', 'institusi', 'provinsi', 'total_jumlah_alat'];
         $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
@@ -51,7 +49,7 @@ class FasilitasLabController extends Controller
         if ($perPage < 10) { $perPage = 10; }
         if ($perPage > 100) { $perPage = 100; }
 
-        // Cache Versioning
+        // Versi Cache
         $v = Cache::get('fasilitas_lab_admin_v', 1);
         $cacheKey = 'fasilitas_lab_admin_v' . $v . '_' . md5(json_encode($request->all()));
 
@@ -93,10 +91,10 @@ class FasilitasLabController extends Controller
         $validated = $request->validate([
             'kode_universitas' => ['nullable', 'string', 'max:50'],
             'institusi' => ['required', 'string', 'max:255'],
-            'kategori_pt' => ['nullable', 'string', 'max:50'],
-            'nama_laboratorium' => ['required', 'string', 'max:255'],
+            'kategori_pt' => ['nullable', 'string', 'max:100'],
             'provinsi' => ['nullable', 'string', 'max:100'],
             'kota' => ['nullable', 'string', 'max:100'],
+            'nama_laboratorium' => ['required', 'string', 'max:255'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'total_jumlah_alat' => ['nullable', 'numeric'],
@@ -148,10 +146,10 @@ class FasilitasLabController extends Controller
         $validated = $request->validate([
             'kode_universitas' => ['nullable', 'string', 'max:50'],
             'institusi' => ['required', 'string', 'max:255'],
-            'kategori_pt' => ['nullable', 'string', 'max:50'],
-            'nama_laboratorium' => ['required', 'string', 'max:255'],
+            'kategori_pt' => ['nullable', 'string', 'max:100'],
             'provinsi' => ['nullable', 'string', 'max:100'],
             'kota' => ['nullable', 'string', 'max:100'],
+            'nama_laboratorium' => ['required', 'string', 'max:255'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'total_jumlah_alat' => ['nullable', 'numeric'],
@@ -187,7 +185,7 @@ class FasilitasLabController extends Controller
         foreach ($request->items as $itemData) {
             $fasilitasLab = FasilitasLab::find($itemData['id']);
             if ($fasilitasLab) {
-                // Standardize province if present
+                // Standarisasi provinsi
                 if (isset($itemData['provinsi'])) {
                     $val = trim($itemData['provinsi']);
                     $val = str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower($val)));
@@ -210,15 +208,16 @@ class FasilitasLabController extends Controller
 
     public function getProvinces()
     {
-        return response()->json([
-            'Aceh', 'Sumatera Utara', 'Sumatera Barat', 'Riau', 'Kepulauan Riau',
-            'Jambi', 'Sumatera Selatan', 'Bengkulu', 'Lampung', 'Kepulauan Bangka Belitung',
-            'Banten', 'DKI Jakarta', 'Jawa Barat', 'Jawa Tengah', 'DI Yogyakarta',
-            'Jawa Timur', 'Bali', 'Nusa Tenggara Barat', 'Nusa Tenggara Timur',
-            'Kalimantan Barat', 'Kalimantan Tengah', 'Kalimantan Selatan', 'Kalimantan Timur', 'Kalimantan Utara',
-            'Sulawesi Utara', 'Gorontalo', 'Sulawesi Tengah', 'Sulawesi Barat', 'Sulawesi Selatan', 'Sulawesi Tenggara',
-            'Maluku', 'Maluku Utara', 'Papua', 'Papua Barat', 'Papua Barat Daya', 'Papua Selatan', 'Papua Tengah', 'Papua Pegunungan'
-        ]);
+        $provinces = Cache::remember('fasilitas_lab_provinces', 86400, function () {
+            $path = database_path('data/provinces.json');
+            if (file_exists($path)) {
+                $data = json_decode(file_get_contents($path), true);
+                return array_column($data, 'name');
+            }
+            return [];
+        });
+
+        return response()->json($provinces);
     }
 
     public function bulkDestroy(Request $request)
@@ -239,9 +238,8 @@ class FasilitasLabController extends Controller
         ini_set('memory_limit', '512M');
 
         $query = FasilitasLab::select(
-            'id', 'nama_laboratorium', 'institusi', 'kode_universitas', 'kategori_pt',
-            'provinsi', 'kota', 'total_jumlah_alat', 'nama_alat', 'kontak',
-            'latitude', 'longitude', 'deskripsi_alat'
+            'id', 'kode_universitas', 'institusi', 'kategori_pt', 'provinsi', 'kota',
+            'nama_laboratorium', 'latitude', 'longitude', 'total_jumlah_alat', 'nama_alat', 'deskripsi_alat', 'kontak'
         );
 
         if ($request->filled('ids')) {
@@ -260,7 +258,7 @@ class FasilitasLabController extends Controller
 
         if ($filters = $request->get('filters')) {
             foreach ($filters as $key => $value) {
-                if ($value && in_array($key, ['nama_laboratorium','institusi','provinsi','kota','kategori_pt','nama_alat'])) {
+                if ($value && in_array($key, ['nama_laboratorium','institusi','provinsi','nama_alat'])) {
                     $query->where($key, 'like', '%' . $value . '%');
                 }
             }
@@ -269,7 +267,7 @@ class FasilitasLabController extends Controller
         $filterLabel = ($request->filled('search') || $request->filled('filters')) ? '_filtered' : '';
         $filename = 'data-fasilitas-lab' . $filterLabel . '_' . date('Y-m-d') . '.csv';
 
-        $columns = ['ID', 'Nama Laboratorium', 'Institusi', 'Kode Universitas', 'Kategori PT', 'Provinsi', 'Kota', 'Total Jumlah Alat', 'Nama Alat', 'Kontak', 'Latitude', 'Longitude', 'Deskripsi Alat'];
+        $columns = ['ID', 'Kode Universitas', 'Institusi', 'Kategori PT', 'Provinsi', 'Kota/Kabupaten', 'Nama Laboratorium', 'Latitude', 'Longitude', 'Total Jumlah Alat', 'Nama Alat', 'Deskripsi Alat', 'Kontak'];
 
         $callback = function() use ($columns, $query) {
             $file = fopen('php://output', 'w');
@@ -285,18 +283,18 @@ class FasilitasLabController extends Controller
 
                     fputcsv($file, [
                         $row->id, 
-                        $clean($row->nama_laboratorium), 
-                        $clean($row->institusi),
                         $clean($row->kode_universitas), 
-                        $clean($row->kategori_pt), 
+                        $clean($row->institusi),
+                        $clean($row->kategori_pt),
                         $clean($row->provinsi),
-                        $clean($row->kota), 
-                        $row->total_jumlah_alat, 
-                        $clean($row->nama_alat),
-                        $clean($row->kontak), 
+                        $clean($row->kota),
+                        $clean($row->nama_laboratorium), 
                         $row->latitude, 
                         $row->longitude, 
-                        $clean($row->deskripsi_alat)
+                        $row->total_jumlah_alat, 
+                        $clean($row->nama_alat),
+                        $clean($row->deskripsi_alat),
+                        $clean($row->kontak)
                     ]);
                 }
             });
@@ -349,35 +347,35 @@ class FasilitasLabController extends Controller
         foreach ($request->data as $index => $row) {
             $rowNum = $index + 1;
             
-            // Normalize keys
+            // Normalisasi 
             $normalizedRow = [];
             foreach ($row as $k => $v) {
                 $cleanKey = strtolower(str_replace([' ', '/', '_'], '', $k));
                 $normalizedRow[$cleanKey] = $v;
             }
 
-            // Map data with aliases
+            // Pemetaan data dengan alias
             $id = $normalizedRow['id'] ?? null;
             $namaLab = trim($normalizedRow['namalaboratorium'] ?? $normalizedRow['laboratorium'] ?? '');
             $institusi = trim($normalizedRow['institusi'] ?? $normalizedRow['namainstitusi'] ?? '');
             
-            // Strict Validation
+            // Validasi Ketat
             if (empty($namaLab)) { $errors[] = "Baris #{$rowNum}: Kolom 'Nama Laboratorium' wajib diisi."; continue; }
             if (empty($institusi)) { $errors[] = "Baris #{$rowNum}: Kolom 'Institusi' wajib diisi."; continue; }
 
             $data = [
-                'nama_laboratorium' => $namaLab,
-                'institusi' => $institusi,
                 'kode_universitas' => $normalizedRow['kodeuniversitas'] ?? $normalizedRow['kodept'] ?? null,
-                'kategori_pt' => $normalizedRow['kategoript'] ?? '-',
+                'institusi' => $institusi,
+                'kategori_pt' => $normalizedRow['kategoript'] ?? $normalizedRow['jenispt'] ?? null,
                 'provinsi' => trim(str_replace(['di yogyakarta', 'dki jakarta'], ['DI Yogyakarta', 'DKI Jakarta'], ucwords(strtolower(trim($normalizedRow['provinsi'] ?? 'tidak tersedia'))))),
-                'kota' => $normalizedRow['kota'] ?? '-',
-                'total_jumlah_alat' => (int)($normalizedRow['totaljumlahalat'] ?? $normalizedRow['jumlahalat'] ?? 0),
-                'nama_alat' => $normalizedRow['namaalat'] ?? null,
-                'kontak' => $normalizedRow['kontak'] ?? null,
+                'kota' => $normalizedRow['kota'] ?? $normalizedRow['kabupaten'] ?? null,
+                'nama_laboratorium' => $namaLab,
                 'latitude' => (float)($normalizedRow['latitude'] ?? -6.2),
                 'longitude' => (float)($normalizedRow['longitude'] ?? 106.8),
+                'total_jumlah_alat' => (int)($normalizedRow['totaljumlahalat'] ?? $normalizedRow['jumlahalat'] ?? 0),
+                'nama_alat' => $normalizedRow['namaalat'] ?? null,
                 'deskripsi_alat' => $normalizedRow['deskripsialat'] ?? $normalizedRow['deskripsi'] ?? null,
+                'kontak' => $normalizedRow['kontak'] ?? null,
             ];
 
             if ($id && FasilitasLab::find($id)) {

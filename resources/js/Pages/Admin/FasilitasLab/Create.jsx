@@ -9,9 +9,9 @@ export default function Create() {
         kode_universitas: '',
         institusi: '',
         kategori_pt: '',
-        nama_laboratorium: '',
         provinsi: '',
         kota: '',
+        nama_laboratorium: '',
         latitude: '',
         longitude: '',
         total_jumlah_alat: '',
@@ -50,24 +50,8 @@ export default function Create() {
                                         onChange={e => setData('kode_universitas', e.target.value.replace(/\D/g, ''))}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kode_universitas ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         placeholder= "001034"
-                                        required
                                     />
                                     {errors.kode_universitas && <p className="mt-1 text-sm text-red-600">{errors.kode_universitas}</p>}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Kategori PT <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.kategori_pt}
-                                        onChange={e => setData('kategori_pt', e.target.value)}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kategori_pt ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        placeholder="Contoh: PTNBH"
-                                        required
-                                    />
-                                    {errors.kategori_pt && <p className="mt-1 text-sm text-red-600">{errors.kategori_pt}</p>}
                                 </div>
 
                                 <div className="md:col-span-2">
@@ -77,6 +61,22 @@ export default function Create() {
                                         errors={errors}
                                         required
                                     />
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                                        Kategori PT
+                                    </label>
+                                    <select
+                                        value={data.kategori_pt}
+                                        onChange={e => setData('kategori_pt', e.target.value)}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kategori_pt ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
+                                    >
+                                        <option value="">Pilih Kategori PT</option>
+                                        <option value="PTNBH">PTNBH</option>
+                                        <option value="Non-PTNBH">Non-PTNBH</option>
+                                    </select>
+                                    {errors.kategori_pt && <p className="mt-1 text-sm text-red-600">{errors.kategori_pt}</p>}
                                 </div>
 
                                 <div className="md:col-span-2">
@@ -96,7 +96,7 @@ export default function Create() {
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Total Jumlah Alat <span className="text-red-500">*</span>
+                                        Total Jumlah Alat
                                     </label>
                                     <input
                                         type="text"
@@ -105,7 +105,6 @@ export default function Create() {
                                         onChange={e => setData('total_jumlah_alat', e.target.value.replace(/\D/g, ''))}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.total_jumlah_alat ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         placeholder="Masukkan jumlah alat..."
-                                        required
                                     />
                                     {errors.total_jumlah_alat && <p className="mt-1 text-sm text-red-600">{errors.total_jumlah_alat}</p>}
                                 </div>
@@ -143,7 +142,7 @@ export default function Create() {
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Latitude <span className="text-red-500">*</span>
+                                        Latitude
                                     </label>
                                     <input
                                         type="text"
@@ -152,14 +151,13 @@ export default function Create() {
                                         onChange={e => setData('latitude', e.target.value.replace(',', '.').replace(/[^0-9.-]/g, ''))}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.latitude ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         placeholder="-6.123456"
-                                        required
                                     />
                                     {errors.latitude && <p className="mt-1 text-sm text-red-600">{errors.latitude}</p>}
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Longitude <span className="text-red-500">*</span>
+                                        Longitude
                                     </label>
                                     <input
                                         type="text"
@@ -168,7 +166,6 @@ export default function Create() {
                                         onChange={e => setData('longitude', e.target.value.replace(',', '.').replace(/[^0-9.-]/g, ''))}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.longitude ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         placeholder="106.123456"
-                                        required
                                     />
                                     {errors.longitude && <p className="mt-1 text-sm text-red-600">{errors.longitude}</p>}
                                 </div>
@@ -181,7 +178,7 @@ export default function Create() {
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                                        Nama Alat <span className="text-red-500">*</span>
+                                        Nama Alat
                                     </label>
                                     <textarea
                                         value={data.nama_alat}
@@ -189,7 +186,6 @@ export default function Create() {
                                         rows="4"
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.nama_alat ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         placeholder="1. Alat 1&#10;2. Alat 2&#10;3. Alat 3"
-                                        required
                                     />
                                     {errors.nama_alat && <p className="mt-1 text-sm text-red-600">{errors.nama_alat}</p>}
                                 </div>

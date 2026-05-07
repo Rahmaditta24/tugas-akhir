@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Hilirisasi;
 use Inertia\Inertia;
@@ -14,34 +16,35 @@ class HilirisasiPageController extends Controller
     public function index(Request $request)
     {
         $baseQuery = Hilirisasi::query();
-        
-        // Apply simple search
+
+        // Menerapkan pencarian sederhana
         if ($request->filled('search')) {
             $baseQuery->search($request->search);
         }
 
-        // Apply advanced multi-row queries
+        // Menerapkan kueri tingkat lanjut multi baris
         if ($request->filled('queries')) {
             $queries = json_decode($request->queries, true);
             if (is_array($queries)) {
                 $baseQuery->where(function ($q) use ($queries) {
                     foreach ($queries as $index => $row) {
                         $term = trim($row['term'] ?? '');
-                        if (empty($term)) continue;
+                        if (empty($term))
+                            continue;
 
                         $field = $row['field'] ?? 'all';
                         $operator = strtoupper($row['operator'] ?? 'AND');
 
-                        $applyCondition = function($query) use ($term, $field) {
+                        $applyCondition = function ($query) use ($term, $field) {
                             if ($field === 'all') {
-                                $query->where(function($sub) use ($term) {
+                                $query->where(function ($sub) use ($term) {
                                     $sub->where('judul', 'like', "%$term%")
                                         ->orWhere('nama_pengusul', 'like', "%$term%")
                                         ->orWhere('perguruan_tinggi', 'like', "%$term%")
                                         ->orWhere('skema', 'like', "%$term%");
                                 });
                             } else {
-                                $dbField = match($field) {
+                                $dbField = match ($field) {
                                     'title' => 'judul',
                                     'university' => 'perguruan_tinggi',
                                     'researcher' => 'nama_pengusul',
@@ -57,11 +60,14 @@ class HilirisasiPageController extends Controller
                             $applyCondition($q);
                         } else {
                             if ($operator === 'OR') {
-                                $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->orWhere(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             } elseif ($operator === 'AND NOT') {
-                                $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
-                            } else { 
-                                $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->whereNot(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
+                            } else {
+                                $q->where(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             }
                         }
                     }
@@ -87,7 +93,7 @@ class HilirisasiPageController extends Controller
 
         $statsQ = clone $baseQuery;
         $statsCacheKey = 'stats_hilirisasi_v1_' . md5(json_encode($request->all()));
-        $stats = Cache::remember($statsCacheKey, 3600, function() use ($baseQuery) {
+        $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
             $statsQ = clone $baseQuery;
             return [
                 'totalResearch' => (clone $statsQ)->count(),
@@ -98,7 +104,7 @@ class HilirisasiPageController extends Controller
         });
 
         $cacheKey = 'map_data_hilirisasi_v9_' . md5(json_encode($request->all()));
-        $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery) {
+        $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
                 ->select(
@@ -117,24 +123,24 @@ class HilirisasiPageController extends Controller
                 ->whereNotNull('perguruan_tinggi')
                 ->groupBy('perguruan_tinggi');
 
-            return $query->get()->map(function($item) {
+            return $query->get()->map(function ($item) {
                 return [
                     'institusi' => $item->institusi_name,
-                    'pt_latitude' => (float)$item->pt_latitude,
-                    'pt_longitude' => (float)$item->pt_longitude,
+                    'pt_latitude' => (float) $item->pt_latitude,
+                    'pt_longitude' => (float) $item->pt_longitude,
                     'provinsi' => $item->provinsi,
-                    'total_hilirisasi' => (int)$item->total_hilirisasi,
+                    'total_hilirisasi' => (int) $item->total_hilirisasi,
                     'ids' => $item->all_ids,
                     'titles' => $item->all_titles,
                     'skema_list' => $item->all_skema,
                     'tahun_list' => $item->all_years,
-                    'bidang_fokus' => '-', 
+                    'bidang_fokus' => '-',
                 ];
             })->toArray();
         });
 
-        // Only load list if filtered/searched
-        $isFiltered = $request->filled('search') 
+        // list jika terfilter/tersaring
+        $isFiltered = $request->filled('search')
             || $request->filled('queries')
             || $request->filled('direktorat')
             || $request->filled('skema')
@@ -149,9 +155,9 @@ class HilirisasiPageController extends Controller
                 ->values()
             : collect()->values();
 
-        // Get filter options (cached)
+        // Opsi filter (di-cache)
         $filterOptions = [
-            'direktorat' => Cache::remember('filter_hilirisasi_direktorat', 7200, function() {
+            'direktorat' => Cache::remember('filter_hilirisasi_direktorat', 7200, function () {
                 return DB::table('hilirisasi')
                     ->select('direktorat')
                     ->whereNotNull('direktorat')
@@ -161,7 +167,7 @@ class HilirisasiPageController extends Controller
                     ->filter()
                     ->values();
             }),
-            'skema' => Cache::remember('filter_hilirisasi_skema', 7200, function() {
+            'skema' => Cache::remember('filter_hilirisasi_skema', 7200, function () {
                 return DB::table('hilirisasi')
                     ->select('skema')
                     ->whereNotNull('skema')
@@ -171,20 +177,20 @@ class HilirisasiPageController extends Controller
                     ->filter()
                     ->values();
             }),
-            'provinsi' => Cache::remember('global_provinces_list', 86400, function() {
-                // Use local data directly - more reliable for production
-                $path = storage_path('provinces.json');
+            'provinsi' => Cache::remember('global_provinces_final_v1', 86400, function () {
+                $path = database_path('data/provinces.json');
                 if (file_exists($path)) {
                     $data = json_decode(file_get_contents($path), true);
                     return collect($data)
-                        ->map(fn($p) => \Illuminate\Support\Str::title($p['name']))
+                        ->map(fn($p) => trim($p['name']))
+                        ->unique()
                         ->sort()
                         ->values()
                         ->all();
                 }
                 return [];
             }),
-            'tahun' => Cache::remember('filter_hilirisasi_tahun', 7200, function() {
+            'tahun' => Cache::remember('filter_hilirisasi_tahun', 7200, function () {
                 return DB::table('hilirisasi')
                     ->select('tahun')
                     ->whereNotNull('tahun')

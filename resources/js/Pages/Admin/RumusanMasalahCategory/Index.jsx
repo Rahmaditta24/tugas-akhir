@@ -5,7 +5,7 @@ import PageHeader from '../../../Components/PageHeader';
 import HeaderActions from '../../../Components/Admin/HeaderActions';
 
 export default function RumusanMasalahCategoryIndex({ categories }) {
-    // --- State Management ---
+    // --- Manajemen State ---
     const [openMenuId, setOpenMenuId] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create'); // 'create' or 'edit'
@@ -14,7 +14,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
 
-    // Form Handling using Inertia useForm
+    // Penanganan Form menggunakan Inertia useForm
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm({
         _method: 'POST',
         name: '',
@@ -22,14 +22,14 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
         image: null,
     });
 
-    // --- Handlers ---
+    // --- Handler ---
 
-    // Open Modal for Create
+    // Buka Modal untuk Tambah
     const openCreateModal = () => {
         setModalMode('create');
         setEditingCategory(null);
         setImagePreview(null);
-        reset(); // Clear form
+        reset(); // Kosongkan form
         clearErrors();
         setData({
             _method: 'POST',
@@ -40,22 +40,22 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
         setIsModalOpen(true);
     };
 
-    // Open Modal for Edit
+    // Buka Modal untuk Edit
     const openEditModal = (category) => {
         setModalMode('edit');
         setEditingCategory(category);
-        setOpenMenuId(null); // Close kebab menu
+        setOpenMenuId(null); // Tutup menu kebab
         clearErrors();
 
-        // Set form data
+        // Atur data form
         setData({
-            _method: 'PUT', // Important for file upload spoofing
+            _method: 'PUT', // Penting untuk spoofing upload file
             name: category.name,
             order_number: category.order_number,
-            image: null // Reset file input
+            image: null // Reset input berkas
         });
 
-        // Set preview
+        // Atur pratinjau
         setImagePreview(category.image ? `/storage/${category.image}` : null);
         setIsModalOpen(true);
     };
@@ -65,7 +65,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
         reset();
     };
 
-    // Handle Form Submit
+    // Menangani Pengiriman Form
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -74,14 +74,14 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                 onSuccess: () => closeModal(),
             });
         } else {
-            // Edit Mode
+            // Mode Edit
             post(route('admin.rumusan-masalah.categories.update', editingCategory.id), {
                 onSuccess: () => closeModal(),
             });
         }
     };
 
-    // Handle Delete Category
+    // Menangani Penghapusan Kategori
     const { delete: destroy } = useForm();
     const handleDelete = (category) => {
         setCategoryToDelete(category);
@@ -101,12 +101,12 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
         }
     };
 
-    // Toggle Kebab Menu
+    // Beralih Menu Kebab
     const toggleMenu = (id) => {
         setOpenMenuId(openMenuId === id ? null : id);
     };
 
-    // Handle Image Selection
+    // Menangani Pemilihan Gambar
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -122,7 +122,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
             <div className="py-4">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-                    {/* Header Page */}
+                    {/* Header Halaman */}
                     <PageHeader
                         title="Kategori"
                         subtitle="Manajemen kategori rumusan masalah"
@@ -135,11 +135,11 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                         )}
                     />
 
-                    {/* Grid Layout */}
+                    {/* Layout Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                         {categories.map((category) => (
                             <div key={category.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-6 relative hover:shadow-md transition-shadow duration-200 flex flex-col items-center text-center group">
-                                {/* Kebab Menu (Options) */}
+                                {/* Menu Kebab (Opsi) */}
                                 <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
                                     <button
                                         onClick={(e) => { e.stopPropagation(); toggleMenu(category.id); }}
@@ -171,7 +171,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                     )}
                                 </div>
 
-                                {/* Icon Image */}
+                                {/* Gambar Ikon */}
                                 <div className="mb-2 sm:mb-4 w-12 h-12 sm:w-24 sm:h-24 flex items-center justify-center">
                                     {category.image ? (
                                         <img
@@ -189,7 +189,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                     )}
                                 </div>
 
-                                {/* Content Info */}
+                                {/* Info Konten */}
                                 <div className="w-full text-center sm:text-left mt-1 sm:mt-2">
                                     <h3 className="text-sm sm:text-xl font-bold text-gray-900 mb-0.5 sm:mb-1 truncate">
                                         {category.order_number}. {category.name}
@@ -211,12 +211,12 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                 </div>
             </div>
 
-            {/* --- MODAL Form --- */}
+            {/* --- Form MODAL --- */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/50 backdrop-blur-sm p-4 md:p-0">
                     <div className="relative w-full max-w-lg max-h-full">
                         <div className="relative bg-white rounded-xl shadow-2xl">
-                            {/* Modal Header */}
+                            {/* Header Modal */}
                             <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t">
                                 <h3 className="text-xl font-bold text-gray-900">
                                     {modalMode === 'create' ? 'Tambah Kategori' : 'Edit Kategori'}
@@ -231,7 +231,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                 </button>
                             </div>
 
-                            {/* Modal Body */}
+                            {/* Bodi Modal */}
                             <form onSubmit={handleSubmit} className="p-4 md:p-5">
                                 <div className="grid gap-4 mb-4 grid-cols-1">
                                     {/* Nomor Urut */}
@@ -266,12 +266,12 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                         {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
                                     </div>
 
-                                    {/* Logo Upload */}
+                                    {/* Upload Logo */}
                                     <div className="col-span-1">
                                         <label className="block mb-2 text-sm font-medium text-gray-900">Logo</label>
 
                                         <div className="flex items-start gap-4">
-                                            {/* Preview Box */}
+                                            {/* Kotak Pratinjau */}
                                             {imagePreview ? (
                                                 <div className="relative group">
                                                     <div className="w-24 h-24 rounded-lg border border-gray-200 p-2 flex items-center justify-center bg-gray-50">
@@ -284,7 +284,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                                                 </div>
                                             )}
 
-                                            {/* Upload Button */}
+                                            {/* Tombol Upload */}
                                             <div className="flex-1">
                                                 <input
                                                     type="file"
@@ -329,7 +329,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
                     </div>
                 </div>
             )}
-            {/* --- DELETE CONFIRMATION MODAL --- */}
+            {/* --- MODAL KONFIRMASI HAPUS --- */}
             {showDeleteModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden">

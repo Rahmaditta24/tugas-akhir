@@ -9,7 +9,7 @@ export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
         return v;
     };
     
-    // Determine data type
+    // Tentukan tipe data
     const bubbleType = data.bubbleType || (data.skema_hilirisasi ? 'Hilirisasi' : (data.pengabdian_nama ? 'Pengabdian' : 'Penelitian'));
     const isHilirisasi = bubbleType === 'Hilirisasi';
     const isPengabdian = bubbleType === 'Pengabdian';
@@ -24,7 +24,7 @@ export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
                 style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" }}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Close button */}
+                {/* Tombol Tutup */}
                 <button
                     onClick={onClose}
                     className="absolute top-3 right-3 p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-200 z-10"
@@ -45,7 +45,7 @@ export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
                         </h2>
                     </div>
 
-                    {/* Content Area with background */}
+                    {/* Area Konten dengan latar belakang */}
                     <div className="bg-slate-50 rounded-xl p-4 overflow-y-auto max-h-[45vh] custom-scrollbar">
                         {isHilirisasi ? (
                             <div className="space-y-4 text-xs sm:text-sm">

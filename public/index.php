@@ -3,20 +3,20 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
-// Set memory limit to handle large datasets
+// Mengatur batas memori untuk menangani dataset besar
 ini_set('memory_limit', '1024M');
 
 define('LARAVEL_START', microtime(true));
 
-// Determine if the application is in maintenance mode...
+// Tentukan apakah aplikasi dalam mode pemeliharaan...
 if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php')) {
     require $maintenance;
 }
 
-// Register the Composer autoloader...
+// Daftarkan autoloader Composer...
 require __DIR__.'/../vendor/autoload.php';
 
-// Bootstrap Laravel and handle the request...
+// Bootstrap Laravel dan tangani permintaan...
 /** @var Application $app */
 $app = require_once __DIR__.'/../bootstrap/app.php';
 

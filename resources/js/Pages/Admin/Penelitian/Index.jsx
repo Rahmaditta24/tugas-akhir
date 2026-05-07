@@ -276,8 +276,8 @@ export default function Index({ penelitian, stats, filters }) {
             ['B', 'C', 'G'].forEach(col => {
                 const cell = ws[col + (R + 1)];
                 if (cell) {
-                    cell.t = 's'; // Set type to 'string'
-                    cell.z = '@'; // Set format to 'text'
+                    cell.t = 's'; // Atur tipe ke 'string'
+                    cell.z = '@'; // Atur format ke 'text'
                 }
             });
         }
@@ -616,7 +616,7 @@ export default function Index({ penelitian, stats, filters }) {
                             </p>
                             <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
                                 {penelitian.links.map((link, index) => {
-                                    // Handle labels for mobile
+                                    {/* Menangani label untuk tampilan mobile */}
                                     let label = link.label;
                                     if (label.includes('Previous')) label = '&laquo;';
                                     if (label.includes('Next')) label = '&raquo;';

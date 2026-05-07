@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\PermasalahanProvinsi;
 use App\Models\PermasalahanKabupaten;
@@ -19,7 +21,7 @@ class PermasalahanPageController extends Controller
         $bubbleType = $request->input('bubbleType', 'Penelitian');
         $dataType = $request->input('dataType', 'Sampah');
         $viewMode = $request->input('viewMode', 'provinsi');
-        
+
         $isFiltered = $request->filled('search') || $request->filled('queries') || $request->filled('bidang_fokus') || $request->filled('tema_prioritas') || $request->filled('provinsi') || $request->filled('tahun') || $request->filled('kategori_pt') || $request->filled('klaster') || $request->filled('skema') || $request->filled('direktorat');
 
         $keywordsMap = [
@@ -30,25 +32,30 @@ class PermasalahanPageController extends Controller
             'Ketahanan Pangan' => ['pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani', 'swasembada', 'benih', 'bioteknologi pangan', 'smart farming', 'diversifikasi pangan', 'produksi pangan'],
         ];
 
-        // Query selection
+        // Pemilihan kueri 
         if ($bubbleType === 'Pengabdian') {
             $query = Pengabdian::query();
             $statsQuery = clone $query;
             if ($request->filled('batch_type')) {
                 $val = $request->batch_type;
                 if (stripos($val, 'Multitahun') !== false && stripos($val, 'Batch') !== false) {
-                    $query->where(function($q) { $q->where('batch_type', 'like', '%multitahun%')->orWhere('batch_type', 'like', '%batch_i%')->orWhere('batch_type', 'like', '%batch_ii%'); });
+                    $query->where(function ($q) {
+                        $q->where('batch_type', 'like', '%multitahun%')->orWhere('batch_type', 'like', '%batch_i%')->orWhere('batch_type', 'like', '%batch_ii%'); });
                 } elseif (stripos($val, 'Kosabangsa') !== false) {
-                    $query->where(function($q) { $q->where('batch_type', 'like', '%Kosabangsa%')->orWhere('nama_skema', 'like', '%Kosabangsa%'); });
+                    $query->where(function ($q) {
+                        $q->where('batch_type', 'like', '%Kosabangsa%')->orWhere('nama_skema', 'like', '%Kosabangsa%'); });
                 }
             }
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 $regex = isset($keywordsMap[$dataType]) ? implode('|', array_map('preg_quote', $keywordsMap[$dataType])) : preg_quote($dataType);
                 $q->whereRaw("judul REGEXP ?", [$regex])->orWhereRaw("bidang_fokus REGEXP ?", [$regex]);
             });
-            if ($request->filled('bidang_fokus')) $query->whereIn('bidang_fokus', (array)$request->bidang_fokus);
-            if ($request->filled('provinsi')) $query->whereIn('prov_pt', (array)$request->provinsi);
-            if ($request->filled('tahun')) $query->whereIn('thn_pelaksanaan_kegiatan', (array)$request->tahun);
+            if ($request->filled('bidang_fokus'))
+                $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
+            if ($request->filled('provinsi'))
+                $query->whereIn('prov_pt', (array) $request->provinsi);
+            if ($request->filled('tahun'))
+                $query->whereIn('thn_pelaksanaan_kegiatan', (array) $request->tahun);
             $mapData = (clone $query)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun', 'nama_skema as skema')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(15000)->get()->toArray();
             $researches = (clone $query)->orderByDesc('thn_pelaksanaan_kegiatan')->limit(50)->get();
         } elseif ($bubbleType === 'Hilirisasi') {
@@ -58,8 +65,10 @@ class PermasalahanPageController extends Controller
                 $regex = isset($keywordsMap[$dataType]) ? implode('|', array_map('preg_quote', $keywordsMap[$dataType])) : preg_quote($dataType);
                 $q->whereRaw("judul REGEXP ?", [$regex]);
             });
-            if ($request->filled('provinsi')) $query->whereIn('provinsi', (array)$request->provinsi);
-            if ($request->filled('tahun')) $query->whereIn('tahun', (array)$request->tahun);
+            if ($request->filled('provinsi'))
+                $query->whereIn('provinsi', (array) $request->provinsi);
+            if ($request->filled('tahun'))
+                $query->whereIn('tahun', (array) $request->tahun);
             $mapData = (clone $query)->select('id', 'judul', 'nama_pengusul as nama', 'perguruan_tinggi as institusi', 'provinsi', DB::raw("NULL as kabupaten_kota"), 'pt_latitude', 'pt_longitude', 'skema', 'tahun', 'mitra', 'luaran')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(15000)->get()->toArray();
             $researches = (clone $query)->orderByDesc('tahun')->limit(50)->get();
         } else {
@@ -69,22 +78,27 @@ class PermasalahanPageController extends Controller
                 $regex = isset($keywordsMap[$dataType]) ? implode('|', array_map('preg_quote', $keywordsMap[$dataType])) : preg_quote($dataType);
                 $q->whereRaw("judul REGEXP ?", [$regex]);
             });
-            if ($request->filled('bidang_fokus')) $query->whereIn('bidang_fokus', (array)$request->bidang_fokus);
-            if ($request->filled('provinsi')) $query->whereIn('provinsi', (array)$request->provinsi);
-            if ($request->filled('tahun')) $query->whereIn('thn_pelaksanaan', (array)$request->tahun);
+            if ($request->filled('bidang_fokus'))
+                $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
+            if ($request->filled('provinsi'))
+                $query->whereIn('provinsi', (array) $request->provinsi);
+            if ($request->filled('tahun'))
+                $query->whereIn('thn_pelaksanaan', (array) $request->tahun);
             $mapData = (clone $query)->select('id', 'judul', 'nama', 'institusi', 'provinsi', 'kota as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'bidang_fokus', 'thn_pelaksanaan as tahun', 'skema')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(15000)->get()->toArray();
             $researches = (clone $query)->orderByDesc('thn_pelaksanaan')->limit(50)->get();
         }
 
         $this->applyAdvancedQueries($query, $request, $bubbleType);
 
-        $stats = Cache::remember("perm_stats_{$bubbleType}_{$request->batch_type}", 3600, function() use ($statsQuery, $bubbleType) {
-            if ($bubbleType === 'Hilirisasi') return ['totalResearch' => (clone $statsQuery)->count(), 'totalUniversities' => (clone $statsQuery)->distinct('perguruan_tinggi')->count('perguruan_tinggi'), 'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'), 'totalFields' => 0];
-            if ($bubbleType === 'Pengabdian') return ['totalResearch' => (clone $statsQuery)->count(), 'totalUniversities' => (clone $statsQuery)->distinct('nama_institusi')->count('nama_institusi'), 'totalProvinces' => (clone $statsQuery)->distinct('prov_pt')->count('prov_pt'), 'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus')];
+        $stats = Cache::remember("perm_stats_{$bubbleType}_{$request->batch_type}", 3600, function () use ($statsQuery, $bubbleType) {
+            if ($bubbleType === 'Hilirisasi')
+                return ['totalResearch' => (clone $statsQuery)->count(), 'totalUniversities' => (clone $statsQuery)->distinct('perguruan_tinggi')->count('perguruan_tinggi'), 'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'), 'totalFields' => 0];
+            if ($bubbleType === 'Pengabdian')
+                return ['totalResearch' => (clone $statsQuery)->count(), 'totalUniversities' => (clone $statsQuery)->distinct('nama_institusi')->count('nama_institusi'), 'totalProvinces' => (clone $statsQuery)->distinct('prov_pt')->count('prov_pt'), 'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus')];
             return ['totalResearch' => (clone $statsQuery)->count(), 'totalUniversities' => (clone $statsQuery)->distinct('institusi')->count('institusi'), 'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'), 'totalFields' => (clone $statsQuery)->distinct('bidang_fokus')->count('bidang_fokus')];
         });
 
-        // JSON Data loading
+        // Pemuatan data JSON
         $jsonDir = database_path('data/');
         $filesMap = [
             'Sampah' => 'data-permasalahan-sampah.json',
@@ -93,19 +107,27 @@ class PermasalahanPageController extends Controller
             'Krisis Listrik' => 'data-permasalahan-krisis-listrik.json',
             'Ketahanan Pangan' => 'data-permasalahan-ketahanan-pangan.json'
         ];
-        
+
         $permasalahanStats = Cache::remember('permasalahan_json_provinsi_stats_v9', 86400, function () use ($jsonDir, $filesMap) {
             $result = [];
             foreach ($filesMap as $label => $filename) {
-                $path = $jsonDir . $filename; if (!file_exists($path)) continue;
+                $path = $jsonDir . $filename;
+                if (!file_exists($path))
+                    continue;
                 $data = json_decode(file_get_contents($path), true);
                 $list = $data['Provinsi'] ?? $data['Sheet1'] ?? [];
                 $labelData = [];
                 foreach ($list as $item) {
-                    $metrics = ($label === 'Krisis Listrik') ? ['saidi' => 'SAIDI (Jam/Pelanggan)', 'saifi' => 'SAIFI (Kali/Pelanggan)'] : [strtolower($label) => match($label) { 'Sampah' => 'Timbulan Sampah Tahunan(ton)', 'Stunting', 'Gizi Buruk' => 'Persentase', 'Ketahanan Pangan' => 'IKP', default => 'Persentase' }];
+                    $metrics = ($label === 'Krisis Listrik') ? ['saidi' => 'SAIDI (Jam/Pelanggan)', 'saifi' => 'SAIFI (Kali/Pelanggan)'] : [strtolower($label) => match ($label) { 'Sampah' => 'Timbulan Sampah Tahunan(ton)', 'Stunting', 'Gizi Buruk' => 'Persentase', 'Ketahanan Pangan' => 'IKP', default => 'Persentase'}];
                     foreach ($metrics as $metrikId => $valKey) {
-                        $value = 0; foreach ($item as $k => $v) { if (trim($k) === $valKey) { $value = $v; break; } }
-                        $labelData[] = ['provinsi' => $item['Provinsi'] ?? '-', 'nilai' => (float)$value, 'satuan' => match($label) { 'Sampah' => 'ton', 'Stunting', 'Gizi Buruk' => '%', 'Krisis Listrik' => (stripos($valKey, 'SAIDI') !== false ? 'Jam/Pelanggan' : 'Kali/Pelanggan'), 'Ketahanan Pangan' => 'Indeks', default => '' }, 'metrik' => $metrikId, 'tahun' => 2024];
+                        $value = 0;
+                        foreach ($item as $k => $v) {
+                            if (trim($k) === $valKey) {
+                                $value = $v;
+                                break;
+                            }
+                        }
+                        $labelData[] = ['provinsi' => $item['Provinsi'] ?? '-', 'nilai' => (float) $value, 'satuan' => match ($label) { 'Sampah' => 'ton', 'Stunting', 'Gizi Buruk' => '%', 'Krisis Listrik' => (stripos($valKey, 'SAIDI') !== false ? 'Jam/Pelanggan' : 'Kali/Pelanggan'), 'Ketahanan Pangan' => 'Indeks', default => ''}, 'metrik' => $metrikId, 'tahun' => 2024];
                     }
                 }
                 $result[$label] = $labelData;
@@ -116,14 +138,24 @@ class PermasalahanPageController extends Controller
         $permasalahanKabupatenStats = Cache::remember('permasalahan_json_kabupaten_stats_v9', 86400, function () use ($jsonDir, $filesMap) {
             $result = [];
             foreach ($filesMap as $label => $filename) {
-                $path = $jsonDir . $filename; if (!file_exists($path)) continue;
-                $data = json_decode(file_get_contents($path), true); if (!isset($data['Kabupaten'])) continue;
+                $path = $jsonDir . $filename;
+                if (!file_exists($path))
+                    continue;
+                $data = json_decode(file_get_contents($path), true);
+                if (!isset($data['Kabupaten']))
+                    continue;
                 $labelData = [];
                 foreach ($data['Kabupaten'] as $item) {
-                    $metrics = ($label === 'Krisis Listrik') ? ['saidi' => 'SAIDI (Jam/Pelanggan)', 'saifi' => 'SAIFI (Kali/Pelanggan)'] : [strtolower($label) => match($label) { 'Sampah' => 'Timbulan Sampah Tahunan(ton)', 'Stunting', 'Gizi Buruk' => 'Persentase', 'Ketahanan Pangan' => 'IKP', default => 'Persentase' }];
+                    $metrics = ($label === 'Krisis Listrik') ? ['saidi' => 'SAIDI (Jam/Pelanggan)', 'saifi' => 'SAIFI (Kali/Pelanggan)'] : [strtolower($label) => match ($label) { 'Sampah' => 'Timbulan Sampah Tahunan(ton)', 'Stunting', 'Gizi Buruk' => 'Persentase', 'Ketahanan Pangan' => 'IKP', default => 'Persentase'}];
                     foreach ($metrics as $metrikId => $valKey) {
-                        $value = 0; foreach ($item as $k => $v) { if (trim($k) === $valKey) { $value = $v; break; } }
-                        $labelData[] = ['kabupaten_kota' => $item['Kabupaten/Kota'] ?? '-', 'provinsi' => $item['Provinsi'] ?? '-', 'nilai' => (float)$value, 'satuan' => match($label) { 'Sampah' => 'ton', 'Stunting', 'Gizi Buruk' => '%', 'Krisis Listrik' => (stripos($valKey, 'SAIDI') !== false ? 'Jam/Pelanggan' : 'Kali/Pelanggan'), 'Ketahanan Pangan' => 'Indeks', default => '' }, 'metrik' => $metrikId, 'tahun' => 2024];
+                        $value = 0;
+                        foreach ($item as $k => $v) {
+                            if (trim($k) === $valKey) {
+                                $value = $v;
+                                break;
+                            }
+                        }
+                        $labelData[] = ['kabupaten_kota' => $item['Kabupaten/Kota'] ?? '-', 'provinsi' => $item['Provinsi'] ?? '-', 'nilai' => (float) $value, 'satuan' => match ($label) { 'Sampah' => 'ton', 'Stunting', 'Gizi Buruk' => '%', 'Krisis Listrik' => (stripos($valKey, 'SAIDI') !== false ? 'Jam/Pelanggan' : 'Kali/Pelanggan'), 'Ketahanan Pangan' => 'Indeks', default => ''}, 'metrik' => $metrikId, 'tahun' => 2024];
                     }
                 }
                 $result[$label] = $labelData;
@@ -164,7 +196,7 @@ class PermasalahanPageController extends Controller
     }
 
     /**
-     * API endpoint for lazy-loading marker details
+     * Endpoint API untuk memuat detail penanda (marker) secara lazy-loading
      */
     public function lazyLoadMarkers(Request $request)
     {
@@ -173,31 +205,118 @@ class PermasalahanPageController extends Controller
         $offset = $request->input('offset', 5000);
         $limit = $request->input('limit', 5000);
 
-        // Same keywords as index
+        // Kata kunci yang sama dengan index
         $keywordsMap = [
             'Sampah' => [
-                'sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 
-                'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut',
-                'residu', 'biomassa', 'waste-to-energy', 'tPA', 'pengelolaan sampah', 'sampah kota'
+                'sampah',
+                'limbah',
+                'waste',
+                'recycle',
+                'daur ulang',
+                'plastic',
+                'plastik',
+                'pencemaran',
+                'polusi',
+                'lingkungan',
+                'ekosistem',
+                'sanitasi',
+                'kehutanan',
+                'konservasi',
+                'sungai',
+                'laut',
+                'residu',
+                'biomassa',
+                'waste-to-energy',
+                'tPA',
+                'pengelolaan sampah',
+                'sampah kota'
             ],
             'Stunting' => [
-                'stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita', 'bayi', 'anak', 'ibu hamil', 
-                'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi', 'malnutrisi', 'pangan bergizi',
-                'pola makan', 'asupan gizi'
+                'stunting',
+                'tengkes',
+                'kerdil',
+                'gizi',
+                'pendek',
+                'balita',
+                'bayi',
+                'anak',
+                'ibu hamil',
+                'puskesmas',
+                'posyandu',
+                'pertumbuhan',
+                'perkembangan',
+                'nutrisi',
+                'malnutrisi',
+                'pangan bergizi',
+                'pola makan',
+                'asupan gizi'
             ],
             'Gizi Buruk' => [
-                'gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus', 'vitamin', 'protein', 'karbo', 
-                'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan', 'gizi seimbang', 'beban ganda malnutrisi'
+                'gizi buruk',
+                'malnutrisi',
+                'nutrisi',
+                'stunting',
+                'kurus',
+                'vitamin',
+                'protein',
+                'karbo',
+                'lemak',
+                'kesehatan',
+                'medis',
+                'klinis',
+                'asupan',
+                'pola makan',
+                'gizi seimbang',
+                'beban ganda malnutrisi'
             ],
             'Krisis Listrik' => [
-                'listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit', 'pln', 'panel', 'solar', 
-                'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomatisasi', 'smart grid',
-                'elektrifikasi', 'energi terbarukan', 'transisi energi', 'panel surya', 'biofuel'
+                'listrik',
+                'energi',
+                'saidi',
+                'saifi',
+                'power',
+                'pembangkit',
+                'pln',
+                'panel',
+                'solar',
+                'baterai',
+                'tegangan',
+                'arus',
+                'mikrohidro',
+                'angin',
+                'elektro',
+                'otomatisasi',
+                'smart grid',
+                'elektrifikasi',
+                'energi terbarukan',
+                'transisi energi',
+                'panel surya',
+                'biofuel'
             ],
             'Ketahanan Pangan' => [
-                'pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 
-                'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani', 'swasembada',
-                'benih', 'bioteknologi pangan', 'smart farming', 'diversifikasi pangan', 'produksi pangan'
+                'pangan',
+                'makanan',
+                'food',
+                'beras',
+                'pertanian',
+                'pasokan pangan',
+                'padi',
+                'jagung',
+                'kedelai',
+                'ternak',
+                'ikan',
+                'panen',
+                'pupuk',
+                'hama',
+                'sawah',
+                'irigasi',
+                'tani',
+                'swasembada',
+                'benih',
+                'bioteknologi pangan',
+                'smart farming',
+                'diversifikasi pangan',
+                'produksi pangan'
             ],
         ];
 
@@ -209,7 +328,7 @@ class PermasalahanPageController extends Controller
             $query = Penelitian::query();
         }
 
-        // Apply keyword filter
+        //  Filter berdasarkan kata kunci
         $query->where(function ($q) use ($dataType, $keywordsMap) {
             if (isset($keywordsMap[$dataType])) {
                 $regex = implode('|', array_map('preg_quote', $keywordsMap[$dataType]));
@@ -219,46 +338,60 @@ class PermasalahanPageController extends Controller
             }
         });
 
-        // Apply standard filters
+        // Filter standar
         if ($bubbleType === 'Pengabdian') {
-            if ($request->filled('bidang_fokus')) $query->whereIn('bidang_fokus', (array)$request->bidang_fokus);
-            if ($request->filled('provinsi')) $query->whereIn('prov_pt', (array)$request->provinsi);
-            if ($request->filled('tahun')) $query->whereIn('thn_pelaksanaan_kegiatan', (array)$request->tahun);
-            if ($request->filled('skema')) $query->whereIn('nama_skema', (array)$request->skema);
-            
+            if ($request->filled('bidang_fokus'))
+                $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
+            if ($request->filled('provinsi'))
+                $query->whereIn('prov_pt', (array) $request->provinsi);
+            if ($request->filled('tahun'))
+                $query->whereIn('thn_pelaksanaan_kegiatan', (array) $request->tahun);
+            if ($request->filled('skema'))
+                $query->whereIn('nama_skema', (array) $request->skema);
+
             if ($request->filled('batch_type')) {
                 $val = $request->batch_type;
                 if (stripos($val, 'Multitahun') !== false && stripos($val, 'Batch') !== false) {
-                    $query->where(function($q) {
+                    $query->where(function ($q) {
                         $q->where('batch_type', 'like', '%multitahun%')
-                          ->orWhere('batch_type', 'like', '%batch_i%') 
-                          ->orWhere('batch_type', 'like', '%batch_ii%');
+                            ->orWhere('batch_type', 'like', '%batch_i%')
+                            ->orWhere('batch_type', 'like', '%batch_ii%');
                     });
                 } elseif (stripos($val, 'Kosabangsa') !== false) {
-                    $query->where(function($q) {
+                    $query->where(function ($q) {
                         $q->where('batch_type', 'like', '%Kosabangsa%')
-                          ->orWhere('nama_skema', 'like', '%Kosabangsa%');
+                            ->orWhere('nama_skema', 'like', '%Kosabangsa%');
                     });
                 }
             }
         } elseif ($bubbleType === 'Hilirisasi') {
-            if ($request->filled('provinsi')) $query->whereIn('provinsi', (array)$request->provinsi);
-            if ($request->filled('tahun')) $query->whereIn('tahun', (array)$request->tahun);
-            if ($request->filled('skema')) $query->whereIn('skema', (array)$request->skema);
-            if ($request->filled('direktorat')) $query->whereIn('direktorat', (array)$request->direktorat);
+            if ($request->filled('provinsi'))
+                $query->whereIn('provinsi', (array) $request->provinsi);
+            if ($request->filled('tahun'))
+                $query->whereIn('tahun', (array) $request->tahun);
+            if ($request->filled('skema'))
+                $query->whereIn('skema', (array) $request->skema);
+            if ($request->filled('direktorat'))
+                $query->whereIn('direktorat', (array) $request->direktorat);
         } else {
-            if ($request->filled('bidang_fokus')) $query->whereIn('bidang_fokus', (array)$request->bidang_fokus);
-            if ($request->filled('tema_prioritas')) $query->whereIn('tema_prioritas', (array)$request->tema_prioritas);
-            if ($request->filled('provinsi')) $query->whereIn('provinsi', (array)$request->provinsi);
-            if ($request->filled('tahun')) $query->whereIn('thn_pelaksanaan', (array)$request->tahun);
-            if ($request->filled('kategori_pt')) $query->whereIn('kategori_pt', (array)$request->kategori_pt);
-            if ($request->filled('klaster')) $query->whereIn('klaster', (array)$request->klaster);
+            if ($request->filled('bidang_fokus'))
+                $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
+            if ($request->filled('tema_prioritas'))
+                $query->whereIn('tema_prioritas', (array) $request->tema_prioritas);
+            if ($request->filled('provinsi'))
+                $query->whereIn('provinsi', (array) $request->provinsi);
+            if ($request->filled('tahun'))
+                $query->whereIn('thn_pelaksanaan', (array) $request->tahun);
+            if ($request->filled('kategori_pt'))
+                $query->whereIn('kategori_pt', (array) $request->kategori_pt);
+            if ($request->filled('klaster'))
+                $query->whereIn('klaster', (array) $request->klaster);
         }
 
         $this->applyAdvancedQueries($query, $request, $bubbleType);
 
         $totalCount = (clone $query)->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count();
-        
+
         if ($bubbleType === 'Pengabdian') {
             $markers = $query->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun', 'nama_skema as skema');
         } elseif ($bubbleType === 'Hilirisasi') {
@@ -276,7 +409,7 @@ class PermasalahanPageController extends Controller
         return response()->json([
             'markers' => $results,
             'hasMore' => ($offset + $results->count()) < $totalCount,
-            'total'   => $totalCount
+            'total' => $totalCount
         ]);
     }
 
@@ -288,16 +421,17 @@ class PermasalahanPageController extends Controller
                 $query->where(function ($q) use ($queries, $modelType) {
                     foreach ($queries as $index => $row) {
                         $term = trim($row['term'] ?? '');
-                        if (empty($term)) continue;
+                        if (empty($term))
+                            continue;
 
                         $field = $row['field'] ?? 'all';
                         $operator = strtoupper($row['operator'] ?? 'AND');
 
-                        $applyCondition = function($query) use ($term, $field, $modelType) {
+                        $applyCondition = function ($query) use ($term, $field, $modelType) {
                             if ($field === 'all') {
-                                $query->where(function($sub) use ($term, $modelType) {
+                                $query->where(function ($sub) use ($term, $modelType) {
                                     $sub->where('judul', 'like', "%$term%");
-                                    
+
                                     if ($modelType === 'Hilirisasi') {
                                         $sub->orWhere('nama_pengusul', 'like', "%$term%")
                                             ->orWhere('perguruan_tinggi', 'like', "%$term%");
@@ -307,22 +441,22 @@ class PermasalahanPageController extends Controller
                                     }
                                 });
                             } else {
-                                $dbField = match($field) {
+                                $dbField = match ($field) {
                                     'title' => 'judul',
-                                    'university' => match($modelType) {
-                                        'Hilirisasi' => 'perguruan_tinggi',
-                                        'Pengabdian' => 'nama_institusi',
-                                        default => 'institusi'
-                                    },
-                                    'researcher' => match($modelType) {
-                                        'Hilirisasi' => 'nama_pengusul',
-                                        default => 'nama'
-                                    },
-                                    'field' => match($modelType) {
-                                        'Hilirisasi' => 'skema',
-                                        'Pengabdian' => 'bidang_fokus',
-                                        default => 'bidang_fokus'
-                                    },
+                                    'university' => match ($modelType) {
+                                            'Hilirisasi' => 'perguruan_tinggi',
+                                            'Pengabdian' => 'nama_institusi',
+                                            default => 'institusi'
+                                        },
+                                    'researcher' => match ($modelType) {
+                                            'Hilirisasi' => 'nama_pengusul',
+                                            default => 'nama'
+                                        },
+                                    'field' => match ($modelType) {
+                                            'Hilirisasi' => 'skema',
+                                            'Pengabdian' => 'bidang_fokus',
+                                            default => 'bidang_fokus'
+                                        },
                                     default => 'judul'
                                 };
                                 $query->where($dbField, 'like', "%$term%");
@@ -333,11 +467,14 @@ class PermasalahanPageController extends Controller
                             $applyCondition($q);
                         } else {
                             if ($operator === 'OR') {
-                                $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->orWhere(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             } elseif ($operator === 'AND NOT') {
-                                $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
-                            } else { // AND
-                                $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->whereNot(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
+                            } else { // ATAU (AND)
+                                $q->where(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             }
                         }
                     }

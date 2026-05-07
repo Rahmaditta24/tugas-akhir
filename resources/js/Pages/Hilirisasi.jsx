@@ -8,11 +8,11 @@ import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
 import StatisticsCards from '../Components/StatisticsCards';
 
-// Lazy-loaded components
+// Komponen lazy-loaded
 const MapContainer = lazy(() => import('../Components/MapContainer'));
 const ResearchModal = lazy(() => import('../Components/ResearchModal'));
 
-// Loading fallbacks
+// Tampilan loading fallback
 const MapLoading = () => (
     <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
         <div className="text-gray-400 font-medium">Memuat peta...</div>
@@ -27,18 +27,18 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
     const [selectedResearch, setSelectedResearch] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Update currentStats when global stats from props change
+    // Perbarui currentStats saat stats global dari props berubah
     useEffect(() => {
         setCurrentStats(stats);
     }, [stats]);
 
-    // Sync state with props when they change
+    // Sinkronisasi state dengan props saat ada perubahan
     useEffect(() => {
         setFilters(initialFilters);
         setSearchTerm(initialFilters.search || '');
     }, [initialFilters]);
 
-    // Filter options from server (provinces come from backend via DB query)
+    // Opsi filter dari server (provinsi diambil dari backend melalui query DB)
     const filterOptions = {
         direktorat: serverFilterOptions.direktorat || ['Direktorat A', 'Direktorat B'],
         skema: serverFilterOptions.skema || ['Skema A', 'Skema B'],

@@ -13,17 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add indexes for better query performance
-        // Laravel will handle duplicate index checking automatically
-        
         Schema::table('fasilitas_lab', function (Blueprint $table) {
-            // Add index on jenis_laboratorium if doesn't exist
-            if (!$this->hasIndex('fasilitas_lab', 'fasilitas_lab_jenis_laboratorium_index')) {
-                $table->index('jenis_laboratorium');
-            }
         });
 
-        // Add composite indexes for common filter combinations
+        // Menambahkan indeks komposit untuk kombinasi filter umum
         Schema::table('pengabdian', function (Blueprint $table) {
             if (!$this->hasIndex('pengabdian', 'pengabdian_prov_year_index')) {
                 $table->index(['prov_pt', 'thn_pelaksanaan_kegiatan'], 'pengabdian_prov_year_index');
@@ -69,7 +62,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('fasilitas_lab', function (Blueprint $table) {
-            $table->dropIndex(['jenis_laboratorium']);
+            //
         });
 
         Schema::table('pengabdian', function (Blueprint $table) {

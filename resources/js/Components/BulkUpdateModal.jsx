@@ -14,7 +14,7 @@ export default function BulkUpdateModal({
     return (
         <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 opacity-100 transition-opacity">
             <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-slate-200">
-                {/* Modal Header */}
+                {/* Header Modal */}
                 <div className="flex-none px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-100 flex justify-between items-center bg-white z-10">
                     <div>
                         <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 tracking-tight">{title}</h3>
@@ -22,11 +22,11 @@ export default function BulkUpdateModal({
                     </div>
                 </div>
 
-                {/* Modal Body (Scrollable) */}
+                {/* Isi Modal (Bisa di-scroll) */}
                 <div className="flex-1 overflow-y-auto bg-slate-50 p-3 sm:p-6 space-y-4 sm:space-y-6">
                     {items.map((item, idx) => (
                         <div key={item.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative transition-all hover:shadow-md hover:border-blue-200">
-                            {/* Item Header */}
+                            {/* Header Item */}
                             <div className="bg-slate-50/80 px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-100 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs sm:text-sm font-bold shadow-inner">
@@ -39,7 +39,7 @@ export default function BulkUpdateModal({
                                 </div>
                             </div>
 
-                            {/* Item Form Body */}
+                            {/* Isi Form Item */}
                             <div className="p-4 sm:p-5 space-y-4 sm:space-y-6">
                                 {renderItemForm(item)}
                             </div>
@@ -47,7 +47,7 @@ export default function BulkUpdateModal({
                     ))}
                 </div>
 
-                {/* Modal Footer */}
+                {/* Footer Modal */}
                 <div className="flex-none px-4 sm:px-6 py-3 sm:py-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
                     <p className="text-xs text-slate-500 italic hidden sm:block">* Pastikan semua data sudah benar sebelum menyimpan.</p>
                     <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">

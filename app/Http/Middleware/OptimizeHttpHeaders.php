@@ -14,17 +14,17 @@ class OptimizeHttpHeaders
     {
         $response = $next($request);
 
-        // Add cache headers for static assets
+        // Tambahkan header cache untuk aset statis
         if ($request->path() !== '/' && (str_contains($request->path(), '/build/') || str_contains($request->path(), '/storage/'))) {
             $response->headers->set('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year for versioned assets
         }
         
-        // Add cache headers for API responses (24 hours for permasalahan data)
+        // Tambahkan header cache untuk respons API (24 jam untuk data permasalahan)
         if (str_contains($request->path(), '/permasalahan') || str_contains($request->path(), '/api/')) {
             $response->headers->set('Cache-Control', 'public, max-age=86400'); // 24 hours
         }
 
-        // Security and performance headers
+        // Header keamanan dan performa
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('X-XSS-Protection', '1; mode=block');

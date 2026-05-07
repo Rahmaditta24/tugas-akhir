@@ -122,7 +122,7 @@ export default function Index({
             direction: 'desc',
             tab: activeTab,
             batch_type: nextBatch,
-            columns: {} // Reset column filters when switching base data
+            columns: {} // Reset filter kolom saat berpindah data dasar
         }, {
             preserveState: true,
             preserveScroll: true,

@@ -8,11 +8,11 @@ import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
 import StatisticsCards from '../Components/StatisticsCards';
 
-// Lazy-loaded components
+// Komponen lazy-loaded
 const MapContainer = lazy(() => import('../Components/MapContainer'));
 const ResearchModal = lazy(() => import('../Components/ResearchModal'));
 
-// Loading fallback
+// Tampilan loading fallback
 const MapLoading = () => (
     <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
         <div className="text-gray-400 font-medium">Memuat peta...</div>
@@ -27,23 +27,23 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
     const [selectedResearch, setSelectedResearch] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Update currentStats when global stats from props change
+    // Perbarui currentStats saat stats global dari props berubah
     useEffect(() => {
         setCurrentStats(stats);
     }, [stats]);
 
-    // Sync state with props when they change
+    // Sinkronisasi state dengan props saat ada perubahan
     useEffect(() => {
         setFilters(initialFilters);
         setSearchTerm(initialFilters.search || '');
     }, [initialFilters]);
 
-    // Filter options from server (provinces come from backend via DB/API)
+    // Opsi filter dari server (provinsi diambil dari backend via DB/API)
     const filterOptions = {
         bidang: serverFilterOptions.bidang || ['Pangan', 'Energi', 'Kesehatan', 'Transportasi', 'Teknologi Informasi'],
         tkt: serverFilterOptions.tkt || ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
         provinsi: serverFilterOptions.provinsi || [],
-        tahun: ['2020', '2021', '2022', '2023', '2024'], // Keep year hardcoded as it's not in DB
+        tahun: ['2020', '2021', '2022', '2023', '2024'], 
     };
 
     const filterFields = [
@@ -191,7 +191,7 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Produk');
             
-            // Set standard column widths
+            // Atur lebar kolom standar
             ws['!cols'] = [
                 { wch: 8 }, { wch: 40 }, { wch: 40 }, { wch: 20 },
                 { wch: 8 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, 

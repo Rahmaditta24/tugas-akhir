@@ -16,7 +16,7 @@ class HilirisasiController extends Controller
         if (empty($name)) return false;
         $name = strtolower($name);
         
-        // Basic keywords
+        // Kata kunci dasar
         if (strpos($name, 'negeri') !== false) return true;
         if (strpos($name, 'politeknik') !== false && strpos($name, 'negeri') !== false) return true;
         if (strpos($name, 'uin ') !== false || strpos($name, 'universitas islam negeri') !== false) return true;
@@ -85,10 +85,10 @@ class HilirisasiController extends Controller
         $name = trim($name);
         if ($name === '') return 'tidak tersedia';
 
-        // Convert to Title Case
+        // Ubah menjadi Huruf Kapital Setiap Awal Kata
         $formatted = mb_convert_case($name, MB_CASE_TITLE, "UTF-8");
 
-        // Special Fixes
+        // Perbaikan Khusus
         $fixes = [
             'Dki Jakarta' => 'DKI Jakarta',
             'Di Yogyakarta' => 'DI Yogyakarta',
@@ -101,7 +101,7 @@ class HilirisasiController extends Controller
     {
         $query = Hilirisasi::query();
 
-        // Whitelisted sorting and pagination
+        // Pengurutan dan paginasi 
         $allowedSorts = ['id', 'judul', 'id_proposal', 'nama_pengusul', 'perguruan_tinggi', 'tahun', 'direktorat', 'provinsi', 'skema'];
         $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
         $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
@@ -122,7 +122,7 @@ class HilirisasiController extends Controller
             });
         }
 
-        // Column filters
+        // Filter kolom
         if ($request->filled('filters')) {
             $filters = $request->filters;
             foreach ($filters as $key => $value) {
@@ -137,7 +137,7 @@ class HilirisasiController extends Controller
             }
         }
 
-        // Cache Versioning
+        // Versi Cache
         $v = Cache::get('hilirisasi_admin_v', 1);
         $cacheKey = 'hilirisasi_admin_v' . $v . '_' . md5(json_encode($request->all()));
 
@@ -151,7 +151,7 @@ class HilirisasiController extends Controller
             $hilirisasi->getCollection()->transform(function ($item) {
                 $item->nama_pengusul = $this->formatName($item->nama_pengusul);
                 
-                // Self-healing rules for display consistency
+                // Aturan pemulihan otomatis (self-healing) untuk konsistensi tampilan
                 $clean = function($v, $isNumeric = false) {
                     if (is_string($v)) $v = ltrim(trim($v), "'");
                     if ($v === null || $v === '' || (is_numeric($v) && is_nan((float)$v)) || $v === 'NaN') {
@@ -194,7 +194,7 @@ class HilirisasiController extends Controller
             'stats' => $stats,
             'filters' => [
                 'search' => $request->get('search'),
-                'columns' => $request->get('filters', []), // Pass column filters back
+                'columns' => $request->get('filters', []), // Kembalikan filter kolom
                 'sort' => $sort,
                 'direction' => $direction,
                 'perPage' => $perPage,
@@ -373,7 +373,7 @@ class HilirisasiController extends Controller
                 } else if ($key === 'provinsi') {
                     $updateData[$key] = $this->formatProvinsi($value);
                 } else {
-                    // normalize empty to "tidak tersedia" for text fields
+                    // normalisasi kosong menjadi "tidak tersedia" untuk field teks
                     if (in_array($key, ['id_proposal', 'provinsi', 'mitra', 'skema', 'direktorat', 'luaran'])) {
                         if (empty($value) && $value !== '0') $value = 'tidak tersedia';
                     }
@@ -515,7 +515,7 @@ class HilirisasiController extends Controller
             $errors = [];
             $batch = [];
 
-            // Strict Header Validation (Tolak jika kolom tidak sesuai)
+            // Validasi Header Ketat (Tolak jika kolom tidak sesuai)
             if (!empty($request->data)) {
                 $firstRow = $request->data[0];
                 $foundKeys = array_map(function($k) {

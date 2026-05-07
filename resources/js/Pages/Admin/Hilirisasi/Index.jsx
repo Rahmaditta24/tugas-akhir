@@ -20,7 +20,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
     const [itemToDelete, setItemToDelete] = useState(null);
     const [search, setSearch] = useState(filters.search || '');
 
-    // State for filters
+    // State untuk filter
     const [perPage, setPerPage] = useState(filters.perPage || 20);
     const [columnFilters, setColumnFilters] = useState(filters.columns || {});
 

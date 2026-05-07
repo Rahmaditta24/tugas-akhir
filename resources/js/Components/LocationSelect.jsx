@@ -13,9 +13,6 @@ const LocationSelect = ({
     provinceErrorKey = 'provinsi',
     regencyErrorKey = 'kota'
 }) => {
-    // ... (lines 11-114 remain unchanged, but we are skipping them in replacement content if possible, but replace_file_content needs contiguous block. 
-    // Actually, I should probably replace the function signature and the JSX part separately or the whole file content? No, whole file is too big.
-    // I will replace the signature first.
 
     const [provinces, setProvinces] = useState([]);
     const [regencies, setRegencies] = useState([]);
@@ -32,18 +29,18 @@ const LocationSelect = ({
     const normalizeRegencyName = (s) => {
         const t = String(s || '').trim();
         if (!t) return '';
-        // Handle "kab." prefix case-insensitively first
+        // Menangani awalan "kab." secara case-insensitive
         let x = t.replace(/^kab\.\s*/i, 'Kabupaten ')
             .replace(/^kab\s+/i, 'Kabupaten ');
 
-        // Remove extra spaces
+        // Hapus spasi berlebih
         x = x.replace(/\s+/g, ' ');
 
-        // Apply Title Case
+        // Terapkan Title Case
         return toTitleCase(x);
     };
 
-    // Fetch Provinces
+    // Ambil data Provinsi
     useEffect(() => {
         const fetchProvinces = async () => {
             setLoadingProvinces(true);
@@ -51,7 +48,7 @@ const LocationSelect = ({
                 const response = await axios.get('/api/provinces');
                 const rawData = response.data;
                 
-                // Safety check: ensure rawData is an array
+                // Validasi keamanan: pastikan rawData adalah array
                 const dataArray = Array.isArray(rawData) ? rawData : Object.values(rawData || {});
                 
                 const titleCasedData = dataArray.map(p => ({ 
@@ -68,7 +65,7 @@ const LocationSelect = ({
         fetchProvinces();
     }, []);
 
-    // Fetch Regencies based on selected province
+    // Ambil data Kabupaten/Kota berdasarkan provinsi yang dipilih
     useEffect(() => {
         const fetchRegencies = async () => {
             if (!selectedProvince) {
@@ -76,8 +73,7 @@ const LocationSelect = ({
                 return;
             }
 
-            // Find province ID
-            // Find province ID - case insensitive match
+            // Cari ID provinsi - pencocokan case insensitive
             const provinceObj = provinces.find(p =>
                 p.name.toLowerCase() === selectedProvince.toLowerCase()
             );
@@ -88,7 +84,7 @@ const LocationSelect = ({
                 const response = await axios.get(`/api/regencies/${provinceObj.id}`);
                 const rawData = response.data;
                 
-                // Safety check: ensure rawData is an array
+                // Validasi keamanan: pastikan rawData adalah array
                 const dataArray = Array.isArray(rawData) ? rawData : Object.values(rawData || {});
                 
                 const titleCasedData = dataArray.map(r => ({ 
@@ -119,7 +115,7 @@ const LocationSelect = ({
                         value={selectedProvince}
                         onChange={(e) => {
                             onProvinceChange(e.target.value);
-                            onRegencyChange(''); // Reset regency when province changes
+                            onRegencyChange(''); // Reset kabupaten/kota saat provinsi berubah
                         }}
                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 appearance-none bg-white ${errors[provinceErrorKey] ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'
                             }`}
@@ -172,7 +168,7 @@ const LocationSelect = ({
                                     </option>
                                 ))
                             )}
-                            {/* Fallback for existing data that might not match exactly */}
+                            {/* Fallback untuk data lama yang mungkin tidak cocok persis */}
                             {selectedRegency && !regencies.find(r => r.name === normalizeRegencyName(selectedRegency)) && (
                                 <option value={normalizeRegencyName(selectedRegency)}>{normalizeRegencyName(selectedRegency)}</option>
                             )}

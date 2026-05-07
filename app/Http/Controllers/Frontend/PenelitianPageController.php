@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,14 +16,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
-class PenelitianController extends Controller
+class PenelitianPageController extends Controller
 {
     public function index(Request $request)
     {
-        // Build base query with filters
-        $baseQuery = Penelitian::query();
+        $baseQuery = Penelitian::whereNotNull('judul')->where('judul', '!=', '');
 
-        // Apply filters if provided
         if ($request->filled('bidang_fokus')) {
             $baseQuery->whereIn('bidang_fokus', (array) $request->bidang_fokus);
         }
@@ -45,39 +45,40 @@ class PenelitianController extends Controller
         if ($request->filled('tahun')) {
             $baseQuery->whereIn('thn_pelaksanaan', (array) $request->tahun);
         }
-        
+
         if ($request->filled('skema')) {
             $baseQuery->whereIn('skema', (array) $request->skema);
         }
 
-        // Apply simple search if provided
+        // Menerapkan pencarian sederhana jika tersedia
         if ($request->filled('search')) {
             $baseQuery->search($request->search);
         }
 
-        // Apply advanced multi-row queries
+        // Menerapkan kueri tingkat lanjut untuk banyak baris
         if ($request->filled('queries')) {
             $queries = json_decode($request->queries, true);
             if (is_array($queries)) {
                 $baseQuery->where(function ($q) use ($queries) {
                     foreach ($queries as $index => $row) {
                         $term = trim($row['term'] ?? '');
-                        if (empty($term)) continue;
+                        if (empty($term))
+                            continue;
 
                         $field = $row['field'] ?? 'all';
                         $operator = strtoupper($row['operator'] ?? 'AND');
 
-                        // Define closure for applying field conditions
-                        $applyCondition = function($query) use ($term, $field) {
+                        // Closure untuk menerapkan kondisi pada tiap kolom
+                        $applyCondition = function ($query) use ($term, $field) {
                             if ($field === 'all') {
-                                $query->where(function($sub) use ($term) {
+                                $query->where(function ($sub) use ($term) {
                                     $sub->where('judul', 'like', "%$term%")
                                         ->orWhere('nama', 'like', "%$term%")
                                         ->orWhere('institusi', 'like', "%$term%")
                                         ->orWhere('bidang_fokus', 'like', "%$term%");
                                 });
                             } else {
-                                $dbField = match($field) {
+                                $dbField = match ($field) {
                                     'title' => 'judul',
                                     'university' => 'institusi',
                                     'researcher' => 'nama',
@@ -95,11 +96,14 @@ class PenelitianController extends Controller
                             $applyCondition($q);
                         } else {
                             if ($operator === 'OR') {
-                                $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->orWhere(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             } elseif ($operator === 'AND NOT') {
-                                $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->whereNot(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             } else { // AND
-                                $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->where(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             }
                         }
                     }
@@ -108,11 +112,11 @@ class PenelitianController extends Controller
         }
 
         $statsQuery = clone $baseQuery;
-        // Versioned cache key for statistics
-        $v = (int) Cache::get('penelitian_cache_version', 1);
+        // Kunci cache berbasis versi untuk keperluan statistik
+        $v = (int) Cache::get('penelitian_cache_version', 2);
         $statsCacheKey = 'stats_penelitian_v' . $v . '_' . md5(json_encode($request->all()));
-        
-        $totalStats = Cache::remember($statsCacheKey, 3600, function() use ($statsQuery) {
+
+        $totalStats = Cache::remember($statsCacheKey, 3600, function () use ($statsQuery) {
             return [
                 'totalResearch' => (clone $statsQuery)->count(),
                 'totalUniversities' => (clone $statsQuery)->distinct('institusi')->count('institusi'),
@@ -121,13 +125,13 @@ class PenelitianController extends Controller
             ];
         });
 
-        // For map: OPTIMIZED - Remove GROUP_CONCAT, load details on demand
-        $cacheKey = 'map_data_cache_v6_' . md5(json_encode($request->all()));
-        $mapData = Cache::remember($cacheKey, 300, function() use ($baseQuery) {
+        // Menghapus GROUP_CONCAT, ambil detail saat diperlukan
+        $cacheKey = 'map_data_cache_v7_' . md5(json_encode($request->all()));
+        $mapData = Cache::remember($cacheKey, 300, function () use ($baseQuery) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             $aggregatedData = (clone $baseQuery)
                 ->select(
-                      DB::raw('AVG(pt_latitude) as pt_latitude'),
+                    DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('COUNT(*) as total_penelitian'),
                     DB::raw('institusi as institusi_name'),
@@ -147,11 +151,11 @@ class PenelitianController extends Controller
                 ->having('total_penelitian', '>', 0)
                 ->get();
 
-            $result = $aggregatedData->map(function($item) {
+            $result = $aggregatedData->map(function ($item) {
                 return [
-                'pt_latitude' => (float)$item->pt_latitude,
-                    'pt_longitude' => (float)$item->pt_longitude,
-                    'total_penelitian' => (int)$item->total_penelitian,
+                    'pt_latitude' => (float) $item->pt_latitude,
+                    'pt_longitude' => (float) $item->pt_longitude,
+                    'total_penelitian' => (int) $item->total_penelitian,
                     'institusi' => $item->institusi_name,
                     'provinsi' => $item->provinsi,
                     'bidang_fokus' => $item->all_fields,
@@ -167,18 +171,18 @@ class PenelitianController extends Controller
             return collect($result)->values()->all();
         });
 
-        // For list: only load if there are active filters or search
-        $isFiltered = $request->filled('bidang_fokus') || 
-                      $request->filled('tema_prioritas') || 
-                      $request->filled('kategori_pt') || 
-                      $request->filled('klaster') || 
-                      $request->filled('provinsi') || 
-                      $request->filled('tahun') || 
-                      $request->filled('skema') || 
-                      $request->filled('search') ||
-                      $request->filled('queries');
+        // Untuk daftar list: hanya muat data jika terdapat pencarian atau filter aktif
+        $isFiltered = $request->filled('bidang_fokus') ||
+            $request->filled('tema_prioritas') ||
+            $request->filled('kategori_pt') ||
+            $request->filled('klaster') ||
+            $request->filled('provinsi') ||
+            $request->filled('tahun') ||
+            $request->filled('skema') ||
+            $request->filled('search') ||
+            $request->filled('queries');
 
-        $researches = $isFiltered 
+        $researches = $isFiltered
             ? (clone $baseQuery)->select(
                 'id',
                 'nama',
@@ -190,14 +194,14 @@ class PenelitianController extends Controller
                 'skema',
                 'provinsi'
             )
-            ->limit(50) // Only load first 50 for performance
-            ->get()
-            ->values()
-            : collect()->values(); // Empty collection if no search/filter active
+                ->limit(50) // Hanya muat 50 data pertama untuk menghemat performa
+                ->get()
+                ->values()
+            : collect()->values(); // Koleksi kosong jika tidak ada pencarian/filter aktif
 
-        // Get filter options (cached - using raw DB queries for efficiency)
+        // Dapatkan opsi filter (di-cache - menggunakan query DB secara raw demi performa)
         $filterOptions = [
-            'bidangFokus' => Cache::remember('filter_bidang_fokus', 7200, function() {
+            'bidangFokus' => Cache::remember('filter_bidang_fokus', 7200, function () {
                 return DB::table('penelitian')
                     ->select('bidang_fokus')
                     ->whereNotNull('bidang_fokus')
@@ -207,7 +211,7 @@ class PenelitianController extends Controller
                     ->filter()
                     ->values();
             }),
-            'temaPrioritas' => Cache::remember('filter_tema_prioritas', 7200, function() {
+            'temaPrioritas' => Cache::remember('filter_tema_prioritas', 7200, function () {
                 return DB::table('penelitian')
                     ->select('tema_prioritas')
                     ->whereNotNull('tema_prioritas')
@@ -217,7 +221,7 @@ class PenelitianController extends Controller
                     ->filter()
                     ->values();
             }),
-            'kategoriPT' => Cache::remember('filter_kategori_pt', 7200, function() {
+            'kategoriPT' => Cache::remember('filter_kategori_pt', 7200, function () {
                 return DB::table('penelitian')
                     ->select('kategori_pt')
                     ->whereNotNull('kategori_pt')
@@ -227,7 +231,7 @@ class PenelitianController extends Controller
                     ->filter()
                     ->values();
             }),
-            'klaster' => Cache::remember('filter_klaster', 7200, function() {
+            'klaster' => Cache::remember('filter_klaster', 7200, function () {
                 return DB::table('penelitian')
                     ->select('klaster')
                     ->whereNotNull('klaster')
@@ -237,19 +241,19 @@ class PenelitianController extends Controller
                     ->filter()
                     ->values();
             }),
-            'provinsi' => Cache::remember('global_provinces_list', 86400, function() {
-                // Use local data directly - more reliable for production
-                $path = storage_path('provinces.json');
+            'provinsi' => Cache::remember('global_provinces_final_v1', 86400, function () {
+                $path = database_path('data/provinces.json');
                 if (file_exists($path)) {
                     $data = json_decode(file_get_contents($path), true);
                     return collect($data)
-                        ->map(fn($p) => \Illuminate\Support\Str::title($p['name']))
+                        ->map(fn($p) => trim($p['name']))
+                        ->unique()
                         ->sort()
                         ->values()
                         ->all();
                 }
-                
-                // Fallback only if local data doesn't exist
+
+                // Fallback hanya jika data lokal tidak ditemukan
                 if (app()->environment('local')) {
                     try {
                         $response = Http::timeout(10)->retry(2, 1000)->withOptions([
@@ -268,7 +272,7 @@ class PenelitianController extends Controller
                 }
                 return [];
             }),
-            'tahun' => Cache::remember('filter_tahun', 7200, function() {
+            'tahun' => Cache::remember('filter_tahun', 7200, function () {
                 return DB::table('penelitian')
                     ->select('thn_pelaksanaan')
                     ->whereNotNull('thn_pelaksanaan')
@@ -278,7 +282,7 @@ class PenelitianController extends Controller
                     ->filter()
                     ->values();
             }),
-            'skema' => Cache::remember('filter_skema', 7200, function() {
+            'skema' => Cache::remember('filter_skema', 7200, function () {
                 return DB::table('penelitian')
                     ->select('skema')
                     ->whereNotNull('skema')
@@ -302,15 +306,14 @@ class PenelitianController extends Controller
     }
 
     /**
-     * Export all filtered data for Excel download
-     * OPTIMIZED: Use chunked response to avoid memory exhaustion
+     * Ekspor seluruh data tersaring untuk didownload dalam format Excel
      */
     public function export(Request $request)
     {
-        // Build query with same filters as index
-        $query = Penelitian::query();
+        // Bangun query dengan filter yang sama persis seperti pada index
+        $query = Penelitian::whereNotNull('judul')->where('judul', '!=', '');
 
-        // Apply filters
+        // Terapkan filter
         if ($request->filled('bidang_fokus')) {
             $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
         }
@@ -339,33 +342,34 @@ class PenelitianController extends Controller
             $query->whereIn('skema', (array) $request->skema);
         }
 
-        // Apply search if provided
+        // Terapkan pencarian jika tersedia
         if ($request->filled('search')) {
             $query->search($request->search);
         }
 
-        // Apply advanced multi-row queries
+        // Terapkan kueri tingkat lanjut multi baris
         if ($request->filled('queries')) {
             $queries = json_decode($request->queries, true);
             if (is_array($queries)) {
                 $query->where(function ($q) use ($queries) {
                     foreach ($queries as $index => $row) {
                         $term = trim($row['term'] ?? '');
-                        if (empty($term)) continue;
+                        if (empty($term))
+                            continue;
 
                         $field = $row['field'] ?? 'all';
                         $operator = strtoupper($row['operator'] ?? 'AND');
 
-                        $applyCondition = function($queryObj) use ($term, $field) {
+                        $applyCondition = function ($queryObj) use ($term, $field) {
                             if ($field === 'all') {
-                                $queryObj->where(function($sub) use ($term) {
+                                $queryObj->where(function ($sub) use ($term) {
                                     $sub->where('judul', 'like', "%$term%")
                                         ->orWhere('nama', 'like', "%$term%")
                                         ->orWhere('institusi', 'like', "%$term%")
                                         ->orWhere('bidang_fokus', 'like', "%$term%");
                                 });
                             } else {
-                                $dbField = match($field) {
+                                $dbField = match ($field) {
                                     'title' => 'judul',
                                     'university' => 'institusi',
                                     'researcher' => 'nama',
@@ -383,11 +387,14 @@ class PenelitianController extends Controller
                             $applyCondition($q);
                         } else {
                             if ($operator === 'OR') {
-                                $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->orWhere(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             } elseif ($operator === 'AND NOT') {
-                                $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->whereNot(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             } else {
-                                $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->where(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             }
                         }
                     }
@@ -396,49 +403,48 @@ class PenelitianController extends Controller
         }
 
         try {
-            // OPTIMIZED: Use streaming response to avoid loading all data into memory
+            // DIOPTIMALKAN: Gunakan respon streaming demi mencegah termuatnya seluruh data ke dalam memori
             return response()->stream(function () use ($query) {
                 echo '[';
                 $first = true;
 
-                // Use cursor for memory-efficient iteration
                 $query->select(
-                'nama',
-                'nidn',
-                'institusi',
-                'jenis_pt',
-                'kategori_pt',
-                'klaster',
-                'provinsi',
-                'kota',
-                'judul',
-                'skema',
-                'thn_pelaksanaan',
-                'bidang_fokus',
-                'tema_prioritas'
-            )
-            ->orderBy('thn_pelaksanaan', 'desc')
-            ->orderBy('institusi')
-            ->cursor()
-            ->each(function ($item) use (&$first) {
-                if (!$first) {
-                    echo ',';
-                }
-                echo json_encode($item);
-                $first = false;
+                    'nama',
+                    'nidn',
+                    'institusi',
+                    'jenis_pt',
+                    'kategori_pt',
+                    'klaster',
+                    'provinsi',
+                    'kota',
+                    'judul',
+                    'skema',
+                    'thn_pelaksanaan',
+                    'bidang_fokus',
+                    'tema_prioritas'
+                )
+                    ->orderBy('thn_pelaksanaan', 'desc')
+                    ->orderBy('institusi')
+                    ->cursor()
+                    ->each(function ($item) use (&$first) {
+                        if (!$first) {
+                            echo ',';
+                        }
+                        echo json_encode($item);
+                        $first = false;
 
-                // Flush output buffer to prevent memory buildup
-                if (ob_get_level() > 0) {
-                    ob_flush();
-                    flush();
-                }
-            });
+                        // Kosongkan buffer output agar memori tidak menumpuk
+                        if (ob_get_level() > 0) {
+                            ob_flush();
+                            flush();
+                        }
+                    });
 
-            echo ']';
-        }, 200, [
-            'Content-Type' => 'application/json',
-            'Cache-Control' => 'no-cache',
-        ]);
+                echo ']';
+            }, 200, [
+                'Content-Type' => 'application/json',
+                'Cache-Control' => 'no-cache',
+            ]);
         } catch (\Exception $e) {
             \Log::error('Export error: ' . $e->getMessage());
             return response()->json(['error' => 'Export failed: ' . $e->getMessage()], 500);
@@ -447,7 +453,7 @@ class PenelitianController extends Controller
 
     public function getDetail($type, $id)
     {
-        $data = match($type) {
+        $data = match ($type) {
             'penelitian' => Penelitian::find($id),
             'hilirisasi' => Hilirisasi::find($id),
             'pengabdian' => Pengabdian::find($id),

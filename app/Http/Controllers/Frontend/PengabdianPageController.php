@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Pengabdian;
 use Inertia\Inertia;
@@ -15,46 +17,47 @@ class PengabdianPageController extends Controller
     public function index(Request $request)
     {
         $v = (int) Cache::get('pengabdian_cache_version', 1);
-        
-        // Default dataType to 'Multitahun, Batch I & II' if not present
+
+        // DataType default sebagai 'Multitahun, Batch I & II' jika tidak tersedia
         if (!$request->has('dataType') && !$request->has('search') && !$request->has('queries')) {
             $request->merge(['dataType' => 'Multitahun, Batch I & Batch II']);
         }
-        
+
         $baseQuery = Pengabdian::query();
-        
-        // Apply simple search
+
+        // Menerapkan pencarian sederhana
         if ($request->filled('search')) {
             $baseQuery->search($request->search);
         }
 
-        // Apply advanced multi-row queries
+        // Menerapkan kueri tingkat lanjut multi baris
         if ($request->filled('queries')) {
             $queries = json_decode($request->queries, true);
             if (is_array($queries)) {
                 $baseQuery->where(function ($q) use ($queries) {
                     foreach ($queries as $index => $row) {
                         $term = trim($row['term'] ?? '');
-                        if (empty($term)) continue;
+                        if (empty($term))
+                            continue;
 
                         $field = $row['field'] ?? 'all';
                         $operator = strtoupper($row['operator'] ?? 'AND');
 
-                        $applyCondition = function($query) use ($term, $field) {
+                        $applyCondition = function ($query) use ($term, $field) {
                             if ($field === 'all') {
-                                $query->where(function($sub) use ($term) {
+                                $query->where(function ($sub) use ($term) {
                                     $sub->where('judul', 'like', "%$term%")
                                         ->orWhere('nama', 'like', "%$term%")
                                         ->orWhere('nama_institusi', 'like', "%$term%")
                                         ->orWhere('bidang_fokus', 'like', "%$term%");
                                 });
                             } else {
-                                $dbField = match($field) {
+                                $dbField = match ($field) {
                                     'title' => 'judul',
                                     'university' => 'nama_institusi',
                                     'researcher' => 'nama',
                                     'field' => 'bidang_fokus',
-                                    'skema' => 'nama_skema', // Added skema support
+                                    'skema' => 'nama_skema',
                                     'cluster' => 'klaster',
                                     default => 'judul'
                                 };
@@ -66,11 +69,14 @@ class PengabdianPageController extends Controller
                             $applyCondition($q);
                         } else {
                             if ($operator === 'OR') {
-                                $q->orWhere(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->orWhere(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             } elseif ($operator === 'AND NOT') {
-                                $q->whereNot(function($sub) use ($applyCondition) { $applyCondition($sub); });
-                            } else { 
-                                $q->where(function($sub) use ($applyCondition) { $applyCondition($sub); });
+                                $q->whereNot(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
+                            } else {
+                                $q->where(function ($sub) use ($applyCondition) {
+                                    $applyCondition($sub); });
                             }
                         }
                     }
@@ -78,46 +84,46 @@ class PengabdianPageController extends Controller
             }
         }
 
-        // Apply standard filters
+        // Menerapkan filter standar
         if ($request->filled('dataType')) {
             $val = $request->dataType;
-            
-            // If "Multitahun, Batch I & II" is selected
+
+            // Jika "Multitahun, Batch I & II" dipilih
             if (stripos($val, 'Multitahun') !== false && stripos($val, 'Batch') !== false) {
-                 $baseQuery->where(function($q) {
-                     $q->where('batch_type', 'like', '%multitahun%')
-                       ->orWhere('batch_type', 'like', '%batch_i%') // matches both batch_i and batch_ii if naive, but let's be specific
-                       ->orWhere('batch_type', 'like', '%batch_ii%');
-                 });
-            } 
-            // If "Kosabangsa" is selected
+                $baseQuery->where(function ($q) {
+                    $q->where('batch_type', 'like', '%multitahun%')
+                        ->orWhere('batch_type', 'like', '%batch_i%') // Sesuai dengan batch_i maupun batch_ii jika digeneralisasi, tapi mari lebih spesifik
+                        ->orWhere('batch_type', 'like', '%batch_ii%');
+                });
+            }
+            // Jika "Kosabangsa" dipilih
             elseif (stripos($val, 'Kosabangsa') !== false) {
-                 $baseQuery->where(function($q) {
-                     $q->where('batch_type', 'like', '%Kosabangsa%')
-                       ->orWhere('nama_skema', 'like', '%Kosabangsa%');
-                 });
+                $baseQuery->where(function ($q) {
+                    $q->where('batch_type', 'like', '%Kosabangsa%')
+                        ->orWhere('nama_skema', 'like', '%Kosabangsa%');
+                });
             }
         }
-        
+
         if ($request->filled('skema')) {
-             $val = $request->skema;
-             $baseQuery->where(function($q) use ($val) {
-                 $q->where('nama_skema', $val)
-                   ->orWhere('nama_singkat_skema', $val);
-             });
+            $val = $request->skema;
+            $baseQuery->where(function ($q) use ($val) {
+                $q->where('nama_skema', $val)
+                    ->orWhere('nama_singkat_skema', $val);
+            });
         }
-        
+
         if ($request->filled('provinsi')) {
-             $baseQuery->where('prov_pt', $request->provinsi);
+            $baseQuery->where('prov_pt', $request->provinsi);
         }
 
         if ($request->filled('tahun')) {
-             $baseQuery->where('thn_pelaksanaan_kegiatan', $request->tahun);
+            $baseQuery->where('thn_pelaksanaan_kegiatan', $request->tahun);
         }
 
-        // Cache statistics
+        // Statistik dalam cache
         $statsCacheKey = 'stats_pengabdian_v5_' . $v . '_' . md5(json_encode($request->all()));
-        $stats = Cache::remember($statsCacheKey, 3600, function() use ($baseQuery) {
+        $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
             $statsQ = clone $baseQuery;
             return [
                 'totalResearch' => (clone $statsQ)->count(),
@@ -132,11 +138,11 @@ class PengabdianPageController extends Controller
             : 'MAX(COALESCE(bidang_fokus, nama_skema)) as sample_theme';
 
         $cacheKey = 'map_data_pengabdian_v9_' . $v . '_' . md5(json_encode($request->all()));
-        $mapData = Cache::remember($cacheKey, 1800, function() use ($baseQuery, $themeSql) {
-           DB::statement('SET SESSION group_concat_max_len = 1000000');
+        $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery, $themeSql) {
+            DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
                 ->select(
-                   DB::raw('AVG(pt_latitude) as pt_latitude'),
+                    DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('nama_institusi as institusi_name'),
                     DB::raw('MAX(prov_pt) as provinsi'),
@@ -155,13 +161,13 @@ class PengabdianPageController extends Controller
                 ->groupBy('nama_institusi')
                 ->having('total_penelitian', '>', 0);
 
-            return $query->get()->map(function($item) {
+            return $query->get()->map(function ($item) {
                 return [
                     'institusi' => $item->institusi_name,
-                    'pt_latitude' => (float)$item->pt_latitude,
-                    'pt_longitude' => (float)$item->pt_longitude,
+                    'pt_latitude' => (float) $item->pt_latitude,
+                    'pt_longitude' => (float) $item->pt_longitude,
                     'provinsi' => $item->provinsi,
-                    'total_pengabdian' => (int)$item->total_penelitian,
+                    'total_pengabdian' => (int) $item->total_penelitian,
                     'bidang_fokus' => $item->all_fields,
                     'ids' => $item->all_ids,
                     'titles' => $item->all_titles,
@@ -173,40 +179,47 @@ class PengabdianPageController extends Controller
             })->toArray();
         });
 
-        // Only load list if specifically searched (keyword)
-        $isFiltered = $request->filled('search') 
+        // Hanya muat list jika spesifik dicari (keyword)
+        $isFiltered = $request->filled('search')
             || $request->filled('queries');
-        
-        $items = $isFiltered 
+
+        $items = $isFiltered
             ? (clone $baseQuery)->select(
-                    'id', 'judul', 'nama', 'nama_institusi as institusi', 
-                    'prov_pt as provinsi', 'nama_skema as bidang_fokus', 
-                    'thn_pelaksanaan_kegiatan as tahun', 'nama_pendamping', 
-                    'institusi_pendamping', 'bidang_teknologi_inovasi', 
-                    'jenis_wilayah_provinsi_mitra', 'prov_mitra'
-                )
+                'id',
+                'judul',
+                'nama',
+                'nama_institusi as institusi',
+                'prov_pt as provinsi',
+                'nama_skema as bidang_fokus',
+                'thn_pelaksanaan_kegiatan as tahun',
+                'nama_pendamping',
+                'institusi_pendamping',
+                'bidang_teknologi_inovasi',
+                'jenis_wilayah_provinsi_mitra',
+                'prov_mitra'
+            )
                 ->latest('thn_pelaksanaan_kegiatan')
                 ->limit(50)
                 ->get()
                 ->values()
             : collect()->values();
 
-        // Get filter options (cached)
+        // Dapatkan opsi filter (di-cache)
         $filterOptions = [
-            'provinsi' => Cache::remember('global_provinces_list', 86400, function() {
-                // Use local data directly - more reliable for production
-                $path = storage_path('provinces.json');
+            'provinsi' => Cache::remember('global_provinces_final_v1', 86400, function () {
+                $path = database_path('data/provinces.json');
                 if (file_exists($path)) {
                     $data = json_decode(file_get_contents($path), true);
                     return collect($data)
-                        ->map(fn($p) => \Illuminate\Support\Str::title($p['name']))
+                        ->map(fn($p) => trim($p['name']))
+                        ->unique()
                         ->sort()
                         ->values()
                         ->all();
                 }
                 return [];
             }),
-            'tahun' => Cache::remember('filter_pengabdian_tahun_' . $v, 7200, function() {
+            'tahun' => Cache::remember('filter_pengabdian_tahun_' . $v, 7200, function () {
                 return DB::table('pengabdian')
                     ->select('thn_pelaksanaan_kegiatan')
                     ->whereNotNull('thn_pelaksanaan_kegiatan')

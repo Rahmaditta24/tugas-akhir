@@ -7,12 +7,12 @@ import NavigationTabs from '../Components/NavigationTabs';
 import MapControls from '../Components/MapControls';
 import StatisticsCards from '../Components/StatisticsCards';
 
-// Lazy-loaded components for better performance
+// Komponen lazy-loaded 
 const MapContainer = lazy(() => import('../Components/MapContainer'));
 const ResearchList = lazy(() => import('../Components/ResearchList'));
 const ResearchModal = lazy(() => import('../Components/ResearchModal'));
 
-// Loading fallbacks
+// Tampilan loading fallback
 const MapLoading = () => (
     <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
         <div className="text-gray-400 font-medium">Memuat peta...</div>
@@ -36,12 +36,12 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
     const [selectedResearch, setSelectedResearch] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Update currentStats when global stats from props change
+    // Perbarui currentStats saat stats global dari props berubah
     useEffect(() => {
         setCurrentStats(stats);
     }, [stats]);
 
-    // Sync state with props when they change (e.g. navigation)
+    // Sinkronisasi state dengan props saat ada perubahan (misal: navigasi)
     useEffect(() => {
         setFilters(initialFilters);
         setSearchTerm(initialFilters.search || '');
@@ -58,14 +58,14 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             preserveState: true,
             preserveScroll: true,
             replace: true, 
-            only: ['mapData', 'researches', 'stats'] // CRITICAL for SPA feel: only update data, not full page
+            only: ['mapData', 'researches', 'stats'] // untuk SPA: hanya perbarui data, bukan seluruh halaman
         });
     };
 
     const handleFilterChange = (newFilters) => {
         setFilters(newFilters);
         const params = { ...newFilters, search: searchTerm };
-        // Remove empty filters
+        // Hapus filter yang kosong
         Object.keys(params).forEach(key => {
             if (params[key] === '' || params[key] === null) delete params[key];
         });
@@ -74,7 +74,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             preserveState: true,
             preserveScroll: true,
             replace: true, 
-            only: ['mapData', 'researches', 'stats'], // Only fetch data, not layout
+            only: ['mapData', 'researches', 'stats'], // Hanya ambil data, bukan layout
         });
     };
 
@@ -85,7 +85,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
     };
 
     const handleDownload = async () => {
-        // Show loading state
+        // Tampilkan status loading
         setIsLoading(true);
         const loadingToast = toast.loading('Sedang menyiapkan data Excel, mohon tunggu...', {
             position: 'top-right'
@@ -93,7 +93,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
         try {
             console.log('Starting export with filters:', filters);
-            // Get all current active search and filter parameters from URL
+            // Ambil semua parameter pencarian dan filter aktif dari URL
             const queryString = new URLSearchParams(window.location.search).toString();
 
             const response = await fetch(`/api/penelitian/export?${queryString}`);
@@ -113,7 +113,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                 return;
             }
 
-            // Prepare data for Excel export
+            // Data untuk export Excel
             const exportData = allData.map(research => ({
                 'Peneliti': research.nama || '-',
                 'Judul': research.judul || '-',
@@ -127,12 +127,12 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                 'Tema Prioritas': research.tema_prioritas || '-',
             }));
 
-            // Create workbook and worksheet
+            // Buat workbook dan worksheet
             const ws = XLSX.utils.json_to_sheet(exportData);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, 'Penelitian');
 
-            // Auto-size columns
+            // Atur ukuran kolom otomatis
             const cols = [
                 { wch: 30 }, // Peneliti
                 { wch: 60 }, // Judul
@@ -147,15 +147,15 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             ];
             ws['!cols'] = cols;
 
-            // Generate filename with timestamp and filter info
+            // Hasilkan nama file dengan timestamp dan info filter
             const timestamp = new Date().toISOString().slice(0, 10);
             const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
             const filename = `data-penelitian${filterInfo}_${timestamp}.xlsx`;
 
-            // Download file
+            // Unduh file
             XLSX.writeFile(wb, filename);
 
-            // Show success
+            // Tampilkan pesan sukses
             toast.success(`Berhasil export ${exportData.length} data penelitian!`, {
                 duration: 4000,
                 position: 'top-right',
@@ -183,7 +183,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
     const handleAdvancedSearch = (queries) => {
         const params = { ...filters, queries: JSON.stringify(queries) };
-        // Remove empty queries to keep URL clean
+        // Hapus query kosong agar URL tetap bersih
         if (queries.every(q => !q.term)) {
             delete params.queries;
         }
@@ -198,7 +198,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
     const handleStatsChange = (newStats) => {
         if (!newStats) {
-            setCurrentStats(stats); // Reset to global stats
+            setCurrentStats(stats); // Kembalikan ke stats global
         } else {
             setCurrentStats(newStats);
         }
@@ -206,7 +206,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
     const handleItemClick = async (research) => {
         if (!research?.id) {
-            // If no ID, show what we have directly
+            // Jika tidak ada ID, tampilkan data yang ada secara langsung
             setSelectedResearch({
                 ...research,
                 judul: research.judul || '-',
@@ -244,7 +244,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                     isInstitusi: false,
                 });
             } else {
-                // Fallback to list data
+                // Fallback ke data list
                 setSelectedResearch({ ...research, isInstitusi: false });
             }
         } catch {
@@ -255,7 +255,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
 
     const [filteredResearchesForMap, setFilteredResearchesForMap] = useState(researches);
 
-    // Sync filtered results when researches prop changes from server
+    // Sinkronisasi hasil filter saat prop researches berubah dari server
     useEffect(() => {
         setFilteredResearchesForMap(researches);
     }, [researches]);

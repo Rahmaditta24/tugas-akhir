@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\RumusanMasalahCategory;
 use Inertia\Inertia;
@@ -9,9 +11,11 @@ class RumusanMasalahPageController extends Controller
 {
     public function index()
     {
-        $categories = RumusanMasalahCategory::with(['statements' => function ($query) {
-            $query->ordered();
-        }])
+        $categories = RumusanMasalahCategory::with([
+            'statements' => function ($query) {
+                $query->ordered();
+            }
+        ])
             ->ordered()
             ->get();
 

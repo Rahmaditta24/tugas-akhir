@@ -25,7 +25,7 @@ class PermasalahanKabupaten extends Model
         'tahun' => 'integer',
     ];
 
-    // Scopes
+    // Scope pencarian dan filter
     public function scopeByJenisPermasalahan($query, $jenis)
     {
         return $query->where('jenis_permasalahan', $jenis);

@@ -9,40 +9,40 @@ use Illuminate\Http\Request;
 class PenelitianController extends Controller
 {
     /**
-     * Get all penelitian data with filtering
+     * Mengambil semua data penelitian dengan filter
      */
     public function index(Request $request)
     {
-        $query = Penelitian::query();
+        $query = Penelitian::whereNotNull('judul')->where('judul', '!=', '');
 
-        // Filter by provinsi
+        // Filter berdasarkan provinsi
         if ($request->has('provinsi')) {
             $query->byProvinsi($request->provinsi);
         }
 
-        // Filter by tahun
+        // Filter berdasarkan tahun
         if ($request->has('tahun')) {
             $query->byTahun($request->tahun);
         }
 
-        // Filter by bidang fokus
+        // Filter berdasarkan bidang fokus
         if ($request->has('bidang_fokus')) {
             $query->byBidangFokus($request->bidang_fokus);
         }
 
-        // Search
+        // Pencarian
         if ($request->has('search')) {
             $query->search($request->search);
         }
 
-        // Filter by coordinates bounds (untuk map viewport)
+        // Filter berdasarkan batas koordinat (untuk viewport peta)
         if ($request->has('bounds')) {
             $bounds = $request->bounds;
             $query->whereBetween('pt_latitude', [$bounds['south'], $bounds['north']])
                   ->whereBetween('pt_longitude', [$bounds['west'], $bounds['east']]);
         }
 
-        // Pagination or all
+        // Pagination atau semua data
         if ($request->has('per_page')) {
             $data = $query->paginate($request->per_page);
         } else {
@@ -56,7 +56,7 @@ class PenelitianController extends Controller
     }
 
     /**
-     * Get single penelitian
+     * Mengambil data penelitian tunggal
      */
     public function show($id)
     {
@@ -69,11 +69,11 @@ class PenelitianController extends Controller
     }
 
     /**
-     * Get statistics
+     * Mengambil statistik
      */
     public function statistics(Request $request)
     {
-        $query = Penelitian::query();
+        $query = Penelitian::whereNotNull('judul')->where('judul', '!=', '');
 
         if ($request->has('provinsi')) {
             $query->byProvinsi($request->provinsi);
@@ -81,7 +81,7 @@ class PenelitianController extends Controller
 
         $total = $query->count();
 
-        $byBidang = Penelitian::select('bidang_fokus')
+        $byBidang = Penelitian::whereNotNull('judul')->where('judul', '!=', '')->select('bidang_fokus')
             ->when($request->has('provinsi'), function ($q) use ($request) {
                 $q->where('provinsi', $request->provinsi);
             })
@@ -89,12 +89,12 @@ class PenelitianController extends Controller
             ->selectRaw('COUNT(*) as total')
             ->pluck('total', 'bidang_fokus');
 
-        $byProvinsi = Penelitian::select('provinsi')
+        $byProvinsi = Penelitian::whereNotNull('judul')->where('judul', '!=', '')->select('provinsi')
             ->groupBy('provinsi')
             ->selectRaw('COUNT(*) as total')
             ->pluck('total', 'provinsi');
 
-        $byTahun = Penelitian::select('thn_pelaksanaan')
+        $byTahun = Penelitian::whereNotNull('judul')->where('judul', '!=', '')->select('thn_pelaksanaan')
             ->when($request->has('provinsi'), function ($q) use ($request) {
                 $q->where('provinsi', $request->provinsi);
             })
@@ -116,14 +116,14 @@ class PenelitianController extends Controller
     }
 
     /**
-     * Export penelitian data with filters
+     * Mengekspor data penelitian dengan filter
      */
     public function export(Request $request)
     {
         try {
-            $query = Penelitian::query();
+            $query = Penelitian::whereNotNull('judul')->where('judul', '!=', '');
 
-            // Apply filters (support arrays)
+            // Menerapkan filter (mendukung array)
             if ($request->filled('bidang_fokus')) {
                 $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
             }
@@ -148,12 +148,12 @@ class PenelitianController extends Controller
                 $query->whereIn('thn_pelaksanaan', (array) $request->tahun);
             }
 
-            // Apply search if provided
+            // Menerapkan pencarian jika ada
             if ($request->filled('search')) {
                 $query->search($request->search);
             }
 
-            // OPTIMIZED: Use streaming response to avoid memory exhaustion
+            // OPTIMIZED: Gunakan streaming response untuk menghindari kehabisan memori
             return response()->stream(function () use ($query) {
                 echo '[';
                 $first = true;
@@ -183,7 +183,7 @@ class PenelitianController extends Controller
                     echo json_encode($item);
                     $first = false;
 
-                    // Flush output buffer to prevent memory buildup
+                    // Bersihkan output buffer untuk mencegah penumpukan memori
                     if (ob_get_level() > 0) {
                         ob_flush();
                         flush();

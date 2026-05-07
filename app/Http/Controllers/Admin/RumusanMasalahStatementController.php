@@ -11,7 +11,7 @@ use Inertia\Inertia;
 class RumusanMasalahStatementController extends Controller
 {
     /**
-     * Display statements for a specific category
+     * Tampilkan pernyataan (statements) untuk kategori tertentu
      */
     public function index(RumusanMasalahCategory $category)
     {
@@ -43,7 +43,7 @@ class RumusanMasalahStatementController extends Controller
     }
 
     /**
-     * Store a newly created statement
+     * Simpan pernyataan baru yang dibuat
      */
     public function store(Request $request, RumusanMasalahCategory $category)
     {
@@ -65,10 +65,10 @@ class RumusanMasalahStatementController extends Controller
             ? (string) intval($orderNumber) 
             : rtrim(rtrim(number_format($orderNumber, 1, '.', ''), '0'), '.');
 
-        // Generate full_number: category.order_number + user input
+        // Buat full_number: category.order_number + nomor inputan user
         $fullNumber = $category->order_number . '.' . $formattedOrderNumber;
 
-        // Check if full_number already exists in this category
+        // Memeriksa apakah full_number sudah ada dalam kategori ini
         $exists = $category->statements()
             ->where('full_number', $fullNumber)
             ->exists();
@@ -92,7 +92,7 @@ class RumusanMasalahStatementController extends Controller
     }
 
     /**
-     * Update the specified statement
+     * Perbarui pernyataan yang dipilih
      */
     public function update(Request $request, $categorySlug, $statementId)
     {
@@ -119,10 +119,10 @@ class RumusanMasalahStatementController extends Controller
             ? (string) intval($orderNumber) 
             : rtrim(rtrim(number_format($orderNumber, 1, '.', ''), '0'), '.');
 
-        // Regenerate full_number with category order_number
+        // Buat ulang full_number menggunakan order_number dari kategori
         $fullNumber = $category->order_number . '.' . $formattedOrderNumber;
 
-        // Check if full_number already exists in this category (excluding current statement)
+        // Memeriksa apakah full_number sudah ada dalam kategori ini (kecuali untuk pernyataan saat ini)
         $exists = $category->statements()
             ->where('full_number', $fullNumber)
             ->where('id', '!=', $statement->id)
@@ -147,7 +147,7 @@ class RumusanMasalahStatementController extends Controller
     }
 
     /**
-     * Remove the specified statement
+     * Hapus pernyataan yang dipilih
      */
     public function destroy($categorySlug, $statementId)
     {
