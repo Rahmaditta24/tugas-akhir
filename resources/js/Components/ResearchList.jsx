@@ -3,8 +3,15 @@ import { getFieldColor } from '../Utils/fieldColors';
 
 export default function ResearchList({ researches = [], totalCount = 0, onAdvancedSearch, onItemClick, onFilteredResults, title = "Daftar Penelitian", isFiltered = false, isFasilitasLab = false, isPenelitianPage = false, isHilirisasiPage = false, isProdukPage = false, isPermasalahanPage = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
     const [searchRows, setSearchRows] = useState([
-        { id: Date.now(), term: '', field: 'all', operator: 'AND' }
+        { id: 1, term: '', field: 'all', operator: 'AND' }
     ]);
+
+    // Pastikan selalu ada minimal satu baris pencarian
+    React.useEffect(() => {
+        if (!searchRows || searchRows.length === 0) {
+            setSearchRows([{ id: 1, term: '', field: 'all', operator: 'AND' }]);
+        }
+    }, [searchRows]);
 
     const addRow = () => {
         setSearchRows(prev => [...prev, { id: Date.now(), term: '', field: 'all', operator: 'AND' }]);

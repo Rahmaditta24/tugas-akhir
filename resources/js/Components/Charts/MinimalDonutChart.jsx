@@ -1,4 +1,3 @@
-import React from 'react';
 import { ResponsiveContainer, PieChart, Pie, Tooltip, Legend, Cell } from 'recharts';
 
 export default function MinimalDonutChart({ data = [], valueKey = 'value', nameKey = 'name', colors = ['#3b82f6', '#f59e0b'], height = 280 }) {

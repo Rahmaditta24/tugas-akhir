@@ -40,8 +40,8 @@ class ProdukController extends Controller
 
         // Pengurutan
         $allowedSorts = ['id', 'nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten', 'detail_paten'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
-        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array($request->input('sort'), $allowedSorts, true) ? $request->input('sort') : 'id';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
 
         // Versi Cache
         $v = Cache::get('produk_admin_v', 1);
@@ -291,10 +291,19 @@ class ProdukController extends Controller
 
     private function clearModuleCache()
     {
+        // Cache admin panel
         $v = (int) Cache::get('produk_admin_v', 1);
         Cache::put('produk_admin_v', $v + 1, 86400 * 30);
+        
+        $pv = (int) Cache::get('produk_cache_version', 1);
+        Cache::put('produk_cache_version', $pv + 1, 86400 * 30);
         Cache::forget('produk_admin_stats');
         Cache::forget('admin_dashboard_stats');
+
+        // Cache frontend publik — hapus agar website langsung update
+        Cache::forget('filter_produk_bidang');
+        Cache::forget('filter_produk_tkt');
+        Cache::forget('global_provinces_final_v1');
     }
 
     public function exportCsv(Request $request)
@@ -332,7 +341,7 @@ class ProdukController extends Controller
             });
         }
 
-        if ($filters = $request->get('filters')) {
+        if ($filters = $request->input('filters')) {
             foreach ($filters as $key => $value) {
                 if ($value && in_array($key, ['nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi'])) {
                     $query->where($key, 'like', '%' . $value . '%');
@@ -421,7 +430,7 @@ class ProdukController extends Controller
             });
         }
 
-        if ($filters = $request->get('filters')) {
+        if ($filters = $request->input('filters')) {
             foreach ($filters as $key => $value) {
                 if ($value)
                     $query->where($key, 'like', '%' . $value . '%');

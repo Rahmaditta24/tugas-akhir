@@ -17,7 +17,7 @@ class PermasalahanController extends Controller
      */
     public function index(Request $request)
     {
-        $baseData = $request->get('baseData', 'statistik');
+        $baseData = $request->input('baseData', 'statistik');
 
         if ($baseData === 'statistik') {
             return $this->handleStatistikMode($request);
@@ -31,15 +31,15 @@ class PermasalahanController extends Controller
      */
     private function handleStatistikMode(Request $request)
     {
-        $perPage = (int) $request->get('perPage', 20);
-        $jenis = $request->get('jenis', 'Sampah');
+        $perPage = (int) $request->input('perPage', 20);
+        $jenis = $request->input('jenis', 'Sampah');
         if (!$jenis || $jenis === 'all')
             $jenis = 'Sampah';
 
-        $search = $request->get('search');
-        $activeTab = $request->get('tab', 'provinsi');
-        $sort = $request->get('sort', 'id');
-        $direction = $request->get('direction', 'asc');
+        $search = $request->input('search');
+        $activeTab = $request->input('tab', 'provinsi');
+        $sort = $request->input('sort', 'id');
+        $direction = $request->input('direction', 'asc');
 
         $normalizedJenis = strtolower(str_replace(' ', '_', $jenis));
         $baseDir = realpath(base_path('database/data'));
@@ -137,7 +137,7 @@ class PermasalahanController extends Controller
         });
 
         // Paginasi
-        $page = (int) ($request->get('provPage', $request->get('page', 1)));
+        $page = (int) ($request->input('provPage', $request->input('page', 1)));
         $total = count($rows);
         $slice = array_slice($rows, ($page - 1) * $perPage, $perPage);
         $permasalahanProvinsi = new LengthAwarePaginator(
@@ -148,7 +148,7 @@ class PermasalahanController extends Controller
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
-        $kabPage = (int) ($request->get('kabPage', 1));
+        $kabPage = (int) ($request->input('kabPage', 1));
         $totalKab = count($kabRows);
         $sliceKab = array_slice($kabRows, ($kabPage - 1) * $perPage, $perPage);
         $permasalahanKabupaten = new LengthAwarePaginator($sliceKab, $totalKab, $perPage, $kabPage, ['path' => $request->url(), 'query' => $request->query()]);
@@ -180,132 +180,21 @@ class PermasalahanController extends Controller
      */
     private function handleResearchMode(Request $request)
     {
-        $perPage = (int) $request->get('perPage', 20);
-        $baseData = $request->get('baseData', 'penelitian');
-        $jenis = $request->get('jenis', 'Sampah');
-        $batch_type = $request->get('batch_type');
-        $search = $request->get('search');
-        $columnFilters = $request->get('columns', []);
-        $sort = $request->get('sort', 'id');
-        $direction = $request->get('direction', 'desc');
+        $perPage = (int) $request->input('perPage', 20);
+        $baseData = $request->input('baseData', 'penelitian');
+        $jenis = $request->input('jenis', 'Sampah');
+        $batch_type = $request->input('batch_type');
+        $search = $request->input('search');
+        $columnFilters = $request->input('columns', []);
+        $sort = $request->input('sort', 'id');
+        $direction = $request->input('direction', 'desc');
 
         if (!$jenis || $jenis === 'all')
             $jenis = 'Sampah';
 
         // Pemetaan kata kunci dari controller Publik untuk perhitungan yang konsisten (Daftar komprehensif)
-        $keywordsMap = [
-            'Sampah' => [
-                'sampah',
-                'limbah',
-                'waste',
-                'recycle',
-                'daur ulang',
-                'plastic',
-                'plastik',
-                'pencemaran',
-                'polusi',
-                'lingkungan',
-                'ekosistem',
-                'sanitasi',
-                'kehutanan',
-                'konservasi',
-                'sungai',
-                'laut',
-                'residu',
-                'biomassa',
-                'waste-to-energy',
-                'tPA',
-                'pengelolaan sampah',
-                'sampah kota'
-            ],
-            'Stunting' => [
-                'stunting',
-                'tengkes',
-                'kerdil',
-                'gizi',
-                'pendek',
-                'balita',
-                'bayi',
-                'anak',
-                'ibu hamil',
-                'puskesmas',
-                'posyandu',
-                'pertumbuhan',
-                'perkembangan',
-                'nutrisi',
-                'malnutrisi',
-                'pangan bergizi',
-                'pola makan',
-                'asupan gizi'
-            ],
-            'Gizi Buruk' => [
-                'gizi buruk',
-                'malnutrisi',
-                'nutrisi',
-                'stunting',
-                'kurus',
-                'vitamin',
-                'protein',
-                'karbo',
-                'lemak',
-                'kesehatan',
-                'medis',
-                'klinis',
-                'asupan',
-                'pola makan',
-                'gizi seimbang',
-                'beban ganda malnutrisi'
-            ],
-            'Krisis Listrik' => [
-                'listrik',
-                'energi',
-                'saidi',
-                'saifi',
-                'power',
-                'pembangkit',
-                'pln',
-                'panel',
-                'solar',
-                'baterai',
-                'tegangan',
-                'arus',
-                'mikrohidro',
-                'angin',
-                'elektro',
-                'otomatisasi',
-                'smart grid',
-                'elektrifikasi',
-                'energi terbarukan',
-                'transisi energi',
-                'panel surya',
-                'biofuel'
-            ],
-            'Ketahanan Pangan' => [
-                'pangan',
-                'makanan',
-                'food',
-                'beras',
-                'pertanian',
-                'pasokan pangan',
-                'padi',
-                'jagung',
-                'kedelai',
-                'ternak',
-                'ikan',
-                'panen',
-                'pupuk',
-                'hama',
-                'sawah',
-                'irigasi',
-                'tani',
-                'swasembada',
-                'benih',
-                'bioteknologi pangan',
-                'smart farming',
-                'diversifikasi pangan',
-                'produksi pangan'
-            ],
-        ];
+        // Gunakan metode sentral untuk kata kunci
+        $keywordsMap = $this->getKeywordsMap();
 
         // Nilai 'batch_type' default untuk Pengabdian agar sesuai dengan dashboard publik
         if ($baseData === 'pengabdian' && (!$batch_type || $batch_type === 'all')) {
@@ -377,7 +266,30 @@ class PermasalahanController extends Controller
             }
         }
 
-        $v = Cache::get('permasalahan_admin_v', 1);
+        // Map UI sort key to DB column
+        $dbSort = $sort;
+        if ($sort === 'tahun') {
+            $dbSort = match ($baseData) {
+                'penelitian' => 'thn_pelaksanaan',
+                'pengabdian' => 'thn_pelaksanaan_kegiatan',
+                default => 'tahun'
+            };
+        } elseif ($sort === 'peneliti') {
+            $dbSort = match ($baseData) {
+                'penelitian' => 'nama',
+                default => 'nama_pengusul'
+            };
+        } elseif ($sort === 'institusi') {
+            $dbSort = match ($baseData) {
+                'penelitian' => 'institusi',
+                'pengabdian' => 'nama_institusi',
+                default => 'perguruan_tinggi'
+            };
+        } elseif ($sort === 'provinsi' && $baseData === 'pengabdian') {
+            $dbSort = 'prov_pt';
+        }
+
+        $v = Cache::get('permasalahan_admin_v', 5);
         $statsHash = md5(json_encode(['fullStats', $baseData, $jenis, $batch_type, $search, $columnFilters]));
 
         $stats = Cache::remember("perm_adm_fullstats_v{$v}_{$statsHash}", 3600, function () use ($query, $baseData) {
@@ -394,10 +306,10 @@ class PermasalahanController extends Controller
         });
 
         $results = new LengthAwarePaginator(
-            $query->orderBy($sort, $direction)->offset(($request->get('page', 1) - 1) * $perPage)->limit($perPage)->get(),
+            $query->orderBy($dbSort, $direction)->offset(($request->input('page', 1) - 1) * $perPage)->limit($perPage)->get(),
             $stats['total'],
             $perPage,
-            $request->get('page', 1),
+            $request->input('page', 1),
             ['path' => $request->url(), 'query' => $request->query()]
         );
 
@@ -411,7 +323,7 @@ class PermasalahanController extends Controller
                 'baseData' => $baseData,
                 'jenis' => $jenis,
                 'batch_type' => $batch_type,
-                'listrikMode' => $request->get('listrikMode', 'SAIDI'),
+                'listrikMode' => $request->input('listrikMode', 'SAIDI'),
                 'columns' => $columnFilters,
             ],
             'stats' => $stats,
@@ -423,11 +335,11 @@ class PermasalahanController extends Controller
      */
     public function getStats(Request $request)
     {
-        $baseData = $request->get('baseData', 'penelitian');
-        $jenis = $request->get('jenis', 'Sampah');
-        $batch_type = $request->get('batch_type');
-        $search = $request->get('search');
-        $columnFilters = $request->get('columns', []);
+        $baseData = $request->input('baseData', 'penelitian');
+        $jenis = $request->input('jenis', 'Sampah');
+        $batch_type = $request->input('batch_type');
+        $search = $request->input('search');
+        $columnFilters = $request->input('columns', []);
 
         $v = Cache::get('permasalahan_admin_v', 1);
         $statsHash = md5(json_encode(['fullStats', $baseData, $jenis, $batch_type, $search, $columnFilters]));
@@ -439,13 +351,7 @@ class PermasalahanController extends Controller
                 default => \App\Models\Penelitian::query()
             };
 
-            $keywordsMap = [
-                'Sampah' => ['sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut', 'residu', 'biomassa', 'waste-to-energy', 'tPA', 'pengelolaan sampah', 'sampah kota'],
-                'Stunting' => ['stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita', 'bayi', 'anak', 'ibu hamil', 'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi', 'malnutrisi', 'pangan bergizi', 'pola makan', 'asupan gizi'],
-                'Gizi Buruk' => ['gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus', 'vitamin', 'protein', 'karbo', 'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan', 'gizi seimbang', 'beban ganda malnutrisi'],
-                'Krisis Listrik' => ['listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit', 'pln', 'panel', 'solar', 'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomatisasi', 'smart grid', 'elektrifikasi', 'energi terbarukan', 'transisi energi', 'panel surya', 'biofuel'],
-                'Ketahanan Pangan' => ['pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani', 'swasembada', 'benih', 'bioteknologi pangan', 'smart farming', 'diversifikasi pangan', 'produksi pangan'],
-            ];
+            $keywordsMap = $this->getKeywordsMap();
 
             if (isset($keywordsMap[$jenis])) {
                 $regex = implode('|', array_map('preg_quote', $keywordsMap[$jenis]));
@@ -501,10 +407,10 @@ class PermasalahanController extends Controller
      */
     public function exportCsv(Request $request)
     {
-        $baseData = $request->get('baseData', 'statistik');
-        $jenis = $request->get('jenis', 'Sampah');
-        $search = $request->get('search');
-        $columnFilters = $request->get('columns', []);
+        $baseData = $request->input('baseData', 'statistik');
+        $jenis = $request->input('jenis', 'Sampah');
+        $search = $request->input('search');
+        $columnFilters = $request->input('columns', []);
 
         $safeJenis = strtolower(str_replace(' ', '_', $jenis));
         $fileName = "permasalahan_{$baseData}_{$safeJenis}.csv";
@@ -566,13 +472,7 @@ class PermasalahanController extends Controller
                     default => \App\Models\Penelitian::query()
                 };
 
-                $keywordsMap = [
-                    'Sampah' => ['sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut', 'residu', 'biomassa', 'waste-to-energy', 'tPA', 'pengelolaan sampah', 'sampah kota'],
-                    'Stunting' => ['stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita', 'bayi', 'anak', 'ibu hamil', 'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi', 'malnutrisi', 'pangan bergizi', 'pola makan', 'asupan gizi'],
-                    'Gizi Buruk' => ['gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus', 'vitamin', 'protein', 'karbo', 'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan', 'gizi seimbang', 'beban ganda malnutrisi'],
-                    'Krisis Listrik' => ['listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit', 'pln', 'panel', 'solar', 'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomatisasi', 'smart grid', 'elektrifikasi', 'energi terbarukan', 'transisi energi', 'panel surya', 'biofuel'],
-                    'Ketahanan Pangan' => ['pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani', 'swasembada', 'benih', 'bioteknologi pangan', 'smart farming', 'diversifikasi pangan', 'produksi pangan'],
-                ];
+                $keywordsMap = $this->getKeywordsMap();
 
                 if ($jenis !== 'all' && isset($keywordsMap[$jenis])) {
                     $regex = implode('|', array_map('preg_quote', $keywordsMap[$jenis]));
@@ -623,7 +523,7 @@ class PermasalahanController extends Controller
 
     public function edit(Request $request, $id)
     {
-        $type = $request->get('type', 'provinsi');
+        $type = $request->input('type', 'provinsi');
         $p = ($type === 'provinsi') ? PermasalahanProvinsi::findOrFail($id) : PermasalahanKabupaten::findOrFail($id);
         $p->type = $type;
         return Inertia::render('Admin/Permasalahan/Edit', ['permasalahan' => $p, 'filters' => $request->all()]);
@@ -640,9 +540,9 @@ class PermasalahanController extends Controller
 
     public function importExcel(Request $request)
     {
-        $data = $request->get('data', []);
-        $type = $request->get('type', 'provinsi');
-        $tahun = (int) ($request->get('tahun', date('Y')));
+        $data = $request->input('data', []);
+        $type = $request->input('type', 'provinsi');
+        $tahun = (int) ($request->input('tahun', date('Y')));
         $imported = 0;
         $errors = [];
 
@@ -708,11 +608,11 @@ class PermasalahanController extends Controller
 
     public function bulkDestroy(Request $request)
     {
-        $baseData = $request->get('baseData');
+        $baseData = $request->input('baseData');
         $count = 0;
 
         if ($baseData === 'statistik') {
-            $type = $request->get('tab', 'provinsi'); // Gunakan tab untuk menentukan tabel mana
+            $type = $request->input('tab', 'provinsi'); // Gunakan tab untuk menentukan tabel mana
             $model = $type === 'provinsi' ? PermasalahanProvinsi::class : PermasalahanKabupaten::class;
 
             if ($request->ids === 'all') {
@@ -732,8 +632,8 @@ class PermasalahanController extends Controller
                 $query = $model::query();
 
                 // Menerapkan kembali pemetaan kata kunci jika diperlukan atau gunakan pencarian/filter saat ini
-                $search = $request->get('search');
-                $columnFilters = $request->get('columns', []);
+                $search = $request->input('search');
+                $columnFilters = $request->input('columns', []);
 
                 if ($search) {
                     $query->where('judul', 'like', "%{$search}%");
@@ -767,11 +667,22 @@ class PermasalahanController extends Controller
 
     public function destroy(Request $request, $id)
     {
-        $type = $request->get('type', 'provinsi');
+        $type = $request->input('type', 'provinsi');
         $p = ($type === 'provinsi') ? PermasalahanProvinsi::findOrFail($id) : PermasalahanKabupaten::findOrFail($id);
         $p->delete();
         $this->clearModuleCache();
         return back()->with('success', 'Data dihapus');
+    }
+
+    private function getKeywordsMap()
+    {
+        return [
+            'Sampah' => ['sampah', 'limbah', 'waste', 'recycle', 'daur ulang', 'plastic', 'plastik', 'pencemaran', 'polusi', 'lingkungan', 'ekosistem', 'sanitasi', 'kehutanan', 'konservasi', 'sungai', 'laut', 'residu', 'biomassa', 'waste-to-energy', 'tPA', 'pengelolaan sampah', 'sampah kota'],
+            'Stunting' => ['stunting', 'tengkes', 'kerdil', 'gizi', 'pendek', 'balita', 'bayi', 'anak', 'ibu hamil', 'puskesmas', 'posyandu', 'pertumbuhan', 'perkembangan', 'nutrisi', 'malnutrisi', 'pangan bergizi', 'pola makan', 'asupan gizi'],
+            'Gizi Buruk' => ['gizi buruk', 'malnutrisi', 'nutrisi', 'stunting', 'kurus', 'vitamin', 'protein', 'karbo', 'lemak', 'kesehatan', 'medis', 'klinis', 'asupan', 'pola makan', 'gizi seimbang', 'beban ganda malnutrisi'],
+            'Krisis Listrik' => ['listrik', 'energi', 'saidi', 'saifi', 'power', 'pembangkit', 'pln', 'panel', 'solar', 'baterai', 'tegangan', 'arus', 'mikrohidro', 'angin', 'elektro', 'otomatisasi', 'smart grid', 'elektrifikasi', 'energi terbarukan', 'transisi energi', 'panel surya', 'biofuel'],
+            'Ketahanan Pangan' => ['pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani', 'swasembada', 'benih', 'bioteknologi pangan', 'smart farming', 'diversifikasi pangan', 'produksi pangan'],
+        ];
     }
 
     private function clearModuleCache()
@@ -782,5 +693,8 @@ class PermasalahanController extends Controller
         Cache::forget('permasalahan_json_krisis_listrik');
         Cache::forget('permasalahan_json_ketahanan_pangan');
         Cache::increment('permasalahan_admin_v');
+        
+        $pv = (int) Cache::get('permasalahan_cache_version', 1);
+        Cache::put('permasalahan_cache_version', $pv + 1, 86400 * 30);
     }
 }

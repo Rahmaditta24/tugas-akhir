@@ -134,13 +134,4 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('/categories/{slug}/statements/{id}', [RumusanMasalahStatementController::class, 'destroy'])
             ->name('category.statements.destroy');
     });
-
-    /* 
-    // Profile Management
-    Route::get('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'showProfile'])->name('profile.show');
-    Route::put('/profile', [\App\Http\Controllers\Admin\ProfileController::class, 'updateProfile'])->name('profile.update');
-
-    // Password Change
-    Route::put('/change-password', [\App\Http\Controllers\Admin\ProfileController::class, 'updatePassword'])->name('change-password.update');
-    */
 });

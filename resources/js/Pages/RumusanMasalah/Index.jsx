@@ -1,21 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import MainLayout from '../../Layouts/MainLayout';
 import NavigationTabs from '../../Components/NavigationTabs';
 import { Head, Link } from '@inertiajs/react';
+
 
 export default function RumusanMasalahIndex({ categories }) {
     // State untuk kategori yang sedang dipilih, default ke yang pertama (order_number 1)
     const [selectedCategory, setSelectedCategory] = useState(
         categories.length > 0 ? categories[0] : null
     );
+    const [currentCategories, setCurrentCategories] = useState(categories);
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    // Perbarui kategori yang dipilih jika prop categories berubah
+    // Sinkronisasi state saat props berubah dari navigasi atau filter eksplisit
     useEffect(() => {
+        setCurrentCategories(categories);
         if (categories.length > 0 && !selectedCategory) {
             setSelectedCategory(categories[0]);
         }
     }, [categories]);
+
+
 
     // Handle klik kategori
     const handleCategoryClick = (category) => {
@@ -78,7 +83,7 @@ export default function RumusanMasalahIndex({ categories }) {
                         </Link>
 
                         <div className="space-y-1">
-                            {categories && categories.map((category) => (
+                                {currentCategories && currentCategories.map((category) => (
                                 <button
                                     key={category.id}
                                     onClick={() => {
@@ -113,7 +118,7 @@ export default function RumusanMasalahIndex({ categories }) {
                                 Lihat Panduan
                             </Link>
                             <div className="flex flex-col py-1">
-                                {categories.map((category) => (
+                                {currentCategories.map((category) => (
                                     <button
                                         key={category.id}
                                         onClick={() => handleCategoryClick(category)}

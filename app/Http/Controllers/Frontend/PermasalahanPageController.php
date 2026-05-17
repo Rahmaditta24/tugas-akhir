@@ -35,56 +35,55 @@ class PermasalahanPageController extends Controller
         // Pemilihan kueri 
         if ($bubbleType === 'Pengabdian') {
             $query = Pengabdian::query();
-            $statsQuery = clone $query;
             if ($request->filled('batch_type')) {
                 $val = $request->batch_type;
                 if (stripos($val, 'Multitahun') !== false && stripos($val, 'Batch') !== false) {
-                    $query->where(function ($q) {
-                        $q->where('batch_type', 'like', '%multitahun%')->orWhere('batch_type', 'like', '%batch_i%')->orWhere('batch_type', 'like', '%batch_ii%'); });
+                    // Tangkap semua: batch, batch_i, batch_ii (bukan kosabangsa)
+                    $query->where('batch_type', 'like', '%batch%')
+                          ->where('batch_type', 'not like', '%kosabangsa%');
                 } elseif (stripos($val, 'Kosabangsa') !== false) {
                     $query->where(function ($q) {
-                        $q->where('batch_type', 'like', '%Kosabangsa%')->orWhere('nama_skema', 'like', '%Kosabangsa%'); });
+                        $q->where('batch_type', 'like', '%Kosabangsa%')->orWhere('nama_skema', 'like', '%Kosabangsa%');
+                    });
                 }
             }
+            // Clone SETELAH filter batch_type agar stats ikut terfilter
+            $statsQuery = clone $query;
+            // Untuk peta utama (bubbles), kita tampilkan SELURUH data riset agar sebaran nasional terlihat
+            $mapData = (clone $query)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun', 'nama_skema as skema')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(70000)->get()->toArray();
+
+            // Filter judul berdasarkan kata kunci untuk daftar "Riset Relevan"
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 $regex = isset($keywordsMap[$dataType]) ? implode('|', array_map('preg_quote', $keywordsMap[$dataType])) : preg_quote($dataType);
                 $q->whereRaw("judul REGEXP ?", [$regex])->orWhereRaw("bidang_fokus REGEXP ?", [$regex]);
             });
-            if ($request->filled('bidang_fokus'))
-                $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
-            if ($request->filled('provinsi'))
-                $query->whereIn('prov_pt', (array) $request->provinsi);
-            if ($request->filled('tahun'))
-                $query->whereIn('thn_pelaksanaan_kegiatan', (array) $request->tahun);
-            $mapData = (clone $query)->select('id', 'judul', 'nama', 'nama_institusi as institusi', 'prov_pt as provinsi', 'kab_pt as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'bidang_fokus', 'thn_pelaksanaan_kegiatan as tahun', 'nama_skema as skema')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(15000)->get()->toArray();
+
             $researches = (clone $query)->orderByDesc('thn_pelaksanaan_kegiatan')->limit(50)->get();
         } elseif ($bubbleType === 'Hilirisasi') {
             $query = Hilirisasi::query();
             $statsQuery = clone $query;
+            // Untuk peta utama (bubbles), kita tampilkan SELURUH data riset agar sebaran nasional terlihat
+            $mapData = (clone $query)->select('id', 'judul', 'nama_pengusul as nama', 'perguruan_tinggi as institusi', 'provinsi', DB::raw("NULL as kabupaten_kota"), 'pt_latitude', 'pt_longitude', 'skema', 'tahun', 'mitra', 'luaran')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(70000)->get()->toArray();
+
+            // Filter judul berdasarkan kata kunci untuk daftar "Riset Relevan"
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 $regex = isset($keywordsMap[$dataType]) ? implode('|', array_map('preg_quote', $keywordsMap[$dataType])) : preg_quote($dataType);
                 $q->whereRaw("judul REGEXP ?", [$regex]);
             });
-            if ($request->filled('provinsi'))
-                $query->whereIn('provinsi', (array) $request->provinsi);
-            if ($request->filled('tahun'))
-                $query->whereIn('tahun', (array) $request->tahun);
-            $mapData = (clone $query)->select('id', 'judul', 'nama_pengusul as nama', 'perguruan_tinggi as institusi', 'provinsi', DB::raw("NULL as kabupaten_kota"), 'pt_latitude', 'pt_longitude', 'skema', 'tahun', 'mitra', 'luaran')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(15000)->get()->toArray();
+
             $researches = (clone $query)->orderByDesc('tahun')->limit(50)->get();
         } else {
-            $query = Penelitian::query();
+            $query = Penelitian::query()->whereNotNull('judul')->where('judul', '!=', '');
             $statsQuery = clone $query;
+            // Untuk peta utama (bubbles), kita tampilkan SELURUH data riset agar sebaran nasional terlihat
+            $mapData = (clone $query)->select('id', 'judul', 'nama', 'institusi', 'provinsi', 'kota as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'bidang_fokus', 'thn_pelaksanaan as tahun', 'skema')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(70000)->get()->toArray();
+
+            // Filter judul berdasarkan kata kunci untuk daftar "Riset Relevan"
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 $regex = isset($keywordsMap[$dataType]) ? implode('|', array_map('preg_quote', $keywordsMap[$dataType])) : preg_quote($dataType);
                 $q->whereRaw("judul REGEXP ?", [$regex]);
             });
-            if ($request->filled('bidang_fokus'))
-                $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
-            if ($request->filled('provinsi'))
-                $query->whereIn('provinsi', (array) $request->provinsi);
-            if ($request->filled('tahun'))
-                $query->whereIn('thn_pelaksanaan', (array) $request->tahun);
-            $mapData = (clone $query)->select('id', 'judul', 'nama', 'institusi', 'provinsi', 'kota as kabupaten_kota', 'pt_latitude', 'pt_longitude', 'bidang_fokus', 'thn_pelaksanaan as tahun', 'skema')->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->limit(15000)->get()->toArray();
+
             $researches = (clone $query)->orderByDesc('thn_pelaksanaan')->limit(50)->get();
         }
 
@@ -328,15 +327,8 @@ class PermasalahanPageController extends Controller
             $query = Penelitian::query();
         }
 
-        //  Filter berdasarkan kata kunci
-        $query->where(function ($q) use ($dataType, $keywordsMap) {
-            if (isset($keywordsMap[$dataType])) {
-                $regex = implode('|', array_map('preg_quote', $keywordsMap[$dataType]));
-                $q->whereRaw("judul REGEXP ?", [$regex]);
-            } else {
-                $q->where('judul', 'like', "%$dataType%");
-            }
-        });
+        // Kita TIDAK memfilter berdasarkan kata kunci untuk lazy-load markers peta
+        // agar seluruh titik riset muncul secara nasional.
 
         // Filter standar
         if ($bubbleType === 'Pengabdian') {
@@ -468,13 +460,16 @@ class PermasalahanPageController extends Controller
                         } else {
                             if ($operator === 'OR') {
                                 $q->orWhere(function ($sub) use ($applyCondition) {
-                                    $applyCondition($sub); });
+                                    $applyCondition($sub);
+                                });
                             } elseif ($operator === 'AND NOT') {
                                 $q->whereNot(function ($sub) use ($applyCondition) {
-                                    $applyCondition($sub); });
+                                    $applyCondition($sub);
+                                });
                             } else { // ATAU (AND)
                                 $q->where(function ($sub) use ($applyCondition) {
-                                    $applyCondition($sub); });
+                                    $applyCondition($sub);
+                                });
                             }
                         }
                     }

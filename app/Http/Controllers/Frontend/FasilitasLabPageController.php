@@ -14,6 +14,7 @@ class FasilitasLabPageController extends Controller
 {
     public function index(Request $request)
     {
+        $v = (int) Cache::get('fasilitas_lab_cache_version', 1);
         $baseQuery = FasilitasLab::query();
 
         // Pencarian sederhana
@@ -77,7 +78,7 @@ class FasilitasLabPageController extends Controller
         // Stats & map data menggunakan global query (tanpa filter)
         $globalQuery = FasilitasLab::query();
 
-        $stats = Cache::remember('stats_fasilitas_lab_global_v1', 3600, function () use ($globalQuery) {
+        $stats = Cache::remember('stats_fasilitas_lab_global_v' . $v, 3600, function () use ($globalQuery) {
             return [
                 'totalResearch'    => (clone $globalQuery)->count(),
                 'totalUniversities'=> (clone $globalQuery)->distinct('institusi')->count('institusi'),
@@ -85,7 +86,7 @@ class FasilitasLabPageController extends Controller
             ];
         });
 
-        $mapData = Cache::remember('map_data_fasilitas_lab_v9_global', 1800, function () use ($globalQuery) {
+        $mapData = Cache::remember('map_data_fasilitas_lab_global_v' . $v, 1800, function () use ($globalQuery) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
 
             $rows = (clone $globalQuery)->select(

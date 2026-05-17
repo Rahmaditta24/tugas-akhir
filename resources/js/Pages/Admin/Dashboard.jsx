@@ -1,9 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import AdminLayout from '../../Layouts/AdminLayout';
 import PageHeader from '../../Components/PageHeader';
-import Sparkline from '../../Components/Sparkline';
-import { ResponsiveContainer, Cell } from 'recharts';
 import MinimalBarChart from '../../Components/Charts/MinimalBarChart';
 import MinimalDonutChart from '../../Components/Charts/MinimalDonutChart';
 

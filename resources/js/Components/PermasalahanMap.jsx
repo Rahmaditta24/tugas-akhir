@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
-import { getFieldColor } from '../Utils/fieldColors';
+
 
 // ─── Fungsi bantu warna ───────────────────────────────────────────────────────
 function hexToRgb(hex) {
@@ -182,6 +182,7 @@ export default function PermasalahanMap({
     const mapInstanceRef = useRef(null);
     const geoJsonLayerRef = useRef(null);
     const clusterGroupRef = useRef(null);
+    const selectedGeoLayerRef = useRef(null); // Ref untuk wilayah yang sedang diklik
     const [geoJsonData, setGeoJsonData] = useState(null);
     const [geoJsonLoading, setGeoJsonLoading] = useState(true);
 
@@ -425,8 +426,32 @@ export default function PermasalahanMap({
                 };
             },
             onEachFeature: (feature, layer) => {
-                layer.on('mouseover', () => layer.setStyle({ fillOpacity: 0.95, weight: 1 }));
-                layer.on('mouseout', () => layer.setStyle({ fillOpacity: 0.75, weight: 1 }));
+                layer.on('mouseover', () => {
+                    if (selectedGeoLayerRef.current !== layer) {
+                        layer.setStyle({ fillOpacity: 0.95, weight: 1.5 });
+                    }
+                });
+                layer.on('mouseout', () => {
+                    if (selectedGeoLayerRef.current !== layer) {
+                        layer.setStyle({ fillOpacity: 0.75, weight: 1 });
+                    }
+                });
+                layer.on('click', () => {
+                    // Reset style wilayah yang sebelumnya dipilih
+                    if (selectedGeoLayerRef.current && selectedGeoLayerRef.current !== layer) {
+                        selectedGeoLayerRef.current.setStyle({ weight: 1, color: '#000000', fillOpacity: 0.75 });
+                    }
+                    // Jika klik wilayah yang sama → toggle off
+                    if (selectedGeoLayerRef.current === layer) {
+                        layer.setStyle({ weight: 1, color: '#000000', fillOpacity: 0.75 });
+                        selectedGeoLayerRef.current = null;
+                    } else {
+                        // Highlight wilayah yang diklik dengan border tebal hitam
+                        layer.setStyle({ weight: 3, color: '#000000', fillOpacity: 0.8 });
+                        layer.bringToFront();
+                        selectedGeoLayerRef.current = layer;
+                    }
+                });
 
                 let rawName = '';
                 if (viewMode === 'kabupaten') {
@@ -536,17 +561,17 @@ export default function PermasalahanMap({
 
         if (!mapData.length) return;
 
-        const clusterGroup = L.markerClusterGroup({
+         const clusterGroup = L.markerClusterGroup({
             maxClusterRadius: 80,
             zoomToBoundsOnClick: true,
             showCoverageOnHover: false, // Performa
             spiderfyOnMaxZoom: true,
             chunkedLoading: true,
             chunkSize: 500,
-            chunkDelay: 10,
+            chunkDelay: 5,
             iconCreateFunction: (cluster) => {
                 const total = cluster.getAllChildMarkers().length;
-                const size = 46;
+                const size = 40;
                 let bubbleColor = 'rgba(62, 125, 202, 0.7)'; // Biru default
                 if (bubbleType === 'Hilirisasi') {
                     bubbleColor = 'rgba(250, 204, 21, 0.7)'; // Kuning/Emas
@@ -576,6 +601,7 @@ export default function PermasalahanMap({
                 });
             },
         });
+
 
         const sharedIcon = L.divIcon({
             html: `<div style="

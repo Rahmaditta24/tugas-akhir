@@ -6,7 +6,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import 'leaflet.markercluster';
 import ResearchModal from './ResearchModal';
-import { FIELD_COLORS, getFieldColor } from '../Utils/fieldColors';
+import { FIELD_COLORS } from '../Utils/fieldColors';
 
 // Bersihkan tag [M] dan [U] dari judul
 const cleanJudul = (str) => {

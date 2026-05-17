@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -66,21 +66,6 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
         });
     };
 
-    const handleSort = (field) => {
-        const nextDirection = sort === field && direction === 'asc' ? 'desc' : 'asc';
-        router.get(route('admin.fasilitas-lab.index'), {
-            search,
-            filters: columnFilters,
-            perPage,
-            sort: field,
-            direction: nextDirection,
-        }, {
-            only: ['fasilitasLab'],
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    };
 
     const handleSearch = (e) => {
         if (e) e.preventDefault();
@@ -170,7 +155,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                     'namalaboratorium', 'latitude', 'longitude', 'totaljumlahalat',
                     'namaalat', 'deskripsialat', 'kontak'
                 ];
-                
+
                 const uploadedColumns = Object.keys(data[0]).map(k => k.toLowerCase().trim().replace(/[\s_\-]+/g, ''));
                 const missingColumns = requiredColumns.filter(col => !uploadedColumns.includes(col));
 
@@ -395,9 +380,9 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                         </span>
                                     </div>
                                 </div>
-                                
+
                                 <div className="h-8 w-px bg-blue-500/50 hidden md:block"></div>
-                                
+
                                 <div className="flex items-center gap-2 ml-auto sm:ml-0">
                                     <button
                                         onClick={openBulkUpdateModal}
@@ -421,12 +406,12 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <button
                                 onClick={() => setSelectedIds([])}
                                 className="w-full sm:w-auto text-xs font-bold text-blue-100 hover:text-white transition-colors bg-blue-700/40 py-2.5 px-4 rounded-xl border border-blue-500/50 hover:bg-blue-700/60 active:scale-95"
                             >
-                                Batal Seleksi
+                                Batal
                             </button>
                         </div>
                     )}
@@ -480,8 +465,8 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                             emptyText="Tidak ada data fasilitas laboratorium"
                             columns={[
                                 { key: 'no', title: 'No', className: 'w-16 text-center' },
-                                { key: 'nama_laboratorium', title: 'Nama Lab', className: 'min-w-[200px]', sortable: true, render: (v) => <div className="whitespace-normal leading-relaxed text-sm font-medium text-slate-700" title={fmt(v)}>{display(v)}</div> },
-                                { key: 'institusi', title: 'Institusi', className: 'min-w-[180px] max-w-[250px]', sortable: true, render: (v) => <div className="whitespace-normal leading-relaxed text-sm font-medium text-slate-700" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'nama_laboratorium', title: 'Nama Lab', className: 'min-w-[200px]', render: (v) => <div className="whitespace-normal leading-relaxed text-sm font-medium text-slate-700" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'institusi', title: 'Institusi', className: 'min-w-[180px] max-w-[250px]', render: (v) => <div className="whitespace-normal leading-relaxed text-sm font-medium text-slate-700" title={fmt(v)}>{display(v)}</div> },
                                 {
                                     key: 'nama_alat',
                                     title: 'Nama Alat',
@@ -517,25 +502,22 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                         );
                                     }
                                 },
-                                { 
-                                    key: 'kontak', 
-                                    title: 'Kontak', 
-                                    className: 'min-w-[150px]', 
-                                    sortable: true, 
+                                {
+                                    key: 'kontak',
+                                    title: 'Kontak',
+                                    className: 'min-w-[150px]',
                                     render: (v) => {
                                         const val = fmt(v);
                                         if (!val || val.toLowerCase() === 'null') return <span className="text-slate-400 italic text-sm">Kontak tidak tersedia</span>;
                                         return <span className="text-slate-700 text-sm font-medium">{val}</span>;
-                                    } 
+                                    }
                                 },
-                                { key: 'total_jumlah_alat', title: 'Total Jumlah Alat', className: 'w-30 text-center', sortable: true, filterable: false, render: (v) => <Badge color="blue">{display(v === 0 ? '0' : v)}</Badge> },
+                                { key: 'total_jumlah_alat', title: 'Total Jumlah Alat', className: 'w-30 text-center', filterable: false, render: (v) => <Badge color="blue">{display(v === 0 ? '0' : v)}</Badge> },
                                 { key: 'aksi', title: 'Aksi', className: 'w-24 sticky right-0 bg-white/95 backdrop-blur-sm' },
                             ]}
                             data={tableData}
                             filters={columnFilters}
                             onFilterChange={handleColumnFilterChange}
-                            sort={{ key: sort, direction }}
-                            onSort={({ key }) => handleSort(key)}
                         />
                     </div>
 

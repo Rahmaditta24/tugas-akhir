@@ -103,9 +103,9 @@ class HilirisasiController extends Controller
 
         // Pengurutan dan paginasi 
         $allowedSorts = ['id', 'judul', 'id_proposal', 'nama_pengusul', 'perguruan_tinggi', 'tahun', 'direktorat', 'provinsi', 'skema'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
-        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) $request->get('perPage', 20);
+        $sort = in_array($request->input('sort'), $allowedSorts, true) ? $request->input('sort') : 'id';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+        $perPage = (int) $request->input('perPage', 20);
         if ($perPage < 10) { $perPage = 10; }
         if ($perPage > 100) { $perPage = 100; }
 
@@ -138,7 +138,7 @@ class HilirisasiController extends Controller
         }
 
         // Versi Cache
-        $v = Cache::get('hilirisasi_admin_v', 1);
+        $v = Cache::get('hilirisasi_admin_v', 5);
         $cacheKey = 'hilirisasi_admin_v' . $v . '_' . md5(json_encode($request->all()));
 
         $data = Cache::remember($cacheKey, 600, function() use ($query, $perPage, $sort, $direction) {
@@ -193,8 +193,8 @@ class HilirisasiController extends Controller
             'hilirisasi' => $data,
             'stats' => $stats,
             'filters' => [
-                'search' => $request->get('search'),
-                'columns' => $request->get('filters', []), // Kembalikan filter kolom
+                'search' => $request->input('search'),
+                'columns' => $request->input('filters', []), // Kembalikan filter kolom
                 'sort' => $sort,
                 'direction' => $direction,
                 'perPage' => $perPage,
@@ -393,12 +393,26 @@ class HilirisasiController extends Controller
 
     private function clearModuleCache()
     {
+        // Cache admin panel
         $v = (int) Cache::get('hilirisasi_admin_v', 1);
         Cache::put('hilirisasi_admin_v', $v + 1, 86400);
         Cache::forget('hilirisasi_admin_stats');
         Cache::forget('admin_dashboard_stats');
-        $pv = (int) Cache::get('permasalahan_admin_v', 1);
-        Cache::put('permasalahan_admin_v', $pv + 1, 86400 * 30);
+        
+        // Versi cache frontend publik
+        $hv = (int) Cache::get('hilirisasi_cache_version', 1);
+        Cache::put('hilirisasi_cache_version', $hv + 1, 86400 * 30);
+        
+        $pv = (int) Cache::get('permasalahan_cache_version', 1);
+        Cache::put('permasalahan_cache_version', $pv + 1, 86400 * 30);
+
+
+
+        // Cache frontend publik — hapus agar website langsung update
+        Cache::forget('filter_hilirisasi_direktorat');
+        Cache::forget('filter_hilirisasi_skema');
+        Cache::forget('filter_hilirisasi_provinsi');
+        Cache::forget('filter_hilirisasi_tahun');
     }
 
     public function exportCsv(Request $request)
@@ -426,7 +440,7 @@ class HilirisasiController extends Controller
             });
         }
 
-        if ($filters = $request->get('filters')) {
+        if ($filters = $request->input('filters')) {
             foreach ($filters as $key => $value) {
                 if ($value && in_array($key, ['judul','nama_pengusul','perguruan_tinggi','tahun','direktorat','provinsi','skema','mitra'])) {
                     $query->where($key, 'like', '%' . $value . '%');
@@ -492,7 +506,7 @@ class HilirisasiController extends Controller
             });
         }
 
-        if ($filters = $request->get('filters')) {
+        if ($filters = $request->input('filters')) {
              foreach ($filters as $key => $value) {
                  if ($value) $query->where($key, 'like', '%' . $value . '%');
              }

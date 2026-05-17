@@ -1,4 +1,3 @@
-import React from 'react';
 import { useForm, Link } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import CampusSelect from '../../../Components/CampusSelect';

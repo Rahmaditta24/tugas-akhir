@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
@@ -28,12 +28,12 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
     const [selectedIds, setSelectedIds] = useState([]);
     const [isAllSelectedGlobal, setIsAllSelectedGlobal] = useState(false);
     const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
-    
+
     // --- Bulk Update ---
     const [showBulkUpdateModal, setShowBulkUpdateModal] = useState(false);
     const [itemsEdit, setItemsEdit] = useState([]);
     const [isBulkUpdating, setIsBulkUpdating] = useState(false);
-    
+
     // --- Import ---
     const fileInputRef = useRef(null);
     const [isImporting, setIsImporting] = useState(false);
@@ -45,8 +45,8 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
     };
 
     const confirmBulkDelete = () => {
-        const payload = isAllSelectedGlobal 
-            ? { ids: 'all', search, filters: columnFilters } 
+        const payload = isAllSelectedGlobal
+            ? { ids: 'all', search, filters: columnFilters }
             : { ids: selectedIds };
 
         router.post(route('admin.hilirisasi.bulk-destroy'), payload, {
@@ -131,20 +131,6 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
         });
     };
 
-    const handleSort = (field) => {
-        const nextDirection = sort === field && direction === 'asc' ? 'desc' : 'asc';
-        router.get(route('admin.hilirisasi.index'), {
-            search,
-            filters: columnFilters,
-            sort: field,
-            direction: nextDirection,
-            perPage
-        }, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    };
 
     const handleDelete = (item) => {
         setItemToDelete(item);
@@ -226,8 +212,8 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                 const firstRowKeys = Object.keys(data[0]).map(k => k.toLowerCase().replace(/\s+/g, '_').trim());
                 const missingColumns = requiredColumns.filter(col => {
                     const normalizedCol = col.toLowerCase().replace(/\s+/g, '_');
-                    return !firstRowKeys.includes(normalizedCol) && 
-                           !firstRowKeys.includes(normalizedCol.replace('_', '')); // tolerance for idproposal
+                    return !firstRowKeys.includes(normalizedCol) &&
+                        !firstRowKeys.includes(normalizedCol.replace('_', '')); // tolerance for idproposal
                 });
 
                 if (missingColumns.length > 0) {
@@ -314,7 +300,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
         const params = new URLSearchParams();
         if (search) params.set('search', search);
         Object.entries(columnFilters).forEach(([k, v]) => v && params.append(`filters[${k}]`, v));
-        
+
         if (isAllSelectedGlobal) {
             params.append('ids', 'all');
         } else if (selectedIds.length > 0) {
@@ -405,15 +391,15 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                     title="Data Hilirisasi"
                     subtitle="Kelola data hilirisasi riset"
                     icon={<span className="text-xl">🏭</span>}
-                actions={(
-                    <HeaderActions
-                        onExport={handleExport}
-                        onImport={() => setShowImportModal(true)}
-                        isImporting={isImporting}
-                        linkCreate={route('admin.hilirisasi.create')}
-                        selectedCount={selectedIds.length}
-                    />
-                )}
+                    actions={(
+                        <HeaderActions
+                            onExport={handleExport}
+                            onImport={() => setShowImportModal(true)}
+                            isImporting={isImporting}
+                            linkCreate={route('admin.hilirisasi.create')}
+                            selectedCount={selectedIds.length}
+                        />
+                    )}
 
                 />
 
@@ -465,9 +451,9 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                                         </span>
                                     </div>
                                 </div>
-                                
+
                                 <div className="h-8 w-px bg-white/20 hidden md:block"></div>
-                                
+
                                 <div className="flex items-center gap-2 w-full sm:w-auto">
                                     {!isAllSelectedGlobal && (
                                         <button
@@ -493,7 +479,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <button
                                 onClick={() => {
                                     setSelectedIds([]);
@@ -501,7 +487,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                                 }}
                                 className="w-full sm:w-auto text-xs font-bold text-blue-50 hover:text-white transition-all bg-white/10 py-2.5 px-4 rounded-xl border border-white/10 hover:bg-white/20 active:scale-95"
                             >
-                                Batal Seleksi
+                                Batal
                             </button>
                         </div>
                     )}
@@ -558,23 +544,21 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                         onFilterChange={handleColumnFilterChange}
                         columns={[
                             { key: 'no', title: 'No', className: 'w-12 text-center' },
-                            { key: 'judul', title: 'Judul', sortable: true, className: 'min-w-[320px]', render: (v) => (<div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
-                            { key: 'nama_pengusul', title: 'Nama Pengusul', sortable: true, render: (v) => normalizeNameWithDegrees(v) },
+                            { key: 'judul', title: 'Judul', className: 'min-w-[320px]', render: (v) => (<div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            { key: 'nama_pengusul', title: 'Nama Pengusul', render: (v) => normalizeNameWithDegrees(v) },
                             {
                                 key: 'direktorat',
                                 title: 'Direktorat',
-                                sortable: true,
                                 className: 'min-w-[220px]',
                                 render: (v) => (
                                     <Badge color="purple">{display(v)}</Badge>
                                 )
                             },
-                            { key: 'skema', title: 'Skema', sortable: true, className: 'min-w-[220px]', render: (v) => (<div className="max-w-md line-clamp-3 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
-                            { key: 'perguruan_tinggi', title: 'Perguruan Tinggi', sortable: true, className: 'min-w-[200px]', render: (v) => (<div className="max-w-md line-clamp-2 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            { key: 'skema', title: 'Skema', className: 'min-w-[220px]', render: (v) => (<div className="max-w-md line-clamp-3 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
+                            { key: 'perguruan_tinggi', title: 'Perguruan Tinggi', className: 'min-w-[200px]', render: (v) => (<div className="max-w-md line-clamp-2 whitespace-normal leading-snug" title={fmt(v)}> {display(v)} </div>) },
                             {
                                 key: 'tahun',
                                 title: 'Tahun',
-                                sortable: true,
                                 className: 'min-w-[120px] text-center',
                                 render: (v) => <Badge color="blue">{display(v)}</Badge>
                             },
@@ -687,7 +671,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
             />
 
             {/* Bulk Update Modal Component */}
-            <BulkUpdateModal 
+            <BulkUpdateModal
                 isOpen={showBulkUpdateModal}
                 onClose={() => setShowBulkUpdateModal(false)}
                 items={itemsEdit}

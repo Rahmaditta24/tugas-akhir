@@ -1,4 +1,3 @@
-import React from 'react';
 
 const colorMap = {
     slate: 'bg-slate-100 text-slate-700 border-slate-200/60',

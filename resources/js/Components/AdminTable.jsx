@@ -4,8 +4,8 @@ import { display } from '../Utils/format';
 export default function AdminTable({
     columns = [], // [{ key, title, className, sortable }]
     data = [],
-    sort = null, // string yang cocok dengan column.key
-    direction = null, // 'asc' | 'desc'
+    sortKey = null, // string yang cocok dengan column.key
+    direction = 'desc', // 'asc' | 'desc'
     onSort = null, // mengembalikan string column.key
     footer = null, // JSX opsional
     striped = false,
@@ -44,6 +44,10 @@ export default function AdminTable({
         if (!onSort || !col.sortable) return;
         onSort(col.key);
     };
+
+    // --- Normalize sort and direction for internal logic ---
+    const effectiveSortKey = (sortKey || '').toString().trim();
+    const effectiveDirection = (direction || 'desc').toString().toLowerCase().trim();
 
     // --- Fungsi seleksi ---
     const allIds = useMemo(() => data.map((r) => r.id).filter(Boolean), [data]);
@@ -154,33 +158,15 @@ export default function AdminTable({
                             </th>
                         )}
                         {columns.map((col) => {
-                            const isSorted = sort === col.key;
-                            const sortIcon = (
-                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path 
-                                        className={`transition-colors ${isSorted && direction === 'asc' ? 'text-blue-600' : 'text-slate-300 group-hover:text-slate-400'}`}
-                                        strokeLinecap="round" strokeLinejoin="round" 
-                                        strokeWidth={isSorted && direction === 'asc' ? 2.5 : 2} 
-                                        d="M8 10l4-4 4 4" 
-                                    />
-                                    <path 
-                                        className={`transition-colors ${isSorted && direction === 'desc' ? 'text-blue-600' : 'text-slate-300 group-hover:text-slate-400'}`}
-                                        strokeLinecap="round" strokeLinejoin="round" 
-                                        strokeWidth={isSorted && direction === 'desc' ? 2.5 : 2} 
-                                        d="M8 14l4 4 4-4" 
-                                    />
-                                </svg>
-                            );
+                            const isSorted = effectiveSortKey === col.key;
 
                             return (
                                 <th
                                     key={col.key}
-                                    className={`text-left px-4 py-3 whitespace-nowrap select-none group ${col.className || ''} ${col.sortable ? 'cursor-pointer hover:bg-slate-100/50' : ''}`}
-                                    onClick={() => handleSort(col)}
+                                    className={`text-left px-4 py-3 whitespace-nowrap select-none group ${col.className || ''}`}
                                 >
                                     <div className="flex items-center gap-1 text-slate-700">
-                                        <span className={col.sortable ? 'font-medium' : ''}>{col.title}</span>
-                                        {col.sortable && sortIcon}
+                                        <span>{col.title}</span>
                                     </div>
                                 </th>
                             );

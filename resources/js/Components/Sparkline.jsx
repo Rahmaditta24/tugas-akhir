@@ -1,4 +1,3 @@
-import React from 'react';
 
 export default function Sparkline({ points = [], width = 100, height = 28, color = '#3b82f6' }) {
     if (!points || points.length === 0) {

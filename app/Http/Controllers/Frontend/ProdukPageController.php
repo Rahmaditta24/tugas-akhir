@@ -15,6 +15,7 @@ class ProdukPageController extends Controller
 {
     public function index(Request $request)
     {
+        $v = (int) Cache::get('produk_cache_version', 1);
         $baseQuery = Produk::query();
 
         // Menerapkan pencarian sederhana
@@ -87,7 +88,7 @@ class ProdukPageController extends Controller
         }
 
         $statsQ = clone $baseQuery;
-        $statsCacheKey = 'stats_produk_v1_' . md5(json_encode($request->all()));
+        $statsCacheKey = 'stats_produk_v' . $v . '_' . md5(json_encode($request->all()));
         $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
             $statsQ = clone $baseQuery;
             return [
@@ -98,44 +99,50 @@ class ProdukPageController extends Controller
             ];
         });
 
-        $cacheKey = 'map_data_produk_v6_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_produk_v' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery) {
-            $mapDataArray = [];
-            $query = (clone $baseQuery)->select(
-                'id',
-                'institusi',
-                'latitude as pt_latitude',
-                'longitude as pt_longitude',
-                'provinsi',
-                'bidang as bidang_fokus',
-                'nama_inventor',
-                DB::raw('SUBSTRING(nama_produk, 1, 150) as judul_short')
-            )
+            DB::statement('SET SESSION group_concat_max_len = 1000000');
+            $aggregatedData = (clone $baseQuery)
+                ->select(
+                    DB::raw('AVG(latitude) as pt_latitude'),
+                    DB::raw('AVG(longitude) as pt_longitude'),
+                    DB::raw('COUNT(*) as total_penelitian'),
+                    DB::raw('institusi as institusi_name'),
+                    DB::raw('MAX(provinsi) as provinsi'),
+                    DB::raw('GROUP_CONCAT(COALESCE(bidang, "-") ORDER BY id SEPARATOR "|") as all_fields'),
+                    DB::raw('GROUP_CONCAT(CAST(id AS CHAR) ORDER BY id SEPARATOR "|") as all_ids'),
+                    DB::raw('GROUP_CONCAT(COALESCE(nama_produk, "-") ORDER BY id SEPARATOR "|") as all_titles'),
+                    DB::raw('GROUP_CONCAT(COALESCE(nama_inventor, "-") ORDER BY id SEPARATOR "|") as all_researchers'),
+                    DB::raw('GROUP_CONCAT(COALESCE(tkt, "-") ORDER BY id SEPARATOR "|") as all_years') // TKT dialiaskan ke years untuk konsistensi MapContainer
+                )
                 ->whereNotNull('latitude')
-                ->whereNotNull('longitude');
+                ->whereNotNull('longitude')
+                ->whereNotNull('institusi')
+                ->groupBy('institusi')
+                ->having('total_penelitian', '>', 0)
+                ->get();
 
-            foreach ($query->cursor() as $item) {
-                $mapDataArray[] = [
-                    'id' => $item->id,
-                    'institusi' => $item->institusi,
+            return $aggregatedData->map(function ($item) {
+                return [
                     'pt_latitude' => (float) $item->pt_latitude,
                     'pt_longitude' => (float) $item->pt_longitude,
+                    'total_penelitian' => (int) $item->total_penelitian,
+                    'institusi' => $item->institusi_name,
                     'provinsi' => $item->provinsi,
-                    'bidang_fokus' => $item->bidang_fokus,
-                    'nama_inventor' => $item->nama_inventor,
-                    'judul' => $item->judul_short,
-                    'count' => 1,
+                    'bidang_fokus' => $item->all_fields,
+                    'ids' => $item->all_ids,
+                    'titles' => $item->all_titles,
+                    'all_researchers' => $item->all_researchers,
+                    'tahun_list' => $item->all_years, 
+                    'tkt_list' => $item->all_years,   
+                    'isProduk' => true
                 ];
-            }
-            return collect($mapDataArray)->values()->all();
+            })->toArray();
         });
 
         // Hanya muat data list jika terfilter/tersaring
         $isFiltered = $request->filled('search')
-            || $request->filled('queries')
-            || $request->filled('bidang')
-            || $request->filled('tkt')
-            || $request->filled('provinsi');
+            || $request->filled('queries');
 
         $items = $isFiltered
             ? (clone $baseQuery)->select('id', 'nama_produk as judul', 'nama_inventor as nama', 'institusi', 'provinsi', 'bidang as bidang_fokus', 'tkt')

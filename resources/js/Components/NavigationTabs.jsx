@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from '@inertiajs/react';
 
 export default function NavigationTabs({ activePage = 'penelitian' }) {

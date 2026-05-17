@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { titleCase } from '../Utils/format';
 
 const FIELD_COLORS = {
@@ -263,7 +263,7 @@ export default function MapControls({
 
     return (
         <>
-                        {/* Kotak Pencarian - Diposisikan di atas peta */}
+            {/* Kotak Pencarian - Diposisikan di atas peta */}
             {!hideSearch && (
                 <div className="absolute z-20 top-5 left-[52%] sm:left-1/2 -translate-x-1/2 lg:w-1/2 w-[75%]">
                     <div className="relative w-full px-3">
@@ -299,7 +299,7 @@ export default function MapControls({
                 </div>
             )}
 
-                        {/* Panel Pencarian Lanjutan */}
+            {/* Panel Pencarian Lanjutan */}
             {isAdvancedSearchOpen && (
                 <div className={`absolute z-30 bottom-24 left-1/2 -translate-x-1/2 ${widthClass} bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] p-4 lg:p-5 animate-fade-in-up border border-gray-100`}>
 
@@ -324,8 +324,8 @@ export default function MapControls({
                                                     type="button"
                                                     onClick={() => onMetrikChange('saidi')}
                                                     className={`flex-1 py-1 px-3 h-[38px] rounded-lg text-xs font-bold transition-all border ${selectedMetrik === 'saidi'
-                                                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                                                            : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                                                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                                        : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
                                                         }`}
                                                 >
                                                     SAIDI
@@ -334,8 +334,8 @@ export default function MapControls({
                                                     type="button"
                                                     onClick={() => onMetrikChange('saifi')}
                                                     className={`flex-1 py-1 px-3 h-[38px] rounded-lg text-xs font-bold transition-all border ${selectedMetrik === 'saifi'
-                                                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                                                            : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                                                        ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                                        : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
                                                         }`}
                                                 >
                                                     SAIFI
@@ -387,7 +387,7 @@ export default function MapControls({
             {/* Tombol Kontrol - Diposisikan di bagian bawah peta */}
             <div className="absolute z-20 bottom-5 left-1/2 -translate-x-1/2 w-[95%] lg:w-auto px-1">
                 <div className="flex flex-col md:flex-row items-center justify-center gap-2 lg:gap-3">
-                    
+
                     {/* BARIS ATAS (Mobile) / Grup Kiri (Desktop) - MODE & TOGGLE */}
                     <div className="flex items-center justify-center gap-2 w-full md:w-auto overflow-x-auto no-scrollbar">
                         {!hideDisplayMode && (
@@ -478,7 +478,7 @@ export default function MapControls({
                                 <span>Excel</span>
                             </button>
                         )}
-                        
+
                         {!hideDownload && onDownloadSecondary && (
                             <button
                                 onClick={onDownloadSecondary}

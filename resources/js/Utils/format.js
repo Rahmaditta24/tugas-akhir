@@ -69,7 +69,8 @@ export const titleCase = (v) => {
         // Selalu kapital untuk kata pertama
         if (index === 0) {
             if (lowerWord === 'dki' || lowerWord === 'diy') return 'DKI';
-            if (lowerWord === 'di') return 'DI'; // Khusus untuk DI Yogyakarta di dropdown
+            if (lowerWord === 'di') return 'DI';
+            if (acronyms.includes(lowerWord)) return upperWord;
             return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
         }
 

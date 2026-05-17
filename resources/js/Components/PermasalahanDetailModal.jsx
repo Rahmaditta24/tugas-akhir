@@ -1,5 +1,3 @@
-import React from 'react';
-import { titleCase } from '../Utils/format';
 
 export default function PermasalahanDetailModal({ isOpen, onClose, data }) {
     if (!isOpen || !data) return null;

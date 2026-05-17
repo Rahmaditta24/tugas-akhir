@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -9,7 +9,6 @@ import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
 import ImportModal from '../../../Components/ImportModal';
 import BulkUpdateModal from '../../../Components/BulkUpdateModal';
-import CampusSelect from '../../../Components/CampusSelect';
 import LocationSelect from '../../../Components/LocationSelect';
 import HeaderActions from '../../../Components/Admin/HeaderActions';
 
@@ -105,7 +104,9 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
             search,
             type: filters.type || 'batch',
             perPage: next,
-            filters: columnFilters
+            filters: columnFilters,
+            sort: filters.sort,
+            direction: filters.direction
         }, {
             only: ['pengabdian'],
             preserveState: true,
@@ -113,6 +114,7 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
             replace: true,
         });
     };
+
 
     const handleTypeChange = (type) => {
         router.get(route('admin.pengabdian.index'), {
@@ -585,10 +587,10 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                             onSelectionChange={setSelectedIds}
                             columns={[
                                 { key: 'no', title: 'No', className: 'w-16 text-center' },
-                                { key: 'judul', title: 'Judul Pengabdian', sortable: true, className: 'min-w-[400px]', render: (v) => <div className="line-clamp-4 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
-                                { key: 'nama', title: 'Ketua Pengusul', sortable: true, className: 'min-w-[180px]', render: (v) => display(v) },
-                                { key: 'nama_institusi', title: 'Institusi', sortable: true, className: 'min-w-[200px]', render: (v) => <div className="line-clamp-2 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
-                                { key: 'thn_pelaksanaan_kegiatan', title: 'Tahun', sortable: true, className: 'min-w-[120px] text-center', render: (v) => <Badge color="blue">{display(v)}</Badge> },
+                                { key: 'judul', title: 'Judul Pengabdian', className: 'min-w-[400px]', render: (v) => <div className="line-clamp-4 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'nama', title: 'Ketua Pengusul', className: 'min-w-[180px]', render: (v) => display(v) },
+                                { key: 'nama_institusi', title: 'Institusi', className: 'min-w-[200px]', render: (v) => <div className="line-clamp-2 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
+                                { key: 'thn_pelaksanaan_kegiatan', title: 'Tahun', className: 'min-w-[120px] text-center', render: (v) => <Badge color="blue">{display(v)}</Badge> },
                                 { key: 'aksi', title: 'Aksi', className: 'w-28 text-center sticky right-0 bg-white/95 backdrop-blur-sm shadow-[-4px_0_6px_-1px_rgba(0,0,0,0.05)] shadow-white/80' },
                             ]}
                             data={tableData}

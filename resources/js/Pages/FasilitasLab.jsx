@@ -1,6 +1,7 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import MainLayout from '../Layouts/MainLayout';
 import { router } from '@inertiajs/react';
+
 import NavigationTabs from '../Components/NavigationTabs';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
@@ -23,17 +24,19 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
     const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
     const [currentStats, setCurrentStats] = useState(stats);
     const [selectedLab, setSelectedLab] = useState(null);
+    const [currentMapData, setCurrentMapData] = useState(mapData);
+    const [currentResearches, setCurrentResearches] = useState(researches);
 
-    // Perbarui currentStats saat stats global dari props berubah
+    // Sinkronisasi state saat props berubah dari navigasi atau filter eksplisit
     useEffect(() => {
+        setCurrentMapData(mapData);
+        setCurrentResearches(researches);
         setCurrentStats(stats);
-    }, [stats]);
-
-    // Sinkronisasi state dengan props saat ada perubahan
-    useEffect(() => {
         setFilters(initialFilters);
         setSearchTerm(initialFilters.search || '');
-    }, [initialFilters]);
+    }, [mapData, researches, stats, initialFilters]);
+
+
 
     // Opsi filter dari server (provinsi diambil dari backend melalui query DB)
     const filterOptions = {
@@ -62,7 +65,7 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
         router.get(route('fasilitas.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats'],
+            only: ['researches', 'stats', 'filters', 'isFiltered'],
             replace: true,
         });
     };
@@ -95,7 +98,7 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
             <div className="relative">
                 <Suspense fallback={<MapLoading />}>
                     <MapContainer
-                        mapData={mapData}
+                        mapData={currentMapData}
                         displayMode={displayMode}
                         onCampusClick={handleCampusClick}
                     />
@@ -129,8 +132,10 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
                                 totalProvinces: 'Total Provinsi',
                             }}
                         />
+
+
                         <ResearchList
-                            researches={researches}
+                            researches={currentResearches}
                             onAdvancedSearch={handleAdvancedSearch}
                             onItemClick={setSelectedLab}
                             title="Daftar Fasilitas Lab"
@@ -143,6 +148,8 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
                             ]}
                             placeholderAll="Cari laboratorium, institusi, atau jenis lab..."
                         />
+
+
                     </div>
                 </section>
             </div>

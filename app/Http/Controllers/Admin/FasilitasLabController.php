@@ -43,9 +43,9 @@ class FasilitasLabController extends Controller
 
         // Pengurutan dan paginasi
         $allowedSorts = ['id', 'nama_laboratorium', 'institusi', 'provinsi', 'total_jumlah_alat'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
-        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
-        $perPage = (int) $request->get('perPage', 20);
+        $sort = in_array($request->input('sort'), $allowedSorts, true) ? $request->input('sort') : 'id';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+        $perPage = (int) $request->input('perPage', 20);
         if ($perPage < 10) { $perPage = 10; }
         if ($perPage > 100) { $perPage = 100; }
 
@@ -72,8 +72,8 @@ class FasilitasLabController extends Controller
             'fasilitasLab' => $data,
             'stats' => $stats,
             'filters' => [
-                'search' => $request->get('search'),
-                'columns' => $request->get('filters') ?? [],
+                'search' => $request->input('search'),
+                'columns' => $request->input('filters') ?? [],
                 'sort' => $sort,
                 'direction' => $direction,
                 'perPage' => $perPage,
@@ -256,7 +256,7 @@ class FasilitasLabController extends Controller
             });
         }
 
-        if ($filters = $request->get('filters')) {
+        if ($filters = $request->input('filters')) {
             foreach ($filters as $key => $value) {
                 if ($value && in_array($key, ['nama_laboratorium','institusi','provinsi','nama_alat'])) {
                     $query->where($key, 'like', '%' . $value . '%');
@@ -322,7 +322,7 @@ class FasilitasLabController extends Controller
             });
         }
 
-        if ($filters = $request->get('filters')) {
+        if ($filters = $request->input('filters')) {
              foreach ($filters as $key => $value) {
                  if ($value) $query->where($key, 'like', '%' . $value . '%');
              }
@@ -408,9 +408,16 @@ class FasilitasLabController extends Controller
     }
     private function clearModuleCache()
     {
+        // Cache admin panel
         $v = (int) Cache::get('fasilitas_lab_admin_v', 1);
         Cache::put('fasilitas_lab_admin_v', $v + 1, 86400 * 30);
         Cache::forget('fasilitas_lab_admin_stats');
         Cache::forget('admin_dashboard_stats');
+
+        // Cache frontend publik
+        $fv = (int) Cache::get('fasilitas_lab_cache_version', 1);
+        Cache::put('fasilitas_lab_cache_version', $fv + 1, 86400 * 30);
+        
+        Cache::forget('filter_fasilitas_kampus');
     }
 }

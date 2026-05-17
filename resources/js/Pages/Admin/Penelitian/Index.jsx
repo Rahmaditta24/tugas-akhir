@@ -10,7 +10,7 @@ import ImportModal from '../../../Components/ImportModal';
 import BulkUpdateModal from '../../../Components/BulkUpdateModal';
 import CampusSelect from '../../../Components/CampusSelect';
 import LocationSelect from '../../../Components/LocationSelect';
-import { fmt, display, sentenceCase, titleCase } from '../../../Utils/format';
+import { fmt, display, sentenceCase } from '../../../Utils/format';
 import HeaderActions from '../../../Components/Admin/HeaderActions';
 
 export default function Index({ penelitian, stats, filters }) {
@@ -94,7 +94,9 @@ export default function Index({ penelitian, stats, filters }) {
         router.get(route('admin.penelitian.index'), {
             search,
             filters: columnFilters,
-            perPage: next
+            perPage: next,
+            sort: filters.sort,
+            direction: filters.direction
         }, {
             only: ['penelitian'],
             preserveState: true,
@@ -102,6 +104,7 @@ export default function Index({ penelitian, stats, filters }) {
             replace: true,
         });
     };
+
 
     const handleDelete = (item) => {
         setItemToDelete(item);
@@ -427,9 +430,9 @@ export default function Index({ penelitian, stats, filters }) {
                                         Data Terpilih
                                     </span>
                                     {isAllSelectedGlobal && (
-                                            <span className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">
-                                                Seluruh Halaman
-                                            </span>
+                                        <span className="text-[10px] font-bold text-blue-100 uppercase tracking-wider">
+                                            Seluruh Halaman
+                                        </span>
                                     )}
                                 </div>
                             </div>
@@ -469,7 +472,7 @@ export default function Index({ penelitian, stats, filters }) {
                             }}
                             className="w-full sm:w-auto text-xs font-bold text-blue-50 hover:text-white transition-all bg-white/10 py-2.5 px-4 rounded-xl border border-white/10 hover:bg-white/20 active:scale-95"
                         >
-                            Batal Seleksi
+                            Batal
                         </button>
                     </div>
                 )}
@@ -523,7 +526,6 @@ export default function Index({ penelitian, stats, filters }) {
                         onSelectionChange={setSelectedIds}
                         isAllSelectedGlobal={isAllSelectedGlobal}
                         onSelectAllGlobal={setIsAllSelectedGlobal}
-                        sort={{ key: filters.sort, direction: filters.direction }}
                         emptyText="Tidak ada data penelitian"
                         columns={[
                             {
@@ -535,14 +537,12 @@ export default function Index({ penelitian, stats, filters }) {
                             {
                                 key: 'nama',
                                 title: 'Peneliti',
-                                sortable: true,
                                 className: 'min-w-[180px]',
                                 render: (v) => display(v)
                             },
                             {
                                 key: 'judul',
                                 title: 'Judul',
-                                sortable: true,
                                 className: 'min-w-[420px]',
                                 render: (v) => (
                                     <div className="max-w-md line-clamp-4 whitespace-normal leading-snug" title={fmt(v)}>
@@ -553,7 +553,6 @@ export default function Index({ penelitian, stats, filters }) {
                             {
                                 key: 'institusi',
                                 title: 'Institusi',
-                                sortable: true,
                                 className: 'min-w-[200px]',
                                 render: (v) => (
                                     <div className="max-w-md line-clamp-2 whitespace-normal leading-snug" title={fmt(v)}>
@@ -564,7 +563,6 @@ export default function Index({ penelitian, stats, filters }) {
                             {
                                 key: 'provinsi',
                                 title: 'Provinsi',
-                                sortable: true,
                                 className: 'min-w-[140px]',
                                 render: (v) => (
                                     <Badge color="slate">{display(v)}</Badge>
@@ -573,7 +571,6 @@ export default function Index({ penelitian, stats, filters }) {
                             {
                                 key: 'thn_pelaksanaan',
                                 title: 'Tahun',
-                                sortable: true,
                                 className: 'min-w-[160px] text-center',
                                 render: (v) => <Badge color="blue">{display(v)}</Badge>
                             },
@@ -616,7 +613,7 @@ export default function Index({ penelitian, stats, filters }) {
                             </p>
                             <div className="flex flex-wrap justify-center gap-1 sm:gap-2">
                                 {penelitian.links.map((link, index) => {
-                                    {/* Menangani label untuk tampilan mobile */}
+                                    {/* Menangani label untuk tampilan mobile */ }
                                     let label = link.label;
                                     if (label.includes('Previous')) label = '&laquo;';
                                     if (label.includes('Next')) label = '&raquo;';

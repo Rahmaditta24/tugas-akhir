@@ -104,7 +104,7 @@ class PengabdianController extends Controller
 
     public function index(Request $request)
     {
-        $type = $request->get('type', 'batch');
+        $type = $request->input('type', 'batch');
 
         $query = Pengabdian::query();
         if ($type === 'kosabangsa') {
@@ -143,17 +143,17 @@ class PengabdianController extends Controller
             }
         }
 
-        $perPage = (int) $request->get('perPage', 20);
+        $perPage = (int) $request->input('perPage', 20);
         if ($perPage < 10) $perPage = 10;
         if ($perPage > 100) $perPage = 100;
 
         // Daftar pengurutan 
         $allowedSorts = ['id', 'nama', 'nidn', 'nama_institusi', 'judul', 'prov_pt', 'kab_pt', 'thn_pelaksanaan_kegiatan', 'nama_skema'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
-        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array($request->input('sort'), $allowedSorts, true) ? $request->input('sort') : 'id';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
 
         // Versi Cache
-        $v = Cache::get('pengabdian_admin_v', 1);
+        $v = Cache::get('pengabdian_admin_v', 5);
         $cacheKey = 'pengabdian_admin_v' . $v . '_' . md5(json_encode($request->all()));
 
         $data = Cache::remember($cacheKey, 600, function() use ($query, $perPage, $sort, $direction) {
@@ -667,7 +667,7 @@ class PengabdianController extends Controller
             'bidang_teknologi_inovasi'
         );
 
-        $type = $request->get('type', 'batch');
+        $type = $request->input('type', 'batch');
         if ($type === 'kosabangsa') {
             $query->where(function($q) {
                 $q->where('batch_type', 'kosabangsa')
@@ -798,7 +798,7 @@ class PengabdianController extends Controller
             });
         }
 
-        if ($filters = $request->get('filters')) {
+        if ($filters = $request->input('filters')) {
              foreach ($filters as $key => $value) {
                  if ($value) $query->where($key, 'like', '%' . $value . '%');
              }
@@ -930,9 +930,21 @@ class PengabdianController extends Controller
 
     private function clearModuleCache()
     {
+        // Cache admin panel
         Cache::forget('pengabdian_admin_stats');
         Cache::forget('admin_dashboard_stats');
         $v = (int) Cache::get('pengabdian_admin_v', 1);
         Cache::put('pengabdian_admin_v', $v + 1, 86400 * 30);
+        
+        $pv = (int) Cache::get('permasalahan_cache_version', 1);
+        Cache::put('permasalahan_cache_version', $pv + 1, 86400 * 30);
+
+        // Cache frontend publik — hapus agar website langsung update
+        $fv = (int) Cache::get('pengabdian_cache_version', 1);
+        Cache::put('pengabdian_cache_version', $fv + 1, 86400 * 30);
+        Cache::forget('filter_pengabdian_bidang_fokus');
+        Cache::forget('filter_pengabdian_skema');
+        Cache::forget('filter_pengabdian_provinsi');
+        Cache::forget('filter_pengabdian_tahun');
     }
 }

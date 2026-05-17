@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useForm, Head } from '@inertiajs/react';
 
 export default function Login({ errors, status }) {

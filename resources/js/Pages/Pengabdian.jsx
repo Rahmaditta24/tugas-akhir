@@ -1,6 +1,7 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import MainLayout from '../Layouts/MainLayout';
 import { router } from '@inertiajs/react';
+
 import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
 import NavigationTabs from '../Components/NavigationTabs';
@@ -26,17 +27,19 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     const [currentStats, setCurrentStats] = useState(stats);
     const [selectedResearch, setSelectedResearch] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentMapData, setCurrentMapData] = useState(mapData);
+    const [currentResearches, setCurrentResearches] = useState(researches);
 
-    // Perbarui currentStats saat stats global dari props berubah
+    // Sinkronisasi state saat props berubah dari navigasi atau filter eksplisit
     useEffect(() => {
+        setCurrentMapData(mapData);
+        setCurrentResearches(researches);
         setCurrentStats(stats);
-    }, [stats]);
-
-    // Sinkronisasi state dengan props saat ada perubahan
-    useEffect(() => {
         setFilters(initialFilters);
         setSearchTerm(initialFilters.search || '');
-    }, [initialFilters]);
+    }, [mapData, researches, stats, initialFilters]);
+
+
 
     // Opsi filter statis untuk Pengabdian
     const allSkemas = [
@@ -68,7 +71,8 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             preserveState: true,
             preserveScroll: true,
             replace: true,
-            only: ['mapData', 'researches', 'stats']
+            only: ['mapData', 'researches', 'stats', 'filters', 'isFiltered'],
+            showProgress: false,
         });
     };
 
@@ -80,7 +84,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             preserveState: true,
             preserveScroll: true,
             replace: true,
-            only: ['mapData', 'researches', 'stats']
+            only: ['mapData', 'researches', 'stats', 'filters', 'isFiltered']
         });
     };
 
@@ -90,7 +94,8 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             preserveState: true,
             preserveScroll: true,
             replace: true,
-            only: ['mapData', 'researches', 'stats']
+            only: ['mapData', 'researches', 'stats', 'filters', 'isFiltered'],
+            showProgress: false,
         });
     };
 
@@ -227,8 +232,8 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             <div className="relative">
                 <Suspense fallback={<MapLoading />}>
                     <MapContainer 
-                        mapData={mapData} 
-                        data={filteredResearchesForMap}
+                        mapData={currentMapData} 
+                        data={currentResearches}
                         displayMode={displayMode} 
                         onStatsChange={handleStatsChange}
                         filters={filters} 
@@ -254,9 +259,9 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
                     <div className="container mx-auto sm:px-6 lg:px-0">
                         <StatisticsCards stats={currentStats} />
                         <ResearchList
-                            researches={researches}
+                            researches={currentResearches}
                             onAdvancedSearch={handleAdvancedSearch}
-                            onFilteredResults={setFilteredResearchesForMap}
+                            onFilteredResults={setCurrentResearches}
                             onItemClick={handleItemClick}
                             title="Daftar Pengabdian"
                             isFiltered={isFiltered}

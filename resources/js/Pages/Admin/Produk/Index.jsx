@@ -54,16 +54,6 @@ export default function Index({ produk, stats = {}, filters = {} }) {
         }, { preserveState: true, preserveScroll: true, replace: true });
     };
 
-    const handleSort = (field) => {
-        const nextDirection = sort === field && direction === 'asc' ? 'desc' : 'asc';
-        router.get(route('admin.produk.index'), {
-            search,
-            filters: columnFilters,
-            perPage,
-            sort: field,
-            direction: nextDirection,
-        }, { preserveState: true, preserveScroll: true, replace: true });
-    };
 
     const handlePerPageChange = (e) => {
         const next = Number(e.target.value);
@@ -472,19 +462,16 @@ export default function Index({ produk, stats = {}, filters = {} }) {
                             setSelectedIds([]);
                             setIsAllSelectedGlobal(false);
                         }}
-                        sort={sort}
-                        direction={direction}
-                        onSort={handleSort}
                         columnFilters={columnFilters}
                         onColumnFilterChange={handleColumnFilterChange}
                         data={tableData}
                         pagination={produk}
                         columns={[
                             { key: 'no', title: 'No', className: 'w-12 text-center' },
-                            { key: 'nama_produk', title: 'Nama Produk', sortable: true, className: 'min-w-[400px]', render: (v) => <div className="line-clamp-4 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
-                            { key: 'institusi', title: 'Institusi', sortable: true, render: (v) => <div className="max-w-xs truncate" title={fmt(v)}>{display(v)}</div> },
-                            { key: 'bidang', title: 'Bidang', sortable: true, className: 'min-w-[100px]', render: (v) => <Badge color="purple">{display(v)}</Badge> },
-                            { key: 'tkt', title: 'TKT', sortable: true, className: 'min-w-[120px] text-center', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
+                            { key: 'nama_produk', title: 'Nama Produk', className: 'min-w-[400px]', render: (v) => <div className="line-clamp-4 text-sm leading-relaxed" title={fmt(v)}>{display(v)}</div> },
+                            { key: 'institusi', title: 'Institusi', render: (v) => <div className="max-w-xs truncate" title={fmt(v)}>{display(v)}</div> },
+                            { key: 'bidang', title: 'Bidang', className: 'min-w-[100px]', render: (v) => <Badge color="purple">{display(v)}</Badge> },
+                            { key: 'tkt', title: 'TKT', className: 'min-w-[120px] text-center', render: (v) => <Badge color="yellow">{display(v)}</Badge> },
                             { key: 'aksi', title: 'Aksi', className: 'w-28 text-center sticky right-0 bg-white/95 backdrop-blur-sm' },
                         ]}
                     />

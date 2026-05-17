@@ -1,4 +1,3 @@
-import React from 'react';
 import { getFieldColor } from '../Utils/fieldColors';
 import { titleCase } from '../Utils/format';
 
@@ -343,14 +342,14 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                         <h3 className="text-[#3B82F6] font-bold text-base mb-4 tracking-tight border-b border-slate-100 pb-2">
                                             Daftar Alat yang Tersedia
                                         </h3>
-                                        <div className="max-h-56 overflow-y-auto pr-2 custom-scrollbar pr-2 mt-2">
-                                            <div className="flex flex-wrap gap-2">
-                                                {data.nama_alat.split('|').filter(Boolean).map((tool, i) => (
-                                                    <span key={i} className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-semibold rounded-md border border-slate-200 uppercase tracking-tight">
+                                        <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar mt-2 border border-blue-50 rounded-lg p-3 bg-blue-50/20">
+                                            <ol className="list-decimal list-outside ml-5 space-y-2.5">
+                                                {(data.nama_alat || '').split(/[|,\n]/).filter(s => s && s.trim().length > 1).map((tool, i) => (
+                                                    <li key={i} className="text-sm text-gray-700 font-semibold leading-relaxed uppercase tracking-tight border-b border-blue-100/50 pb-1 last:border-0">
                                                         {tool.trim()}
-                                                    </span>
+                                                    </li>
                                                 ))}
-                                            </div>
+                                            </ol>
                                         </div>
                                     </div>
                                 )}
@@ -509,14 +508,14 @@ export default function ResearchModal({ isOpen, onClose, data }) {
                                                 {(data.tool_list || data.nama_alat) && (
                                                     <>
                                                         <span className="text-sm font-medium text-gray-700 block mb-2">Alat yang Tersedia:</span>
-                                                        <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar border border-slate-50 rounded-lg p-2 bg-slate-50/30">
-                                                            <ul className="list-disc list-outside ml-5 space-y-2">
-                                                                {(data.tool_list || data.nama_alat || '').split('|').filter(Boolean).map((tool, i) => (
-                                                                    <li key={i} className="text-sm text-gray-800 leading-relaxed">
-                                                                        {tool}
+                                                        <div className="max-h-64 overflow-y-auto pr-2 custom-scrollbar border border-blue-50 rounded-lg p-3 bg-blue-50/20">
+                                                            <ol className="list-decimal list-outside ml-5 space-y-2.5">
+                                                                {(data.tool_list || data.nama_alat || '').split(/[|,\n]/).filter(s => s && s.trim().length > 1).map((tool, i) => (
+                                                                    <li key={i} className="text-sm text-gray-700 font-semibold leading-relaxed uppercase tracking-tight border-b border-blue-100/50 pb-1 last:border-0">
+                                                                        {tool.trim()}
                                                                     </li>
                                                                 ))}
-                                                            </ul>
+                                                            </ol>
                                                         </div>
                                                     </>
                                                 )}

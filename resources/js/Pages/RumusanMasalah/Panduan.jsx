@@ -1,11 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import MainLayout from '../../Layouts/MainLayout';
 import NavigationTabs from '../../Components/NavigationTabs';
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
+
 
 export default function Panduan({ categories }) {
     const [loading, setLoading] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [currentCategories, setCurrentCategories] = useState(categories);
+
+    // Sinkronisasi state saat props berubah
+    useEffect(() => {
+        setCurrentCategories(categories);
+    }, [categories]);
+
+
 
     // Data dari data-aliran.js - Diubah namanya menjadi chartCategories untuk menghindari konflik dengan Prop
     const chartCategories = [
@@ -309,7 +318,7 @@ export default function Panduan({ categories }) {
                     </Link>
 
                     <div className="space-y-1">
-                        {categories && categories.map((category) => (
+                        {currentCategories && currentCategories.map((category) => (
                             <Link
                                 key={category.id}
                                 href={`/rumusan-masalah#${category.name.toLowerCase().replace(/\s+/g, '-')}`}
@@ -341,8 +350,8 @@ export default function Panduan({ categories }) {
                                 Lihat Panduan
                             </Link>
                             <div className="flex flex-col py-1">
-                                {categories && categories.length > 0 ? (
-                                    categories.map((category) => (
+                                {currentCategories && currentCategories.length > 0 ? (
+                                    currentCategories.map((category) => (
                                         <Link
                                             key={category.id}
                                             href={`/rumusan-masalah#${category.name.toLowerCase().replace(/\s+/g, '-')}`}

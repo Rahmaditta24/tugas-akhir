@@ -209,7 +209,7 @@ class PenelitianController extends Controller
         }
 
         // Batas data per halaman
-        $perPage = (int) $request->get('perPage', 20);
+        $perPage = (int) $request->input('perPage', 20);
         if ($perPage < 10) {
             $perPage = 10;
         }
@@ -219,11 +219,11 @@ class PenelitianController extends Controller
 
         // Daftar pengurutan (sorting) dan paginasi yang diizinkan (whitelisted)
         $allowedSorts = ['id', 'nama', 'nidn', 'institusi', 'judul', 'skema', 'thn_pelaksanaan', 'bidang_fokus', 'tema_prioritas', 'provinsi'];
-        $sort = in_array($request->get('sort'), $allowedSorts, true) ? $request->get('sort') : 'id';
-        $direction = $request->get('direction') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array($request->input('sort'), $allowedSorts, true) ? $request->input('sort') : 'id';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
 
         // Versi cache untuk invalidasi instan
-        $v = Cache::get('penelitian_admin_v', 2);
+        $v = Cache::get('penelitian_admin_v', 5);
         $cacheKey = 'penelitian_admin_v' . $v . '_' . md5(json_encode($request->all()));
 
         $data = Cache::remember($cacheKey, 600, function () use ($query, $perPage, $sort, $direction) {
@@ -840,11 +840,24 @@ class PenelitianController extends Controller
 
     private function clearModuleCache()
     {
+        // Cache admin panel
         $v = Cache::get('penelitian_admin_v', 1);
         Cache::put('penelitian_admin_v', $v + 1, 86400);
         Cache::forget('penelitian_admin_stats');
         Cache::forget('admin_dashboard_stats');
-        $pv = (int) Cache::get('permasalahan_admin_v', 1);
-        Cache::put('permasalahan_admin_v', $pv + 1, 86400 * 30);
+        
+        $pv = (int) Cache::get('permasalahan_cache_version', 1);
+        Cache::put('permasalahan_cache_version', $pv + 1, 86400 * 30);
+
+        // Cache frontend publik — harus dihapus agar website langsung memuat data terbaru
+        $fv = (int) Cache::get('penelitian_cache_version', 2);
+        Cache::put('penelitian_cache_version', $fv + 1, 86400 * 30);
+        Cache::forget('filter_bidang_fokus');
+        Cache::forget('filter_tema_prioritas');
+        Cache::forget('filter_kategori_pt');
+        Cache::forget('filter_klaster');
+        Cache::forget('filter_provinsi');
+        Cache::forget('filter_tahun');
+        Cache::forget('filter_skema');
     }
 }

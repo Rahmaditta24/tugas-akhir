@@ -1,5 +1,6 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { router } from '@inertiajs/react';
+
 import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
 import MainLayout from '../Layouts/MainLayout';
@@ -36,16 +37,17 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
     const [selectedResearch, setSelectedResearch] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    // Perbarui currentStats saat stats global dari props berubah
-    useEffect(() => {
-        setCurrentStats(stats);
-    }, [stats]);
+    const [currentMapData, setCurrentMapData] = useState(mapData);
+    const [currentResearches, setCurrentResearches] = useState(researches);
 
-    // Sinkronisasi state dengan props saat ada perubahan (misal: navigasi)
+    // Sinkronisasi state saat props berubah dari navigasi atau filter eksplisit
     useEffect(() => {
+        setCurrentMapData(mapData);
+        setCurrentResearches(researches);
+        setCurrentStats(stats);
         setFilters(initialFilters);
         setSearchTerm(initialFilters.search || '');
-    }, [initialFilters]);
+    }, [mapData, researches, stats, initialFilters]);
 
     const handleSearch = (term) => {
         setSearchTerm(term);
@@ -58,7 +60,8 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             preserveState: true,
             preserveScroll: true,
             replace: true, 
-            only: ['mapData', 'researches', 'stats'] // untuk SPA: hanya perbarui data, bukan seluruh halaman
+            only: ['mapData', 'researches', 'stats', 'filters', 'isFiltered'],
+            showProgress: false,
         });
     };
 
@@ -74,7 +77,8 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             preserveState: true,
             preserveScroll: true,
             replace: true, 
-            only: ['mapData', 'researches', 'stats'], // Hanya ambil data, bukan layout
+            only: ['mapData', 'researches', 'stats', 'filters', 'isFiltered'],
+            showProgress: false,
         });
     };
 
@@ -191,7 +195,7 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
         router.get(route('penelitian.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats'],
+            only: ['researches', 'stats', 'filters', 'isFiltered'],
             replace: true,
         });
     };
@@ -269,8 +273,8 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
             <div className="relative">
                 <Suspense fallback={<MapLoading />}>
                     <MapContainer
-                        mapData={mapData}
-                        data={filteredResearchesForMap}
+                        mapData={currentMapData}
+                        data={currentResearches}
                         displayMode={displayMode}
                         onStatsChange={handleStatsChange}
                         filters={filters}
@@ -299,9 +303,9 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                         <StatisticsCards stats={currentStats} />
                         <Suspense fallback={<ListLoading />}>
                             <ResearchList
-                                researches={researches}
+                                researches={currentResearches}
                                 onAdvancedSearch={handleAdvancedSearch}
-                                onFilteredResults={setFilteredResearchesForMap}
+                                onFilteredResults={setCurrentResearches}
                                 isFiltered={isFiltered}
                                 isPenelitianPage={true}
                                 onItemClick={handleItemClick}

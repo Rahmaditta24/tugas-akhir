@@ -1,5 +1,5 @@
 // resources/js/Pages/Admin/RumusanMasalahStatement/Edit.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import PageHeader from '../../../Components/PageHeader';

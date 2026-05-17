@@ -15,6 +15,7 @@ class HilirisasiPageController extends Controller
 {
     public function index(Request $request)
     {
+        $v = (int) Cache::get('hilirisasi_cache_version', 1);
         $baseQuery = Hilirisasi::query();
 
         // Menerapkan pencarian sederhana
@@ -92,7 +93,7 @@ class HilirisasiPageController extends Controller
         }
 
         $statsQ = clone $baseQuery;
-        $statsCacheKey = 'stats_hilirisasi_v1_' . md5(json_encode($request->all()));
+        $statsCacheKey = 'stats_hilirisasi_v' . $v . '_' . md5(json_encode($request->all()));
         $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
             $statsQ = clone $baseQuery;
             return [
@@ -103,7 +104,7 @@ class HilirisasiPageController extends Controller
             ];
         });
 
-        $cacheKey = 'map_data_hilirisasi_v9_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_hilirisasi_v' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
@@ -141,11 +142,7 @@ class HilirisasiPageController extends Controller
 
         // list jika terfilter/tersaring
         $isFiltered = $request->filled('search')
-            || $request->filled('queries')
-            || $request->filled('direktorat')
-            || $request->filled('skema')
-            || $request->filled('provinsi')
-            || $request->filled('tahun');
+            || $request->filled('queries');
 
         $items = $isFiltered
             ? (clone $baseQuery)->select('id', 'judul', 'nama_pengusul as nama', 'perguruan_tinggi as institusi', 'provinsi', 'skema as bidang_fokus', 'tahun')

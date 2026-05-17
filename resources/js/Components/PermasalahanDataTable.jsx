@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { titleCase } from '../Utils/format';
 

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import AdminLayout from '../../../Layouts/AdminLayout';
-import { Head, Link, useForm, router } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import Breadcrumb from '../../../Components/Breadcrumb';
-import { fmt, display } from '../../../Utils/format';
 
 export default function RumusanMasalahStatementIndex({ category, statements }) {
     // --- State ---

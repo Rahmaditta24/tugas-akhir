@@ -126,7 +126,7 @@ class PenelitianPageController extends Controller
         });
 
         // Menghapus GROUP_CONCAT, ambil detail saat diperlukan
-        $cacheKey = 'map_data_cache_v7_' . md5(json_encode($request->all()));
+        $cacheKey = 'map_data_cache_v' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 300, function () use ($baseQuery) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
             $aggregatedData = (clone $baseQuery)
@@ -172,14 +172,7 @@ class PenelitianPageController extends Controller
         });
 
         // Untuk daftar list: hanya muat data jika terdapat pencarian atau filter aktif
-        $isFiltered = $request->filled('bidang_fokus') ||
-            $request->filled('tema_prioritas') ||
-            $request->filled('kategori_pt') ||
-            $request->filled('klaster') ||
-            $request->filled('provinsi') ||
-            $request->filled('tahun') ||
-            $request->filled('skema') ||
-            $request->filled('search') ||
+        $isFiltered = $request->filled('search') ||
             $request->filled('queries');
 
         $researches = $isFiltered

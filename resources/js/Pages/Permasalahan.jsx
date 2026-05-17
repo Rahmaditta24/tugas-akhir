@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { router } from '@inertiajs/react';
 import axios from 'axios';
 import MainLayout from '../Layouts/MainLayout';

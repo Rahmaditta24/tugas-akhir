@@ -1,4 +1,3 @@
-import React from 'react';
 import { titleCase } from '../Utils/format';
 
 export default function PermasalahanLegend({

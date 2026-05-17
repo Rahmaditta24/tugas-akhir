@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
 import PageHeader from '../../../Components/PageHeader';
 import Badge from '../../../Components/Badge';
-import { fmt, display, titleCase } from '../../../Utils/format';
+import { display, titleCase } from '../../../Utils/format';
 import HeaderActions from '../../../Components/Admin/HeaderActions';
+import ResearchModal from '../../../Components/ResearchModal';
 
 export default function Index({
     data = {},
@@ -25,6 +26,8 @@ export default function Index({
     const [localColumnFilters, setLocalColumnFilters] = useState(filters.columns || {});
     const [localStats, setLocalStats] = useState(stats || {});
     const [isStatsLoading, setIsStatsLoading] = useState(false);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const { flash } = usePage().props;
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
@@ -187,6 +190,7 @@ export default function Index({
             replace: true
         });
     };
+
 
     const handleExportCSV = () => {
         const params = new URLSearchParams({ baseData, jenis, search, batch_type: batchType });
@@ -480,14 +484,26 @@ export default function Index({
                                     columnFilterEnabled={true}
                                     filters={localColumnFilters}
                                     onFilterChange={handleColumnFilterChange}
-                                    sort={{ key: filters.sort, direction: filters.direction }}
                                     columns={[
                                         { key: 'no', title: 'No', className: 'w-12 text-center' },
-                                        { key: 'judul', title: 'Judul Riset', sortable: true, className: 'min-w-[400px]', render: (v, item) => <div className="line-clamp-2 text-xs sm:text-sm leading-relaxed" title={getVal(item, 'judul')}>{getVal(item, 'judul')}</div> },
-                                        { key: 'peneliti', title: 'Peneliti / Pengusul', sortable: true, className: 'min-w-[180px]', render: (_, item) => <div className="text-xs sm:text-sm">{getVal(item, 'peneliti')}</div> },
-                                        { key: 'institusi', title: 'Institusi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <div className="truncate text-xs sm:text-sm" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
-                                        { key: 'provinsi', title: 'Provinsi', sortable: true, className: 'min-w-[150px]', render: (_, item) => <Badge color="blue">{getVal(item, 'provinsi')}</Badge> },
-                                        { key: 'tahun', title: 'Tahun', sortable: true, className: 'min-w-[100px] text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
+                                        {
+                                            key: 'judul', title: 'Judul Riset', className: 'min-w-[400px]', render: (v, item) => (
+                                                <div
+                                                    className="line-clamp-2 text-xs sm:text-sm leading-relaxed cursor-pointer text-slate-700 hover:text-blue-600 hover:underline transition-colors font-medium"
+                                                    title="Klik untuk lihat detail"
+                                                    onClick={() => {
+                                                        setSelectedItem(item);
+                                                        setIsModalOpen(true);
+                                                    }}
+                                                >
+                                                    {getVal(item, 'judul')}
+                                                </div>
+                                            )
+                                        },
+                                        { key: 'peneliti', title: 'Peneliti / Pengusul', className: 'min-w-[180px]', render: (_, item) => <div className="text-xs sm:text-sm">{getVal(item, 'peneliti')}</div> },
+                                        { key: 'institusi', title: 'Institusi', className: 'min-w-[150px]', render: (_, item) => <div className="truncate text-xs sm:text-sm" title={getVal(item, 'institusi')}>{getVal(item, 'institusi')}</div> },
+                                        { key: 'provinsi', title: 'Provinsi', className: 'min-w-[150px]', render: (_, item) => <Badge color="blue">{getVal(item, 'provinsi')}</Badge> },
+                                        { key: 'tahun', title: 'Tahun', className: 'min-w-[100px] text-center', render: (_, item) => <Badge color="gray">{getVal(item, 'tahun')}</Badge> },
                                     ]}
                                     data={(data.data || []).map((item, index) => ({
                                         ...item,
@@ -500,6 +516,30 @@ export default function Index({
                     </div>
                 </div>
             </div>
+
+            <ResearchModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                data={selectedItem ? {
+                    ...selectedItem,
+                    currentDataType: baseData,
+                    // Map common fields to specific ones expected by ResearchModal for consistency
+                    pengabdian_nama: selectedItem.nama || selectedItem.nama_pengusul || selectedItem.pengabdian_nama,
+                    pengabdian_institusi: selectedItem.nama_institusi || selectedItem.institusi || selectedItem.perguruan_tinggi || selectedItem.pengabdian_institusi,
+                    pengabdian_status_pt: selectedItem.status_pt || selectedItem.ptn_pts || selectedItem.pengabdian_status_pt,
+                    pengabdian_kabupaten: selectedItem.kab_pt || selectedItem.kota || selectedItem.kabupaten || selectedItem.pengabdian_kabupaten,
+                    pengabdian_provinsi: selectedItem.prov_pt || selectedItem.provinsi || selectedItem.pengabdian_provinsi,
+                    pengabdian_klaster: selectedItem.klaster || selectedItem.pengabdian_klaster,
+                    pengabdian_skema: selectedItem.nama_skema || selectedItem.skema || selectedItem.pengabdian_skema,
+                    pengabdian_tahun: selectedItem.thn_pelaksanaan_kegiatan || selectedItem.tahun || selectedItem.pengabdian_tahun,
+                    pengabdian_bidang_fokus: selectedItem.bidang_fokus || selectedItem.pengabdian_bidang_fokus,
+                    
+                    // Hilirisasi Mapping
+                    nama_peneliti: selectedItem.nama_peneliti || selectedItem.nama || selectedItem.nama_pengusul,
+                    skema_hilirisasi: selectedItem.skema_hilirisasi || selectedItem.skema || selectedItem.nama_skema,
+                    tahun_hilirisasi: selectedItem.tahun_hilirisasi || selectedItem.tahun || selectedItem.thn_pelaksanaan
+                } : null}
+            />
         </AdminLayout>
     );
 }
