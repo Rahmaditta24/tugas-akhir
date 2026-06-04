@@ -8,9 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Inertia\Inertia;
-
+use App\Traits\DataFormatter;
 class ProdukController extends Controller
 {
+    use DataFormatter;
+
     public function index(Request $request)
     {
         $query = Produk::query();
@@ -228,66 +230,7 @@ class ProdukController extends Controller
         return back()->with('success', "{$count} data produk berhasil diperbarui.");
     }
 
-    private function formatName($name)
-    {
-        if (empty($name))
-            return $name;
-        $name = trim($name);
-        if ($name !== mb_strtoupper($name) && $name !== mb_strtolower($name)) {
-            return $name;
-        }
-        $formatted = mb_convert_case($name, MB_CASE_TITLE, "UTF-8");
-        $replacements = [
-            'S.pd' => 'S.Pd',
-            'M.pd' => 'M.Pd',
-            'S.t' => 'S.T',
-            'M.t' => 'M.T',
-            'S.h' => 'S.H',
-            'M.h' => 'M.H',
-            'S.e' => 'S.E',
-            'M.m' => 'M.M',
-            'S.si' => 'S.Si',
-            'M.si' => 'M.Si',
-            'S.sos' => 'S.Sos',
-            'M.sos' => 'M.Sos',
-            'S.kom' => 'S.Kom',
-            'M.kom' => 'M.Kom',
-            'S.p' => 'S.P',
-            'M.p' => 'M.P',
-            'S.pt' => 'S.Pt',
-            'M.pt' => 'M.Pt',
-            'S.hut' => 'S.Hut',
-            'M.hut' => 'M.Hut',
-            'S.km' => 'S.KM',
-            'M.kes' => 'M.Kes',
-            'S.kep' => 'S.Kep',
-            'M.kep' => 'M.Kep',
-            'Ph.d' => 'Ph.D',
-            'M.hum' => 'M.Hum',
-            'S.hum' => 'S.Hum',
-            'M.ag' => 'M.Ag',
-            'S.ag' => 'S.Ag',
-            'M.fil' => 'M.Fil',
-            'S.fil' => 'S.Fil',
-            'M.ak' => 'M.Ak',
-            'S.ak' => 'S.Ak',
-            'M.psi' => 'M.Psi',
-            'S.psi' => 'S.Psi',
-            'M.ti' => 'M.TI',
-            'S.ti' => 'S.TI',
-            'M.eng' => 'M.Eng',
-            'S.eng' => 'S.Eng',
-            'M.sc' => 'M.Sc',
-            'B.sc' => 'B.Sc',
-            'Msi' => 'MSi',
-            'Spd' => 'SPd',
-        ];
-        foreach ($replacements as $search => $replace) {
-            $formatted = preg_replace('/\b' . preg_quote($search) . '\b/u', $replace, $formatted);
-            $formatted = str_replace($search, $replace, $formatted);
-        }
-        return $formatted;
-    }
+
 
     private function clearModuleCache()
     {
@@ -556,20 +499,7 @@ class ProdukController extends Controller
         }
     }
 
-    private function formatProvinsi($name)
-    {
-        if (empty($name) || strtolower($name) === 'tidak tersedia' || strtolower($name) === 'null') return 'tidak tersedia';
-        $name = trim($name);
-        if ($name === '') return 'tidak tersedia';
 
-        $formatted = mb_convert_case($name, MB_CASE_TITLE, "UTF-8");
-        $fixes = [
-            'Dki Jakarta' => 'DKI Jakarta',
-            'Di Yogyakarta' => 'DI Yogyakarta',
-        ];
-
-        return $fixes[$formatted] ?? $formatted;
-    }
 
     public function getProvinces()
     {

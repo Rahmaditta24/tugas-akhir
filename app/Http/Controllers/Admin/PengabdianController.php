@@ -10,97 +10,10 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Cache;
-
+use App\Traits\DataFormatter;
 class PengabdianController extends Controller
 {
-    private function isPTN($name)
-    {
-        if (empty($name)) return false;
-        $name = strtolower($name);
-        if (strpos($name, 'negeri') !== false) return true;
-        if (strpos($name, 'uin ') !== false || strpos($name, 'universitas islam negeri') !== false) return true;
-        if (strpos($name, 'iain ') !== false || strpos($name, 'institut agama islam negeri') !== false) return true;
-        if (strpos($name, 'stain ') !== false || strpos($name, 'sekolah tinggi agama islam negeri') !== false) return true;
-        if (strpos($name, 'universitas terbuka') !== false) return true;
-        $bigPTNs = [
-            'universitas indonesia', 'institut teknologi bandung', 'universitas gadjah mada', 
-            'institut pertanian bogor', 'ipb university', 'universitas padjadjaran', 
-            'universitas airlangga', 'universitas diponegoro', 'universitas brawijaya', 
-            'universitas hasanuddin', 'universitas sebelas maret', 'institut teknologi sepuluh nopember', 
-            'universitas sumatera utara', 'universitas lampung', 'universitas andalas', 
-            'universitas sriwijaya', 'universitas syiah kuala', 'universitas riau', 
-            'universitas udayana', 'universitas jember', 'universitas jenderal soedirman', 
-            'universitas lambung mangkurat', 'universitas sam ratulangi', 'universitas tanjungpura',
-            'universitas nusa cendana', 'universitas palangka raya', 'universitas tadulako',
-            'universitas pattimura', 'universitas cenderawasih', 'universitas mulawarman',
-            'universitas pendidikan indonesia', 'universitas pendidikan ganesha',
-            'universitas sultan ageng tirtayasa', 'upn \"veteran\"', 'universitas tidar',
-            'universitas teuku umar', 'universitas borneo tarakan', 'universitas bangka belitung',
-            'universitas musamus', 'universitas malikussaleh', 'universitas samudra',
-            'universitas siliwangi', 'universitas sembilanbelas november', 
-            'universitas singaperbangsa', 'universitas sulawesi barat', 'universitas papua',
-            'institut seni indonesia', 'institut seni budaya indonesia',
-            'institut teknologi sumatera', 'itera', 'institut teknologi kalimantan', 'itk',
-            'institut teknologi bacharuddin jusuf habibie', 'ith'
-        ];
-        foreach ($bigPTNs as $ptn) {
-            if (strpos($name, $ptn) !== false) return true;
-        }
-        return false;
-    }
-
-    private function formatName($name)
-    {
-        if (empty($name)) return $name;
-        
-        // Potong spasi di awal dan akhir
-        $name = trim($name);
-        
-        // Jika teks sudah campuran huruf besar/kecil, asumsikan formatnya sudah benar
-        // Hanya format jika semua huruf besar ATAU semua huruf kecil
-        if ($name !== mb_strtoupper($name) && $name !== mb_strtolower($name)) {
-            return $name;
-        }
-
-        $formatted = mb_convert_case($name, MB_CASE_TITLE, "UTF-8");
-
-        $replacements = [
-            'S.pd' => 'S.Pd', 'M.pd' => 'M.Pd', 'S.t' => 'S.T', 'M.t' => 'M.T',
-            'S.h' => 'S.H', 'M.h' => 'M.H', 'S.e' => 'S.E', 'M.m' => 'M.M',
-            'S.si' => 'S.Si', 'M.si' => 'M.Si', 'S.sos' => 'S.Sos', 'M.sos' => 'M.Sos',
-            'S.kom' => 'S.Kom', 'M.kom' => 'M.Kom', 'S.p' => 'S.P', 'M.p' => 'M.P',
-            'S.pt' => 'S.Pt', 'M.pt' => 'M.Pt', 'S.hut' => 'S.Hut', 'M.hut' => 'M.Hut',
-            'S.km' => 'S.KM', 'M.kes' => 'M.Kes', 'S.kep' => 'S.Kep', 'M.kep' => 'M.Kep',
-            'Ph.d' => 'Ph.D', 'M.hum' => 'M.Hum', 'S.hum' => 'S.Hum', 'M.ag' => 'M.Ag',
-            'S.ag' => 'S.Ag', 'M.fil' => 'M.Fil', 'S.fil' => 'S.Fil', 'M.ak' => 'M.Ak',
-            'S.ak' => 'S.Ak', 'M.psi' => 'M.Psi', 'S.psi' => 'S.Psi', 'M.ti' => 'M.TI',
-            'S.ti' => 'S.TI', 'M.eng' => 'M.Eng', 'S.eng' => 'S.Eng', 'M.sc' => 'M.Sc',
-            'B.sc' => 'B.Sc', 'Msi' => 'MSi', 'Spd' => 'SPd',
-        ];
-
-        foreach ($replacements as $search => $replace) {
-            $formatted = preg_replace('/\b' . preg_quote($search) . '\b/u', $replace, $formatted);
-            // Menangani huruf yang diikuti koma atau di akhir teks
-            $formatted = str_replace($search, $replace, $formatted);
-        }
-
-        return $formatted;
-    }
-
-    private function formatProvinsi($name)
-    {
-        if (empty($name) || strtolower($name) === 'tidak tersedia' || strtolower($name) === 'null') return 'tidak tersedia';
-        $name = trim($name);
-        if ($name === '') return 'tidak tersedia';
-
-        $formatted = mb_convert_case($name, MB_CASE_TITLE, "UTF-8");
-        $fixes = [
-            'Dki Jakarta' => 'DKI Jakarta',
-            'Di Yogyakarta' => 'DI Yogyakarta',
-        ];
-
-        return $fixes[$formatted] ?? $formatted;
-    }
+    use DataFormatter;
 
     public function index(Request $request)
     {
@@ -883,7 +796,7 @@ class PengabdianController extends Controller
                     'nama' => $nama,
                     'nidn' => $normalizedRow['nidn'] ?? null,
                     'nama_institusi' => $institusi,
-                    'kd_perguruan_tinggi' => $normalizedRow['kdperguruan_tinggi'] ?? '0',
+                    'kd_perguruan_tinggi' => $normalizedRow['kdperguruantinggi'] ?? '0',
                     'prov_pt' => $normalizedRow['provpt'] ?? $normalizedRow['provinsi'] ?? '-',
                     'kab_pt' => $normalizedRow['kabpt'] ?? $normalizedRow['kabupaten'] ?? '-',
                     'pt_latitude' => $normalizedRow['ptlatitude'] ?? $normalizedRow['latitude'] ?? -6.2,
@@ -892,11 +805,33 @@ class PengabdianController extends Controller
                     'nama_skema' => $normalizedRow['namaskema'] ?? $normalizedRow['skema'] ?? '-',
                     'nama_singkat_skema' => $normalizedRow['namasingkatskema'] ?? '-',
                     'thn_pelaksanaan_kegiatan' => $tahun,
+                    'urutan_thn_kegitan' => $normalizedRow['urutanthnkegitan'] ?? $normalizedRow['urutantahunkegiatan'] ?? null,
                     'bidang_fokus' => $normalizedRow['bidangfokus'] ?? '-',
                     'prov_mitra' => $normalizedRow['provmitra'] ?? $normalizedRow['provinsimitra'] ?? '-',
                     'kab_mitra' => $normalizedRow['kabmitra'] ?? $normalizedRow['kabupatenmitra'] ?? '-',
                     'batch_type' => $batchType,
+                    'wilayah_lldikti' => $normalizedRow['wilayahlldikti'] ?? $normalizedRow['lldikti'] ?? null,
+                    'ptn_pts' => $normalizedRow['ptnpts'] ?? null,
+                    'klaster' => $normalizedRow['klaster'] ?? null,
                 ];
+
+                // Tambahkan kolom khusus Kosabangsa
+                if ($batchType === 'kosabangsa') {
+                    $data['nama_skema'] = 'Kosabangsa';
+                    $data['nama_singkat_skema'] = 'Kosabangsa';
+                    $data['nama_pendamping'] = $normalizedRow['namapendamping'] ?? null;
+                    $data['nidn_pendamping'] = $normalizedRow['nidnpendamping'] ?? null;
+                    $data['kd_perguruan_tinggi_pendamping'] = $normalizedRow['kdperguruantinggipendamping'] ?? null;
+                    $data['institusi_pendamping'] = $normalizedRow['institusipendamping'] ?? null;
+                    $data['lldikti_wilayah_pendamping'] = $normalizedRow['lldiktiwilayahpendamping'] ?? null;
+                    $data['jenis_wilayah_provinsi_mitra'] = $normalizedRow['jeniswilayahprovinsimitra'] ?? null;
+                    $data['bidang_teknologi_inovasi'] = $normalizedRow['bidangteknologiinovasi'] ?? null;
+                }
+
+                // Auto-detect PTN/PTS jika tidak ada
+                if (empty($data['ptn_pts'])) {
+                    $data['ptn_pts'] = $this->isPTN($institusi) ? 'PTN' : 'PTS';
+                }
 
                 if ($id && Pengabdian::find($id)) {
                     Pengabdian::where('id', $id)->update($data);

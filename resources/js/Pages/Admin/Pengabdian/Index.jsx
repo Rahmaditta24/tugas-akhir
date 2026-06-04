@@ -290,35 +290,24 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
         let dummyData = [];
         let fileName = 'Template_Pengabdian.xlsx';
 
-        const baseRow = {
-            "batch_type": "multitahun",
-            "nama": "HARIS",
-            "nidn": "1208038902",
-            "nama_institusi": "Universitas Negeri Makassar",
-            "pt_latitude": -5.168843,
-            "pt_longitude": 119.4360638,
-            "kd_perguruan_tinggi": "1036",
-            "wilayah_lldikti": "9",
-            "ptn/pts": "PTN",
-            "Kab PT": "Kota Makassar",
-            "Prov PT": "Sulawesi Selatan",
-            "klaster": "Kelompok PT Mandiri",
-            "judul": "Peningkatan Softskill Literasi Digital dan Budidaya Toga masyarakat Desa Mallongi-longi Melalui PMM di Kabupaten Pinrang",
-            "nama_singkat_skema": "PMM",
-            "thn_pelaksanaan_kegiatan": 2025,
-            "urutan_thn_kegitan": "Tahun ke-1",
-            "nama_skema": "Pemberdayaan Masyarakat oleh Mahasiswa",
-            "bidang_fokus": "Sosial Humaniora",
-            "prov_mitra": "Sulawesi Selatan",
-            "kab_mitra": "Kab. Pinrang",
-        };
-
         if (filters.type === 'kosabangsa') {
             dummyData = [{
-                ...baseRow,
                 "batch_type": "kosabangsa",
-                "nama_skema": "Kosabangsa",
-                "nama_singkat_skema": "Kosabangsa",
+                "nama": "HARIS",
+                "nidn": "1208038902",
+                "kd_perguruan_tinggi": "1036",
+                "nama_institusi": "Universitas Negeri Makassar",
+                "wilayah_lldikti": "9",
+                "ptn_pts": "PTN",
+                "prov_pt": "Sulawesi Selatan",
+                "kab_pt": "Kota Makassar",
+                "judul": "Pemberdayaan Masyarakat Desa Melalui Inovasi Teknologi Pertanian di Kabupaten Pinrang",
+                "thn_pelaksanaan_kegiatan": 2025,
+                "bidang_fokus": "Pertanian dan Pangan",
+                "prov_mitra": "Sulawesi Selatan",
+                "kab_mitra": "Kab. Pinrang",
+                "pt_latitude": -5.168843,
+                "pt_longitude": 119.4360638,
                 "nama_pendamping": "SITTI RAHMA",
                 "nidn_pendamping": "0012345678",
                 "kd_perguruan_tinggi_pendamping": "1099",
@@ -329,7 +318,28 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
             }];
             fileName = "Template_Import_Kosabangsa.xlsx";
         } else {
-            dummyData = [baseRow];
+            dummyData = [{
+                "batch_type": "multitahun",
+                "nama": "HARIS",
+                "nidn": "1208038902",
+                "kd_perguruan_tinggi": "1036",
+                "nama_institusi": "Universitas Negeri Makassar",
+                "wilayah_lldikti": "9",
+                "ptn_pts": "PTN",
+                "prov_pt": "Sulawesi Selatan",
+                "kab_pt": "Kota Makassar",
+                "klaster": "Kelompok PT Mandiri",
+                "judul": "Peningkatan Softskill Literasi Digital dan Budidaya Toga masyarakat Desa Mallongi-longi Melalui PMM di Kabupaten Pinrang",
+                "nama_skema": "Pemberdayaan Masyarakat oleh Mahasiswa",
+                "nama_singkat_skema": "PMM",
+                "thn_pelaksanaan_kegiatan": 2025,
+                "urutan_thn_kegitan": "Tahun ke-1",
+                "bidang_fokus": "Sosial Humaniora",
+                "prov_mitra": "Sulawesi Selatan",
+                "kab_mitra": "Kab. Pinrang",
+                "pt_latitude": -5.168843,
+                "pt_longitude": 119.4360638,
+            }];
             fileName = "Template_Import_Batch.xlsx";
         }
 
