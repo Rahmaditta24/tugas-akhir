@@ -2,8 +2,8 @@ import { useState, useEffect, Suspense, lazy } from 'react';
 import MainLayout from '../Layouts/MainLayout';
 import { router } from '@inertiajs/react';
 
-import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
+import { exportToExcel } from '../Utils/exportExcel';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
@@ -21,8 +21,16 @@ const MapLoading = () => (
 );
 
 export default function Pengabdian({ mapData = [], researches = [], stats = {}, title, isFiltered = false, filters: initialFilters = {}, filterOptions: serverFilterOptions = {} }) {
+    const DEFAULT_DATA_TYPE = 'Multitahun, Batch I & Batch II';
+
+    // Jika server tidak mengembalikan dataType (akses /pengabdian tanpa filter),
+    // set default di sisi React agar tampilan sesuai dengan data yang dimuat
+    const normalizedFilters = initialFilters.dataType
+        ? initialFilters
+        : { ...initialFilters, dataType: DEFAULT_DATA_TYPE };
+
     const [displayMode, setDisplayMode] = useState('peneliti');
-    const [filters, setFilters] = useState(initialFilters);
+    const [filters, setFilters] = useState(normalizedFilters);
     const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
     const [currentStats, setCurrentStats] = useState(stats);
     const [selectedResearch, setSelectedResearch] = useState(null);
@@ -35,10 +43,12 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         setCurrentMapData(mapData);
         setCurrentResearches(researches);
         setCurrentStats(stats);
-        setFilters(initialFilters);
+        const normalized = initialFilters.dataType
+            ? initialFilters
+            : { ...initialFilters, dataType: DEFAULT_DATA_TYPE };
+        setFilters(normalized);
         setSearchTerm(initialFilters.search || '');
     }, [mapData, researches, stats, initialFilters]);
-
 
 
     // Opsi filter statis untuk Pengabdian
@@ -55,7 +65,8 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         dataType: ['Multitahun, Batch I & Batch II', 'Kosabangsa'],
         skema: filters.dataType === 'Kosabangsa' ? ['Kosabangsa'] : allSkemas,
         provinsi: serverFilterOptions.provinsi || [],
-        tahun: serverFilterOptions.tahun || ['2020', '2021', '2022', '2023', '2024', '2025', '2026'],
+        // Pastikan tahun selalu string agar cocok dengan nilai URL params (string)
+        tahun: (serverFilterOptions.tahun || ['2020', '2021', '2022', '2023', '2024', '2025', '2026']).map(String),
     };
 
     const filterFields = [
@@ -163,21 +174,25 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             position: 'top-right'
         });
 
-        try {
-            const queryString = new URLSearchParams(window.location.search).toString();
+        const queryString = new URLSearchParams(window.location.search).toString();
+        const today = new Date().toISOString().slice(0, 10);
 
-            const response = await fetch(`/api/pengabdian/export?${queryString}`);
-            if (!response.ok) throw new Error('Gagal mengambil data');
+        // Tentukan slug jenis data (multitahun / kosabangsa)
+        const dataTypeSlug = (filters.dataType || '').toLowerCase().includes('kosabangsa')
+            ? 'kosabangsa'
+            : 'multitahun';
 
-            const allData = await response.json();
-            if (!allData || allData.length === 0) {
-                toast.dismiss(loadingToast);
-                toast.error(`Tidak ada data ${label} untuk diexport.`);
-                setIsLoading(false);
-                return;
-            }
+        // Tentukan apakah ada filter aktif selain dataType
+        const hasActiveFilter = Object.keys(filters).some(
+            k => k !== 'dataType' && filters[k] && filters[k] !== ''
+        );
+        const fileName = hasActiveFilter
+            ? `data-pengabdian-${dataTypeSlug}_filtered_${today}.xlsx`
+            : `data-pengabdian-${dataTypeSlug}_${today}.xlsx`;
 
-            const exportData = allData.map(item => ({
+        await exportToExcel({
+            apiUrl: `/api/pengabdian/export?${queryString}`,
+            mapRow: (item) => ({
                 'Tahun': item.thn_pelaksanaan_kegiatan || '-',
                 'Judul': item.judul || '-',
                 'Nama Pengusul': item.nama || '-',
@@ -186,36 +201,26 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
                 'Provinsi': item.prov_pt || '-',
                 'Mitra': (item.kab_mitra && item.prov_mitra) ? `${item.kab_mitra}, ${item.prov_mitra}` : (item.kab_mitra || item.prov_mitra || '-'),
                 'Skema': item.nama_skema || '-',
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Pengabdian');
-            ws['!cols'] = [
+            }),
+            sheetName: 'Pengabdian',
+            fileName,
+            colWidths: [
                 { wch: 10 }, { wch: 60 }, { wch: 30 }, { wch: 45 }, { wch: 40 },
                 { wch: 20 }, { wch: 35 }, { wch: 40 }
-            ];
-
-            let typeSlug = label.toLowerCase();
-            if (typeSlug.includes('multitahun')) {
-                typeSlug = 'multitahun';
-            } else {
-                typeSlug = typeSlug.replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-            }
-
-            XLSX.writeFile(wb, `data-pengabdian-${typeSlug}.xlsx`);
-
-            toast.success(`Berhasil export ${exportData.length} data ${label}!`, {
-                duration: 4000, position: 'top-right',
-                style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
-            });
-        } catch (error) {
-            console.error('Error exporting data:', error);
-            toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' });
-        } finally {
-            toast.dismiss(loadingToast);
-            setIsLoading(false);
-        }
+            ],
+            onSuccess: (count) => {
+                toast.success(`Berhasil export ${count} data ${label}!`, {
+                    duration: 4000, position: 'top-right',
+                    style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
+                });
+            },
+            onEmpty: () => toast.error(`Tidak ada data ${label} untuk diexport.`),
+            onError: () => toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' }),
+            onFinally: () => {
+                toast.dismiss(loadingToast);
+                setIsLoading(false);
+            },
+        });
     };
 
     const [filteredResearchesForMap, setFilteredResearchesForMap] = useState(researches);

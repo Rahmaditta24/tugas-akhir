@@ -18,9 +18,11 @@ class PengabdianPageController extends Controller
     {
         $v = (int) Cache::get('pengabdian_cache_version', 1);
 
-        // DataType default sebagai 'Multitahun, Batch I & II' jika tidak tersedia
+        // Tentukan dataType efektif untuk query DB, TANPA mengubah $request
+        // supaya $request->all() yang dikembalikan ke Inertia tetap murni dari URL
+        $dataTypeEffective = $request->input('dataType');
         if (!$request->has('dataType') && !$request->has('search') && !$request->has('queries')) {
-            $request->merge(['dataType' => 'Multitahun, Batch I & Batch II']);
+            $dataTypeEffective = 'Multitahun, Batch I & Batch II';
         }
 
         $baseQuery = Pengabdian::query();
@@ -84,15 +86,15 @@ class PengabdianPageController extends Controller
             }
         }
 
-        // Menerapkan filter standar
-        if ($request->filled('dataType')) {
-            $val = $request->dataType;
+        // Menerapkan filter dataType berdasarkan nilai efektif
+        if (!empty($dataTypeEffective)) {
+            $val = $dataTypeEffective;
 
             // Jika "Multitahun, Batch I & II" dipilih
             if (stripos($val, 'Multitahun') !== false && stripos($val, 'Batch') !== false) {
                 $baseQuery->where(function ($q) {
                     $q->where('batch_type', 'like', '%multitahun%')
-                        ->orWhere('batch_type', 'like', '%batch_i%') // Sesuai dengan batch_i maupun batch_ii jika digeneralisasi, tapi mari lebih spesifik
+                        ->orWhere('batch_type', 'like', '%batch_i%')
                         ->orWhere('batch_type', 'like', '%batch_ii%');
                 });
             }
@@ -106,19 +108,21 @@ class PengabdianPageController extends Controller
         }
 
         if ($request->filled('skema')) {
-            $val = $request->skema;
-            $baseQuery->where(function ($q) use ($val) {
-                $q->where('nama_skema', $val)
-                    ->orWhere('nama_singkat_skema', $val);
+            $skemaValues = (array) $request->skema;
+            $baseQuery->where(function ($q) use ($skemaValues) {
+                $q->whereIn('nama_skema', $skemaValues)
+                  ->orWhereIn('nama_singkat_skema', $skemaValues);
             });
         }
 
         if ($request->filled('provinsi')) {
-            $baseQuery->where('prov_pt', $request->provinsi);
+            $provinsiValues = (array) $request->provinsi;
+            $baseQuery->whereIn('prov_pt', $provinsiValues);
         }
 
         if ($request->filled('tahun')) {
-            $baseQuery->where('thn_pelaksanaan_kegiatan', $request->tahun);
+            $tahunValues = array_map('intval', (array) $request->tahun);
+            $baseQuery->whereIn('thn_pelaksanaan_kegiatan', $tahunValues);
         }
 
         // Statistik dalam cache

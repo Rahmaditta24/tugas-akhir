@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -295,15 +295,21 @@ export default function PermasalahanMap({
 
         return () => {
             if (mapInstanceRef.current) {
-                // Hapus peta saja - Leaflet menangani semua pembersihan
-                mapInstanceRef.current.remove();
+                const map = mapInstanceRef.current;
                 mapInstanceRef.current = null;
+                setTimeout(() => {
+                    try {
+                        map.remove();
+                    } catch (e) {
+                        console.error('Error removing map:', e);
+                    }
+                }, 0);
             }
         };
     }, []);
 
     // ── Pra-hitung data lookup (useMemo untuk efisiensi/ketersediaan langsung) ───
-    const choroplethData = React.useMemo(() => {
+    const choroplethData = useMemo(() => {
         const statsSource = (viewMode === 'provinsi' ? permasalahanStats : (permasalahanKabupatenStats || {})) || {};
         const rawActiveDataType = activeDataType || 'Sampah';
         const finalActiveDataType = Array.isArray(rawActiveDataType) ? rawActiveDataType[0] : rawActiveDataType;
@@ -623,78 +629,71 @@ export default function PermasalahanMap({
         let isActive = true;
         let timeoutIds = [];
 
+        // Tambahkan clusterGroup ke peta segera agar gelembung dapat muncul progresif
+        clusterGroup.addTo(mapInstanceRef.current);
+        clusterGroupRef.current = clusterGroup;
+        if (geoJsonLayerRef.current) geoJsonLayerRef.current.bringToBack();
+
         const processChunks = () => {
             if (!isActive || !mapInstanceRef.current) return;
 
-            const safe = (v) => {
-                if (v === null || v === undefined || v === '' || v === '-') return 'Tidak tersedia';
-                if (typeof v === 'string' && v.startsWith('["') && v.endsWith('"]')) {
-                    try {
-                        const parsed = JSON.parse(v);
-                        if (Array.isArray(parsed)) return parsed.join(', ');
-                    } catch (e) {
-                        return v.replace(/[\[\]"]/g, '');
-                    }
-                }
-                return v;
-            };
-
-            const CHUNK_SIZE = 1500;
+            const CHUNK_SIZE = 25; // Proses 25 universitas per tick agar browser tetap responsif
             const endIndex = Math.min(markerIndex + CHUNK_SIZE, mapData.length);
+            const chunkMarkers = [];
 
             for (let i = markerIndex; i < endIndex; i++) {
                 const item = mapData[i];
-                let lat = parseFloat(item.pt_latitude ?? item.latitude);
-                let lng = parseFloat(item.pt_longitude ?? item.longitude);
-
-                // Untuk mode kabupaten, gunakan centroid kecamatan jika koordinat PT tidak ada
-                if (viewMode === 'kabupaten' && (isNaN(lat) || isNaN(lng))) {
-                    const kabName = item.kabupaten_kota || item.kab_mitra || item.lokus;
-                    if (kabName) {
-                        const norm = normProv(kabName);
-                        const center = regencyCentroidsRef.current[norm];
-                        if (center) {
-                            lat = center[0];
-                            lng = center[1];
-                        }
-                    }
-                }
+                const lat = parseFloat(item.pt_latitude);
+                const lng = parseFloat(item.pt_longitude);
 
                 if (isNaN(lat) || isNaN(lng)) continue;
 
-                const marker = L.marker([lat, lng], { icon: sharedIcon });
-
-                // Handler klik yang dioptimalkan
-                marker.on('click', (e) => {
-                    if (!isActive) return;
-                    L.DomEvent.stop(e); // Hentikan event agar tidak menyebar ke peta
-
-                    const map = mapInstanceRef.current;
-                    if (map) map.setView([lat, lng], 16, { animate: true });
-
-                    const d = item;
-                    if (onItemClick) {
-                        onItemClick({
-                            ...d,
-                            bubbleType: bubbleType
-                        });
+                const ids = item.ids ? item.ids.split('|') : [];
+                ids.forEach((id, idx) => {
+                    let coords;
+                    if (idx === 0) {
+                        coords = [lat, lng];
+                    } else {
+                        // Offset koordinat sedikit agar penanda bertumpuk tidak tumpang tindih
+                        const radiusKm = 0.3;
+                        const radiusDegrees = radiusKm / 111.3;
+                        const angle = (idx * (2 * Math.PI / ids.length));
+                        coords = [
+                            lat + radiusDegrees * Math.cos(angle),
+                            lng + radiusDegrees * Math.sin(angle)
+                        ];
                     }
-                });
 
-                markers.push(marker);
+                    const marker = L.marker(coords, { icon: sharedIcon });
+
+                    // Handler klik yang dioptimalkan
+                    marker.on('click', (e) => {
+                        if (!isActive) return;
+                        L.DomEvent.stop(e); // Hentikan event agar tidak menyebar ke peta
+
+                        const map = mapInstanceRef.current;
+                        if (map) map.setView(coords, 16, { animate: true });
+
+                        if (onItemClick) {
+                            onItemClick({
+                                id: id,
+                                bubbleType: bubbleType
+                            });
+                        }
+                    });
+
+                    chunkMarkers.push(marker);
+                });
+            }
+
+            if (isActive && chunkMarkers.length > 0) {
+                clusterGroup.addLayers(chunkMarkers);
             }
 
             markerIndex = endIndex;
 
             if (markerIndex < mapData.length) {
                 timeoutIds.push(setTimeout(processChunks, 5));
-            } else {
-                if (isActive) {
-                    clusterGroup.addLayers(markers);
-                    clusterGroup.addTo(mapInstanceRef.current);
-                    clusterGroupRef.current = clusterGroup;
-                    if (geoJsonLayerRef.current) geoJsonLayerRef.current.bringToBack();
-                }
             }
         };
 

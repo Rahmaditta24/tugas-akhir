@@ -1,8 +1,8 @@
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { router } from '@inertiajs/react';
 
-import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
+import { exportToExcel } from '../Utils/exportExcel';
 import MainLayout from '../Layouts/MainLayout';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapControls from '../Components/MapControls';
@@ -89,36 +89,18 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
     };
 
     const handleDownload = async () => {
-        // Tampilkan status loading
         setIsLoading(true);
         const loadingToast = toast.loading('Sedang menyiapkan data Excel, mohon tunggu...', {
             position: 'top-right'
         });
 
-        try {
-            console.log('Starting export with filters:', filters);
-            // Ambil semua parameter pencarian dan filter aktif dari URL
-            const queryString = new URLSearchParams(window.location.search).toString();
+        const queryString = new URLSearchParams(window.location.search).toString();
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
 
-            const response = await fetch(`/api/penelitian/export?${queryString}`);
-
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Export error:', errorText);
-                throw new Error('Failed to fetch data');
-            }
-
-            const allData = await response.json();
-
-            if (!allData || allData.length === 0) {
-                toast.error('Tidak ada data untuk diexport.');
-                setIsLoading(false);
-                return;
-            }
-
-            // Data untuk export Excel
-            const exportData = allData.map(research => ({
+        await exportToExcel({
+            apiUrl: `/api/penelitian/export?${queryString}`,
+            mapRow: (research) => ({
                 'Peneliti': research.nama || '-',
                 'Judul': research.judul || '-',
                 'Institusi': research.institusi || '-',
@@ -129,60 +111,26 @@ export default function Home({ mapData = [], researches = [], stats = {}, filter
                 'Tahun': research.thn_pelaksanaan || '-',
                 'Bidang Fokus': research.bidang_fokus || '-',
                 'Tema Prioritas': research.tema_prioritas || '-',
-            }));
-
-            // Buat workbook dan worksheet
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Penelitian');
-
-            // Atur ukuran kolom otomatis
-            const cols = [
-                { wch: 30 }, // Peneliti
-                { wch: 60 }, // Judul
-                { wch: 40 }, // Institusi
-                { wch: 12 }, // Kategori PT
-                { wch: 15 }, // Jenis PT
-                { wch: 20 }, // Provinsi
-                { wch: 30 }, // Skema
-                { wch: 10 }, // Tahun
-                { wch: 25 }, // Bidang Fokus
-                { wch: 30 }, // Tema Prioritas
-            ];
-            ws['!cols'] = cols;
-
-            // Hasilkan nama file dengan timestamp dan info filter
-            const timestamp = new Date().toISOString().slice(0, 10);
-            const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
-            const filename = `data-penelitian${filterInfo}_${timestamp}.xlsx`;
-
-            // Unduh file
-            XLSX.writeFile(wb, filename);
-
-            // Tampilkan pesan sukses
-            toast.success(`Berhasil export ${exportData.length} data penelitian!`, {
-                duration: 4000,
-                position: 'top-right',
-                style: {
-                    background: '#16a34a',
-                    color: '#fff',
-                    fontWeight: '500',
-                },
-                iconTheme: {
-                    primary: '#fff',
-                    secondary: '#16a34a',
-                },
-            });
-        } catch (error) {
-            console.error('Error exporting data:', error);
-            toast.error('Gagal mengexport data. Silakan coba lagi.', {
-                duration: 4000,
-                position: 'top-right',
-            });
-        } finally {
-            toast.dismiss(loadingToast);
-            setIsLoading(false);
-        }
+            }),
+            sheetName: 'Penelitian',
+            fileName: `data-penelitian${filterInfo}_${timestamp}.xlsx`,
+            colWidths: [
+                { wch: 30 }, { wch: 60 }, { wch: 40 }, { wch: 12 }, { wch: 15 },
+                { wch: 20 }, { wch: 30 }, { wch: 10 }, { wch: 25 }, { wch: 30 },
+            ],
+            onSuccess: (count) => {
+                toast.success(`Berhasil export ${count} data penelitian!`, {
+                    duration: 4000, position: 'top-right',
+                    style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
+                });
+            },
+            onEmpty: () => toast.error('Tidak ada data untuk diexport.'),
+            onError: () => toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' }),
+            onFinally: () => {
+                toast.dismiss(loadingToast);
+                setIsLoading(false);
+            },
+        });
     };
 
     const handleAdvancedSearch = (queries) => {

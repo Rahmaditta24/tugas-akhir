@@ -133,7 +133,7 @@ export default function Index({ produk, stats = {}, filters = {} }) {
                 nama_inventor: found?.nama_inventor || '',
                 email_inventor: found?.email_inventor || '',
                 nomor_paten: found?.nomor_paten || '',
-                detail_paten: found?.detail_paten || '',
+                deskripsi_paten: found?.deskripsi_paten || '',
                 latitude: found?.latitude || '',
                 longitude: found?.longitude || '',
                 deskripsi_produk: found?.deskripsi_produk || '',
@@ -757,7 +757,7 @@ export default function Index({ produk, stats = {}, filters = {} }) {
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Deskripsi Paten</label>
-                                    <textarea value={item.detail_paten} onChange={e => setItemField(item.id, 'detail_paten', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm h-32" />
+                                    <textarea value={item.deskripsi_paten} onChange={e => setItemField(item.id, 'deskripsi_paten', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm h-32" />
                                 </div>
                             </div>
                         </div>

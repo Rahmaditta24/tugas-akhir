@@ -323,10 +323,10 @@ class PenelitianController extends Controller
             'klaster' => ['required', 'string'],
             'provinsi' => ['required', 'string'],
             'kota' => ['required', 'string'],
-            'pt_latitude' => ['required', 'numeric'],
-            'pt_longitude' => ['required', 'numeric'],
+            'pt_latitude' => ['required', 'numeric', 'between:-90,90'],
+            'pt_longitude' => ['required', 'numeric', 'between:-180,180'],
             'judul' => ['required', 'string'],
-            'skema' => ['required', 'string'],
+            'skema' => ['nullable', 'string'],
             'thn_pelaksanaan' => ['required', 'integer'],
             'bidang_fokus' => ['nullable', 'string'],
             'tema_prioritas' => 'nullable|string',
@@ -391,7 +391,28 @@ class PenelitianController extends Controller
             'tema_prioritas' => empty($request->tema_prioritas) ? '-' : $request->tema_prioritas,
         ]);
         
-        $penelitian->update($request->all());
+        $validated = $request->validate([
+            'nama' => ['required', 'string', 'max:255'],
+            'nidn' => ['nullable', 'string'],
+            'nuptk' => ['nullable', 'string'],
+            'institusi' => ['required', 'string'],
+            'kode_pt' => ['required', 'string'],
+            'jenis_pt' => ['required', 'string'],
+            'kategori_pt' => ['required', 'string'],
+            'institusi_pilihan' => ['required', 'string'],
+            'klaster' => ['required', 'string'],
+            'provinsi' => ['required', 'string'],
+            'kota' => ['required', 'string'],
+            'pt_latitude' => ['required', 'numeric', 'between:-90,90'],
+            'pt_longitude' => ['required', 'numeric', 'between:-180,180'],
+            'judul' => ['required', 'string'],
+            'skema' => ['nullable', 'string'],
+            'thn_pelaksanaan' => ['required', 'integer'],
+            'bidang_fokus' => ['nullable', 'string'],
+            'tema_prioritas' => 'nullable|string',
+        ]);
+
+        $penelitian->update($validated);
         $this->clearModuleCache();
         return redirect()->route('admin.penelitian.index')->with('success', 'Data penelitian berhasil diperbarui');
     }

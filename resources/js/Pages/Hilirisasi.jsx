@@ -2,8 +2,8 @@ import { useState, useEffect, Suspense, lazy } from 'react';
 import MainLayout from '../Layouts/MainLayout';
 import { router } from '@inertiajs/react';
 
-import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
+import { exportToExcel } from '../Utils/exportExcel';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
@@ -46,7 +46,7 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
         direktorat: serverFilterOptions.direktorat || ['Direktorat A', 'Direktorat B'],
         skema: serverFilterOptions.skema || ['Skema A', 'Skema B'],
         provinsi: serverFilterOptions.provinsi || [],
-        tahun: serverFilterOptions.tahun || ['2020', '2021', '2022', '2023', '2024'],
+        tahun: (serverFilterOptions.tahun || ['2020', '2021', '2022', '2023', '2024']).map(String),
     };
 
     const filterFields = [
@@ -157,20 +157,14 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
         const loadingToast = toast.loading('Sedang menyiapkan data Excel, mohon tunggu...', {
             position: 'top-right'
         });
-        try {
-            const queryString = new URLSearchParams(window.location.search).toString();
 
-            const response = await fetch(`/api/hilirisasi/export?${queryString}`);
-            if (!response.ok) throw new Error('Gagal mengambil data');
+        const queryString = new URLSearchParams(window.location.search).toString();
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
 
-            const allData = await response.json();
-            if (!allData || allData.length === 0) {
-                toast.error('Tidak ada data untuk diexport.');
-                setIsLoading(false);
-                return;
-            }
-
-            const exportData = allData.map(item => ({
+        await exportToExcel({
+            apiUrl: `/api/hilirisasi/export?${queryString}`,
+            mapRow: (item) => ({
                 'Tahun': item.tahun || '-',
                 'ID Proposal': item.id_proposal || '-',
                 'Judul': item.judul || '-',
@@ -181,31 +175,26 @@ export default function Hilirisasi({ mapData = [], researches = [], stats = {}, 
                 'Mitra': item.mitra || '-',
                 'Skema': item.skema || '-',
                 'Luaran': item.luaran || '-',
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Hilirisasi');
-            ws['!cols'] = [
+            }),
+            sheetName: 'Hilirisasi',
+            fileName: `data-hilirisasi${filterInfo}_${timestamp}.xlsx`,
+            colWidths: [
                 { wch: 8 }, { wch: 12 }, { wch: 60 }, { wch: 30 }, { wch: 25 },
                 { wch: 40 }, { wch: 20 }, { wch: 30 }, { wch: 20 }, { wch: 30 },
-            ];
-
-            const timestamp = new Date().toISOString().slice(0, 10);
-            const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
-            XLSX.writeFile(wb, `data-hilirisasi${filterInfo}_${timestamp}.xlsx`);
-
-            toast.success(`Berhasil export ${exportData.length} data hilirisasi!`, {
-                duration: 4000, position: 'top-right',
-                style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
-            });
-        } catch (error) {
-            console.error('Error exporting data:', error);
-            toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' });
-        } finally {
-            toast.dismiss(loadingToast);
-            setIsLoading(false);
-        }
+            ],
+            onSuccess: (count) => {
+                toast.success(`Berhasil export ${count} data hilirisasi!`, {
+                    duration: 4000, position: 'top-right',
+                    style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
+                });
+            },
+            onEmpty: () => toast.error('Tidak ada data untuk diexport.'),
+            onError: () => toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' }),
+            onFinally: () => {
+                toast.dismiss(loadingToast);
+                setIsLoading(false);
+            },
+        });
     };
 
     const [filteredResearchesForMap, setFilteredResearchesForMap] = useState(researches);

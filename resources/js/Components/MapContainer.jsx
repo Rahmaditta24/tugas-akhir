@@ -308,8 +308,15 @@ export default function MapContainer({
 
         return () => {
             if (mapInstanceRef.current) {
-                mapInstanceRef.current.remove();
+                const map = mapInstanceRef.current;
                 mapInstanceRef.current = null;
+                setTimeout(() => {
+                    try {
+                        map.remove();
+                    } catch (e) {
+                        console.error('Error removing map:', e);
+                    }
+                }, 0);
             }
         };
     }, []);

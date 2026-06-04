@@ -75,21 +75,21 @@ class FasilitasLabPageController extends Controller
             $baseQuery->whereIn('provinsi', $values);
         }
 
-        // Stats & map data menggunakan global query (tanpa filter)
-        $globalQuery = FasilitasLab::query();
-
-        $stats = Cache::remember('stats_fasilitas_lab_global_v' . $v, 3600, function () use ($globalQuery) {
+        // Stats & map data menggunakan base query (dengan filter)
+        $statsCacheKey = 'stats_fasilitas_lab_v' . $v . '_' . md5(json_encode($request->all()));
+        $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
             return [
-                'totalResearch'    => (clone $globalQuery)->count(),
-                'totalUniversities'=> (clone $globalQuery)->distinct('institusi')->count('institusi'),
-                'totalProvinces'   => (clone $globalQuery)->distinct('provinsi')->count('provinsi'),
+                'totalResearch'    => (clone $baseQuery)->count(),
+                'totalUniversities'=> (clone $baseQuery)->distinct('institusi')->count('institusi'),
+                'totalProvinces'   => (clone $baseQuery)->distinct('provinsi')->count('provinsi'),
             ];
         });
 
-        $mapData = Cache::remember('map_data_fasilitas_lab_global_v' . $v, 1800, function () use ($globalQuery) {
+        $mapCacheKey = 'map_data_fasilitas_lab_v' . $v . '_' . md5(json_encode($request->all()));
+        $mapData = Cache::remember($mapCacheKey, 1800, function () use ($baseQuery) {
             DB::statement('SET SESSION group_concat_max_len = 1000000');
 
-            $rows = (clone $globalQuery)->select(
+            $rows = (clone $baseQuery)->select(
                 'institusi',
                 'kode_universitas',
                 'latitude',

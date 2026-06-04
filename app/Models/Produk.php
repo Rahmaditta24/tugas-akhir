@@ -23,7 +23,7 @@ class Produk extends Model
         'nama_inventor',
         'email_inventor',
         'nomor_paten',
-        'detail_paten',
+        'deskripsi_paten',
     ];
 
     protected $casts = [

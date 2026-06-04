@@ -36,8 +36,29 @@ export default function Edit({ item }) {
             });
     }, []);
 
+    const [localErrors, setLocalErrors] = useState({});
+
+    const validateLatLng = (field, value) => {
+        const num = parseFloat(value);
+        let error = '';
+        if (value === '' || value === '-') {
+            error = 'Field ini wajib diisi.';
+        } else if (isNaN(num)) {
+            error = 'Harus berupa angka desimal. Contoh: -6.200000';
+        } else if (field === 'latitude' && (num < -90 || num > 90)) {
+            error = 'Latitude harus antara -90 dan 90.';
+        } else if (field === 'longitude' && (num < -180 || num > 180)) {
+            error = 'Longitude harus antara -180 dan 180.';
+        }
+        setLocalErrors(prev => ({ ...prev, [field]: error }));
+        return error === '';
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        const latOk = validateLatLng('latitude', data.latitude);
+        const lngOk = validateLatLng('longitude', data.longitude);
+        if (!latOk || !lngOk) return;
         put(route('admin.produk.update', item.id));
     };
 
@@ -297,12 +318,21 @@ export default function Edit({ item }) {
                                         type="text"
                                         inputMode="decimal"
                                         value={data.latitude}
-                                        onChange={e => setData('latitude', e.target.value.replace(',', '.').replace(/[^0-9.-]/g, ''))}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.latitude ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
+                                        onChange={e => {
+                                            const val = e.target.value.replace(',', '.').replace(/[^0-9.-]/g, '');
+                                            setData('latitude', val);
+                                            if (localErrors.latitude) validateLatLng('latitude', val);
+                                        }}
+                                        onBlur={e => validateLatLng('latitude', e.target.value)}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                                            (errors.latitude || localErrors.latitude) ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'
+                                        }`}
                                         placeholder="-6.200000"
-                                        required
                                     />
-                                    {errors.latitude && <p className="mt-1 text-sm text-red-600">{errors.latitude}</p>}
+                                    {(errors.latitude || localErrors.latitude) && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.latitude || localErrors.latitude}</p>
+                                    )}
+                                    <p className="mt-1 text-xs text-slate-400">Rentang valid: -90 hingga 90</p>
                                 </div>
 
                                 <div>
@@ -313,12 +343,21 @@ export default function Edit({ item }) {
                                         type="text"
                                         inputMode="decimal"
                                         value={data.longitude}
-                                        onChange={e => setData('longitude', e.target.value.replace(',', '.').replace(/[^0-9.-]/g, ''))}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.longitude ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
+                                        onChange={e => {
+                                            const val = e.target.value.replace(',', '.').replace(/[^0-9.-]/g, '');
+                                            setData('longitude', val);
+                                            if (localErrors.longitude) validateLatLng('longitude', val);
+                                        }}
+                                        onBlur={e => validateLatLng('longitude', e.target.value)}
+                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                                            (errors.longitude || localErrors.longitude) ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'
+                                        }`}
                                         placeholder="106.816666"
-                                        required
                                     />
-                                    {errors.longitude && <p className="mt-1 text-sm text-red-600">{errors.longitude}</p>}
+                                    {(errors.longitude || localErrors.longitude) && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.longitude || localErrors.longitude}</p>
+                                    )}
+                                    <p className="mt-1 text-xs text-slate-400">Rentang valid: -180 hingga 180</p>
                                 </div>
                             </div>
                         </div>

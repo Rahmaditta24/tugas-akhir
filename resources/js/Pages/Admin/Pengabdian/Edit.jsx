@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm, Link } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import LocationSelect from '../../../Components/LocationSelect';
@@ -45,8 +45,29 @@ export default function Edit({ item, filters }) {
         bidang_teknologi_inovasi: item.bidang_teknologi_inovasi || '',
     });
 
+    const [localErrors, setLocalErrors] = useState({});
+
+    const validateLatLng = (field, value) => {
+        const num = parseFloat(value);
+        let error = '';
+        if (value === '' || value === '-') {
+            error = 'Field ini wajib diisi.';
+        } else if (isNaN(num)) {
+            error = 'Harus berupa angka desimal. Contoh: -6.200000';
+        } else if (field === 'pt_latitude' && (num < -90 || num > 90)) {
+            error = 'Latitude harus antara -90 dan 90.';
+        } else if (field === 'pt_longitude' && (num < -180 || num > 180)) {
+            error = 'Longitude harus antara -180 dan 180.';
+        }
+        setLocalErrors(prev => ({ ...prev, [field]: error }));
+        return error === '';
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
+        const latOk = validateLatLng('pt_latitude', data.pt_latitude);
+        const lngOk = validateLatLng('pt_longitude', data.pt_longitude);
+        if (!latOk || !lngOk) return;
         put(route('admin.pengabdian.update', { pengabdian: item.id, ...filters }));
     };
 
@@ -473,11 +494,21 @@ export default function Edit({ item, filters }) {
                                             type="text"
                                             inputMode="decimal"
                                             value={data.pt_latitude === 0 ? '' : data.pt_latitude}
-                                            onChange={e => setData('pt_latitude', e.target.value.replace(',', '.').replace(/[^0-9.-]/g, ''))}
-                                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.pt_latitude ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                            required
+                                            onChange={e => {
+                                                const val = e.target.value.replace(',', '.').replace(/[^0-9.-]/g, '');
+                                                setData('pt_latitude', val);
+                                                if (localErrors.pt_latitude) validateLatLng('pt_latitude', val);
+                                            }}
+                                            onBlur={e => validateLatLng('pt_latitude', e.target.value)}
+                                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                                                (errors.pt_latitude || localErrors.pt_latitude) ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'
+                                            }`}
                                             placeholder="-6.1234..."
                                         />
+                                        {(errors.pt_latitude || localErrors.pt_latitude) && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.pt_latitude || localErrors.pt_latitude}</p>
+                                        )}
+                                        <p className="mt-1 text-xs text-slate-400">Rentang valid: -90 hingga 90</p>
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -487,11 +518,21 @@ export default function Edit({ item, filters }) {
                                             type="text"
                                             inputMode="decimal"
                                             value={data.pt_longitude === 0 ? '' : data.pt_longitude}
-                                            onChange={e => setData('pt_longitude', e.target.value.replace(',', '.').replace(/[^0-9.-]/g, ''))}
-                                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.pt_longitude ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                            required
+                                            onChange={e => {
+                                                const val = e.target.value.replace(',', '.').replace(/[^0-9.-]/g, '');
+                                                setData('pt_longitude', val);
+                                                if (localErrors.pt_longitude) validateLatLng('pt_longitude', val);
+                                            }}
+                                            onBlur={e => validateLatLng('pt_longitude', e.target.value)}
+                                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                                                (errors.pt_longitude || localErrors.pt_longitude) ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'
+                                            }`}
                                             placeholder="106.1234..."
                                         />
+                                        {(errors.pt_longitude || localErrors.pt_longitude) && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.pt_longitude || localErrors.pt_longitude}</p>
+                                        )}
+                                        <p className="mt-1 text-xs text-slate-400">Rentang valid: -180 hingga 180</p>
                                     </div>
                                 </div>
                             </div>

@@ -21,7 +21,7 @@ class ProdukController extends Controller
                 $q->where('nama_produk', 'like', "%{$search}%")
                     ->orWhere('institusi', 'like', "%{$search}%")
                     ->orWhere('nomor_paten', 'like', "%{$search}%")
-                    ->orWhere('detail_paten', 'like', "%{$search}%")
+                    ->orWhere('deskripsi_paten', 'like', "%{$search}%")
                     ->orWhere('bidang', 'like', "%{$search}%");
             });
         }
@@ -30,7 +30,7 @@ class ProdukController extends Controller
         $filters = $request->input('filters', []);
         if (is_array($filters)) {
             foreach ($filters as $column => $value) {
-                if (!empty($value) && in_array($column, ['nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten', 'detail_paten'])) {
+                if (!empty($value) && in_array($column, ['nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten', 'deskripsi_paten'])) {
                     $query->where($column, 'like', "%{$value}%");
                 }
             }
@@ -39,7 +39,7 @@ class ProdukController extends Controller
         $perPage = $request->input('perPage', 20);
 
         // Pengurutan
-        $allowedSorts = ['id', 'nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten', 'detail_paten'];
+        $allowedSorts = ['id', 'nama_produk', 'institusi', 'bidang', 'tkt', 'provinsi', 'nomor_paten', 'deskripsi_paten'];
         $sort = in_array($request->input('sort'), $allowedSorts, true) ? $request->input('sort') : 'id';
         $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
 
@@ -71,7 +71,7 @@ class ProdukController extends Controller
                 $item->provinsi = $this->formatProvinsi($clean($item->provinsi));
                 $item->bidang = $clean($item->bidang);
                 $item->nomor_paten = $clean($item->nomor_paten);
-                $item->detail_paten = $clean($item->detail_paten);
+                $item->deskripsi_paten = $clean($item->deskripsi_paten);
                 $item->deskripsi_produk = $clean($item->deskripsi_produk);
                 $item->email_inventor = ($item->email_inventor === 'NaN' || !$item->email_inventor) ? 'tidak tersedia' : $item->email_inventor;
 
@@ -123,7 +123,7 @@ class ProdukController extends Controller
             'nama_inventor' => ['required', 'string', 'max:255'],
             'email_inventor' => ['nullable', 'email', 'max:255'],
             'nomor_paten' => ['nullable', 'string', 'max:255'],
-            'detail_paten' => ['nullable', 'string'],
+            'deskripsi_paten' => ['nullable', 'string'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
         ]);
@@ -157,7 +157,7 @@ class ProdukController extends Controller
             'nama_inventor' => ['required', 'string', 'max:255'],
             'email_inventor' => ['nullable', 'email', 'max:255'],
             'nomor_paten' => ['nullable', 'string', 'max:255'],
-            'detail_paten' => ['nullable', 'string'],
+            'deskripsi_paten' => ['nullable', 'string'],
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
         ]);
@@ -321,7 +321,7 @@ class ProdukController extends Controller
             'nama_inventor',
             'email_inventor',
             'nomor_paten',
-            'detail_paten',
+            'deskripsi_paten',
             'latitude',
             'longitude',
             'deskripsi_produk'
@@ -400,7 +400,7 @@ class ProdukController extends Controller
                         $clean($row->nama_inventor),
                         $clean($row->email_inventor),
                         $clean($row->nomor_paten),
-                        $clean($row->detail_paten),
+                        $clean($row->deskripsi_paten),
                         $lat,
                         $lng
                     ], ';');
@@ -477,7 +477,7 @@ class ProdukController extends Controller
                 $inventorRaw = 'tidak tersedia';
                 $emailRaw = 'tidak tersedia';
                 $nomorPatenRaw = '';
-                $detailPatenRaw = '';
+                $deskripsiPatenRaw = '';
 
                 // Pencocokan kata kunci luas untuk setiap field
                 foreach ($normalizedRow as $slug => $val) {
@@ -500,7 +500,7 @@ class ProdukController extends Controller
                     if (str_contains($slug, 'namainventor') || str_contains($slug, 'inventor')) $inventorRaw = $val;
                     if (str_contains($slug, 'email')) $emailRaw = $val;
                     if (str_contains($slug, 'nomorpaten') || $slug === 'nopat') $nomorPatenRaw = $val;
-                    if (str_contains($slug, 'deskripsipaten') || str_contains($slug, 'detailpaten') || str_contains($slug, 'isipaten')) $detailPatenRaw = $val;
+                    if (str_contains($slug, 'deskripsipaten') || str_contains($slug, 'detailpaten') || str_contains($slug, 'isipaten')) $deskripsiPatenRaw = $val;
                 }
                 
                 if (empty($namaProduk) || empty($institusi)) {
@@ -528,7 +528,7 @@ class ProdukController extends Controller
                     'nama_inventor' => trim($inventorRaw),
                     'email_inventor' => trim($emailRaw),
                     'nomor_paten' => $nomorPatenRaw ?: 'tidak tersedia',
-                    'detail_paten' => $detailPatenRaw ?: 'tidak tersedia',
+                    'deskripsi_paten' => $deskripsiPatenRaw ?: 'tidak tersedia',
                 ];
 
                 $batch[] = $data;

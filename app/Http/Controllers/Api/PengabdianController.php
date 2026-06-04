@@ -73,7 +73,11 @@ class PengabdianController extends Controller
             }
 
             if ($request->filled('skema')) {
-                $query->whereIn('nama_singkat_skema', (array) $request->skema);
+                $skemaValues = (array) $request->skema;
+                $query->where(function ($q) use ($skemaValues) {
+                    $q->whereIn('nama_skema', $skemaValues)
+                      ->orWhereIn('nama_singkat_skema', $skemaValues);
+                });
             }
 
             if ($request->filled('provinsi')) {
@@ -81,7 +85,7 @@ class PengabdianController extends Controller
             }
 
             if ($request->filled('tahun')) {
-                $query->whereIn('thn_pelaksanaan_kegiatan', (array) $request->tahun);
+                $query->whereIn('thn_pelaksanaan_kegiatan', array_map('intval', (array) $request->tahun));
             }
 
             if ($request->filled('search')) {

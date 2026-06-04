@@ -71,11 +71,15 @@ export default function PermasalahanDataTable({
         }));
 
         const sheetName = tab === 'provinsi' ? 'Data Provinsi' : 'Data Kabupaten';
+        const fileName = `Data_${activeDataType.replace(/\s+/g, '_')}_${tab}_${new Date().toISOString().split('T')[0]}.xlsx`;
 
-        const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-        XLSX.writeFile(workbook, `Data_${activeDataType.replace(/\s+/g, '_')}_${tab}_${new Date().toISOString().split('T')[0]}.xlsx`);
+        // Jalankan pembuatan file di setTimeout(0) agar browser sempat merender loading state
+        setTimeout(() => {
+            const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+            XLSX.writeFile(workbook, fileName);
+        }, 0);
     };
 
     return (

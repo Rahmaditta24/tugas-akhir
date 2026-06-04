@@ -2,8 +2,8 @@ import { useState, useEffect, Suspense, lazy } from 'react';
 import MainLayout from '../Layouts/MainLayout';
 import { router } from '@inertiajs/react';
 
-import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
+import { exportToExcel } from '../Utils/exportExcel';
 import NavigationTabs from '../Components/NavigationTabs';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
@@ -41,19 +41,16 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
 
 
 
-    // Opsi filter dari server (provinsi diambil dari backend via DB/API)
     const filterOptions = {
         bidang: serverFilterOptions.bidang || ['Pangan', 'Energi', 'Kesehatan', 'Transportasi', 'Teknologi Informasi'],
-        tkt: serverFilterOptions.tkt || ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+        tkt: (serverFilterOptions.tkt || ['1', '2', '3', '4', '5', '6', '7', '8', '9']).map(String),
         provinsi: serverFilterOptions.provinsi || [],
-        tahun: ['2020', '2021', '2022', '2023', '2024'], 
     };
 
     const filterFields = [
         { label: 'Bidang', requestKey: 'bidang', optionKey: 'bidang' },
         { label: 'Tingkat Kesiapterapan Teknologi', requestKey: 'tkt', optionKey: 'tkt' },
         { label: 'Provinsi', requestKey: 'provinsi', optionKey: 'provinsi' },
-        { label: 'Tahun', requestKey: 'tahun', optionKey: 'tahun' },
     ];
 
     const handleSearch = (value) => {
@@ -162,20 +159,14 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
         const loadingToast = toast.loading('Sedang menyiapkan data Excel, mohon tunggu...', {
             position: 'top-right'
         });
-        try {
-            const queryString = new URLSearchParams(window.location.search).toString();
 
-            const response = await fetch(`/api/produk/export?${queryString}`);
-            if (!response.ok) throw new Error('Gagal mengambil data');
+        const queryString = new URLSearchParams(window.location.search).toString();
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
 
-            const allData = await response.json();
-            if (!allData || allData.length === 0) {
-                toast.error('Tidak ada data untuk diexport.');
-                setIsLoading(false);
-                return;
-            }
-
-            const exportData = allData.map(item => ({
+        await exportToExcel({
+            apiUrl: `/api/produk/export?${queryString}`,
+            mapRow: (item) => ({
                 'ID': item.id,
                 'Nama Produk': item.nama_produk || '-',
                 'Institusi': item.institusi || '-',
@@ -184,38 +175,31 @@ export default function Produk({ mapData = [], researches = [], stats = {}, titl
                 'Provinsi': item.provinsi || '-',
                 'Nama Inventor': item.nama_inventor || '-',
                 'Email Inventor': item.email_inventor || '-',
-                'Nomor Paten': item.nomor_paten ? item.nomor_paten.split(/[;.\(\,\s ]/)[0].trim() : '-',
+                'Nomor Paten': item.nomor_paten ? item.nomor_paten.split(/[;.(,\s ]/)[0].trim() : '-',
                 'Latitude': item.latitude,
                 'Longitude': item.longitude,
                 'Deskripsi': item.deskripsi_produk || '-',
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'Produk');
-            
-            // Atur lebar kolom standar
-            ws['!cols'] = [
+            }),
+            sheetName: 'Produk',
+            fileName: `data-produk${filterInfo}_${timestamp}.xlsx`,
+            colWidths: [
                 { wch: 8 }, { wch: 40 }, { wch: 40 }, { wch: 20 },
-                { wch: 8 }, { wch: 20 }, { wch: 30 }, { wch: 30 }, 
+                { wch: 8 }, { wch: 20 }, { wch: 30 }, { wch: 30 },
                 { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 60 }
-            ];
-
-            const timestamp = new Date().toISOString().slice(0, 10);
-            const filterInfo = Object.keys(filters).length > 0 ? '_filtered' : '';
-            XLSX.writeFile(wb, `data-produk${filterInfo}_${timestamp}.xlsx`);
-
-            toast.success(`Berhasil export ${exportData.length} data produk!`, {
-                duration: 4000, position: 'top-right',
-                style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
-            });
-        } catch (error) {
-            console.error('Error exporting data:', error);
-            toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' });
-        } finally {
-            toast.dismiss(loadingToast);
-            setIsLoading(false);
-        }
+            ],
+            onSuccess: (count) => {
+                toast.success(`Berhasil export ${count} data produk!`, {
+                    duration: 4000, position: 'top-right',
+                    style: { background: '#16a34a', color: '#fff', fontWeight: '500' },
+                });
+            },
+            onEmpty: () => toast.error('Tidak ada data untuk diexport.'),
+            onError: () => toast.error('Gagal mengexport data. Silakan coba lagi.', { duration: 4000, position: 'top-right' }),
+            onFinally: () => {
+                toast.dismiss(loadingToast);
+                setIsLoading(false);
+            },
+        });
     };
 
     const [filteredResearchesForMap, setFilteredResearchesForMap] = useState(researches);

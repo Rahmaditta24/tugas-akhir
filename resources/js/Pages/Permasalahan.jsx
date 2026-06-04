@@ -188,6 +188,25 @@ export default function Permasalahan({
         setShowBubbles(!showBubbles);
     };
 
+    const handleItemClick = async (research) => {
+        if (!research) return;
+        if (research.judul || research.judul_kegiatan || research.nama_produk) {
+            setSelectedResearch({ ...research, bubbleType: research.bubbleType || filters.bubbleType || 'Penelitian' });
+            return;
+        }
+        const id = research.id || research._id;
+        const type = String(research.bubbleType || filters.bubbleType || 'Penelitian').toLowerCase();
+        try {
+            const response = await fetch(`/api/research/${type}/${id}`);
+            if (response.ok) {
+                const detail = await response.json();
+                setSelectedResearch({ ...detail, bubbleType: research.bubbleType || filters.bubbleType || 'Penelitian' });
+            }
+        } catch (error) {
+            console.error('Error fetching research detail:', error);
+        }
+    };
+
     const handleViewModeChange = (mode) => {
         setViewMode(mode);
     };
@@ -212,7 +231,7 @@ export default function Permasalahan({
                         selectedMetrik={selectedMetrik}
                         onMetrikChange={setSelectedMetrik}
                         stats={stats}
-                        onItemClick={(research) => setSelectedResearch({ ...research, bubbleType: research.bubbleType || filters.bubbleType || 'Penelitian' })}
+                        onItemClick={handleItemClick}
                     />
                 </Suspense>
 
@@ -314,7 +333,7 @@ export default function Permasalahan({
                         totalCount={stats?.totalResearch || 0}
                         isFiltered={isFiltered}
                         isPermasalahanPage={true}
-                        onItemClick={(research) => setSelectedResearch({ ...research, bubbleType: research.bubbleType || filters.bubbleType || 'Penelitian' })}
+                        onItemClick={handleItemClick}
                     />
                 </div>
 

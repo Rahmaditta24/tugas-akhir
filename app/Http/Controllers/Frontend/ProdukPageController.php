@@ -76,15 +76,15 @@ class ProdukPageController extends Controller
         }
 
         if ($request->filled('bidang')) {
-            $baseQuery->where('bidang', $request->bidang);
+            $baseQuery->whereIn('bidang', (array) $request->bidang);
         }
 
         if ($request->filled('tkt')) {
-            $baseQuery->where('tkt', $request->tkt);
+            $baseQuery->whereIn('tkt', (array) $request->tkt);
         }
 
         if ($request->filled('provinsi')) {
-            $baseQuery->where('provinsi', $request->provinsi);
+            $baseQuery->whereIn('provinsi', (array) $request->provinsi);
         }
 
         $statsQ = clone $baseQuery;

@@ -71,6 +71,25 @@ class ProdukSeeder extends Seeder
                 continue;
             }
 
+            $rawPaten = $row['Nomor dan Deskripsi Paten'] ?? $row['nomor_paten'] ?? $row['No Paten'] ?? null;
+            $nomorPaten = null;
+            $deskripsiPaten = null;
+            if ($rawPaten && $rawPaten !== 'NaN') {
+                // Biasanya format "NomorPaten. Diskripsi: Teks" atau "NomorPaten, aten ini..."
+                // Regex ini akan mengambil bagian pertama sebelum titik, koma, atau spasi sebagai nomor
+                // dan sisanya akan ditaruh di deskripsi
+                if (preg_match('/^([A-Z0-9]+)[\.,\s]+(.*)$/i', trim($rawPaten), $matches)) {
+                    $nomorPaten = $matches[1];
+                    $deskripsiText = trim($matches[2]);
+                    // Hapus kata 'Diskripsi:', 'Deskripsi:', atau 'aten ini melibatkan' jika ada di awal
+                    $deskripsiText = preg_replace('/^(?:D[ei]skripsi\s*:|aten ini\s*melibatkan\s*)/i', '', $deskripsiText);
+                    $deskripsiPaten = trim($deskripsiText);
+                } else {
+                    // Jika tidak cocok, taruh semua di nomor
+                    $nomorPaten = trim(preg_split("/[;.\(\,\s]/", $rawPaten)[0] ?? '');
+                }
+            }
+
             $batch[] = [
                 'institusi' => $institusi,
                 'latitude' => isset($row['Latitude']) ? (float)$row['Latitude'] : null,
@@ -82,9 +101,8 @@ class ProdukSeeder extends Seeder
                 'bidang' => $normalize($row['Bidang'] ?? null),
                 'nama_inventor' => $normalize($row['Nama Inventor (Tanpa Gelar)'] ?? null),
                 'email_inventor' => $normalize($row['Email Inventor'] ?? null),
-                'nomor_paten' => isset($row['Nomor dan Deskripsi Paten']) && $row['Nomor dan Deskripsi Paten'] !== 'NaN' 
-                    ? trim(preg_split("/[;.\(\,\s]/", ($row['nomor_paten'] ?? $row['No Paten'] ?? $row['Nomor dan Deskripsi Paten']))[0]) 
-                    : null,
+                'nomor_paten' => $nomorPaten,
+                'deskripsi_paten' => $deskripsiPaten,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
