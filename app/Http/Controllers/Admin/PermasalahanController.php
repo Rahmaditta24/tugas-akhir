@@ -266,7 +266,7 @@ class PermasalahanController extends Controller
             }
         }
 
-        // Map UI sort key to DB column
+        // Petakan key sort UI ke kolom DB
         $dbSort = $sort;
         if ($sort === 'tahun') {
             $dbSort = match ($baseData) {

@@ -432,7 +432,7 @@ export default function Create() {
                                                     setData(prev => ({
                                                         ...prev,
                                                         bidang_teknologi_inovasi: val,
-                                                        bidang_fokus: val // Sync with bidang_fokus for Kosabangsa
+                                                        bidang_fokus: val // Sinkronisasi dengan bidang_fokus untuk Kosabangsa
                                                     }));
                                                 }}
                                                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"

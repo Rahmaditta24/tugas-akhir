@@ -45,7 +45,7 @@ export default function AdminTable({
         onSort(col.key);
     };
 
-    // --- Normalize sort and direction for internal logic ---
+    // --- Normalisasi sort dan direction untuk logika internal ---
     const effectiveSortKey = (sortKey || '').toString().trim();
     const effectiveDirection = (direction || 'desc').toString().toLowerCase().trim();
 

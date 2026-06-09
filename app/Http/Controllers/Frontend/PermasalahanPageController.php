@@ -32,49 +32,57 @@ class PermasalahanPageController extends Controller
             'Ketahanan Pangan' => ['pangan', 'makanan', 'food', 'beras', 'pertanian', 'pasokan pangan', 'padi', 'jagung', 'kedelai', 'ternak', 'ikan', 'panen', 'pupuk', 'hama', 'sawah', 'irigasi', 'tani', 'swasembada', 'benih', 'bioteknologi pangan', 'smart farming', 'diversifikasi pangan', 'produksi pangan'],
         ];
 
+        // Hash untuk semua filter yang memengaruhi stats dan list
         $filterHash = md5(json_encode($request->all()));
+        
+        // Hash KHUSUS untuk peta (karena peta tidak difilter berdasarkan dataType, search, atau queries)
+        $mapFilterHash = md5(json_encode($request->only(['bidang_fokus', 'tema_prioritas', 'provinsi', 'tahun', 'kategori_pt', 'klaster', 'skema', 'direktorat', 'batch_type'])));
 
         if ($bubbleType === 'Pengabdian') {
-            $query = Pengabdian::query();
+            // mapQuery: tanpa filter kata kunci (untuk bubble peta — tampilkan SEMUA data)
+            $mapQuery = Pengabdian::query();
 
-            // 1. Filter Khusus Pengabdian
+            // Filter Khusus Pengabdian pada mapQuery
             if ($request->filled('batch_type')) {
                 $val = $request->batch_type;
                 if (stripos($val, 'Multitahun') !== false && stripos($val, 'Batch') !== false) {
-                    $query->where('batch_type', 'like', '%batch%')
-                                 ->where('batch_type', 'not like', '%kosabangsa%');
+                    $mapQuery->where('batch_type', 'like', '%batch%')
+                             ->where('batch_type', 'not like', '%kosabangsa%');
                 } elseif (stripos($val, 'Kosabangsa') !== false) {
-                    $query->where(function ($q) {
+                    $mapQuery->where(function ($q) {
                         $q->where('batch_type', 'like', '%Kosabangsa%')->orWhere('nama_skema', 'like', '%Kosabangsa%');
                     });
                 }
             }
+            if ($request->filled('bidang_fokus')) $mapQuery->whereIn('bidang_fokus', (array) $request->bidang_fokus);
+            if ($request->filled('provinsi')) $mapQuery->whereIn('prov_pt', (array) $request->provinsi);
+            if ($request->filled('tahun')) $mapQuery->whereIn('thn_pelaksanaan_kegiatan', (array) $request->tahun);
+            if ($request->filled('skema')) $mapQuery->whereIn('nama_skema', (array) $request->skema);
 
-            // 2. Filter Standar
-            if ($request->filled('bidang_fokus')) $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
-            if ($request->filled('provinsi')) $query->whereIn('prov_pt', (array) $request->provinsi);
-            if ($request->filled('tahun')) $query->whereIn('thn_pelaksanaan_kegiatan', (array) $request->tahun);
-            if ($request->filled('skema')) $query->whereIn('nama_skema', (array) $request->skema);
+            // query: dengan filter kata kunci (untuk daftar & statistik)
+            $query = clone $mapQuery;
 
-            // 3. Filter Kata Kunci Permasalahan (dataType)
+            // 1. Filter Khusus Pengabdian (sudah diterapkan di mapQuery di atas)
+
+            // 2. Filter Kata Kunci Permasalahan (dataType) — hanya pada $query
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 $regex = isset($keywordsMap[$dataType]) ? implode('|', array_map('preg_quote', $keywordsMap[$dataType])) : preg_quote($dataType);
                 $q->whereRaw("judul REGEXP ?", [$regex])->orWhereRaw("bidang_fokus REGEXP ?", [$regex]);
             });
 
-            // 4. Pencarian Lanjutan (search & queries)
+            // 3. Pencarian Lanjutan (search & queries) — hanya pada $query
             if ($request->filled('search')) $query->search($request->search);
             $this->applyAdvancedQueries($query, $request, $bubbleType);
 
-            // 5. Output
-            $statsQuery = clone $query;
+            // 4. Output
+            $statsQuery = clone $mapQuery;
             $researches = (clone $query)->orderByDesc('thn_pelaksanaan_kegiatan')->limit(50)->get();
 
             $v = (int) Cache::get('permasalahan_cache_version', 1);
-            $mapCacheKey = "permasalahan_map_pengabdian_v{$v}_{$filterHash}";
-            $mapData = Cache::remember($mapCacheKey, 3600, function () use ($query) {
+            $mapCacheKey = "permasalahan_map_pengabdian_v{$v}_{$mapFilterHash}";
+            $mapData = Cache::remember($mapCacheKey, 3600, function () use ($mapQuery) {
                 DB::statement('SET SESSION group_concat_max_len = 1000000');
-                return (clone $query)->select(
+                return (clone $mapQuery)->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as ids')
@@ -88,33 +96,37 @@ class PermasalahanPageController extends Controller
             });
 
         } elseif ($bubbleType === 'Hilirisasi') {
-            $query = Hilirisasi::query();
+            // mapQuery: tanpa filter kata kunci (untuk bubble peta — tampilkan SEMUA data)
+            $mapQuery = Hilirisasi::query();
 
-            // 1. Filter Standar
-            if ($request->filled('provinsi')) $query->whereIn('provinsi', (array) $request->provinsi);
-            if ($request->filled('tahun')) $query->whereIn('tahun', (array) $request->tahun);
-            if ($request->filled('skema')) $query->whereIn('skema', (array) $request->skema);
-            if ($request->filled('direktorat')) $query->whereIn('direktorat', (array) $request->direktorat);
+            // Filter Standar pada mapQuery
+            if ($request->filled('provinsi')) $mapQuery->whereIn('provinsi', (array) $request->provinsi);
+            if ($request->filled('tahun')) $mapQuery->whereIn('tahun', (array) $request->tahun);
+            if ($request->filled('skema')) $mapQuery->whereIn('skema', (array) $request->skema);
+            if ($request->filled('direktorat')) $mapQuery->whereIn('direktorat', (array) $request->direktorat);
 
-            // 2. Filter Kata Kunci Permasalahan (dataType)
+            // query: dengan filter kata kunci (untuk daftar & statistik)
+            $query = clone $mapQuery;
+
+            // Filter Kata Kunci Permasalahan (dataType) — hanya pada $query
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 $regex = isset($keywordsMap[$dataType]) ? implode('|', array_map('preg_quote', $keywordsMap[$dataType])) : preg_quote($dataType);
                 $q->whereRaw("judul REGEXP ?", [$regex]);
             });
 
-            // 3. Pencarian Lanjutan (search & queries)
+            // Pencarian Lanjutan (search & queries) — hanya pada $query
             if ($request->filled('search')) $query->search($request->search);
             $this->applyAdvancedQueries($query, $request, $bubbleType);
 
-            // 4. Output
-            $statsQuery = clone $query;
+            // Output
+            $statsQuery = clone $mapQuery;
             $researches = (clone $query)->orderByDesc('tahun')->limit(50)->get();
 
             $v = (int) Cache::get('permasalahan_cache_version', 1);
-            $mapCacheKey = "permasalahan_map_hilirisasi_v{$v}_{$filterHash}";
-            $mapData = Cache::remember($mapCacheKey, 3600, function () use ($query) {
+            $mapCacheKey = "permasalahan_map_hilirisasi_v{$v}_{$mapFilterHash}";
+            $mapData = Cache::remember($mapCacheKey, 3600, function () use ($mapQuery) {
                 DB::statement('SET SESSION group_concat_max_len = 1000000');
-                return (clone $query)->select(
+                return (clone $mapQuery)->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as ids')
@@ -128,35 +140,39 @@ class PermasalahanPageController extends Controller
             });
 
         } else {
-            $query = Penelitian::query()->whereNotNull('judul')->where('judul', '!=', '');
+            // mapQuery: tanpa filter kata kunci (untuk bubble peta — tampilkan SEMUA data)
+            $mapQuery = Penelitian::query()->whereNotNull('judul')->where('judul', '!=', '');
 
-            // 1. Filter Standar
-            if ($request->filled('bidang_fokus')) $query->whereIn('bidang_fokus', (array) $request->bidang_fokus);
-            if ($request->filled('tema_prioritas')) $query->whereIn('tema_prioritas', (array) $request->tema_prioritas);
-            if ($request->filled('provinsi')) $query->whereIn('provinsi', (array) $request->provinsi);
-            if ($request->filled('tahun')) $query->whereIn('thn_pelaksanaan', (array) $request->tahun);
-            if ($request->filled('kategori_pt')) $query->whereIn('kategori_pt', (array) $request->kategori_pt);
-            if ($request->filled('klaster')) $query->whereIn('klaster', (array) $request->klaster);
+            // Filter Standar pada mapQuery
+            if ($request->filled('bidang_fokus')) $mapQuery->whereIn('bidang_fokus', (array) $request->bidang_fokus);
+            if ($request->filled('tema_prioritas')) $mapQuery->whereIn('tema_prioritas', (array) $request->tema_prioritas);
+            if ($request->filled('provinsi')) $mapQuery->whereIn('provinsi', (array) $request->provinsi);
+            if ($request->filled('tahun')) $mapQuery->whereIn('thn_pelaksanaan', (array) $request->tahun);
+            if ($request->filled('kategori_pt')) $mapQuery->whereIn('kategori_pt', (array) $request->kategori_pt);
+            if ($request->filled('klaster')) $mapQuery->whereIn('klaster', (array) $request->klaster);
 
-            // 2. Filter Kata Kunci Permasalahan (dataType)
+            // query: dengan filter kata kunci (untuk daftar & statistik)
+            $query = clone $mapQuery;
+
+            // Filter Kata Kunci Permasalahan (dataType) — hanya pada $query
             $query->where(function ($q) use ($dataType, $keywordsMap) {
                 $regex = isset($keywordsMap[$dataType]) ? implode('|', array_map('preg_quote', $keywordsMap[$dataType])) : preg_quote($dataType);
                 $q->whereRaw("judul REGEXP ?", [$regex]);
             });
 
-            // 3. Pencarian Lanjutan (search & queries)
+            // Pencarian Lanjutan (search & queries) — hanya pada $query
             if ($request->filled('search')) $query->search($request->search);
             $this->applyAdvancedQueries($query, $request, $bubbleType);
 
-            // 4. Output
-            $statsQuery = clone $query;
+            // Output
+            $statsQuery = clone $mapQuery;
             $researches = (clone $query)->orderByDesc('thn_pelaksanaan')->limit(50)->get();
 
             $v = (int) Cache::get('permasalahan_cache_version', 1);
-            $mapCacheKey = "permasalahan_map_penelitian_v{$v}_{$filterHash}";
-            $mapData = Cache::remember($mapCacheKey, 3600, function () use ($query) {
+            $mapCacheKey = "permasalahan_map_penelitian_v{$v}_{$mapFilterHash}";
+            $mapData = Cache::remember($mapCacheKey, 3600, function () use ($mapQuery) {
                 DB::statement('SET SESSION group_concat_max_len = 1000000');
-                return (clone $query)->select(
+                return (clone $mapQuery)->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as ids')
@@ -170,9 +186,8 @@ class PermasalahanPageController extends Controller
             });
         }
 
-        // Buat cache key yang mencerminkan semua filter aktif agar stats selalu akurat
-        $filterHash = md5(json_encode($request->only(['bidang_fokus', 'tema_prioritas', 'provinsi', 'tahun', 'kategori_pt', 'klaster', 'skema', 'direktorat', 'batch_type', 'queries'])));
-        $stats = Cache::remember("perm_stats_{$bubbleType}_{$filterHash}", 3600, function () use ($statsQuery, $bubbleType) {
+        // Buat cache key yang mencerminkan filter standar untuk stats agar sesuai dengan peta
+        $stats = Cache::remember("perm_stats_{$bubbleType}_{$mapFilterHash}", 3600, function () use ($statsQuery, $bubbleType) {
             if ($bubbleType === 'Hilirisasi')
                 return ['totalResearch' => (clone $statsQuery)->count(), 'totalUniversities' => (clone $statsQuery)->distinct('perguruan_tinggi')->count('perguruan_tinggi'), 'totalProvinces' => (clone $statsQuery)->distinct('provinsi')->count('provinsi'), 'totalFields' => 0];
             if ($bubbleType === 'Pengabdian')
@@ -271,7 +286,7 @@ class PermasalahanPageController extends Controller
 
         return Inertia::render('Permasalahan', [
             'mapData' => $mapData,
-            'totalMapMarkers' => (clone $query)->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count(),
+            'totalMapMarkers' => (clone $mapQuery)->whereNotNull('pt_latitude')->whereNotNull('pt_longitude')->count(),
             'permasalahanStats' => $permasalahanStats,
             'permasalahanKabupatenStats' => $permasalahanKabupatenStats,
             'jenisPermasalahan' => array_keys($permasalahanStats),

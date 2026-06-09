@@ -157,7 +157,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
         const range = XLSX.utils.decode_range(ws['!ref']);
         for (let R = range.s.r + 1; R <= range.e.r; ++R) {
             ['B'].forEach(col => {
-                const cell = ws[col + (R + 1)]; // id_proposal as string usually better
+                const cell = ws[col + (R + 1)]; // id_proposal sebagai string biasanya lebih baik
                 if (cell) {
                     cell.t = 's';
                     cell.z = '@';
@@ -213,7 +213,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                 const missingColumns = requiredColumns.filter(col => {
                     const normalizedCol = col.toLowerCase().replace(/\s+/g, '_');
                     return !firstRowKeys.includes(normalizedCol) &&
-                        !firstRowKeys.includes(normalizedCol.replace('_', '')); // tolerance for idproposal
+                        !firstRowKeys.includes(normalizedCol.replace('_', '')); // toleransi untuk idproposal
                 });
 
                 if (missingColumns.length > 0) {

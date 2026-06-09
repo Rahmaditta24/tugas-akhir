@@ -9,7 +9,7 @@ export default function Dashboard({ stats = {} }) {
     const [liveStats, setLiveStats] = useState(stats);
     const [lastUpdated, setLastUpdated] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [trend, setTrend] = useState([]); // simple in-memory points for sparkline
+    const [trend, setTrend] = useState([]); // titik in-memory sederhana untuk sparkline
     const [breakdown, setBreakdown] = useState(null);
 
     useEffect(() => {

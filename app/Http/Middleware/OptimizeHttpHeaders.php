@@ -16,7 +16,7 @@ class OptimizeHttpHeaders
 
         // Tambahkan header cache untuk aset statis
         if ($request->path() !== '/' && (str_contains($request->path(), '/build/') || str_contains($request->path(), '/storage/'))) {
-            $response->headers->set('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year for versioned assets
+            $response->headers->set('Cache-Control', 'public, max-age=31536000, immutable'); // 1 tahun untuk asset dengan versi
         }
         
         // Tambahkan header cache untuk respons API (24 jam untuk data permasalahan)

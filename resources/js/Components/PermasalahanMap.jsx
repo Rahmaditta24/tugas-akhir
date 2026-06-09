@@ -547,9 +547,10 @@ export default function PermasalahanMap({
             return;
         }
 
-        // 2. Tampilkan gelembung dari cache (jika data tidak berubah)
-        const dataKey = mapData.length + (mapData[0]?.id || mapData[0]?._id || '');
-        if (clusterGroupRef.current && lastMapDataRef.current === dataKey && lastActiveDataTypeRef.current === activeDataType) {
+        // 2. Tampilkan gelembung dari cache (jika mapData tidak berubah)
+        // Gunakan ids dari item pertama sebagai bagian dari key agar lebih stabil
+        const dataKey = mapData.length + '|' + (mapData[0]?.ids?.slice(0, 20) || '');
+        if (clusterGroupRef.current && lastMapDataRef.current === dataKey) {
             if (!mapInstanceRef.current.hasLayer(clusterGroupRef.current)) {
                 clusterGroupRef.current.addTo(mapInstanceRef.current);
                 if (geoJsonLayerRef.current) geoJsonLayerRef.current.bringToBack();
@@ -563,7 +564,6 @@ export default function PermasalahanMap({
         }
         clusterGroupRef.current = null;
         lastMapDataRef.current = dataKey;
-        lastActiveDataTypeRef.current = activeDataType;
 
         if (!mapData.length) return;
 
@@ -703,7 +703,11 @@ export default function PermasalahanMap({
             isActive = false;
             timeoutIds.forEach(clearTimeout);
         };
-    }, [mapData, showBubbles, activeDataType]);
+    // activeDataType SENGAJA tidak dimasukkan sebagai dependency:
+    // mapData sudah tidak difilter berdasarkan dataType di backend,
+    // sehingga jumlah bubble (65.991) tetap sama di semua kategori permasalahan.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mapData, showBubbles]);
 
     return (
         <section className="relative bg-white flex justify-center mb-2">

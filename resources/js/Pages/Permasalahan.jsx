@@ -164,11 +164,20 @@ export default function Permasalahan({
             if (params[key] === '' || params[key] === null) delete params[key];
         });
 
+        // mapData hanya terpengaruh jika bubbleType atau filter riset (bukan dataType) berubah.
+        // Jika hanya dataType yang berubah, skip reload mapData agar jumlah bubble tetap konsisten.
+        const researchFilterKeys = ['bidang_fokus', 'tema_prioritas', 'provinsi', 'tahun', 'kategori_pt', 'klaster', 'skema', 'direktorat', 'batch_type'];
+        const bubbleTypeChanged = newFilters.bubbleType !== filters.bubbleType;
+        const researchFilterChanged = researchFilterKeys.some(k => (newFilters[k] || '') !== (filters[k] || ''));
+        const mapDataAffected = bubbleTypeChanged || researchFilterChanged;
+
         router.get(window.location.pathname, params, {
             preserveState: true,
             preserveScroll: true,
             replace: true,
-            only: ['mapData', 'researches', 'stats', 'permasalahanStats', 'permasalahanKabupatenStats'],
+            only: mapDataAffected
+                ? ['mapData', 'researches', 'stats', 'permasalahanStats', 'permasalahanKabupatenStats']
+                : ['researches', 'stats', 'permasalahanStats', 'permasalahanKabupatenStats'],
         });
     };
 

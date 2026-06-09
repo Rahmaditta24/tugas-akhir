@@ -33,7 +33,7 @@ class AdminStatsController extends Controller
 
     public function permasalahanBreakdown()
     {
-        // Aggregate by jenis_permasalahan across provinsi and kabupaten
+        // Agregasi berdasarkan jenis_permasalahan di seluruh provinsi dan kabupaten
         $prov = PermasalahanProvinsi::query()
             ->selectRaw('jenis_permasalahan, COUNT(*) as count')
             ->groupBy('jenis_permasalahan')

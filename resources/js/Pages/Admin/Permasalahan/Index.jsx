@@ -32,7 +32,7 @@ export default function Index({
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
 
-    // Debounce Column Filters (Keystrokes in table headers)
+    // Debounce Filter Kolom (Ketikan di header tabel)
     useEffect(() => {
         const handler = setTimeout(() => {
             const hasChanged = JSON.stringify(localColumnFilters) !== JSON.stringify(columnFilters);
@@ -211,7 +211,7 @@ export default function Index({
         });
     };
 
-    // Helper to get formatted value (standardizing column names)
+    // Helper untuk mendapatkan nilai yang diformat (menstandarkan nama kolom)
     const getVal = (item, key) => {
         if (key === 'judul') return display(item.judul);
         if (key === 'peneliti') return display(item.nama || item.nama_pengusul || item.peneliti);
@@ -523,7 +523,7 @@ export default function Index({
                 data={selectedItem ? {
                     ...selectedItem,
                     currentDataType: baseData,
-                    // Map common fields to specific ones expected by ResearchModal for consistency
+                    // Petakan field umum ke field spesifik yang diharapkan oleh ResearchModal untuk konsistensi
                     pengabdian_nama: selectedItem.nama || selectedItem.nama_pengusul || selectedItem.pengabdian_nama,
                     pengabdian_institusi: selectedItem.nama_institusi || selectedItem.institusi || selectedItem.perguruan_tinggi || selectedItem.pengabdian_institusi,
                     pengabdian_status_pt: selectedItem.status_pt || selectedItem.ptn_pts || selectedItem.pengabdian_status_pt,
@@ -544,7 +544,7 @@ export default function Index({
     );
 }
 
-// Internal Pagination Component for cleaner main component
+// Komponen Pagination Internal agar komponen utama lebih bersih
 function Pagination({ data }) {
     if ((data.last_page || 1) <= 1) return null;
     return (
