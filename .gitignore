@@ -15,7 +15,7 @@
 /bootstrap/cache/*
 !bootstrap/cache/.gitkeep
 /node_modules
-# /public/build
+/public/build
 /public/hot
 /public/storage
 /storage/logs/*

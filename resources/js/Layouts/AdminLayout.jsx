@@ -8,6 +8,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [toast, setToast] = useState(null);
+    const [location, setLocation] = useState('Memuat lokasi...');
 
     // Pesan flash
     useEffect(() => {
@@ -17,6 +18,30 @@ export default function AdminLayout({ title = 'Admin', children }) {
             setToast({ message: props.flash.error, type: 'error' });
         }
     }, [props.flash]);
+
+    // Lokasi
+    useEffect(() => {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    try {
+                        const { latitude, longitude } = position.coords;
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                        const data = await response.json();
+                        const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || data.address?.state || 'Lokasi ditemukan';
+                        setLocation(city);
+                    } catch (error) {
+                        setLocation('Gagal memuat lokasi');
+                    }
+                },
+                (error) => {
+                    setLocation('Akses lokasi ditolak');
+                }
+            );
+        } else {
+            setLocation('Browser tidak mendukung');
+        }
+    }, []);
 
     // Tutup dropdown saat mengklik di luar area
     useEffect(() => {
@@ -42,6 +67,8 @@ export default function AdminLayout({ title = 'Admin', children }) {
         { name: 'Fasilitas Lab', href: '/admin/fasilitas-lab', icon: '🧪' },
         { name: 'Permasalahan', href: '/admin/permasalahan', icon: '⚠️' },
         { name: 'Rumusan Masalah', href: '/admin/rumusan-masalah/categories', icon: '📋' },
+        { type: 'divider', label: 'Sistem' },
+        { name: 'User Logs', href: '/admin/user-logs', icon: '🔐' },
     ];
 
     const handleLogout = (e) => {
@@ -86,9 +113,18 @@ export default function AdminLayout({ title = 'Admin', children }) {
                         </div>
 
                         {/* Kanan: Menu Pengguna */}
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 sm:gap-4">
+                            {/* Lokasi */}
+                            <div className="hidden sm:flex items-center gap-1.5 text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
+                                <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="font-medium">{location}</span>
+                            </div>
+
                             {/* Dropdown Pengguna */}
-                            <div className="relative ml-2">
+                            <div className="relative ml-0 sm:ml-2">
                                 <button
                                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                     className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-100 transition-colors group"
@@ -139,7 +175,20 @@ export default function AdminLayout({ title = 'Admin', children }) {
                     } lg:translate-x-0 fixed left-0 top-16 bottom-0 z-30 w-64 bg-white/95 backdrop-blur border-r border-slate-200/60 transform transition-transform duration-300 ease-in-out`}>
                     <div className="h-full flex flex-col pt-4 pb-4 overflow-y-auto">
                         <nav className="flex-1 px-3 space-y-1">
-                            {navigation.map((item) => {
+                            {navigation.map((item, index) => {
+                                if (item.type === 'divider') {
+                                    return (
+                                        <div key={`divider-${index}`} className="pt-4 pb-1">
+                                            <div className="border-t border-slate-200/60 mb-2"></div>
+                                            {item.label && (
+                                                <span className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                                    {item.label}
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                }
+
                                 const active = isActive(item.href);
                                 return (
                                     <Link

@@ -14,6 +14,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RumusanMasalahCategoryController;
 use App\Http\Controllers\Admin\RumusanMasalahStatementController;
+use App\Http\Controllers\Admin\UserLogController;
 
 Route::get('/', [PenelitianPageController::class, 'index'])->name('penelitian.index');
 
@@ -35,6 +36,12 @@ Route::get('/rumusan-masalah/panduan', [RumusanMasalahPageController::class, 'pa
 Route::get('/admin/login', [LoginController::class, 'showLogin'])->name('login');
 Route::post('/admin/login', [LoginController::class, 'login'])->name('login.attempt');
 Route::post('/admin/logout', [LoginController::class, 'logout'])->name('logout');
+
+// Password Reset Routes
+Route::get('/admin/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'create'])->middleware('guest')->name('password.request');
+Route::post('/admin/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'store'])->middleware('guest')->name('password.email');
+Route::get('/admin/reset-password/{token}', [\App\Http\Controllers\Auth\NewPasswordController::class, 'create'])->middleware('guest')->name('password.reset');
+Route::post('/admin/reset-password', [\App\Http\Controllers\Auth\NewPasswordController::class, 'store'])->middleware('guest')->name('password.store');
 
 
 // Smart /admin entry: show login if guest, dashboard if authenticated
@@ -134,4 +141,12 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
         Route::delete('/categories/{slug}/statements/{id}', [RumusanMasalahStatementController::class, 'destroy'])
             ->name('category.statements.destroy');
     });
+
+    // User Logs
+    Route::get('user-logs', [UserLogController::class, 'index'])->name('user-logs.index');
+    Route::delete('user-logs/{id}/kill-session', [UserLogController::class, 'killSession'])->name('user-logs.kill-session');
+
+    // Admin realtime stats for dashboard
+    Route::get('stats', [\App\Http\Controllers\Api\AdminStatsController::class, 'index'])->name('stats.index');
+    Route::get('permasalahan-breakdown', [\App\Http\Controllers\Api\AdminStatsController::class, 'permasalahanBreakdown'])->name('stats.breakdown');
 });

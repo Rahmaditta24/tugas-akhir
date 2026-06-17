@@ -1,14 +1,65 @@
-import { useState } from 'react';
-import { useForm, Head } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { useForm, Head, Link } from '@inertiajs/react';
 
 export default function Login({ errors, status }) {
     const { data, setData, post, processing } = useForm({
         email: '',
         password: '',
         remember: false,
+        location: null,
+        latitude: null,
+        longitude: null,
+        public_ip: null,
     });
 
     const [showPassword, setShowPassword] = useState(false);
+    const [countdown, setCountdown] = useState(null);
+
+    useEffect(() => {
+        if (errors?.retry_after) {
+            setCountdown(parseInt(errors.retry_after));
+        }
+    }, [errors?.retry_after]);
+
+    useEffect(() => {
+        if (countdown !== null && countdown > 0) {
+            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+            return () => clearTimeout(timer);
+        } else if (countdown === 0) {
+            setCountdown(null);
+            // Optionally clear the error so the user knows they can try again
+        }
+    }, [countdown]);
+
+    useEffect(() => {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    try {
+                        const { latitude, longitude } = position.coords;
+                        setData(prev => ({ ...prev, latitude, longitude }));
+                        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+                        const result = await response.json();
+                        const city = result.address?.city || result.address?.town || result.address?.village || result.address?.county || result.address?.state || 'Lokasi ditemukan';
+                        setData(prev => ({ ...prev, location: city }));
+                    } catch (error) {
+                        console.error('Failed to get location from API');
+                    }
+                },
+                (error) => {
+                    console.error('Geolocation permission denied');
+                }
+            );
+        }
+
+        // Fetch public IP
+        fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(data => {
+                setData(prevData => ({ ...prevData, public_ip: data.ip }));
+            })
+            .catch(err => console.error('Failed to fetch public IP'));
+    }, []);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -59,8 +110,18 @@ export default function Login({ errors, status }) {
                             required
                             autoFocus
                         />
-                        {errors?.email && (
+                        {errors?.email && !countdown && (
                             <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                        )}
+                        {countdown !== null && (
+                            <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+                                <svg className="w-5 h-5 text-red-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p className="text-sm text-red-700 font-medium">
+                                    Terlalu banyak percobaan. Coba lagi dalam <span className="font-bold text-red-600 text-base">{countdown}</span> detik.
+                                </p>
+                            </div>
                         )}
                     </div>
 
@@ -104,7 +165,7 @@ export default function Login({ errors, status }) {
                         )}
                     </div>
 
-                    {/* Remember Me */}
+                    {/* Remember Me & Forgot Password */}
                     <div className="flex items-center justify-between mb-6">
                         <label className="flex items-center gap-2 cursor-pointer group">
                             <input
@@ -115,13 +176,23 @@ export default function Login({ errors, status }) {
                             />
                             <span className="text-sm text-slate-600 group-hover:text-slate-800 transition-colors">Ingat Saya</span>
                         </label>
+                        <Link
+                            href={route('password.request')}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                        >
+                            Lupa Password?
+                        </Link>
                     </div>
 
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        disabled={processing}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 sm:py-3 rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-70 disabled:cursor-not-allowed text-base"
+                        disabled={processing || countdown !== null}
+                        className={`w-full py-2.5 rounded-lg text-white font-semibold transition-colors mt-6 sm:mt-8 
+                            ${processing || countdown !== null
+                                ? 'bg-slate-400 cursor-not-allowed'
+                                : 'bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg'
+                            }`}
                     >
                         {processing ? (
                             <div className="flex items-center justify-center gap-2">
@@ -131,7 +202,7 @@ export default function Login({ errors, status }) {
                                 </svg>
                                 <span>Memproses...</span>
                             </div>
-                        ) : 'Masuk Dashboard'}
+                        ) : (countdown !== null ? 'Harap Tunggu...' : 'Masuk Dashboard')}
                     </button>
                 </form>
 

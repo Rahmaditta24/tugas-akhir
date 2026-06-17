@@ -16,7 +16,7 @@ export default function Dashboard({ stats = {} }) {
         let isMounted = true;
         async function fetchStats() {
             try {
-                const res = await fetch('/api/admin/stats', { cache: 'no-store' });
+                const res = await fetch('/admin/stats', { cache: 'no-store' });
                 if (!res.ok) return;
                 const data = await res.json();
                 if (isMounted) {
@@ -32,7 +32,7 @@ export default function Dashboard({ stats = {} }) {
         }
         async function fetchBreakdown() {
             try {
-                const res = await fetch('/api/admin/permasalahan-breakdown', { cache: 'no-store' });
+                const res = await fetch('/admin/permasalahan-breakdown', { cache: 'no-store' });
                 if (!res.ok) return;
                 const data = await res.json();
                 if (isMounted) setBreakdown(data.data || {});

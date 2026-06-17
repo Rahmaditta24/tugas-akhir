@@ -80,9 +80,5 @@ Route::get('/health', function () {
     ]);
 });
 
-// Admin realtime stats (no worker)
-Route::get('/admin/stats', [AdminStatsController::class, 'index']);
-Route::get('/admin/permasalahan-breakdown', [AdminStatsController::class, 'permasalahanBreakdown']);
-
 // Rumusan Masalah API (single endpoint)
 Route::get('/rumusan-masalah', [RumusanMasalahApiController::class, 'index']);
