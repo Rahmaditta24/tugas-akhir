@@ -3,6 +3,7 @@ import { useForm, Link } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import LocationSelect from '../../../Components/LocationSelect';
 import CampusSelect from '../../../Components/CampusSelect';
+import MapLocationPicker from '../../../Components/MapLocationPicker';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
@@ -474,54 +475,22 @@ export default function Create() {
                                             label="Lokasi Mitra"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                            Latitude <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={data.pt_latitude}
-                                            onChange={e => {
-                                                const val = e.target.value.replace(',', '.').replace(/[^0-9.-]/g, '');
-                                                setData('pt_latitude', val);
-                                                if (localErrors.pt_latitude) validateLatLng('pt_latitude', val);
-                                            }}
-                                            onBlur={e => validateLatLng('pt_latitude', e.target.value)}
-                                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                                                (errors.pt_latitude || localErrors.pt_latitude) ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'
-                                            }`}
-                                            placeholder="-6.1234..."
-                                        />
-                                        {(errors.pt_latitude || localErrors.pt_latitude) && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.pt_latitude || localErrors.pt_latitude}</p>
-                                        )}
-                                        <p className="mt-1 text-xs text-slate-400">Rentang valid: -90 hingga 90</p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                            Longitude <span className="text-red-500">*</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            inputMode="decimal"
-                                            value={data.pt_longitude}
-                                            onChange={e => {
-                                                const val = e.target.value.replace(',', '.').replace(/[^0-9.-]/g, '');
-                                                setData('pt_longitude', val);
-                                                if (localErrors.pt_longitude) validateLatLng('pt_longitude', val);
-                                            }}
-                                            onBlur={e => validateLatLng('pt_longitude', e.target.value)}
-                                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                                                (errors.pt_longitude || localErrors.pt_longitude) ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'
-                                            }`}
-                                            placeholder="106.1234..."
-                                        />
-                                        {(errors.pt_longitude || localErrors.pt_longitude) && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.pt_longitude || localErrors.pt_longitude}</p>
-                                        )}
-                                        <p className="mt-1 text-xs text-slate-400">Rentang valid: -180 hingga 180</p>
-                                    </div>
+                                    <MapLocationPicker 
+                                        latitude={data.pt_latitude}
+                                        longitude={data.pt_longitude}
+                                        onLatitudeChange={val => {
+                                            setData('pt_latitude', val);
+                                            if (localErrors.pt_latitude) validateLatLng('pt_latitude', val);
+                                        }}
+                                        onLongitudeChange={val => {
+                                            setData('pt_longitude', val);
+                                            if (localErrors.pt_longitude) validateLatLng('pt_longitude', val);
+                                        }}
+                                        latError={errors.pt_latitude || localErrors.pt_latitude}
+                                        lngError={errors.pt_longitude || localErrors.pt_longitude}
+                                        onLatBlur={e => validateLatLng('pt_latitude', e.target.value)}
+                                        onLngBlur={e => validateLatLng('pt_longitude', e.target.value)}
+                                    />
                                 </div>
                             </div>
                         </div>
