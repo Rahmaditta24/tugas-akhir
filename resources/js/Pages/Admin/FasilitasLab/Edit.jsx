@@ -240,7 +240,7 @@ export default function Edit({ item, filters }) {
                                         onChange={e => setData('deskripsi_alat', e.target.value)}
                                         rows="6"
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.deskripsi_alat ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        placeholder="Tidak ada deskripsinya"
+                                        placeholder="1. Deskripsi 1&#10;2. Deskripsi 2&#10;3. Deskripsi 3"
                                     />
                                     {errors.deskripsi_alat && <p className="mt-1 text-sm text-red-600">{errors.deskripsi_alat}</p>}
                                 </div>

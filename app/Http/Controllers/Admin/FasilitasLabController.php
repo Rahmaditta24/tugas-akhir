@@ -359,7 +359,7 @@ class FasilitasLabController extends Controller
             $namaLab = trim($normalizedRow['namalaboratorium'] ?? $normalizedRow['laboratorium'] ?? '');
             $institusi = trim($normalizedRow['institusi'] ?? $normalizedRow['namainstitusi'] ?? '');
             
-            // Validasi Ketat
+            // Validasi baris kolom
             if (empty($namaLab)) { $errors[] = "Baris #{$rowNum}: Kolom 'Nama Laboratorium' wajib diisi."; continue; }
             if (empty($institusi)) { $errors[] = "Baris #{$rowNum}: Kolom 'Institusi' wajib diisi."; continue; }
 

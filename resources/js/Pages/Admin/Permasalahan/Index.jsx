@@ -32,7 +32,7 @@ export default function Index({
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
 
-    // Debounce Filter Kolom (Ketikan di header tabel)
+    // Debounce Filter Kolom 
     useEffect(() => {
         const handler = setTimeout(() => {
             const hasChanged = JSON.stringify(localColumnFilters) !== JSON.stringify(columnFilters);

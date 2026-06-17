@@ -213,8 +213,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                 const missingColumns = requiredColumns.filter(col => {
                     const normalizedCol = col.toLowerCase().replace(/\s+/g, '_');
                     return !firstRowKeys.includes(normalizedCol) &&
-                        !firstRowKeys.includes(normalizedCol.replace('_', '')); // toleransi untuk idproposal
-                });
+                        !firstRowKeys.includes(normalizedCol.replace('_', ''));                });
 
                 if (missingColumns.length > 0) {
                     toast.error(`Gagal: Kolom tidak lengkap. Kurang kolom: ${missingColumns.join(', ')}`, { duration: 5000 });
