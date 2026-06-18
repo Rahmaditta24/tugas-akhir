@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
 import { useForm, Link } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import LocationSelect from '../../../Components/LocationSelect';
 import CampusSelect from '../../../Components/CampusSelect';
 import MapLocationPicker from '../../../Components/MapLocationPicker';
+import { NAMA_SINGKAT_SKEMA_PENGABDIAN_OPTIONS, NAMA_SKEMA_PENGABDIAN_OPTIONS } from '../../../Constants/options';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
@@ -102,28 +104,15 @@ export default function Create() {
                                     <label className="block text-sm font-semibold text-slate-700 mb-2">
                                         Jenis Batch / Program <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={data.batch_type}
-                                        onChange={e => {
-                                            const val = e.target.value;
-                                            setData(d => ({
-                                                ...d,
-                                                batch_type: val,
-                                                ...(val === 'kosabangsa' ? {
-                                                    nama_skema: 'Kosabangsa',
-                                                    nama_singkat_skema: 'Kosabangsa'
-                                                } : {
-                                                    nama_skema: '',
-                                                    nama_singkat_skema: ''
-                                                })
-                                            }));
-                                        }}
-                                        className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                                        required
-                                    >
-                                        <option value="batch">Multitahun, Batch I & Batch II</option>
-                                        <option value="kosabangsa">Kosabangsa</option>
-                                    </select>
+                                    <CustomSelect
+    value={data.batch_type}
+    onChange={val => setData('batch_type', val)}
+    options={[{ value: "batch", label: "Multitahun, Batch I & Batch II" }, { value: "kosabangsa", label: "Kosabangsa" }]}
+    placeholder={"-- Pilih --"}
+    error={false}
+    disabled={false}
+    
+/>
                                     {errors.batch_type && <p className="mt-1 text-sm text-red-600">{errors.batch_type}</p>}
                                 </div>
                             </div>
@@ -219,15 +208,15 @@ export default function Create() {
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">PTN / PTS</label>
-                                            <select
-                                                value={data.ptn_pts}
-                                                onChange={e => setData('ptn_pts', e.target.value)}
-                                                className="w-full px-3 py-1.5 text-sm border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 outline-none bg-white"
-                                            >
-                                                <option value="">Pilih</option>
-                                                <option value="PTN">PTN</option>
-                                                <option value="PTS">PTS</option>
-                                            </select>
+                                            <CustomSelect
+    value={data.ptn_pts}
+    onChange={val => setData('ptn_pts', val)}
+    options={["PTN", "PTS"]}
+    placeholder={"Pilih"}
+    error={false}
+    disabled={false}
+    
+/>
                                         </div>
                                         <div>
                                             <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Klaster</label>
@@ -274,42 +263,27 @@ export default function Create() {
                                                     <label className="block text-sm font-semibold text-slate-700 mb-2">
                                                         Nama Skema <span className="text-red-500">*</span>
                                                     </label>
-                                                    <select
-                                                        value={data.nama_skema}
-                                                        onChange={e => setData('nama_skema', e.target.value)}
-                                                        className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                                                        required
-                                                    >
-                                                        <option value="">-- Pilih Skema --</option>
-                                                        {[
-                                                            'KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW',
-                                                            'Pemberdayaan Desa Binaan',
-                                                            'Pemberdayaan Kemitraan Masyarakat',
-                                                            'Pemberdayaan Masyarakat oleh Mahasiswa',
-                                                            'Pengabdian Masyarakat Pemula',
-                                                            'Program Kemitraan Masyarakat Stimulusi'
-                                                        ].map((val) => (
-                                                            <option key={val} value={val}>{val}</option>
-                                                        ))}
-                                                    </select>
+                                                    <CustomSelect
+    value={data.nama_skema}
+    onChange={val => setData('nama_skema', val)}
+    options={NAMA_SKEMA_PENGABDIAN_OPTIONS}
+    placeholder="-- Pilih Skema --"
+    error={false}
+    
+/>
                                                 </div>
                                                 <div>
                                                     <label className="block text-sm font-semibold text-slate-700 mb-2">
                                                         Singkatan Skema <span className="text-red-500">*</span>
                                                     </label>
-                                                    <select
-                                                        value={data.nama_singkat_skema}
-                                                        onChange={e => setData('nama_singkat_skema', e.target.value)}
-                                                        className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                                                        required
-                                                    >
-                                                        <option value="">-- Pilih Singkatan --</option>
-                                                        {[
-                                                            'KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW'
-                                                        ].map((val) => (
-                                                            <option key={val} value={val}>{val}</option>
-                                                        ))}
-                                                    </select>
+                                                    <CustomSelect
+    value={data.nama_singkat_skema}
+    onChange={val => setData('nama_singkat_skema', val)}
+    options={NAMA_SINGKAT_SKEMA_PENGABDIAN_OPTIONS}
+    placeholder="-- Pilih Singkatan --"
+    error={false}
+    
+/>
                                                 </div>
                                             </>
                                         )}

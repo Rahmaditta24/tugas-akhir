@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
 import { useForm, Link } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import CampusSelect from '../../../Components/CampusSelect';
@@ -89,15 +90,15 @@ export default function Create() {
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Kategori PT
                                     </label>
-                                    <select
-                                        value={data.kategori_pt}
-                                        onChange={e => setData('kategori_pt', e.target.value)}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kategori_pt ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                    >
-                                        <option value="">Pilih Kategori PT</option>
-                                        <option value="PTNBH">PTNBH</option>
-                                        <option value="Non-PTNBH">Non-PTNBH</option>
-                                    </select>
+                                    <CustomSelect
+    value={data.kategori_pt}
+    onChange={val => setData('kategori_pt', val)}
+    options={["PTNBH", "Non-PTNBH"]}
+    placeholder={"Pilih Kategori PT"}
+    error={false}
+    disabled={false}
+    
+/>
                                     {errors.kategori_pt && <p className="mt-1 text-sm text-red-600">{errors.kategori_pt}</p>}
                                 </div>
 

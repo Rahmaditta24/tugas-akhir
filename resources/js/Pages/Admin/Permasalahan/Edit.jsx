@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
 import { Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import PageHeader from '../../../Components/PageHeader';
@@ -41,10 +42,15 @@ export default function Edit({ permasalahan, filters }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm text-slate-600 mb-1">Tipe</label>
-                        <select name="type" value={values.type} onChange={onChange} className="w-full px-3 py-2 border border-slate-300 rounded-md">
-                            <option value="provinsi">Provinsi</option>
-                            <option value="kabupaten">Kabupaten/Kota</option>
-                        </select>
+                        <CustomSelect
+    value={values.type}
+    onChange={(val) => { const e = { target: { value: val } }; onChange(e); }}
+    options={[{ value: "provinsi", label: "Provinsi" }, { value: "kabupaten", label: "Kabupaten/Kota" }]}
+    placeholder={"-- Pilih --"}
+    error={false}
+    disabled={false}
+    
+/>
                     </div>
                     <div className="sm:col-span-2">
                         <LocationSelect

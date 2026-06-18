@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import CustomSelect from './CustomSelect';
 
 const LocationSelect = ({
     selectedProvince,
@@ -111,35 +112,17 @@ const LocationSelect = ({
                     Provinsi {showRequiredIndicator && <span className="text-red-500">*</span>}
                 </label>
                 <div className="relative">
-                    <select
+                    <CustomSelect
                         value={selectedProvince}
-                        onChange={(e) => {
-                            onProvinceChange(e.target.value);
-                            onRegencyChange(''); // Reset kabupaten/kota saat provinsi berubah
+                        onChange={(val) => {
+                            onProvinceChange(val);
+                            onRegencyChange('');
                         }}
-                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 appearance-none bg-white ${errors[provinceErrorKey] ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'
-                            }`}
-                        required
-                    >
-                        <option value="">-- Pilih Provinsi --</option>
-                        {loadingProvinces ? (
-                            <option disabled>Memuat...</option>
-                        ) : (
-                            provinces.map((p) => (
-                                <option key={p.id} value={p.name}>
-                                    {p.name}
-                                </option>
-                            ))
-                        )}
-                        {selectedProvince && !provinces.find(p => p.name === selectedProvince) && (
-                            <option value={selectedProvince}>{selectedProvince}</option>
-                        )}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
-                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                        </svg>
-                    </div>
+                        options={provinces.map(p => ({ value: p.name, label: p.name }))}
+                        placeholder={loadingProvinces ? "Memuat..." : "-- Pilih Provinsi --"}
+                        error={!!errors[provinceErrorKey]}
+                        required={true}
+                    />
                 </div>
                 {errors[provinceErrorKey] && <p className="mt-1 text-sm text-red-600">{errors[provinceErrorKey]}</p>}
             </div>
@@ -150,34 +133,15 @@ const LocationSelect = ({
                         Kota/Kabupaten {!isRegencyOptional && showRequiredIndicator && <span className="text-red-500">*</span>}
                     </label>
                     <div className="relative">
-                        <select
+                        <CustomSelect
                             value={selectedRegency}
-                            onChange={(e) => onRegencyChange(normalizeRegencyName(e.target.value))}
+                            onChange={(val) => onRegencyChange(normalizeRegencyName(val))}
+                            options={regencies.map(r => ({ value: r.name, label: r.name }))}
+                            placeholder={loadingRegencies ? "Memuat..." : "-- Pilih Kota/Kabupaten --"}
                             disabled={!selectedProvince || loadingRegencies}
-                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 appearance-none bg-white ${!selectedProvince ? 'bg-slate-50 cursor-not-allowed' : ''
-                                } ${errors[regencyErrorKey] || errors.kabupaten_kota ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
+                            error={!!(errors[regencyErrorKey] || errors.kabupaten_kota)}
                             required={!isRegencyOptional}
-                        >
-                            <option value="">-- Pilih Kota/Kabupaten --</option>
-                            {loadingRegencies ? (
-                                <option disabled>Memuat...</option>
-                            ) : (
-                                regencies.map((r) => (
-                                    <option key={r.id} value={r.name}>
-                                        {r.name}
-                                    </option>
-                                ))
-                            )}
-                            {/* Fallback untuk data lama yang mungkin tidak cocok persis */}
-                            {selectedRegency && !regencies.find(r => r.name === normalizeRegencyName(selectedRegency)) && (
-                                <option value={normalizeRegencyName(selectedRegency)}>{normalizeRegencyName(selectedRegency)}</option>
-                            )}
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
-                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                            </svg>
-                        </div>
+                        />
                     </div>
                     {errors[regencyErrorKey] && <p className="mt-1 text-sm text-red-600">{errors[regencyErrorKey]}</p>}
                     {errors.kabupaten_kota && <p className="mt-1 text-sm text-red-600">{errors.kabupaten_kota}</p>}

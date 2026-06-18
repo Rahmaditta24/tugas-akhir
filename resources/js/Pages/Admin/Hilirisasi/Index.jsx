@@ -1,4 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
+import { PER_PAGE_OPTIONS } from '../../../Constants/options';
 import { toast, Toaster } from 'react-hot-toast';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
@@ -517,9 +519,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                             <div className="ml-auto flex items-center gap-2">
                                 <span className="text-sm text-slate-600 hidden sm:inline">Per halaman</span>
                                 <select value={perPage} onChange={handlePerPageChange} className="px-2 py-1.5 border border-slate-300 rounded-lg text-xs sm:text-sm">
-                                    <option value={20}>20</option>
-                                    <option value={50}>50</option>
-                                    <option value={100}>100</option>
+                                    {PER_PAGE_OPTIONS.map(val => (<option key={val} value={val}>{val}</option>))}
                                 </select>
                             </div>
                         </form>
@@ -741,64 +741,27 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Skema</label>
-                                    <select
-                                        value={item.skema}
-                                        onChange={e => setItemField(item.id, 'skema', e.target.value)}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-                                    >
-                                        <option value="">-- Pilih Skema --</option>
-                                        <option value="A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi">A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi</option>
-                                        <option value="A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI">A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI</option>
-                                        <option value="A3: Pengembangan produk inovasi bersama DUDI">A3: Pengembangan produk inovasi bersama DUDI</option>
-                                        <option value="A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering">A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering</option>
-                                        <option value="B1: Penyelesaian persoalan yang ada di masyarakat">B1: Penyelesaian persoalan yang ada di masyarakat</option>
-                                        <option value="B2: Penyelesaian persoalan yang ada di Institusi Pemerintah">B2: Penyelesaian persoalan yang ada di Institusi Pemerintah</option>
-                                        <option value="Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)">Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah</option>
-                                        <option value="Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)">Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi</option>
-                                        <option value="Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra">Adopsi atau difusi, hilirisasi, komersialisasi produk</option>
-                                        <option value="Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI">Pembentukan atau penguatan research and innovation center</option>
-                                        <option value="Penerapan rencana bisnis and business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen">Penerapan rencana bisnis dan BMC Startup</option>
-                                        <option value="Dorongan Teknologi - Tim Pakar/Pengkaji">Dorongan Teknologi - Tim Pakar/Pengkaji</option>
-                                        <option value="Ajakan Industri PT - 1 Tahun">Ajakan Industri PT - 1 Tahun</option>
-                                        <option value="Ajakan Industri PT - 2 Tahun">Ajakan Industri PT - 2 Tahun</option>
-                                        <option value="Ajakan Industri PT - 3 Tahun">Ajakan Industri PT - 3 Tahun</option>
-                                        <option value="Hilirisasi Inovasi Komersial">Hilirisasi Inovasi Komersial</option>
-                                        <option value="Hilirisasi Inovasi Sosial">Hilirisasi Inovasi Sosial</option>
-                                        {item.skema && ![
-                                            "A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi",
-                                            "A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI",
-                                            "A3: Pengembangan produk inovasi bersama DUDI",
-                                            "A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering",
-                                            "B1: Penyelesaian persoalan yang ada di masyarakat",
-                                            "B2: Penyelesaian persoalan yang ada di Institusi Pemerintah",
-                                            "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)",
-                                            "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)",
-                                            "Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra",
-                                            "Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI",
-                                            "Penerapan rencana bisnis and business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen",
-                                            "Dorongan Teknologi - Tim Pakar/Pengkaji",
-                                            "Ajakan Industri PT - 1 Tahun",
-                                            "Ajakan Industri PT - 2 Tahun",
-                                            "Ajakan Industri PT - 3 Tahun",
-                                            "Hilirisasi Inovasi Komersial",
-                                            "Hilirisasi Inovasi Sosial"
-                                        ].includes(item.skema) && (
-                                                <option value={item.skema}>{item.skema}</option>
-                                            )}
-                                    </select>
+                                    <CustomSelect
+    value={item.skema}
+    onChange={val => setItemField(item.id, 'skema', val)}
+    options={["A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi", "A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI", "A3: Pengembangan produk inovasi bersama DUDI", "A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering", "B1: Penyelesaian persoalan yang ada di masyarakat", "B2: Penyelesaian persoalan yang ada di Institusi Pemerintah", { value: "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)", label: "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah" }, { value: "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)", label: "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi" }, { value: "Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra", label: "Adopsi atau difusi, hilirisasi, komersialisasi produk" }, { value: "Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI", label: "Pembentukan atau penguatan research and innovation center" }, { value: "Penerapan rencana bisnis and business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen", label: "Penerapan rencana bisnis dan BMC Startup" }, "Dorongan Teknologi - Tim Pakar/Pengkaji", "Ajakan Industri PT - 1 Tahun", "Ajakan Industri PT - 2 Tahun", "Ajakan Industri PT - 3 Tahun", "Hilirisasi Inovasi Komersial", "Hilirisasi Inovasi Sosial", { value: item.skema, label: "{item.skema}" }]}
+    placeholder={"-- Pilih Skema --"}
+    error={false}
+    disabled={false}
+    
+/>
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Direktorat</label>
-                                    <select
-                                        value={item.direktorat}
-                                        onChange={e => setItemField(item.id, 'direktorat', e.target.value)}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-                                    >
-                                        <option value="">-- Pilih Direktorat --</option>
-                                        <option value="DIKSI">DIKSI</option>
-                                        <option value="DIKTI">DIKTI</option>
-                                        <option value="Direktorat Hilirisasi dan Kemitraan">Direktorat Hilirisasi dan Kemitraan</option>
-                                    </select>
+                                    <CustomSelect
+    value={item.direktorat}
+    onChange={val => setItemField(item.id, 'direktorat', val)}
+    options={["DIKSI", "DIKTI", "Direktorat Hilirisasi dan Kemitraan"]}
+    placeholder={"-- Pilih Direktorat --"}
+    error={false}
+    disabled={false}
+    
+/>
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Luaran</label>

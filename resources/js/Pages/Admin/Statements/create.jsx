@@ -1,5 +1,6 @@
 // resources/js/Pages/Admin/RumusanMasalahStatement/Create.jsx
 import { useState } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
 import { router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import PageHeader from '../../../Components/PageHeader';
@@ -37,19 +38,14 @@ export default function Create({ categories, category_id }) {
                         <label className="block text-sm font-medium text-slate-700 mb-2">
                             Kategori *
                         </label>
-                        <select
+                        <CustomSelect
                             value={form.category_id}
-                            onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-                            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            onChange={(val) => setForm({ ...form, category_id: val })}
+                            options={categories.map((cat) => ({ value: cat.id, label: `${cat.order_number}. ${cat.name}` }))}
+                            placeholder="-- Pilih Kategori --"
+                            error={!!errors.category_id}
                             required
-                        >
-                            <option value="">Pilih Kategori</option>
-                            {categories && categories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>
-                                    {cat.order_number}. {cat.name}
-                                </option>
-                            ))}
-                        </select>
+                        />
                         {errors.category_id && (
                             <p className="text-red-600 text-sm mt-1">{errors.category_id}</p>
                         )}

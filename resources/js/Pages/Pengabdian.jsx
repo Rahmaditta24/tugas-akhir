@@ -8,6 +8,7 @@ import NavigationTabs from '../Components/NavigationTabs';
 import MapControls from '../Components/MapControls';
 import ResearchList from '../Components/ResearchList';
 import StatisticsCards from '../Components/StatisticsCards';
+import { NAMA_SKEMA_PENGABDIAN_OPTIONS } from '@/Constants/options';
 
 // Komponen lazy-loaded
 const MapContainer = lazy(() => import('../Components/MapContainer'));
@@ -52,14 +53,7 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
 
 
     // Opsi filter statis untuk Pengabdian
-    const allSkemas = [
-        'KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW',
-        'Pemberdayaan Desa Binaan',
-        'Pemberdayaan Kemitraan Masyarakat',
-        'Pemberdayaan Masyarakat oleh Mahasiswa',
-        'Pengabdian Masyarakat Pemula',
-        'Program Kemitraan Masyarakat Stimulus'
-    ];
+    const allSkemas = NAMA_SKEMA_PENGABDIAN_OPTIONS;
 
     const filterOptions = {
         dataType: ['Multitahun, Batch I & Batch II', 'Kosabangsa'],

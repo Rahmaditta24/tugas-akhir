@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -7,6 +8,7 @@ import Badge from '../../../Components/Badge';
 import { display, titleCase } from '../../../Utils/format';
 import HeaderActions from '../../../Components/Admin/HeaderActions';
 import ResearchModal from '../../../Components/ResearchModal';
+import {TIPE_PERMASALAHAN_OPTIONS, PER_PAGE_OPTIONS } from '../../../Constants/options';
 
 export default function Index({
     data = {},
@@ -325,50 +327,42 @@ export default function Index({
                             <div className="flex gap-4 items-end flex-wrap border-t border-slate-100 pt-4">
                                 <div className="w-fit min-w-[140px] sm:min-w-[200px]">
                                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Base Data</label>
-                                    <select
-                                        value={baseData}
-                                        onChange={handleBaseDataChange}
-                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
-                                    >
-                                        <option value="statistik">Data Statistik (Raw)</option>
-                                        <option value="penelitian">Data Penelitian</option>
-                                        <option value="pengabdian">Data Pengabdian</option>
-                                        <option value="hilirisasi">Data Hilirisasi</option>
-                                    </select>
+                                    <CustomSelect
+    value={baseData}
+    onChange={(val) => { const e = { target: { value: val } }; handleBaseDataChange(e); }}
+    options={[{ value: "statistik", label: "Data Statistik (Raw)" }, { value: "penelitian", label: "Data Penelitian" }, { value: "pengabdian", label: "Data Pengabdian" }, { value: "hilirisasi", label: "Data Hilirisasi" }]}
+    placeholder={"-- Pilih --"}
+    error={false}
+    disabled={false}
+    
+/>
                                 </div>
 
                                 {baseData === 'pengabdian' && (
                                     <div className="w-fit min-w-[140px] sm:min-w-[200px]">
                                         <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Jenis Pengabdian</label>
-                                        <select
-                                            value={batchType}
-                                            onChange={(e) => {
-                                                setBatchType(e.target.value);
-                                                router.get(route('admin.permasalahan.index'), {
-                                                    search, perPage, baseData, jenis, batch_type: e.target.value, sort, direction, tab: activeTab
-                                                }, { preserveState: true, replace: true });
-                                            }}
-                                            className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
-                                        >
-                                            <option value="Multitahun Lanjutan, Batch I & Batch II">Multitahun Lanjutan, Batch I & Batch II</option>
-                                            <option value="Kosabangsa">Kosabangsa</option>
-                                        </select>
+                                        <CustomSelect
+    value={batchType}
+    onChange={val => setBatchType(val)}
+    options={["Multitahun Lanjutan, Batch I & Batch II", "Kosabangsa"]}
+    placeholder={"-- Pilih --"}
+    error={false}
+    disabled={false}
+    
+/>
                                     </div>
                                 )}
 
                                 <div className="w-fit min-w-[140px] sm:min-w-[180px]">
                                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tipe Permasalahan</label>
-                                    <select
-                                        value={jenis}
-                                        onChange={handleJenisChange}
-                                        className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
-                                    >
-                                        <option value="Sampah">Sampah</option>
-                                        <option value="Stunting">Stunting</option>
-                                        <option value="Gizi Buruk">Gizi Buruk</option>
-                                        <option value="Krisis Listrik">Krisis Listrik</option>
-                                        <option value="Ketahanan Pangan">Ketahanan Pangan</option>
-                                    </select>
+                                    <CustomSelect
+    value={jenis}
+    onChange={handleJenisChange}
+    options={TIPE_PERMASALAHAN_OPTIONS}
+    placeholder="{val}"
+    error={false}
+    
+/>
                                 </div>
 
 
@@ -379,9 +373,7 @@ export default function Index({
                                         onChange={handlePerPageChange}
                                         className="w-fit px-3 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
                                     >
-                                        <option value={20}>20</option>
-                                        <option value={50}>50</option>
-                                        <option value={100}>100</option>
+                                        {PER_PAGE_OPTIONS.map(val => (<option key={val} value={val}>{val}</option>))}
                                     </select>
                                 </div>
                             </div>

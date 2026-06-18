@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
+import { BIDANG_FOKUS_OPTIONS, TEMA_PRIORITAS_OPTIONS } from '../../../Constants/options';
 import { useForm, Link } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import CampusSelect from '../../../Components/CampusSelect';
@@ -149,19 +151,15 @@ export default function Create() {
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Jenis PT <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={data.jenis_pt}
-                                        onChange={e => setData('jenis_pt', e.target.value)}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.jenis_pt ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        required
-                                    >
-                                        <option value="">Pilih Jenis PT</option>
-                                        <option value="Akademi">Akademi</option>
-                                        <option value="Institut">Institut</option>
-                                        <option value="Universitas">Universitas</option>
-                                        <option value="Politeknik">Politeknik</option>
-                                        <option value="Sekolah Tinggi">Sekolah Tinggi</option>
-                                    </select>
+                                    <CustomSelect
+    value={data.jenis_pt}
+    onChange={val => setData('jenis_pt', val)}
+    options={["Akademi", "Institut", "Universitas", "Politeknik", "Sekolah Tinggi"]}
+    placeholder={"Pilih Jenis PT"}
+    error={false}
+    disabled={false}
+    
+/>
                                     {errors.jenis_pt && <p className="mt-1 text-sm text-red-600">{errors.jenis_pt}</p>}
                                 </div>
 
@@ -169,17 +167,15 @@ export default function Create() {
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Kategori PT <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={data.kategori_pt}
-                                        onChange={e => setData('kategori_pt', e.target.value)}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kategori_pt ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        required
-                                    >
-                                        <option value="">Pilih Kategori PT</option>
-                                        <option value="PTN">PTN</option>
-                                        <option value="PTS">PTS</option>
-                                        <option value="PTNBH">PTNBH</option>
-                                    </select>
+                                    <CustomSelect
+    value={data.kategori_pt}
+    onChange={val => setData('kategori_pt', val)}
+    options={["PTN", "PTS", "PTNBH"]}
+    placeholder={"Pilih Kategori PT"}
+    error={false}
+    disabled={false}
+    
+/>
                                     {errors.kategori_pt && <p className="mt-1 text-sm text-red-600">{errors.kategori_pt}</p>}
                                 </div>
 
@@ -187,23 +183,17 @@ export default function Create() {
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Institusi Pilihan <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={data.institusi_pilihan}
-                                        onChange={e => setData('institusi_pilihan', e.target.value)}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.institusi_pilihan ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        required
-                                    >
-                                        <option value="">Pilih Institusi</option>
-                                        {[
+                                    <CustomSelect
+    value={data.institusi_pilihan}
+    onChange={val => setData('institusi_pilihan', val)}
+    options={[
                                             'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 
                                             'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'
-                                        ].map((roman) => (
-                                            <option key={roman} value={`LLDIKTI Wilayah ${roman}`}>
-                                                LLDIKTI Wilayah {roman}
-                                            </option>
-                                        ))}
-                                        <option value="Lainnya">Lainnya</option>
-                                    </select>
+                                        ]}
+    placeholder="Pilih Institusi"
+    error={false}
+    
+/>
                                     {errors.institusi_pilihan && <p className="mt-1 text-sm text-red-600">{errors.institusi_pilihan}</p>}
                                 </div>
 
@@ -211,19 +201,15 @@ export default function Create() {
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Klaster <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={data.klaster}
-                                        onChange={e => setData('klaster', e.target.value)}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.klaster ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        required
-                                    >
-                                        <option value="">Pilih Klaster</option>
-                                        <option value="Kelompok PT Binaan">Kelompok PT Binaan</option>
-                                        <option value="Kelompok PT Madya">Kelompok PT Madya</option>
-                                        <option value="Kelompok PT Mandiri">Kelompok PT Mandiri</option>
-                                        <option value="Kelompok PT Pratama">Kelompok PT Pratama</option>
-                                        <option value="Kelompok PT Utama">Kelompok PT Utama</option>
-                                    </select>
+                                    <CustomSelect
+    value={data.klaster}
+    onChange={val => setData('klaster', val)}
+    options={["Kelompok PT Binaan", "Kelompok PT Madya", "Kelompok PT Mandiri", "Kelompok PT Pratama", "Kelompok PT Utama"]}
+    placeholder={"Pilih Klaster"}
+    error={false}
+    disabled={false}
+    
+/>
                                     {errors.klaster && <p className="mt-1 text-sm text-red-600">{errors.klaster}</p>}
                                 </div>
                             </div>
@@ -319,32 +305,14 @@ export default function Create() {
                                         <label className="block text-sm font-medium text-slate-700 mb-2">
                                             Bidang Fokus <span className="text-red-500">*</span>
                                         </label>
-                                        <select
-                                            value={data.bidang_fokus}
-                                            onChange={e => setData('bidang_fokus', e.target.value)}
-                                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kategori_pt ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                            required
-                                        >
-                                            <option value="">-- Pilih Bidang Fokus --</option>
-                                            {[
-                                                'Energi',
-                                                'Kesehatan',
-                                                'Pangan',
-                                                'Material Maju',
-                                                'Maritim',
-                                                'Teknologi Informasi dan Komunikasi',
-                                                'Sosial Humaniora',
-                                                'Kemaritiman',
-                                                'Teknologi Transportasi',
-                                                'Produk Rekayasa Keteknikan',
-                                                'Pertahanan dan Keamanan',
-                                                'Lingkungan',
-                                                'Ekonomi',
-                                            ].map((val) => {
-                                                const label = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
-                                                return <option key={val} value={val}>{label}</option>;
-                                            })}
-                                        </select>
+                                        <CustomSelect
+    value={data.bidang_fokus}
+    onChange={val => setData('bidang_fokus', val)}
+    options={BIDANG_FOKUS_OPTIONS}
+    placeholder="-- Pilih Bidang Fokus --"
+    error={false}
+    
+/>
                                         {errors.bidang_fokus && <p className="mt-1 text-sm text-red-600">{errors.bidang_fokus}</p>}
                                     </div>
 
@@ -352,41 +320,14 @@ export default function Create() {
                                         <label className="block text-sm font-medium text-slate-700 mb-2">
                                             Tema Prioritas <span className="text-red-500">*</span>
                                         </label>
-                                        <select
-                                            value={data.tema_prioritas}
-                                            onChange={e => setData('tema_prioritas', e.target.value)}
-                                            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.tema_prioritas ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                            required
-                                        >
-                                            <option value="">-- Pilih Tema Prioritas --</option>
-                                            {[
-                                                'Digital Economy',
-                                                'Digitalisasi',
-                                                'Ekonomi Biru',
-                                                'Ekonomi Hijau',
-                                                'Ekonomi Kreatif',
-                                                'Elektrifikasi Transportasi',
-                                                'Hilirisasi dan Industrialisasi',
-                                                'Industri Manufaktur',
-                                                'Kecerdasan Buatan',
-                                                'Kemandirian Kesehatan',
-                                                'Kesehatan',
-                                                'Lainnya',
-                                                'Lingkungan Hidup',
-                                                'Material Maju',
-                                                'Mineral',
-                                                'Pariwisata',
-                                                'Pengelolaan Sampah',
-                                                'Semikonduktor',
-                                                'Swasembada Air',
-                                                'Swasembada Energi',
-                                                'Swasembada Pangan',
-                                                'Tidak Memilih',
-                                            ].map((val) => {
-                                                const label = val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
-                                                return <option key={val} value={val}>{label}</option>;
-                                            })}
-                                        </select>
+                                        <CustomSelect
+    value={data.tema_prioritas}
+    onChange={val => setData('tema_prioritas', val)}
+    options={TEMA_PRIORITAS_OPTIONS}
+    placeholder="-- Pilih Tema Prioritas --"
+    error={false}
+    
+/>
                                         {errors.tema_prioritas && <p className="mt-1 text-sm text-red-600">{errors.tema_prioritas}</p>}
                                     </div>
                                 </div>

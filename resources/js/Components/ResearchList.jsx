@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import CustomSelect from './CustomSelect';
 import { getFieldColor } from '../Utils/fieldColors';
 
 export default function ResearchList({ researches = [], totalCount = 0, onAdvancedSearch, onItemClick, onFilteredResults, title = "Daftar Penelitian", isFiltered = false, isFasilitasLab = false, isPenelitianPage = false, isHilirisasiPage = false, isProdukPage = false, isPermasalahanPage = false, customFieldOptions = [], placeholderAll = "Cari penelitian, universitas, atau peneliti..." }) {
@@ -159,15 +160,15 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
                     <div key={row.id} className="space-y-3">
                         {index > 0 && (
                             <div className="flex items-center gap-2">
-                                <select
-                                    value={row.operator}
-                                    onChange={(e) => updateRow(row.id, { operator: e.target.value })}
-                                    className="px-3 py-1.5 text-xs font-semibold bg-slate-100 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-all outline-none"
-                                >
-                                    <option value="AND">AND</option>
-                                    <option value="OR">OR</option>
-                                    <option value="AND NOT">AND NOT</option>
-                                </select>
+                                <CustomSelect
+    value={row.operator}
+    onChange={val => updateFilterRow(row.id, 'operator', val)}
+    options={["AND", "OR", "AND NOT"]}
+    placeholder={"-- Pilih --"}
+    error={false}
+    disabled={false}
+    
+/>
                             </div>
                         )}
                         <div className="flex items-center gap-3">
@@ -194,15 +195,15 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
                                 )}
                             </div>
                             <div className="relative shrink-0">
-                                <select
-                                    value={row.field}
-                                    onChange={(e) => updateRow(row.id, { field: e.target.value })}
-                                    className="px-4 pr-10 py-2.5 text-sm font-medium text-white bg-[#4479C4] rounded-lg focus:ring-2 focus:ring-blue-500 appearance-none min-w-[140px] cursor-pointer"
-                                >
-                                    {fieldOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value} className="bg-[#4479C4] text-white">{opt.label}</option>
-                                    ))}
-                                </select>
+                                <CustomSelect
+    value={row.field}
+    onChange={val => updateFilterRow(row.id, 'field', val)}
+    options={fieldOptions}
+    placeholder="{opt.label}"
+    error={false}
+    disabled={false}
+    
+/>
                                 <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-white">
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />

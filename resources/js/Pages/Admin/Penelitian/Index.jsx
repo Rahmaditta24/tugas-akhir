@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
+import { PER_PAGE_OPTIONS, TEMA_PRIORITAS_OPTIONS, BIDANG_FOKUS_OPTIONS } from '../../../Constants/options';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -509,9 +511,7 @@ export default function Index({ penelitian, stats, filters }) {
                                 onChange={handlePerPageChange}
                                 className="px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                             >
-                                <option value={20}>20</option>
-                                <option value={50}>50</option>
-                                <option value={100}>100</option>
+                                {PER_PAGE_OPTIONS.map(val => (<option key={val} value={val}>{val}</option>))}
                             </select>
                         </div>
                     </form>
@@ -729,43 +729,50 @@ export default function Index({ penelitian, stats, filters }) {
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Jenis PT</label>
-                                    <select value={item.jenis_pt} onChange={e => setItemField(item.id, 'jenis_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400">
-                                        <option value="">-- Pilih --</option>
-                                        {['Akademi', 'Institut', 'Universitas', 'Politeknik', 'Sekolah Tinggi'].map(v => <option key={v} value={v}>{v}</option>)}
-                                    </select>
+                                    <CustomSelect
+    value={item.jenis_pt}
+    onChange={val => setItemField(item.id, 'jenis_pt', val)}
+    options={['Akademi', 'Institut', 'Universitas', 'Politeknik', 'Sekolah Tinggi']}
+    placeholder="-- Pilih --"
+    error={false}
+    
+/>
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kategori PT</label>
-                                    <select value={item.kategori_pt} onChange={e => setItemField(item.id, 'kategori_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-                                        <option value="">-- Pilih --</option>
-                                        {['PTN', 'PTS', 'PTNBH'].map(v => <option key={v} value={v}>{v}</option>)}
-                                    </select>
+                                    <CustomSelect
+    value={item.kategori_pt}
+    onChange={val => setItemField(item.id, 'kategori_pt', val)}
+    options={['PTN', 'PTS', 'PTNBH']}
+    placeholder="-- Pilih --"
+    error={false}
+    
+/>
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Klaster</label>
-                                    <select value={item.klaster} onChange={e => setItemField(item.id, 'klaster', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-                                        <option value="">-- Pilih --</option>
-                                        {['Kelompok PT Binaan', 'Kelompok PT Madya', 'Kelompok PT Mandiri', 'Kelompok PT Pratama', 'Kelompok PT Utama'].map(v => <option key={v} value={v}>{v}</option>)}
-                                    </select>
+                                    <CustomSelect
+    value={item.klaster}
+    onChange={val => setItemField(item.id, 'klaster', val)}
+    options={['Kelompok PT Binaan', 'Kelompok PT Madya', 'Kelompok PT Mandiri', 'Kelompok PT Pratama', 'Kelompok PT Utama']}
+    placeholder="-- Pilih --"
+    error={false}
+    
+/>
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Institusi Pilihan (Target)</label>
-                                    <select 
-                                        value={item.institusi_pilihan} 
-                                        onChange={e => setItemField(item.id, 'institusi_pilihan', e.target.value)} 
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400"
-                                    >
-                                        <option value="">-- Pilih --</option>
-                                        {[
+                                    <CustomSelect
+    value={item.institusi_pilihan}
+    onChange={val => setItemField(item.id, 'institusi_pilihan', val)}
+    options={[
                                             'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 
                                             'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'
-                                        ].map((roman) => (
-                                            <option key={roman} value={`LLDIKTI Wilayah ${roman}`}>
-                                                LLDIKTI Wilayah {roman}
-                                            </option>
-                                        ))}
-                                        <option value="Lainnya">Lainnya</option>
-                                    </select>
+                                        ]}
+    placeholder="-- Pilih --"
+    error={false}
+    
+/>
                                 </div>
                             </div>
                         </div>
@@ -809,23 +816,25 @@ export default function Index({ penelitian, stats, filters }) {
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Bidang Fokus</label>
-                                    <select value={item.bidang_fokus} onChange={e => setItemField(item.id, 'bidang_fokus', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-                                        <option value="">-- Pilih --</option>
-                                        {['Energi', 'Kesehatan', 'Pangan', 'TIK', 'Sosial Humaniora', 'Maritim', 'Transportasi', 'Pertahanan', 'Lingkungan'].map(v => <option key={v} value={v}>{v}</option>)}
-                                        {item.bidang_fokus && !['Energi', 'Kesehatan', 'Pangan', 'TIK', 'Sosial Humaniora', 'Maritim', 'Transportasi', 'Pertahanan', 'Lingkungan'].includes(item.bidang_fokus) && (
-                                            <option value={item.bidang_fokus}>{item.bidang_fokus}</option>
-                                        )}
-                                    </select>
+                                    <CustomSelect
+    value={item.bidang_fokus}
+    onChange={val => setItemField(item.id, 'bidang_fokus', val)}
+    options={BIDANG_FOKUS_OPTIONS}
+    placeholder="-- Pilih --"
+    error={false}
+    
+/>
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tema Prioritas</label>
-                                    <select value={item.tema_prioritas} onChange={e => setItemField(item.id, 'tema_prioritas', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-                                        <option value="">-- Pilih --</option>
-                                        {['Digitalisasi', 'Ekonomi Biru', 'Ekonomi Hijau', 'Hilirisasi', 'Kemandirian Kesehatan', 'Ketahanan Pangan', 'Mineral'].map(v => <option key={v} value={v}>{v}</option>)}
-                                        {item.tema_prioritas && !['Digitalisasi', 'Ekonomi Biru', 'Ekonomi Hijau', 'Hilirisasi', 'Kemandirian Kesehatan', 'Ketahanan Pangan', 'Mineral'].includes(item.tema_prioritas) && (
-                                            <option value={item.tema_prioritas}>{item.tema_prioritas}</option>
-                                        )}
-                                    </select>
+                                    <CustomSelect
+    value={item.tema_prioritas}
+    onChange={val => setItemField(item.id, 'tema_prioritas', val)}
+    options={TEMA_PRIORITAS_OPTIONS}
+    placeholder="-- Pilih --"
+    error={false}
+    
+/>
                                 </div>
                             </div>
                         </div>

@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
+import { PER_PAGE_OPTIONS } from '../../../Constants/options';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -447,9 +449,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                                     onChange={handlePerPageChange}
                                     className="px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                                 >
-                                    <option value={20}>20</option>
-                                    <option value={50}>50</option>
-                                    <option value={100}>100</option>
+                                    {PER_PAGE_OPTIONS.map(val => (<option key={val} value={val}>{val}</option>))}
                                 </select>
                             </div>
                         </form>
@@ -664,11 +664,15 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                             </div>
                             <div className="md:col-span-2">
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kategori PT</label>
-                                <select value={item.kategori_pt || ''} onChange={e => setItemField(item.id, 'kategori_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
-                                    <option value="">Pilih Kategori PT</option>
-                                    <option value="PTNBH">PTNBH</option>
-                                    <option value="Non-PTNBH">Non-PTNBH</option>
-                                </select>
+                                <CustomSelect
+    value={item.kategori_pt || ''}
+    onChange={val => setItemField(item.id, 'kategori_pt || ''', val)}
+    options={["PTNBH", "Non-PTNBH"]}
+    placeholder={"Pilih Kategori PT"}
+    error={false}
+    disabled={false}
+    
+/>
                             </div>
                             <div className="md:col-span-2">
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Nama Laboratorium</label>

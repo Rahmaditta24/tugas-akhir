@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
+import { PER_PAGE_OPTIONS, NAMA_SINGKAT_SKEMA_PENGABDIAN_OPTIONS, NAMA_SKEMA_PENGABDIAN_OPTIONS } from '../../../Constants/options';
 import { Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import AdminTable from '../../../Components/AdminTable';
@@ -577,9 +579,7 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                                     onChange={handlePerPageChange}
                                     className="px-2 py-1.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs sm:text-sm"
                                 >
-                                    <option value={20}>20</option>
-                                    <option value={50}>50</option>
-                                    <option value={100}>100</option>
+                                    {PER_PAGE_OPTIONS.map(val => (<option key={val} value={val}>{val}</option>))}
                                 </select>
                             </div>
                         </form>
@@ -745,10 +745,15 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">Jenis Batch / Program</label>
-                                        <select value={f('batch_type')} onChange={e => setItemField(item.id, 'batch_type', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
-                                            <option value="batch">Multitahun, Batch I & Batch II</option>
-                                            <option value="kosabangsa">Kosabangsa</option>
-                                        </select>
+                                        <CustomSelect
+    value={f('batch_type')}
+    onChange={val => handleFilterChange('batch_type', val)}
+    options={[{ value: "batch", label: "Multitahun, Batch I & Batch II" }, { value: "kosabangsa", label: "Kosabangsa" }]}
+    placeholder={"-- Pilih --"}
+    error={false}
+    disabled={false}
+    
+/>
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5">NIDN</label>
@@ -782,11 +787,15 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                                         </div>
                                         <div>
                                             <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">PTN/PTS</label>
-                                            <select value={f('ptn_pts')} onChange={e => setItemField(item.id, 'ptn_pts', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
-                                                <option value="">-- Pilih --</option>
-                                                <option value="PTN">PTN</option>
-                                                <option value="PTS">PTS</option>
-                                            </select>
+                                            <CustomSelect
+    value={f('ptn_pts')}
+    onChange={val => handleFilterChange('ptn_pts', val)}
+    options={["PTN", "PTS"]}
+    placeholder={"-- Pilih --"}
+    error={false}
+    disabled={false}
+    
+/>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
@@ -824,19 +833,25 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
                                             <>
                                                 <div>
                                                     <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nama Skema</label>
-                                                    <select value={f('nama_skema')} onChange={e => setItemField(item.id, 'nama_skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
-                                                        <option value="">-- Pilih --</option>
-                                                        {['KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW', 'Pemberdayaan Desa Binaan', 'Pemberdayaan Kemitraan Masyarakat', 'Pemberdayaan Masyarakat oleh Mahasiswa', 'Pengabdian Masyarakat Pemula', 'Program Kemitraan Masyarakat Stimulusi'].map(v => <option key={v} value={v}>{v}</option>)}
-                                                        {f('nama_skema') && !['KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW', 'Pemberdayaan Desa Binaan', 'Pemberdayaan Kemitraan Masyarakat', 'Pemberdayaan Masyarakat oleh Mahasiswa', 'Pengabdian Masyarakat Pemula', 'Program Kemitraan Masyarakat Stimulusi', 'Kosabangsa'].includes(f('nama_skema')) && <option value={f('nama_skema')}>{f('nama_skema')}</option>}
-                                                    </select>
+                                                    <CustomSelect
+    value={f('nama_skema')}
+    onChange={val => handleFilterChange('nama_skema', val)}
+    options={NAMA_SKEMA_PENGABDIAN_OPTIONS}
+    placeholder="-- Pilih --"
+    error={false}
+    
+/>
                                                 </div>
                                                 <div>
                                                     <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Singkatan Skema</label>
-                                                    <select value={f('nama_singkat_skema')} onChange={e => setItemField(item.id, 'nama_singkat_skema', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
-                                                        <option value="">-- Pilih --</option>
-                                                        {['KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW'].map(v => <option key={v} value={v}>{v}</option>)}
-                                                        {f('nama_singkat_skema') && !['KBM', 'PDB', 'PKM', 'PM-UPUD', 'PMM', 'PMP', 'PUK', 'PW'].includes(f('nama_singkat_skema')) && <option value={f('nama_singkat_skema')}>{f('nama_singkat_skema')}</option>}
-                                                    </select>
+                                                    <CustomSelect
+    value={f('nama_singkat_skema')}
+    onChange={val => handleFilterChange('nama_singkat_skema', val)}
+    options={NAMA_SINGKAT_SKEMA_PENGABDIAN_OPTIONS}
+    placeholder="-- Pilih --"
+    error={false}
+    
+/>
                                                 </div>
                                             </>
                                         )}

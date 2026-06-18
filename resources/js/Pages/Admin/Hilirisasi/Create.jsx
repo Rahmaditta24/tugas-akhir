@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import CustomSelect from '../../../Components/CustomSelect';
 import { useForm, Link } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import CampusSelect from '../../../Components/CampusSelect';
@@ -128,17 +129,15 @@ export default function Create() {
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Direktorat <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={data.direktorat}
-                                        onChange={e => setData('direktorat', e.target.value)}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.direktorat ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        required
-                                    >
-                                        <option value="">-- Pilih Direktorat --</option>
-                                        <option value="DIKSI">DIKSI</option>
-                                        <option value="DIKTI">DIKTI</option>
-                                        <option value="Direktorat Hilirisasi dan Kemitraan">Direktorat Hilirisasi dan Kemitraan</option>
-                                    </select>
+                                    <CustomSelect
+    value={data.direktorat}
+    onChange={val => setData('direktorat', val)}
+    options={["DIKSI", "DIKTI", "Direktorat Hilirisasi dan Kemitraan"]}
+    placeholder={"-- Pilih Direktorat --"}
+    error={false}
+    disabled={false}
+    
+/>
                                     {errors.direktorat && <p className="mt-1 text-sm text-red-600">{errors.direktorat}</p>}
                                 </div>
 
@@ -146,31 +145,15 @@ export default function Create() {
                                     <label className="block text-sm font-medium text-slate-700 mb-2">
                                         Skema <span className="text-red-500">*</span>
                                     </label>
-                                    <select
-                                        value={data.skema}
-                                        onChange={e => setData('skema', e.target.value)}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.skema ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        required
-                                    >
-                                        <option value="">-- Pilih Skema --</option>
-                                        <option value="A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi">A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi</option>
-                                        <option value="A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI">A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI</option>
-                                        <option value="A3: Pengembangan produk inovasi bersama DUDI">A3: Pengembangan produk inovasi bersama DUDI</option>
-                                        <option value="A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering">A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering</option>
-                                        <option value="B1: Penyelesaian persoalan yang ada di masyarakat">B1: Penyelesaian persoalan yang ada di masyarakat</option>
-                                        <option value="B2: Penyelesaian persoalan yang ada di Institusi Pemerintah">B2: Penyelesaian persoalan yang ada di Institusi Pemerintah</option>
-                                        <option value="Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)">Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah</option>
-                                        <option value="Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)">Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi</option>
-                                        <option value="Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra">Adopsi atau difusi, hilirisasi, komersialisasi produk</option>
-                                        <option value="Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI">Pembentukan atau penguatan research and innovation center</option>
-                                        <option value="Penerapan rencana bisnis dan business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen">Penerapan rencana bisnis dan BMC Startup</option>
-                                        <option value="Dorongan Teknologi - Tim Pakar/Pengkaji">Dorongan Teknologi - Tim Pakar/Pengkaji</option>
-                                        <option value="Ajakan Industri PT - 1 Tahun">Ajakan Industri PT - 1 Tahun</option>
-                                        <option value="Ajakan Industri PT - 2 Tahun">Ajakan Industri PT - 2 Tahun</option>
-                                        <option value="Ajakan Industri PT - 3 Tahun">Ajakan Industri PT - 3 Tahun</option>
-                                        <option value="Hilirisasi Inovasi Komersial">Hilirisasi Inovasi Komersial</option>
-                                        <option value="Hilirisasi Inovasi Sosial">Hilirisasi Inovasi Sosial</option>
-                                    </select>
+                                    <CustomSelect
+    value={data.skema}
+    onChange={val => setData('skema', val)}
+    options={["A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi", "A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI", "A3: Pengembangan produk inovasi bersama DUDI", "A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering", "B1: Penyelesaian persoalan yang ada di masyarakat", "B2: Penyelesaian persoalan yang ada di Institusi Pemerintah", { value: "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)", label: "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah" }, { value: "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)", label: "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi" }, { value: "Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra", label: "Adopsi atau difusi, hilirisasi, komersialisasi produk" }, { value: "Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI", label: "Pembentukan atau penguatan research and innovation center" }, { value: "Penerapan rencana bisnis dan business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen", label: "Penerapan rencana bisnis dan BMC Startup" }, "Dorongan Teknologi - Tim Pakar/Pengkaji", "Ajakan Industri PT - 1 Tahun", "Ajakan Industri PT - 2 Tahun", "Ajakan Industri PT - 3 Tahun", "Hilirisasi Inovasi Komersial", "Hilirisasi Inovasi Sosial"]}
+    placeholder={"-- Pilih Skema --"}
+    error={false}
+    disabled={false}
+    
+/>
                                     {errors.skema && <p className="mt-1 text-sm text-red-600">{errors.skema}</p>}
                                 </div>
 
