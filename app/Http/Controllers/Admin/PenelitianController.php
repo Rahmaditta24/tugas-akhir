@@ -123,7 +123,7 @@ class PenelitianController extends Controller
 
     public function create()
     {
-        return Inertia::render('Admin/Penelitian/Create');
+        return Inertia::render('Admin/Penelitian/Routes/Create/Index');
     }
 
     public function store(Request $request)
@@ -200,7 +200,7 @@ class PenelitianController extends Controller
             $penelitian->$f = ($val === '' || $val === '-' || $val === null) ? '' : $val;
         }
         
-        return Inertia::render('Admin/Penelitian/Edit', [
+        return Inertia::render('Admin/Penelitian/Routes/Edit/Index', [
             'item'    => $penelitian,
             'filters' => $request->only(['page', 'search', 'perPage', 'filters'])
         ]);
