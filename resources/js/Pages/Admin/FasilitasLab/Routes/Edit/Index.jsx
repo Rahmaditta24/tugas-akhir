@@ -1,25 +1,31 @@
 import { useState } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
+import CustomSelect from '../../../../../Components/CustomSelect';
 import { useForm, Link } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import CampusSelect from '../../../Components/CampusSelect';
-import LocationSelect from '../../../Components/LocationSelect';
-import MapLocationPicker from '../../../Components/MapLocationPicker';
+import AdminLayout from '../../../../../Layouts/AdminLayout';
+import CampusSelect from '../../../../../Components/CampusSelect';
+import LocationSelect from '../../../../../Components/LocationSelect';
+import MapLocationPicker from '../../../../../Components/MapLocationPicker';
 
-export default function Create() {
-    const { data, setData, post, processing, errors } = useForm({
-        kode_universitas: '',
-        institusi: '',
-        kategori_pt: '',
-        provinsi: '',
-        kota: '',
-        nama_laboratorium: '',
-        latitude: '',
-        longitude: '',
-        total_jumlah_alat: '',
-        nama_alat: '',
-        deskripsi_alat: '',
-        kontak: '',
+export default function Edit({ item, filters }) {
+    const formatNumbered = (text) => {
+        if (!text) return '';
+        const items = text.split(/\r?\n|;/).map(i => i.replace(/^\d+[\.\)]\s*/, '').trim()).filter(i => i !== '');
+        return items.map((item, i) => `${i + 1}. ${item}`).join('\n');
+    };
+
+    const { data, setData, put, processing, errors } = useForm({
+        kode_universitas: item?.kode_universitas === 'null' ? '' : (item?.kode_universitas || ''),
+        institusi: item?.institusi === 'null' ? '' : (item?.institusi || ''),
+        kategori_pt: item?.kategori_pt === 'null' ? '' : (item?.kategori_pt || ''),
+        provinsi: item?.provinsi === 'null' ? '' : (item?.provinsi || ''),
+        kota: item?.kota === 'null' ? '' : (item?.kota || ''),
+        nama_laboratorium: item?.nama_laboratorium === 'null' ? '' : (item?.nama_laboratorium || ''),
+        latitude: item?.latitude === 'null' ? '' : (item?.latitude || ''),
+        longitude: item?.longitude === 'null' ? '' : (item?.longitude || ''),
+        total_jumlah_alat: item?.total_jumlah_alat === 'null' ? '' : (item?.total_jumlah_alat || ''),
+        nama_alat: formatNumbered(item?.nama_alat === 'null' ? '' : (item?.nama_alat || '')),
+        deskripsi_alat: formatNumbered(item?.deskripsi_alat === 'null' ? '' : (item?.deskripsi_alat || '')),
+        kontak: item?.kontak === 'null' ? '' : (item?.kontak || ''),
     });
 
     const [localErrors, setLocalErrors] = useState({});
@@ -45,16 +51,16 @@ export default function Create() {
         const latOk = validateLatLng('latitude', data.latitude);
         const lngOk = validateLatLng('longitude', data.longitude);
         if (!latOk || !lngOk) return;
-        post(route('admin.fasilitas-lab.store'));
+        put(route('admin.fasilitas-lab.update', { fasilitas_lab: item.id, ...filters }));
     };
 
     return (
-        <AdminLayout title="Tambah Fasilitas Lab">
+        <AdminLayout title="Edit Data Fasilitas Lab">
             <div className="max-w-4xl">
                 <div className="bg-white rounded-lg shadow-sm">
                     <div className="p-6 border-b">
-                        <h2 className="text-xl font-semibold text-slate-800">Tambah Data Fasilitas Lab</h2>
-                        <p className="text-sm text-slate-600 mt-1">Lengkapi informasi dasar fasilitas laboratorium baru</p>
+                        <h2 className="text-xl font-semibold text-slate-800">Edit Data Fasilitas Lab</h2>
+                        <p className="text-sm text-slate-600 mt-1">Update informasi fasilitas laboratorium</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-6">
@@ -72,7 +78,6 @@ export default function Create() {
                                         value={data.kode_universitas}
                                         onChange={e => setData('kode_universitas', e.target.value.replace(/\D/g, ''))}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kode_universitas ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        placeholder= "001034"
                                     />
                                     {errors.kode_universitas && <p className="mt-1 text-sm text-red-600">{errors.kode_universitas}</p>}
                                 </div>
@@ -111,7 +116,6 @@ export default function Create() {
                                         value={data.nama_laboratorium}
                                         onChange={e => setData('nama_laboratorium', e.target.value)}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.nama_laboratorium ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        placeholder="Masukkan nama laboratorium..."
                                         required
                                     />
                                     {errors.nama_laboratorium && <p className="mt-1 text-sm text-red-600">{errors.nama_laboratorium}</p>}
@@ -127,7 +131,6 @@ export default function Create() {
                                         value={data.total_jumlah_alat}
                                         onChange={e => setData('total_jumlah_alat', e.target.value.replace(/\D/g, ''))}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.total_jumlah_alat ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
-                                        placeholder="Masukkan jumlah alat..."
                                     />
                                     {errors.total_jumlah_alat && <p className="mt-1 text-sm text-red-600">{errors.total_jumlah_alat}</p>}
                                 </div>
@@ -142,7 +145,6 @@ export default function Create() {
                                         value={data.kontak}
                                         onChange={e => setData('kontak', e.target.value.replace(/\D/g, ''))}
                                         className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="08xxxxx"
                                     />
                                 </div>
                             </div>
@@ -222,7 +224,7 @@ export default function Create() {
                         {/* Actions */}
                         <div className="flex items-center justify-end gap-3 pt-6 border-t">
                             <Link
-                                href={route('admin.fasilitas-lab.index')}
+                                href={route('admin.fasilitas-lab.index', filters)}
                                 className="px-6 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
                             >
                                 Batal
@@ -235,7 +237,7 @@ export default function Create() {
                                     : 'bg-blue-600 hover:bg-blue-700'
                                     }`}
                             >
-                                {processing ? 'Menyimpan...' : 'Tambah Data'}
+                                {processing ? 'Menyimpan...' : 'Update Data'}
                             </button>
                         </div>
                     </form>

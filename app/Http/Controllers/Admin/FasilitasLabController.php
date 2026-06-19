@@ -83,7 +83,7 @@ class FasilitasLabController extends Controller
 
     public function create()
     {
-        return Inertia::render('Admin/FasilitasLab/Create');
+        return Inertia::render('Admin/FasilitasLab/Routes/Create/Index');
     }
 
     public function store(Request $request)
@@ -113,7 +113,7 @@ class FasilitasLabController extends Controller
 
     public function edit(Request $request, FasilitasLab $fasilitasLab)
     {
-        return Inertia::render('Admin/FasilitasLab/Edit', [
+        return Inertia::render('Admin/FasilitasLab/Routes/Edit/Index', [
             'item' => $fasilitasLab,
             'filters' => $request->only(['page', 'search', 'perPage', 'filters', 'sort', 'direction'])
         ]);
