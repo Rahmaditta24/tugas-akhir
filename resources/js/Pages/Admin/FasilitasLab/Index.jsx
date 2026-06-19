@@ -665,14 +665,14 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
                             <div className="md:col-span-2">
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kategori PT</label>
                                 <CustomSelect
-    value={item.kategori_pt || ''}
-    onChange={val => setItemField(item.id, 'kategori_pt || ''', val)}
-    options={["PTNBH", "Non-PTNBH"]}
-    placeholder={"Pilih Kategori PT"}
-    error={false}
-    disabled={false}
-    
-/>
+                                    value={item.kategori_pt || ''}
+                                    onChange={val => setItemField(item.id, 'kategori_pt || ''', val)}
+                                    options={["PTNBH", "Non-PTNBH"]}
+                                    placeholder={"Pilih Kategori PT"}
+                                    error={false}
+                                    disabled={false}
+
+                                />
                             </div>
                             <div className="md:col-span-2">
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Nama Laboratorium</label>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import toast from 'react-hot-toast';
-import { exportToExcel } from '../../../Utils/exportExcel';
+import { exportToExcel } from '@/Utils/exportExcel';
 
 export default function usePenelitian({ mapData = [], researches = [], stats = {}, filterOptions = {}, filters: initialFilters = {}, isFiltered = false }) {
     const [displayMode, setDisplayMode] = useState('peneliti');

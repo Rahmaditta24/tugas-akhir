@@ -1,95 +1,30 @@
-import { useState, useEffect, Suspense, lazy } from 'react';
-import MainLayout from '../Layouts/MainLayout';
-import { router } from '@inertiajs/react';
+import React, { Suspense, lazy } from 'react';
+import MainLayout from '../../Layouts/MainLayout';
+import NavigationTabs from '../../Components/NavigationTabs';
+import MapControls from '../../Components/MapControls';
+import ResearchList from '../../Components/ResearchList';
+import StatisticsCards from '../../Components/StatisticsCards';
+import useFasilitasLab from './Hooks/useFasilitasLab';
 
-import NavigationTabs from '../Components/NavigationTabs';
-import MapControls from '../Components/MapControls';
-import ResearchList from '../Components/ResearchList';
-import StatisticsCards from '../Components/StatisticsCards';
+const MapContainer = lazy(() => import('../../Components/MapContainer'));
+const ResearchModal = lazy(() => import('../../Components/ResearchModal'));
 
-// Komponen lazy-loaded
-const MapContainer = lazy(() => import('../Components/MapContainer'));
-const ResearchModal = lazy(() => import('../Components/ResearchModal'));
-
-// Tampilan loading fallback
 const MapLoading = () => (
     <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
         <div className="text-gray-400 font-medium">Memuat peta...</div>
     </div>
 );
 
-export default function FasilitasLab({ mapData = [], researches = [], stats = {}, title, isFiltered = false, filters: initialFilters = {}, filterOptions: serverFilterOptions = {} }) {
-    const [displayMode, setDisplayMode] = useState('peneliti');
-    const [filters, setFilters] = useState(initialFilters);
-    const [searchTerm, setSearchTerm] = useState(initialFilters.search || '');
-    const [currentStats, setCurrentStats] = useState(stats);
-    const [selectedLab, setSelectedLab] = useState(null);
-    const [currentMapData, setCurrentMapData] = useState(mapData);
-    const [currentResearches, setCurrentResearches] = useState(researches);
-
-    // Sinkronisasi state saat props berubah dari navigasi atau filter eksplisit
-    useEffect(() => {
-        setCurrentMapData(mapData);
-        setCurrentResearches(researches);
-        setCurrentStats(stats);
-        setFilters(initialFilters);
-        setSearchTerm(initialFilters.search || '');
-    }, [mapData, researches, stats, initialFilters]);
-
-
-
-    // Opsi filter dari server (provinsi diambil dari backend melalui query DB)
-    const filterOptions = {
-        kampus_ptnbh: serverFilterOptions.kampus_ptnbh || ['Universitas Indonesia', 'Institut Teknologi Bandung'],
-        provinsi: serverFilterOptions.provinsi || [],
-    };
-
-    const filterFields = [
-        { label: 'Kampus PTNBH', requestKey: 'kampus_ptnbh', optionKey: 'kampus_ptnbh' },
-        { label: 'Provinsi', requestKey: 'provinsi', optionKey: 'provinsi' },
-    ];
-
-    const handleSearch = (value) => {
-        setSearchTerm(value);
-        router.get(route('fasilitas.index'), { ...filters, search: value }, {
-            preserveState: true,
-            preserveScroll: true,
-            replace: true,
-        });
-    };
-
-    const handleAdvancedSearch = (queries) => {
-        const params = { ...filters, queries: JSON.stringify(queries) };
-        if (queries.every(q => !q.term)) delete params.queries;
-
-        router.get(route('fasilitas.index'), params, {
-            preserveState: true,
-            preserveScroll: true,
-            only: ['researches', 'stats', 'filters', 'isFiltered'],
-            replace: true,
-        });
-    };
-
-    const handleFilterChange = (newFilters) => {
-        setFilters(newFilters);
-        router.get(route('fasilitas.index'), { ...newFilters }, {
-            preserveState: true,
-            preserveScroll: true,
-        });
-    };
-
-
-    const handleReset = () => {
-        setFilters({});
-        setSearchTerm('');
-        router.get(route('fasilitas.index'));
-    };
-
-    const handleDownload = () => { };
-
-    const handleCampusClick = (campusName) => {
-        handleFilterChange({ ...filters, kampus_ptnbh: [campusName] });
-    };
+export default function Index({ mapData = [], researches = [], stats = {}, title, isFiltered = false, filters: initialFilters = {}, filterOptions: serverFilterOptions = {} }) {
+    const {
+        displayMode, setDisplayMode,
+        filters, searchTerm,
+        currentStats, currentMapData, currentResearches,
+        selectedLab, setSelectedLab,
+        filterOptions, filterFields,
+        handleSearch, handleAdvancedSearch, handleFilterChange,
+        handleReset, handleDownload, handleCampusClick
+    } = useFasilitasLab({ mapData, researches, stats, filters: initialFilters, filterOptions: serverFilterOptions });
 
     return (
         <MainLayout title={title || "Peta Persebaran Penelitian BIMA Indonesia - Fasilitas Lab"}>
@@ -133,7 +68,6 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
                             }}
                         />
 
-
                         <ResearchList
                             researches={currentResearches}
                             onAdvancedSearch={handleAdvancedSearch}
@@ -148,8 +82,6 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
                             ]}
                             placeholderAll="Cari laboratorium, institusi, atau jenis lab..."
                         />
-
-
                     </div>
                 </section>
             </div>
@@ -172,5 +104,3 @@ export default function FasilitasLab({ mapData = [], researches = [], stats = {}
         </MainLayout>
     );
 }
-
-

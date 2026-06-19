@@ -730,49 +730,49 @@ export default function Index({ penelitian, stats, filters }) {
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Jenis PT</label>
                                     <CustomSelect
-    value={item.jenis_pt}
-    onChange={val => setItemField(item.id, 'jenis_pt', val)}
-    options={['Akademi', 'Institut', 'Universitas', 'Politeknik', 'Sekolah Tinggi']}
-    placeholder="-- Pilih --"
-    error={false}
-    
-/>
+                                        value={item.jenis_pt}
+                                        onChange={val => setItemField(item.id, 'jenis_pt', val)}
+                                        options={['Akademi', 'Institut', 'Universitas', 'Politeknik', 'Sekolah Tinggi']}
+                                        placeholder="-- Pilih --"
+                                        error={false}
+
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kategori PT</label>
                                     <CustomSelect
-    value={item.kategori_pt}
-    onChange={val => setItemField(item.id, 'kategori_pt', val)}
-    options={['PTN', 'PTS', 'PTNBH']}
-    placeholder="-- Pilih --"
-    error={false}
-    
-/>
+                                        value={item.kategori_pt}
+                                        onChange={val => setItemField(item.id, 'kategori_pt', val)}
+                                        options={['PTN', 'PTS', 'PTNBH']}
+                                        placeholder="-- Pilih --"
+                                        error={false}
+
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Klaster</label>
                                     <CustomSelect
-    value={item.klaster}
-    onChange={val => setItemField(item.id, 'klaster', val)}
-    options={['Kelompok PT Binaan', 'Kelompok PT Madya', 'Kelompok PT Mandiri', 'Kelompok PT Pratama', 'Kelompok PT Utama']}
-    placeholder="-- Pilih --"
-    error={false}
-    
-/>
+                                        value={item.klaster}
+                                        onChange={val => setItemField(item.id, 'klaster', val)}
+                                        options={['Kelompok PT Binaan', 'Kelompok PT Madya', 'Kelompok PT Mandiri', 'Kelompok PT Pratama', 'Kelompok PT Utama']}
+                                        placeholder="-- Pilih --"
+                                        error={false}
+
+                                    />
                                 </div>
                                 <div className="md:col-span-2">
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Institusi Pilihan (Target)</label>
                                     <CustomSelect
-    value={item.institusi_pilihan}
-    onChange={val => setItemField(item.id, 'institusi_pilihan', val)}
-    options={[
-                                            'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 
+                                        value={item.institusi_pilihan}
+                                        onChange={val => setItemField(item.id, 'institusi_pilihan', val)}
+                                        options={[
+                                            'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
                                             'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'
                                         ]}
-    placeholder="-- Pilih --"
-    error={false}
-    
-/>
+                                        placeholder="-- Pilih --"
+                                        error={false}
+
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -817,24 +817,24 @@ export default function Index({ penelitian, stats, filters }) {
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Bidang Fokus</label>
                                     <CustomSelect
-    value={item.bidang_fokus}
-    onChange={val => setItemField(item.id, 'bidang_fokus', val)}
-    options={BIDANG_FOKUS_OPTIONS}
-    placeholder="-- Pilih --"
-    error={false}
-    
-/>
+                                        value={item.bidang_fokus}
+                                        onChange={val => setItemField(item.id, 'bidang_fokus', val)}
+                                        options={BIDANG_FOKUS_OPTIONS}
+                                        placeholder="-- Pilih --"
+                                        error={false}
+
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Tema Prioritas</label>
                                     <CustomSelect
-    value={item.tema_prioritas}
-    onChange={val => setItemField(item.id, 'tema_prioritas', val)}
-    options={TEMA_PRIORITAS_OPTIONS}
-    placeholder="-- Pilih --"
-    error={false}
-    
-/>
+                                        value={item.tema_prioritas}
+                                        onChange={val => setItemField(item.id, 'tema_prioritas', val)}
+                                        options={TEMA_PRIORITAS_OPTIONS}
+                                        placeholder="-- Pilih --"
+                                        error={false}
+
+                                    />
                                 </div>
                             </div>
                         </div>

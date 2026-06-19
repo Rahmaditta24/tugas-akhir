@@ -215,7 +215,8 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                 const missingColumns = requiredColumns.filter(col => {
                     const normalizedCol = col.toLowerCase().replace(/\s+/g, '_');
                     return !firstRowKeys.includes(normalizedCol) &&
-                        !firstRowKeys.includes(normalizedCol.replace('_', ''));                });
+                        !firstRowKeys.includes(normalizedCol.replace('_', ''));
+                });
 
                 if (missingColumns.length > 0) {
                     toast.error(`Gagal: Kolom tidak lengkap. Kurang kolom: ${missingColumns.join(', ')}`, { duration: 5000 });
@@ -742,26 +743,26 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Skema</label>
                                     <CustomSelect
-    value={item.skema}
-    onChange={val => setItemField(item.id, 'skema', val)}
-    options={["A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi", "A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI", "A3: Pengembangan produk inovasi bersama DUDI", "A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering", "B1: Penyelesaian persoalan yang ada di masyarakat", "B2: Penyelesaian persoalan yang ada di Institusi Pemerintah", { value: "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)", label: "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah" }, { value: "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)", label: "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi" }, { value: "Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra", label: "Adopsi atau difusi, hilirisasi, komersialisasi produk" }, { value: "Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI", label: "Pembentukan atau penguatan research and innovation center" }, { value: "Penerapan rencana bisnis and business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen", label: "Penerapan rencana bisnis dan BMC Startup" }, "Dorongan Teknologi - Tim Pakar/Pengkaji", "Ajakan Industri PT - 1 Tahun", "Ajakan Industri PT - 2 Tahun", "Ajakan Industri PT - 3 Tahun", "Hilirisasi Inovasi Komersial", "Hilirisasi Inovasi Sosial", { value: item.skema, label: "{item.skema}" }]}
-    placeholder={"-- Pilih Skema --"}
-    error={false}
-    disabled={false}
-    
-/>
+                                        value={item.skema}
+                                        onChange={val => setItemField(item.id, 'skema', val)}
+                                        options={["A1: Hilirisasi inovasi hasil riset untuk tujuan komersialisasi", "A2: Hilirisasi kepakaran untuk menjawab kebutuhan DUDI", "A3: Pengembangan produk inovasi bersama DUDI", "A4: Peningkatan TKDN atau produk substitusi import melalui proses reverse engineering", "B1: Penyelesaian persoalan yang ada di masyarakat", "B2: Penyelesaian persoalan yang ada di Institusi Pemerintah", { value: "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah (termasuk kegiatan pengabdian masyarakat, penyusunan naskah akademik, kebijakan, rekomendasi, dan bentuk penyelesaian lainnya)", label: "Penyelesaian persoalan yang ada di masyarakat atau Institusi Pemerintah" }, { value: "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi untuk Dunia Usaha Dunia Industri (DUDI) / masyarakat (termasuk bentuk kegiatan pelatihan, pembinaan, dan bentuk jasa/produk lainnya)", label: "Penyediaan jasa, tenaga ahli, dan produk kepakaran perguruan tinggi" }, { value: "Adopsi atau difusi, hilirisasi, komersialisasi produk, purwarupa, teknologi, kebijakan (termasuk mini-plant, teaching factory, teaching industry) untuk memenuhi kebutuhan mitra", label: "Adopsi atau difusi, hilirisasi, komersialisasi produk" }, { value: "Pembentukan atau penguatan research and innovation center atau pusat unggulan teknologi (Centre of Excellence/CoE) bersama DUDI untuk menjadi pusat kajian atau riset untuk pengembangan DUDI atau untuk penyelesaian permasalahan DUDI", label: "Pembentukan atau penguatan research and innovation center" }, { value: "Penerapan rencana bisnis and business model canvas (BMC) untuk Startup (termasuk UMKM) yang dibangun oleh perguruan tinggi bekerja sama dengan DUDI maupun oleh mahasiswa bekerja sama dengan alumni dan/atau DUDI dibawah supervisi dosen", label: "Penerapan rencana bisnis dan BMC Startup" }, "Dorongan Teknologi - Tim Pakar/Pengkaji", "Ajakan Industri PT - 1 Tahun", "Ajakan Industri PT - 2 Tahun", "Ajakan Industri PT - 3 Tahun", "Hilirisasi Inovasi Komersial", "Hilirisasi Inovasi Sosial", { value: item.skema, label: "{item.skema}" }]}
+                                        placeholder={"-- Pilih Skema --"}
+                                        error={false}
+                                        disabled={false}
+
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Direktorat</label>
                                     <CustomSelect
-    value={item.direktorat}
-    onChange={val => setItemField(item.id, 'direktorat', val)}
-    options={["DIKSI", "DIKTI", "Direktorat Hilirisasi dan Kemitraan"]}
-    placeholder={"-- Pilih Direktorat --"}
-    error={false}
-    disabled={false}
-    
-/>
+                                        value={item.direktorat}
+                                        onChange={val => setItemField(item.id, 'direktorat', val)}
+                                        options={["DIKSI", "DIKTI", "Direktorat Hilirisasi dan Kemitraan"]}
+                                        placeholder={"-- Pilih Direktorat --"}
+                                        error={false}
+                                        disabled={false}
+
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Luaran</label>

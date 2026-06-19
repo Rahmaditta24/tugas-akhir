@@ -1,31 +1,12 @@
-import { useState, useEffect, Suspense, lazy } from 'react';
-import MainLayout from '../Layouts/MainLayout';
+import { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
-
-import toast, { Toaster } from 'react-hot-toast';
-import { exportToExcel } from '../Utils/exportExcel';
-import NavigationTabs from '../Components/NavigationTabs';
-import MapControls from '../Components/MapControls';
-import ResearchList from '../Components/ResearchList';
-import StatisticsCards from '../Components/StatisticsCards';
+import toast from 'react-hot-toast';
+import { exportToExcel } from '@/Utils/exportExcel';
 import { NAMA_SKEMA_PENGABDIAN_OPTIONS } from '@/Constants/options';
 
-// Komponen lazy-loaded
-const MapContainer = lazy(() => import('../Components/MapContainer'));
-const ResearchModal = lazy(() => import('../Components/ResearchModal'));
-
-// Tampilan loading fallback
-const MapLoading = () => (
-    <div className="w-full h-[600px] bg-gray-100 animate-pulse flex items-center justify-center rounded-lg">
-        <div className="text-gray-400 font-medium">Memuat peta...</div>
-    </div>
-);
-
-export default function Pengabdian({ mapData = [], researches = [], stats = {}, title, isFiltered = false, filters: initialFilters = {}, filterOptions: serverFilterOptions = {} }) {
+export default function usePengabdian({ mapData, researches, stats, filters: initialFilters, filterOptions: serverFilterOptions }) {
     const DEFAULT_DATA_TYPE = 'Multitahun, Batch I & Batch II';
 
-    // Jika server tidak mengembalikan dataType (akses /pengabdian tanpa filter),
-    // set default di sisi React agar tampilan sesuai dengan data yang dimuat
     const normalizedFilters = initialFilters.dataType
         ? initialFilters
         : { ...initialFilters, dataType: DEFAULT_DATA_TYPE };
@@ -38,8 +19,8 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentMapData, setCurrentMapData] = useState(mapData);
     const [currentResearches, setCurrentResearches] = useState(researches);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Sinkronisasi state saat props berubah dari navigasi atau filter eksplisit
     useEffect(() => {
         setCurrentMapData(mapData);
         setCurrentResearches(researches);
@@ -51,15 +32,12 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         setSearchTerm(initialFilters.search || '');
     }, [mapData, researches, stats, initialFilters]);
 
-
-    // Opsi filter statis untuk Pengabdian
     const allSkemas = NAMA_SKEMA_PENGABDIAN_OPTIONS;
 
     const filterOptions = {
         dataType: ['Multitahun, Batch I & Batch II', 'Kosabangsa'],
         skema: filters.dataType === 'Kosabangsa' ? ['Kosabangsa'] : allSkemas,
         provinsi: serverFilterOptions.provinsi || [],
-        // Pastikan tahun selalu string agar cocok dengan nilai URL params (string)
         tahun: (serverFilterOptions.tahun || ['2020', '2021', '2022', '2023', '2024', '2025', '2026']).map(String),
     };
 
@@ -132,7 +110,6 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
             pengabdian_kabupaten: r.pengabdian_kabupaten || r.kabupaten_kota || r.kab_pt || '-',
             pengabdian_klaster: r.pengabdian_klaster || r.klaster || '-',
             pengabdian_status_pt: r.pengabdian_status_pt || r.ptn_pts || r.kategori_pt || '-',
-            // Pemetaan field Kosabangsa
             pengabdian_nama_pendamping: r.pengabdian_nama_pendamping || r.nama_pendamping || '-',
             pengabdian_institusi_pendamping: r.pengabdian_institusi_pendamping || r.institusi_pendamping || '-',
             pengabdian_bidang_teknologi: r.pengabdian_bidang_teknologi || r.bidang_teknologi_inovasi || '-',
@@ -160,7 +137,6 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         setIsModalOpen(true);
     };
 
-    const [isLoading, setIsLoading] = useState(false);
     const handleDownload = async () => {
         setIsLoading(true);
         const label = filters.dataType || 'Pengabdian';
@@ -171,12 +147,10 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         const queryString = new URLSearchParams(window.location.search).toString();
         const today = new Date().toISOString().slice(0, 10);
 
-        // Tentukan slug jenis data (multitahun / kosabangsa)
         const dataTypeSlug = (filters.dataType || '').toLowerCase().includes('kosabangsa')
             ? 'kosabangsa'
             : 'multitahun';
 
-        // Tentukan apakah ada filter aktif selain dataType
         const hasActiveFilter = Object.keys(filters).some(
             k => k !== 'dataType' && filters[k] && filters[k] !== ''
         );
@@ -217,75 +191,13 @@ export default function Pengabdian({ mapData = [], researches = [], stats = {}, 
         });
     };
 
-    const [filteredResearchesForMap, setFilteredResearchesForMap] = useState(researches);
-
-    useEffect(() => {
-        setFilteredResearchesForMap(researches);
-    }, [researches]);
-
-    return (
-        <MainLayout title={title || "Peta Persebaran Penelitian BIMA Indonesia - Pengabdian"}>
-            <Toaster />
-            <NavigationTabs activePage="pengabdian" />
-
-            <div className="relative">
-                <Suspense fallback={<MapLoading />}>
-                    <MapContainer 
-                        mapData={currentMapData} 
-                        data={currentResearches}
-                        displayMode={displayMode} 
-                        onStatsChange={handleStatsChange}
-                        filters={filters} 
-                    />
-                </Suspense>
-                <MapControls
-                    onSearch={handleSearch}
-                    onDisplayModeChange={setDisplayMode}
-                    onReset={handleReset}
-                    onDownload={handleDownload}
-                    downloadLabel="Excel"
-                    isLoading={isLoading}
-                    displayMode={displayMode}
-                    filters={filters}
-                    filterOptions={filterOptions}
-                    onFilterChange={handleFilterChange}
-                    filterFields={filterFields}
-                    searchTerm={searchTerm}
-                />
-            </div>
-            <div className="w-full lg:max-w-[90%] mx-auto mb-5">
-                <section className="bg-white/80 backdrop-blur-sm">
-                    <div className="container mx-auto sm:px-6 lg:px-0">
-                        <StatisticsCards stats={currentStats} />
-                        <ResearchList
-                            researches={currentResearches}
-                            onAdvancedSearch={handleAdvancedSearch}
-                            onFilteredResults={setCurrentResearches}
-                            onItemClick={handleItemClick}
-                            title="Daftar Pengabdian"
-                            isFiltered={isFiltered}
-                            isPenelitianPage={true}
-                            customFieldOptions={[
-                                { value: 'all', label: 'Semua' },
-                                { value: 'title', label: 'Judul Pengabdian' },
-                                { value: 'university', label: 'Universitas' },
-                                { value: 'researcher', label: 'Peneliti' },
-                                { value: 'field', label: 'Bidang Fokus' },
-                                { value: 'skema', label: 'Skema' },
-                            ]}
-                        />
-                    </div>
-                </section>
-            </div>
-            <Suspense fallback={null}>
-                <ResearchModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    data={selectedResearch}
-                />
-            </Suspense>
-        </MainLayout>
-    );
+    return {
+        displayMode, setDisplayMode,
+        filters, searchTerm,
+        currentStats, currentMapData, currentResearches, setCurrentResearches,
+        selectedResearch, isModalOpen, setIsModalOpen,
+        isLoading, filterOptions, filterFields,
+        handleSearch, handleAdvancedSearch, handleFilterChange,
+        handleStatsChange, handleReset, handleItemClick, handleDownload
+    };
 }
-
-
