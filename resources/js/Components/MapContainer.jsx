@@ -869,9 +869,10 @@ export default function MapContainer({
                     const hasSingleDetail = !!item._id;
                     const hasDetails = hasGroupedDetails || hasSingleDetail;
 
-                    const fields = hasGroupedDetails
-                        ? (rawItem.bidang_fokus ? rawItem.bidang_fokus.split('|') : [])
-                        : [item._field];
+                    const fields = rawItem.bidang_fokus
+                        ? rawItem.bidang_fokus.split('|')
+                        : (hasGroupedDetails ? [] : [item._field]);
+                    
                     const ids = hasGroupedDetails
                         ? rawItem.ids.split('|').filter(id => id && id !== 'undefined')
                         : (item._id ? [item._id] : []);

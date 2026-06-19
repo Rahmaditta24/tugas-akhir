@@ -116,13 +116,15 @@ class PenelitianService
         $cacheKey = 'map_data_cache_v' . $v . '_' . md5(json_encode($request->all()));
 
         return Cache::remember($cacheKey, 300, function () use ($baseQuery) {
+            DB::statement('SET SESSION group_concat_max_len = 100000');
             $aggregatedData = (clone $baseQuery)
                 ->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('COUNT(*) as total_penelitian'),
                     DB::raw('institusi as institusi_name'),
-                    DB::raw('MAX(provinsi) as provinsi')
+                    DB::raw('MAX(provinsi) as provinsi'),
+                    DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, "-") SEPARATOR "|") as all_fields')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -138,6 +140,7 @@ class PenelitianService
                     'total_penelitian' => (int) $item->total_penelitian,
                     'institusi' => $item->institusi_name,
                     'provinsi' => $item->provinsi,
+                    'bidang_fokus' => $item->all_fields,
                 ];
             })->toArray();
         });

@@ -83,13 +83,15 @@ class PengabdianService
 
         $cacheKey = 'map_data_pengabdian_v9_' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery) {
+            DB::statement('SET SESSION group_concat_max_len = 100000');
             $query = (clone $baseQuery)
                 ->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('nama_institusi as institusi_name'),
                     DB::raw('MAX(prov_pt) as provinsi'),
-                    DB::raw('COUNT(*) as total_penelitian')
+                    DB::raw('COUNT(*) as total_penelitian'),
+                    DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_fields')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -104,6 +106,7 @@ class PengabdianService
                     'pt_longitude' => (float) $item->pt_longitude,
                     'provinsi' => $item->provinsi,
                     'total_pengabdian' => (int) $item->total_penelitian,
+                    'bidang_fokus' => $item->all_fields,
                 ];
             })->toArray();
         });
