@@ -105,7 +105,7 @@ class ProdukController extends Controller
 
     public function create()
     {
-        return Inertia::render('Admin/Produk/Create');
+        return Inertia::render('Admin/Produk/Routes/Create/Index');
     }
 
     public function store(Request $request)
@@ -139,7 +139,7 @@ class ProdukController extends Controller
 
     public function edit(Produk $produk)
     {
-        return Inertia::render('Admin/Produk/Edit', ['item' => $produk]);
+        return Inertia::render('Admin/Produk/Routes/Edit/Index', ['item' => $produk]);
     }
 
     public function update(Request $request, Produk $produk)
