@@ -36,7 +36,7 @@ class RumusanMasalahStatementController extends Controller
                 ];
             });
 
-        return Inertia::render('Admin/RumusanMasalahCategory/StatementIndex', [
+        return Inertia::render('Admin/RumusanMasalahCategory/Routes/StatementIndex/Index', [
             'category' => $category,
             'statements' => $statements
         ]);

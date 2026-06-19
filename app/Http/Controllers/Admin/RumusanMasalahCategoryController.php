@@ -23,7 +23,7 @@ class RumusanMasalahCategoryController extends Controller
 
     public function create()
     {
-        return Inertia::render('Admin/RumusanMasalahCategory/Create');
+        return Inertia::render('Admin/RumusanMasalahCategory/Routes/Create/Index');
     }
 
     public function store(Request $request)
@@ -59,7 +59,7 @@ class RumusanMasalahCategoryController extends Controller
     public function edit($id)
     {
         $category = RumusanMasalahCategory::findOrFail($id);
-        return Inertia::render('Admin/RumusanMasalahCategory/Edit', [
+        return Inertia::render('Admin/RumusanMasalahCategory/Routes/Edit/Index', [
             'category' => $category
         ]);
     }

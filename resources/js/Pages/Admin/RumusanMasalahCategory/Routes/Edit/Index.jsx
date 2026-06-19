@@ -2,14 +2,17 @@ import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
-export default function RumusanMasalahCategoryCreate() {
+export default function RumusanMasalahCategoryEdit({ category }) {
     const { data, setData, post, processing, errors } = useForm({
-        name: '',
-        order_number: '',
+        _method: 'PUT',
+        name: category.name || '',
+        order_number: category.order_number || '',
         image: null,
     });
 
-    const [imagePreview, setImagePreview] = useState(null);
+    const [imagePreview, setImagePreview] = useState(
+        category.image ? `/storage/${category.image}` : null
+    );
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -21,21 +24,21 @@ export default function RumusanMasalahCategoryCreate() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route('admin.rumusan-masalah.categories.store'));
+        post(route('admin.rumusan-masalah.categories.update', category.id));
     };
 
     return (
         <AdminLayout>
-            <Head title="Tambah Kategori Rumusan Masalah" />
+            <Head title="Edit Kategori Rumusan Masalah" />
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6 bg-white border-b border-gray-200">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-bold text-gray-800">Tambah Kategori Baru</h2>
+                                <h2 className="text-xl font-bold text-gray-800">Edit Kategori</h2>
                                 <Link
-                                    href={route('admin.rumusan-masalah.category.index')}
+                                    href={route('admin.rumusan-masalah.categories.index')}
                                     className="text-indigo-600 hover:text-indigo-900 font-medium"
                                 >
                                     &larr; Kembali
@@ -94,7 +97,7 @@ export default function RumusanMasalahCategoryCreate() {
                                         className={`shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline ${errors.image ? 'border-red-500' : ''
                                             }`}
                                     />
-                                    <p className="text-gray-500 text-xs mt-1">Format: png, jpg, webp. Max: 2MB.</p>
+                                    <p className="text-gray-500 text-xs mt-1">Format: png, jpg, webp. Max: 2MB. Biarkan kosong jika tidak ingin mengubah.</p>
                                     {errors.image && (
                                         <p className="text-red-500 text-xs italic mt-1">{errors.image}</p>
                                     )}
@@ -102,7 +105,7 @@ export default function RumusanMasalahCategoryCreate() {
                                     {/* Preview */}
                                     {imagePreview && (
                                         <div className="mt-4">
-                                            <p className="text-sm text-gray-600 mb-1">Preview:</p>
+                                            <p className="text-sm text-gray-600 mb-1">Preview Saat Ini/Baru:</p>
                                             <img
                                                 src={imagePreview}
                                                 alt="Preview"
@@ -116,10 +119,10 @@ export default function RumusanMasalahCategoryCreate() {
                                     <button
                                         type="submit"
                                         disabled={processing}
-                                        className={`bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${processing ? 'opacity-50 cursor-not-allowed' : ''
+                                        className={`bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${processing ? 'opacity-50 cursor-not-allowed' : ''
                                             }`}
                                     >
-                                        {processing ? 'Menyimpan...' : 'Simpan Kategori'}
+                                        {processing ? 'Menyimpan...' : 'Perbarui Kategori'}
                                     </button>
                                 </div>
                             </form>

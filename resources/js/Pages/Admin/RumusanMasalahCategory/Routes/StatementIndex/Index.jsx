@@ -3,11 +3,11 @@ import { Head } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import Breadcrumb from '@/Components/Breadcrumb';
 
-import useStatements from './Hooks/useStatements';
-import StatementTable from './Components/StatementTable';
-import StatementModal from './Components/StatementModal';
+import useStatements from '../../Hooks/useStatements';
+import StatementTable from '../../Components/StatementTable';
+import StatementModal from '../../Components/StatementModal';
 
-export default function RumusanMasalahStatementIndex({ category, statements }) {
+export default function StatementIndex({ category, statements }) {
     const context = useStatements(category);
 
     const breadcrumbs = [
