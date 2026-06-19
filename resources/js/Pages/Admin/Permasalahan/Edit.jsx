@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
+import CustomSelect from '@/Components/CustomSelect';
 import { Link, router } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import PageHeader from '../../../Components/PageHeader';
-import LocationSelect from '../../../Components/LocationSelect';
+import AdminLayout from '@/Layouts/AdminLayout';
+import PageHeader from '@/Components/PageHeader';
+import LocationSelect from '@/Components/LocationSelect';
 
 export default function Edit({ permasalahan, filters }) {
     const [values, setValues] = useState({

@@ -1,18 +1,18 @@
 import { useState, useMemo } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
-import { PER_PAGE_OPTIONS, NAMA_SINGKAT_SKEMA_PENGABDIAN_OPTIONS, NAMA_SKEMA_PENGABDIAN_OPTIONS } from '../../../Constants/options';
+import CustomSelect from '@/Components/CustomSelect';
+import { PER_PAGE_OPTIONS, NAMA_SINGKAT_SKEMA_PENGABDIAN_OPTIONS, NAMA_SKEMA_PENGABDIAN_OPTIONS } from '@/Constants/options';
 import { Link, router, usePage } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import AdminTable from '../../../Components/AdminTable';
-import PageHeader from '../../../Components/PageHeader';
-import Badge from '../../../Components/Badge';
-import { fmt, display } from '../../../Utils/format';
+import AdminLayout from '@/Layouts/AdminLayout';
+import AdminTable from '@/Components/AdminTable';
+import PageHeader from '@/Components/PageHeader';
+import Badge from '@/Components/Badge';
+import { fmt, display } from '@/Utils/format';
 import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
-import ImportModal from '../../../Components/ImportModal';
-import BulkUpdateModal from '../../../Components/BulkUpdateModal';
-import LocationSelect from '../../../Components/LocationSelect';
-import HeaderActions from '../../../Components/Admin/HeaderActions';
+import ImportModal from '@/Components/ImportModal';
+import BulkUpdateModal from '@/Components/BulkUpdateModal';
+import LocationSelect from '@/Components/LocationSelect';
+import HeaderActions from '@/Components/Admin/HeaderActions';
 
 export default function Index({ pengabdian, stats = {}, filters = {} }) {
     const { flash } = usePage().props;

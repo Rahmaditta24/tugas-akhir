@@ -1,9 +1,9 @@
 // resources/js/Pages/Admin/RumusanMasalahStatement/Create.jsx
 import { useState } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
+import CustomSelect from '@/Components/CustomSelect';
 import { router } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import PageHeader from '../../../Components/PageHeader';
+import AdminLayout from '@/Layouts/AdminLayout';
+import PageHeader from '@/Components/PageHeader';
 
 export default function Create({ categories, category_id }) {
     const [form, setForm] = useState({

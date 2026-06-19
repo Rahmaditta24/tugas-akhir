@@ -1,6 +1,6 @@
 import React from 'react';
-import PageHeader from '../../../../Components/PageHeader';
-import HeaderActions from '../../../../Components/Admin/HeaderActions';
+import PageHeader from '@/Components/PageHeader';
+import HeaderActions from '@/Components/Admin/HeaderActions';
 
 export default function FasilitasLabHeader({ context }) {
     const { handleExport, setShowImportModal, isImporting, selectedIds } = context;

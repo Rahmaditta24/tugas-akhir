@@ -1,19 +1,19 @@
 import { useState, useMemo, useRef } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
-import { PER_PAGE_OPTIONS } from '../../../Constants/options';
+import CustomSelect from '@/Components/CustomSelect';
+import { PER_PAGE_OPTIONS } from '@/Constants/options';
 import { toast, Toaster } from 'react-hot-toast';
 import { Link, router, usePage } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import AdminTable from '../../../Components/AdminTable';
-import PageHeader from '../../../Components/PageHeader';
-import Badge from '../../../Components/Badge';
-import { fmt, display, titleCase } from '../../../Utils/format';
+import AdminLayout from '@/Layouts/AdminLayout';
+import AdminTable from '@/Components/AdminTable';
+import PageHeader from '@/Components/PageHeader';
+import Badge from '@/Components/Badge';
+import { fmt, display, titleCase } from '@/Utils/format';
 import * as XLSX from 'xlsx';
-import ImportModal from '../../../Components/ImportModal';
-import BulkUpdateModal from '../../../Components/BulkUpdateModal';
-import CampusSelect from '../../../Components/CampusSelect';
-import LocationSelect from '../../../Components/LocationSelect';
-import HeaderActions from '../../../Components/Admin/HeaderActions';
+import ImportModal from '@/Components/ImportModal';
+import BulkUpdateModal from '@/Components/BulkUpdateModal';
+import CampusSelect from '@/Components/CampusSelect';
+import LocationSelect from '@/Components/LocationSelect';
+import HeaderActions from '@/Components/Admin/HeaderActions';
 
 
 export default function Index({ hilirisasi, stats = {}, filters = {} }) {

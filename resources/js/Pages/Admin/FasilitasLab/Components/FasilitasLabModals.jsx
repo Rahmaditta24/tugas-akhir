@@ -1,9 +1,9 @@
 import React from 'react';
-import ImportModal from '../../../../Components/ImportModal';
-import BulkUpdateModal from '../../../../Components/BulkUpdateModal';
-import CampusSelect from '../../../../Components/CampusSelect';
-import LocationSelect from '../../../../Components/LocationSelect';
-import CustomSelect from '../../../../Components/CustomSelect';
+import ImportModal from '@/Components/ImportModal';
+import BulkUpdateModal from '@/Components/BulkUpdateModal';
+import CampusSelect from '@/Components/CampusSelect';
+import LocationSelect from '@/Components/LocationSelect';
+import CustomSelect from '@/Components/CustomSelect';
 
 export default function FasilitasLabModals({ context, fasilitasLab }) {
     const {

@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
+import CustomSelect from '@/Components/CustomSelect';
 import { Link, router, usePage } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import AdminTable from '../../../Components/AdminTable';
-import PageHeader from '../../../Components/PageHeader';
-import Badge from '../../../Components/Badge';
-import { display, titleCase } from '../../../Utils/format';
-import HeaderActions from '../../../Components/Admin/HeaderActions';
-import ResearchModal from '../../../Components/ResearchModal';
-import {TIPE_PERMASALAHAN_OPTIONS, PER_PAGE_OPTIONS } from '../../../Constants/options';
+import AdminLayout from '@/Layouts/AdminLayout';
+import AdminTable from '@/Components/AdminTable';
+import PageHeader from '@/Components/PageHeader';
+import Badge from '@/Components/Badge';
+import { display, titleCase } from '@/Utils/format';
+import HeaderActions from '@/Components/Admin/HeaderActions';
+import ResearchModal from '@/Components/ResearchModal';
+import {TIPE_PERMASALAHAN_OPTIONS, PER_PAGE_OPTIONS } from '@/Constants/options';
 
 export default function Index({
     data = {},

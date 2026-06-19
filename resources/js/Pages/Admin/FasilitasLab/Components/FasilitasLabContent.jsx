@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { Link } from '@inertiajs/react';
-import AdminTable from '../../../../Components/AdminTable';
-import Badge from '../../../../Components/Badge';
-import { fmt, display } from '../../../../Utils/format';
-import { PER_PAGE_OPTIONS } from '../../../../Constants/options';
+import AdminTable from '@/Components/AdminTable';
+import Badge from '@/Components/Badge';
+import { fmt, display } from '@/Utils/format';
+import { PER_PAGE_OPTIONS } from '@/Constants/options';
 
 export default function FasilitasLabContent({ context, fasilitasLab }) {
     const {

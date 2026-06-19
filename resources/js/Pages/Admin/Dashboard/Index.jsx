@@ -1,6 +1,6 @@
 import React from 'react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import PageHeader from '../../../Components/PageHeader';
+import AdminLayout from '@/Layouts/AdminLayout';
+import PageHeader from '@/Components/PageHeader';
 import useDashboard from './Hooks/useDashboard';
 import { getStatsCards } from './Constants/dashboardConstants';
 import StatsGrid from './Components/StatsGrid';

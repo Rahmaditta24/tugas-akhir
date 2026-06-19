@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function RumusanMasalahCategoryEdit({ category }) {

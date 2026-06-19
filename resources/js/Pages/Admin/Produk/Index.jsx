@@ -1,18 +1,18 @@
 import React, { useState, useMemo, useRef } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
+import CustomSelect from '@/Components/CustomSelect';
 import { Link, router, usePage } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import AdminTable from '../../../Components/AdminTable';
-import PageHeader from '../../../Components/PageHeader';
-import Badge from '../../../Components/Badge';
-import { fmt, display } from '../../../Utils/format';
+import AdminLayout from '@/Layouts/AdminLayout';
+import AdminTable from '@/Components/AdminTable';
+import PageHeader from '@/Components/PageHeader';
+import Badge from '@/Components/Badge';
+import { fmt, display } from '@/Utils/format';
 import * as XLSX from 'xlsx';
 import toast, { Toaster } from 'react-hot-toast';
-import ImportModal from '../../../Components/ImportModal';
-import BulkUpdateModal from '../../../Components/BulkUpdateModal';
-import CampusSelect from '../../../Components/CampusSelect';
-import HeaderActions from '../../../Components/Admin/HeaderActions';
-import {BIDANG_OPTIONS, TKT_OPTIONS, PER_PAGE_OPTIONS } from '../../../Constants/options';
+import ImportModal from '@/Components/ImportModal';
+import BulkUpdateModal from '@/Components/BulkUpdateModal';
+import CampusSelect from '@/Components/CampusSelect';
+import HeaderActions from '@/Components/Admin/HeaderActions';
+import {BIDANG_OPTIONS, TKT_OPTIONS, PER_PAGE_OPTIONS } from '@/Constants/options';
 
 export default function Index({ produk, stats = {}, filters = {} }) {
     const { flash } = usePage().props;

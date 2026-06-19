@@ -1,6 +1,6 @@
 import React from 'react';
-import MinimalBarChart from '../../../../Components/Charts/MinimalBarChart';
-import MinimalDonutChart from '../../../../Components/Charts/MinimalDonutChart';
+import MinimalBarChart from '@/Components/Charts/MinimalBarChart';
+import MinimalDonutChart from '@/Components/Charts/MinimalDonutChart';
 import { pieColors, labelJenis } from '../Constants/dashboardConstants';
 
 export default function ChartsSection({ 

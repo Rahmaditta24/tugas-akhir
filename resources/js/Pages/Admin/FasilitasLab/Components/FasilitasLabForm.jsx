@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import CampusSelect from '../../../../Components/CampusSelect';
-import LocationSelect from '../../../../Components/LocationSelect';
-import MapLocationPicker from '../../../../Components/MapLocationPicker';
-import CustomSelect from '../../../../Components/CustomSelect';
+import CampusSelect from '@/Components/CampusSelect';
+import LocationSelect from '@/Components/LocationSelect';
+import MapLocationPicker from '@/Components/MapLocationPicker';
+import CustomSelect from '@/Components/CustomSelect';
 
 export default function FasilitasLabForm({ context }) {
     const {

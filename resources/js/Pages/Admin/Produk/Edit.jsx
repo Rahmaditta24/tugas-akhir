@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
+import CustomSelect from '@/Components/CustomSelect';
 import { useForm, Link } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import CampusSelect from '../../../Components/CampusSelect';
-import MapLocationPicker from '../../../Components/MapLocationPicker';
-import { BIDANG_OPTIONS, TKT_OPTIONS } from '../../../Constants/options';
+import AdminLayout from '@/Layouts/AdminLayout';
+import CampusSelect from '@/Components/CampusSelect';
+import MapLocationPicker from '@/Components/MapLocationPicker';
+import { BIDANG_OPTIONS, TKT_OPTIONS } from '@/Constants/options';
 
 export default function Edit({ item }) {
     const [provinces, setProvinces] = useState([]);

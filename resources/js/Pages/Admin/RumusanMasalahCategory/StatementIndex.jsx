@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, useForm } from '@inertiajs/react';
-import Breadcrumb from '../../../Components/Breadcrumb';
+import Breadcrumb from '@/Components/Breadcrumb';
 
 export default function StatementIndex({ category, statements }) {
     // --- State ---

@@ -1,5 +1,5 @@
 import React from 'react';
-import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Toaster } from 'react-hot-toast';
 import useFasilitasLab from './Hooks/useFasilitasLab';
 

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
+import CustomSelect from '@/Components/CustomSelect';
 import { useForm, Link } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import CampusSelect from '../../../Components/CampusSelect';
-import LocationSelect from '../../../Components/LocationSelect';
-import MapLocationPicker from '../../../Components/MapLocationPicker';
+import AdminLayout from '@/Layouts/AdminLayout';
+import CampusSelect from '@/Components/CampusSelect';
+import LocationSelect from '@/Components/LocationSelect';
+import MapLocationPicker from '@/Components/MapLocationPicker';
 
 // Helper untuk Title Case
 const toTitleCase = (str) => {

@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import CustomSelect from '../../../Components/CustomSelect';
+import CustomSelect from '@/Components/CustomSelect';
 import { useForm, Link } from '@inertiajs/react';
-import AdminLayout from '../../../Layouts/AdminLayout';
-import CampusSelect from '../../../Components/CampusSelect';
-import LocationSelect from '../../../Components/LocationSelect';
-import MapLocationPicker from '../../../Components/MapLocationPicker';
+import AdminLayout from '@/Layouts/AdminLayout';
+import CampusSelect from '@/Components/CampusSelect';
+import LocationSelect from '@/Components/LocationSelect';
+import MapLocationPicker from '@/Components/MapLocationPicker';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({

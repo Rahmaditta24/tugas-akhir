@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import AdminLayout from '../../../Layouts/AdminLayout';
+import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
-import PageHeader from '../../../Components/PageHeader';
-import HeaderActions from '../../../Components/Admin/HeaderActions';
+import PageHeader from '@/Components/PageHeader';
+import HeaderActions from '@/Components/Admin/HeaderActions';
 
 export default function RumusanMasalahCategoryIndex({ categories }) {
     // --- Manajemen State ---
