@@ -4,14 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasUserOwnership;
 
 class Pengabdian extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUserOwnership;
 
     protected $table = 'pengabdian';
 
     protected $fillable = [
+        'user_id',
         'batch_type',
         'nama',
         'nidn',

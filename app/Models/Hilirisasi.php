@@ -4,14 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasUserOwnership;
 
 class Hilirisasi extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUserOwnership;
 
     protected $table = 'hilirisasi';
 
     protected $fillable = [
+        'user_id',
         'tahun',
         'id_proposal',
         'judul',

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasUserOwnership;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class RumusanMasalahStatement extends Model
@@ -10,6 +11,7 @@ class RumusanMasalahStatement extends Model
     protected $table = 'rumusan_masalah_statements';
 
     protected $fillable = [
+        'user_id',
         'category_id',
         'order_number',
         'full_number',

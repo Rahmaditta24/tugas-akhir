@@ -43,9 +43,10 @@ export default function ResetPassword({ token, email }) {
                             name="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            className="w-full px-4 py-2 text-base border rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200"
+                            className={`w-full px-4 py-2 text-base border rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed ${errors?.email ? 'border-red-500' : 'border-slate-200'}`}
                             readOnly
                         />
+                        {errors?.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
                     </div>
 
                     <div className="mb-4 text-left">

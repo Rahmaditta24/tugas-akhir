@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasUserOwnership;
 
 class FasilitasLab extends Model
 {
     protected $table = 'fasilitas_lab';
 
     protected $fillable = [
+        'user_id',
         'kode_universitas',
         'institusi',
         'kategori_pt',

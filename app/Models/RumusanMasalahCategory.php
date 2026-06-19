@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasUserOwnership;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,7 @@ class RumusanMasalahCategory extends Model
     protected $table = 'rumusan_masalah_categories';
 
     protected $fillable = [
+        'user_id',
         'order_number',
         'name',
         'slug',

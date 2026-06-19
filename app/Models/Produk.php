@@ -4,14 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasUserOwnership;
 
 class Produk extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUserOwnership;
 
     protected $table = 'produk';
 
     protected $fillable = [
+        'user_id',
         'institusi',
         'latitude',
         'longitude',

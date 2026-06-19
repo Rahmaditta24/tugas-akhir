@@ -45,4 +45,39 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function penelitian()
+    {
+        return $this->hasMany(Penelitian::class);
+    }
+
+    public function pengabdian()
+    {
+        return $this->hasMany(Pengabdian::class);
+    }
+
+    public function hilirisasi()
+    {
+        return $this->hasMany(Hilirisasi::class);
+    }
+
+    public function produk()
+    {
+        return $this->hasMany(Produk::class);
+    }
+
+    public function fasilitasLab()
+    {
+        return $this->hasMany(FasilitasLab::class);
+    }
+
+    public function rumusanMasalahCategories()
+    {
+        return $this->hasMany(RumusanMasalahCategory::class);
+    }
+
+    public function rumusanMasalahStatements()
+    {
+        return $this->hasMany(RumusanMasalahStatement::class);
+    }
 }
