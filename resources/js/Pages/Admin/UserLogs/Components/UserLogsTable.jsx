@@ -10,7 +10,7 @@ export default function UserLogsTable({ logs, context }) {
             key: 'user',
             title: 'Pengguna',
             render: (_, row) => (
-                <div>
+                <div className="whitespace-nowrap">
                     <div className="font-medium text-slate-900">{row.user?.name || 'Unknown User'}</div>
                     <div className="text-xs text-slate-500">{row.user?.email || '-'}</div>
                 </div>
@@ -20,7 +20,7 @@ export default function UserLogsTable({ logs, context }) {
             key: 'ip_address',
             title: 'IP Address',
             render: (val) => (
-                <span className="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-xs font-mono">
+                <span className="whitespace-nowrap bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-xs font-mono">
                     {val || '-'}
                 </span>
             )
@@ -29,7 +29,7 @@ export default function UserLogsTable({ logs, context }) {
             key: 'location',
             title: 'Lokasi',
             render: (val, row) => (
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 whitespace-nowrap">
                     <div className="flex items-center gap-1">
                         <svg className="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -64,19 +64,23 @@ export default function UserLogsTable({ logs, context }) {
         {
             key: 'created_at',
             title: 'Waktu Login',
-            render: (val) => new Date(val).toLocaleString('id-ID', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            })
+            render: (val) => (
+                <span className="whitespace-nowrap">
+                    {new Date(val).toLocaleString('id-ID', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })}
+                </span>
+            )
         },
         {
             key: 'status',
             title: 'Status',
             render: (_, row) => (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${row.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                <span className={`whitespace-nowrap px-2 py-1 rounded-full text-xs font-medium ${row.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
                     {row.is_active ? 'Aktif' : 'Tidak Aktif'}
                 </span>
             )
