@@ -10,10 +10,6 @@ use Illuminate\Http\Request;
 
 class PengabdianService
 {
-    public function getIndexData(Request $request): array
-    {
-        $v = (int) Cache::get('pengabdian_cache_version', 1);
-
     public function getBaseQuery(Request $request)
     {
         $dataTypeEffective = $request->input('dataType');

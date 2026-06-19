@@ -9,8 +9,6 @@ use Illuminate\Http\Request;
 
 class HilirisasiService
 {
-    public function getIndexData(Request $request): array
-    {
     public function getBaseQuery(Request $request)
     {
         $query = Hilirisasi::query();

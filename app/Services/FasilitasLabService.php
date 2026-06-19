@@ -9,8 +9,6 @@ use Illuminate\Http\Request;
 
 class FasilitasLabService
 {
-    public function getIndexData(Request $request): array
-    {
     public function getBaseQuery(Request $request)
     {
         $query = FasilitasLab::query();
