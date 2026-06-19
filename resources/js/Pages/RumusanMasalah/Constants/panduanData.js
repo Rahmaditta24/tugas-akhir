@@ -1,4 +1,4 @@
-export export const chartCategories = [
+export const chartCategories = [
         "Ketahanan Pangan", "Kesehatan", "Energi", "Maritim",
         "Pertahanan", "AI & Semikonduktor", "Material & Manufaktur",
         "Hilirisasi & Industrialisasi"

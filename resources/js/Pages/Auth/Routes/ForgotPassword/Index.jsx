@@ -1,7 +1,7 @@
 import React from 'react';
 import { Head } from '@inertiajs/react';
-import AuthHeader from '../../../Components/AuthHeader';
-import AuthFooter from '../../../Components/AuthFooter';
+import AuthHeader from '../../Components/AuthHeader';
+import AuthFooter from '../../Components/AuthFooter';
 import ForgotPasswordForm from './Components/ForgotPasswordForm';
 
 export default function Index({ status }) {

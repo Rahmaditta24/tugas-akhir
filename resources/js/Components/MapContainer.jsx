@@ -886,34 +886,8 @@ export default function MapContainer({
                         : [item._tkt || '-'];
                     const count = hasDetails ? ids.length : (item._count || 1);
 
-                    if (!hasDetails && count > 30) {
-                        const radius = 25;
-                        const fontSize = 14;
-                        const marker = L.marker([lat, lng], {
-                            icon: L.divIcon({
-                                html: `<div style="background-color: rgba(62, 125, 202, 0.7); width: ${radius * 2}px; height: ${radius * 2}px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: ${fontSize}px; box-shadow: 0 0 10px rgba(0,0,0,0.2); cursor: pointer;">${count.toLocaleString('id-ID')}</div>`,
-                                className: 'custom-marker-default',
-                                iconSize: L.point(radius * 2, radius * 2, true),
-                                iconAnchor: L.point(radius, radius)
-                            }),
-                            penelitianCount: count,
-                            statsData: {
-                                institusi: item._institusi,
-                                provinsi: item._provinsi,
-                                bidang: item._field
-                            }
-                        });
-                        marker.bindPopup(generatePopupContent(rawItem), { maxWidth: 260, autoPanPadding: [50, 100] });
-
-                        marker.on('click', (e) => {
-                            L.DomEvent.stopPropagation(e);
-                            calculateStatsFromMarkers([marker]);
-                            marker.openPopup();
-                        });
-
-                        markersToAdd.push(marker);
-                    } else {
-                        for (let idx = 0; idx < count; idx++) {
+                    const MAX_DOTS = Math.min(count, 150); // Mencegah crash jika data terlalu banyak
+                    for (let idx = 0; idx < MAX_DOTS; idx++) {
                             const type = getCurrentDataType();
                             let matchedColor = '#3E7DCA';
                             const f = fields[idx] ? fields[idx].toString().toLowerCase() : '';
@@ -965,55 +939,83 @@ export default function MapContainer({
                                     bidang: fields[idx]
                                 }
                             });
-                            const popup = hasDetails ?
-                                generateDetailPopup(
-                                    titles[idx] || 'Detail',
-                                    fields[idx],
-                                    item._institusi,
-                                    item._provinsi,
-                                    years[idx],
-                                    ids[idx],
-                                    matchedColor,
-                                    tkts[idx]
-                                ) :
-                                generatePopupContent(rawItem);
-
-                            marker.bindPopup(popup, { maxWidth: 260, autoPanPadding: [50, 100] });
 
                             marker.on('click', async (e) => {
                                 L.DomEvent.stopPropagation(e);
                                 calculateStatsFromMarkers([marker]);
 
-                                // AMBIL OTOMATIS: Dapatkan TKT dari API jika tidak ada di data ringkasan
-                                const type = getCurrentDataType();
-                                const currentTkt = tkts[idx];
-                                if ((type === 'produk' || type === 'hilirisasi') && (currentTkt === '-' || currentTkt === 'undefined')) {
-                                    try {
-                                        const resp = await fetch(`/api/research/${type}/${ids[idx]}`);
-                                        if (resp.ok) {
-                                            const det = await resp.json();
-                                            const realTkt = det.tkt || det.id_tkt || det.tingkat_tkt || '-';
-                                            const updatedPopup = generateDetailPopup(
-                                                titles[idx] || 'Detail',
-                                                fields[idx],
-                                                item._institusi,
-                                                item._provinsi,
-                                                years[idx],
-                                                ids[idx],
-                                                matchedColor,
-                                                realTkt
-                                            );
-                                            marker.setPopupContent(updatedPopup);
-                                        }
-                                    } catch (err) { console.error("Gagal mengambil TKT untuk popup:", err); }
-                                }
+                                if (!window.__mapDetailCache) window.__mapDetailCache = {};
+                                const cacheKey = item._institusi + '_' + getCurrentDataType();
+                                
+                                let detailData = window.__mapDetailCache[cacheKey];
 
-                                marker.openPopup();
+                                // Jika belum punya detail (karena payload diperkecil)
+                                if (!detailData) {
+                                    marker.bindPopup('<div style="padding:15px;text-align:center;font-size:12px;color:#64748b;">Memuat detail...</div>').openPopup();
+                                    
+                                    try {
+                                        const type = getCurrentDataType();
+                                        const currentFilters = filtersRef.current || {};
+                                        const searchParams = new URLSearchParams({ institusi: item._institusi });
+                                        Object.entries(currentFilters).forEach(([key, value]) => {
+                                            if (value !== null && value !== undefined && value !== '') {
+                                                if (Array.isArray(value)) value.forEach(v => searchParams.append(`${key}[]`, v));
+                                                else if (typeof value === 'object') searchParams.append(key, JSON.stringify(value));
+                                                else searchParams.append(key, value);
+                                            }
+                                        });
+                                        
+                                        const res = await fetch(`/api/map-detail/${type}?${searchParams.toString()}`);
+                                        if (res.ok) {
+                                            detailData = await res.json();
+                                            window.__mapDetailCache[cacheKey] = detailData;
+                                        }
+                                    } catch (err) {
+                                        console.error('Failed fetching marker details', err);
+                                    }
+                                }
+                                
+                                if (detailData && !detailData.error) {
+                                    // Ambil array data dari detail yang baru di-fetch
+                                    const fetchedIds = detailData.ids ? detailData.ids.split('|') : [];
+                                    const fetchedTitles = detailData.titles ? detailData.titles.split('|') : [];
+                                    const fetchedFields = detailData.bidang_fokus ? detailData.bidang_fokus.split('|') : [];
+                                    const fetchedYears = detailData.tahun_list ? detailData.tahun_list.split('|') : [];
+                                    const fetchedTkts = detailData.tkt_list ? detailData.tkt_list.split('|') : [];
+                                    
+                                    const currentTitle = fetchedTitles[idx] || 'Judul tidak tersedia';
+                                    const currentField = fetchedFields[idx] || '';
+                                    const currentYear = fetchedYears[idx] || '-';
+                                    const currentId = fetchedIds[idx];
+                                    const currentTkt = fetchedTkts[idx] || '-';
+
+                                    let finalPopup = generateDetailPopup(
+                                        currentTitle, currentField, item._institusi, item._provinsi, currentYear, currentId, matchedColor, currentTkt
+                                    );
+
+                                    const type = getCurrentDataType();
+                                    if ((type === 'produk' || type === 'hilirisasi') && (currentTkt === '-' || currentTkt === 'undefined')) {
+                                        try {
+                                            const resp = await fetch(`/api/research/${type}/${currentId}`);
+                                            if (resp.ok) {
+                                                const det = await resp.json();
+                                                const realTkt = det.tkt || det.id_tkt || det.tingkat_tkt || '-';
+                                                finalPopup = generateDetailPopup(
+                                                    currentTitle, currentField, item._institusi, item._provinsi, currentYear, currentId, matchedColor, realTkt
+                                                );
+                                            }
+                                        } catch(e) {}
+                                    }
+
+                                    marker.bindPopup(finalPopup, { maxWidth: 260, autoPanPadding: [50, 100] }).openPopup();
+                                } else {
+                                    // Fallback jika gagal fetch
+                                    marker.bindPopup(generatePopupContent(rawItem), { maxWidth: 260, autoPanPadding: [50, 100] }).openPopup();
+                                }
                             });
 
                             markersToAdd.push(marker);
                         }
-                    }
                 }
                 else {
                     const count = item._count;
