@@ -1,117 +1,114 @@
 {
-  "_AdminLayout-TOp08BlF.js": {
-    "file": "assets/AdminLayout-TOp08BlF.js",
+  "_AdminLayout-VmJRVQRs.js": {
+    "file": "assets/AdminLayout-VmJRVQRs.js",
     "name": "AdminLayout",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_AdminTable-C5LFBikd.js": {
-    "file": "assets/AdminTable-C5LFBikd.js",
+  "_AdminTable-BTwnGKs4.js": {
+    "file": "assets/AdminTable-BTwnGKs4.js",
     "name": "AdminTable",
     "imports": [
       "resources/js/app.jsx",
       "_format-Bgcu9aNK.js"
     ]
   },
-  "_Badge-C0-EzUTb.js": {
-    "file": "assets/Badge-C0-EzUTb.js",
+  "_Badge-Dut7k3hU.js": {
+    "file": "assets/Badge-Dut7k3hU.js",
     "name": "Badge",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_Breadcrumb-3ViZ-yHu.js": {
-    "file": "assets/Breadcrumb-3ViZ-yHu.js",
-    "name": "Breadcrumb",
-    "imports": [
-      "resources/js/app.jsx"
-    ]
-  },
-  "_BulkUpdateModal-D-tnQERj.js": {
-    "file": "assets/BulkUpdateModal-D-tnQERj.js",
+  "_BulkUpdateModal-DPkNT7bl.js": {
+    "file": "assets/BulkUpdateModal-DPkNT7bl.js",
     "name": "BulkUpdateModal",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_CampusSelect-9CM2Wor0.js": {
-    "file": "assets/CampusSelect-9CM2Wor0.js",
+  "_CampusSelect-BcHMs-dp.js": {
+    "file": "assets/CampusSelect-BcHMs-dp.js",
     "name": "CampusSelect",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_CustomSelect-Cc5DhqQz.js": {
-    "file": "assets/CustomSelect-Cc5DhqQz.js",
+  "_CustomSelect-91bUSIi7.js": {
+    "file": "assets/CustomSelect-91bUSIi7.js",
     "name": "CustomSelect",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_HeaderActions-Dyv-1_ec.js": {
-    "file": "assets/HeaderActions-Dyv-1_ec.js",
+  "_HeaderActions-K1ZlLRXD.js": {
+    "file": "assets/HeaderActions-K1ZlLRXD.js",
     "name": "HeaderActions",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_LocationSelect-DEj7siYK.js": {
-    "file": "assets/LocationSelect-DEj7siYK.js",
+  "_LocationSelect-DnvcYWLU.js": {
+    "file": "assets/LocationSelect-DnvcYWLU.js",
     "name": "LocationSelect",
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js"
+      "_CustomSelect-91bUSIi7.js"
     ]
   },
-  "_MapLocationPicker-D-Ur_c5y.js": {
-    "file": "assets/MapLocationPicker-D-Ur_c5y.js",
+  "_MapLocationPicker-DV1szz-C.js": {
+    "file": "assets/MapLocationPicker-DV1szz-C.js",
     "name": "MapLocationPicker",
     "imports": [
       "resources/js/app.jsx",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
     ]
   },
-  "_NavigationTabs-DtyJodFZ.js": {
-    "file": "assets/NavigationTabs-DtyJodFZ.js",
+  "_NavigationTabs-BqKkqCx3.js": {
+    "file": "assets/NavigationTabs-BqKkqCx3.js",
     "name": "NavigationTabs",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_PageHeader-21MYvaNF.js": {
-    "file": "assets/PageHeader-21MYvaNF.js",
+  "_PageHeader-D3P4IDTR.js": {
+    "file": "assets/PageHeader-D3P4IDTR.js",
     "name": "PageHeader",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_PanduanExamples-B34Ua4Ig.js": {
-    "file": "assets/PanduanExamples-B34Ua4Ig.js",
+  "_PanduanExamples-ChElgT7E.js": {
+    "file": "assets/PanduanExamples-ChElgT7E.js",
     "name": "PanduanExamples",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_StatisticsCards-Dr8GT1Yc.js": {
-    "file": "assets/StatisticsCards-Dr8GT1Yc.js",
+  "_StatisticsCards-COQl7IDX.js": {
+    "file": "assets/StatisticsCards-COQl7IDX.js",
     "name": "StatisticsCards",
     "imports": [
       "resources/js/app.jsx",
       "_format-Bgcu9aNK.js"
     ]
   },
-  "_TileLayer-FmTbG74R.js": {
-    "file": "assets/TileLayer-FmTbG74R.js",
+  "_TileLayer-CEqmalM9.js": {
+    "file": "assets/TileLayer-CEqmalM9.js",
     "name": "TileLayer",
     "imports": [
-      "_leaflet-BFSHmysG.js",
+      "_leaflet-B6brpU9g.js",
       "resources/js/app.jsx",
-      "_index-CVO_JJKB.js"
+      "_index-CbXCgydv.js"
     ]
+  },
+  "_dashboardConstants-BTDARWxq.js": {
+    "file": "assets/dashboardConstants-BTDARWxq.js",
+    "name": "dashboardConstants"
   },
   "_exportExcel-b88Nferc.js": {
     "file": "assets/exportExcel-b88Nferc.js",
@@ -128,22 +125,22 @@
     "file": "assets/format-Bgcu9aNK.js",
     "name": "format"
   },
-  "_index-BoIfJA6i.js": {
-    "file": "assets/index-BoIfJA6i.js",
+  "_index-CbXCgydv.js": {
+    "file": "assets/index-CbXCgydv.js",
     "name": "index",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_index-CVO_JJKB.js": {
-    "file": "assets/index-CVO_JJKB.js",
+  "_index-DlwJ323F.js": {
+    "file": "assets/index-DlwJ323F.js",
     "name": "index",
     "imports": [
       "resources/js/app.jsx"
     ]
   },
-  "_leaflet-BFSHmysG.js": {
-    "file": "assets/leaflet-BFSHmysG.js",
+  "_leaflet-B6brpU9g.js": {
+    "file": "assets/leaflet-B6brpU9g.js",
     "name": "leaflet",
     "imports": [
       "resources/js/app.jsx"
@@ -176,6 +173,41 @@
     "file": "assets/options-EqdkcHqv.js",
     "name": "options"
   },
+  "_useFasilitasLabForm-CvI9HZ61.js": {
+    "file": "assets/useFasilitasLabForm-CvI9HZ61.js",
+    "name": "useFasilitasLabForm",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_useHilirisasiForm-C32LaO8t.js": {
+    "file": "assets/useHilirisasiForm-C32LaO8t.js",
+    "name": "useHilirisasiForm",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_usePenelitianForm-CYX3-dvX.js": {
+    "file": "assets/usePenelitianForm-CYX3-dvX.js",
+    "name": "usePenelitianForm",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_usePengabdianForm-k4RdhA-W.js": {
+    "file": "assets/usePengabdianForm-k4RdhA-W.js",
+    "name": "usePengabdianForm",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_useProdukForm-pXK6uMjF.js": {
+    "file": "assets/useProdukForm-pXK6uMjF.js",
+    "name": "useProdukForm",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
   "_xlsx-DSqvgYLF.js": {
     "file": "assets/xlsx-DSqvgYLF.js",
     "name": "xlsx"
@@ -193,7 +225,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/app.css": {
-    "file": "assets/app-B5c6WBKU.css",
+    "file": "assets/app-2OtfbImZ.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -201,21 +233,21 @@
     ]
   },
   "resources/js/Components/MapContainer.jsx": {
-    "file": "assets/MapContainer-BfQG1Fe5.js",
+    "file": "assets/MapContainer-Ks1N6-WW.js",
     "name": "MapContainer",
     "src": "resources/js/Components/MapContainer.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
       "_format-Bgcu9aNK.js",
-      "_leaflet-BFSHmysG.js",
+      "_leaflet-B6brpU9g.js",
       "_leaflet.markercluster-src-DdhflfJ2.js",
       "resources/js/Components/ResearchModal.jsx",
       "_fieldColors-Bj5Bq9Qt.js"
     ]
   },
   "resources/js/Components/PermasalahanDetailModal.jsx": {
-    "file": "assets/PermasalahanDetailModal-BvhZ5q3r.js",
+    "file": "assets/PermasalahanDetailModal-CFAy0vUB.js",
     "name": "PermasalahanDetailModal",
     "src": "resources/js/Components/PermasalahanDetailModal.jsx",
     "isDynamicEntry": true,
@@ -224,29 +256,29 @@
     ]
   },
   "resources/js/Components/PermasalahanMap.jsx": {
-    "file": "assets/PermasalahanMap-BOrCWOZO.js",
+    "file": "assets/PermasalahanMap-B2JHbKE8.js",
     "name": "PermasalahanMap",
     "src": "resources/js/Components/PermasalahanMap.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_leaflet-BFSHmysG.js",
+      "_leaflet-B6brpU9g.js",
       "_leaflet.markercluster-src-DdhflfJ2.js"
     ]
   },
   "resources/js/Components/ResearchList.jsx": {
-    "file": "assets/ResearchList-CpxXksq5.js",
+    "file": "assets/ResearchList-BeyyNU8n.js",
     "name": "ResearchList",
     "src": "resources/js/Components/ResearchList.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
+      "_CustomSelect-91bUSIi7.js",
       "_fieldColors-Bj5Bq9Qt.js"
     ]
   },
   "resources/js/Components/ResearchModal.jsx": {
-    "file": "assets/ResearchModal-Dl7hNT-Y.js",
+    "file": "assets/ResearchModal-DauaMuej.js",
     "name": "ResearchModal",
     "src": "resources/js/Components/ResearchModal.jsx",
     "isDynamicEntry": true,
@@ -256,440 +288,927 @@
       "_format-Bgcu9aNK.js"
     ]
   },
-  "resources/js/Pages/Admin/Dashboard.jsx": {
-    "file": "assets/Dashboard-BPOcwilj.js",
-    "name": "Dashboard",
-    "src": "resources/js/Pages/Admin/Dashboard.jsx",
+  "resources/js/Pages/Admin/Dashboard/Components/ChartsSection.jsx": {
+    "file": "assets/ChartsSection-CeqoIp_g.js",
+    "name": "ChartsSection",
+    "src": "resources/js/Pages/Admin/Dashboard/Components/ChartsSection.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_AdminLayout-TOp08BlF.js",
-      "_PageHeader-21MYvaNF.js",
-      "_index-CVO_JJKB.js"
+      "_index-CbXCgydv.js",
+      "_dashboardConstants-BTDARWxq.js"
     ]
   },
-  "resources/js/Pages/Admin/FasilitasLab/Create.jsx": {
-    "file": "assets/Create-DkW0F7jx.js",
-    "name": "Create",
-    "src": "resources/js/Pages/Admin/FasilitasLab/Create.jsx",
+  "resources/js/Pages/Admin/Dashboard/Components/InfoCards.jsx": {
+    "file": "assets/InfoCards-D1WZmEal.js",
+    "name": "InfoCards",
+    "src": "resources/js/Pages/Admin/Dashboard/Components/InfoCards.jsx",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "resources/js/app.jsx"
     ]
   },
-  "resources/js/Pages/Admin/FasilitasLab/Edit.jsx": {
-    "file": "assets/Edit-CQUQzjWL.js",
-    "name": "Edit",
-    "src": "resources/js/Pages/Admin/FasilitasLab/Edit.jsx",
+  "resources/js/Pages/Admin/Dashboard/Components/SecondaryStats.jsx": {
+    "file": "assets/SecondaryStats-CGC4dAQH.js",
+    "name": "SecondaryStats",
+    "src": "resources/js/Pages/Admin/Dashboard/Components/SecondaryStats.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_dashboardConstants-BTDARWxq.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Dashboard/Components/StatsGrid.jsx": {
+    "file": "assets/StatsGrid-BCgj9st1.js",
+    "name": "StatsGrid",
+    "src": "resources/js/Pages/Admin/Dashboard/Components/StatsGrid.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_dashboardConstants-BTDARWxq.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Dashboard/Index.jsx": {
+    "file": "assets/Index-CejXo2mP.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/Dashboard/Index.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminLayout-VmJRVQRs.js",
+      "_PageHeader-D3P4IDTR.js",
+      "_dashboardConstants-BTDARWxq.js",
+      "resources/js/Pages/Admin/Dashboard/Components/StatsGrid.jsx",
+      "resources/js/Pages/Admin/Dashboard/Components/SecondaryStats.jsx",
+      "resources/js/Pages/Admin/Dashboard/Components/InfoCards.jsx",
+      "resources/js/Pages/Admin/Dashboard/Components/ChartsSection.jsx",
+      "_index-CbXCgydv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabContent.jsx": {
+    "file": "assets/FasilitasLabContent-BN5RWF53.js",
+    "name": "FasilitasLabContent",
+    "src": "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabContent.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminTable-BTwnGKs4.js",
+      "_Badge-Dut7k3hU.js",
+      "_format-Bgcu9aNK.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabForm.jsx": {
+    "file": "assets/FasilitasLabForm-CrNbBqOv.js",
+    "name": "FasilitasLabForm",
+    "src": "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabForm.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
+    ]
+  },
+  "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabHeader.jsx": {
+    "file": "assets/FasilitasLabHeader-DI4C1Vfw.js",
+    "name": "FasilitasLabHeader",
+    "src": "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabHeader.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js"
+    ]
+  },
+  "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabModals.jsx": {
+    "file": "assets/FasilitasLabModals-D_lGcHAZ.js",
+    "name": "FasilitasLabModals",
+    "src": "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabModals.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js"
+    ]
+  },
+  "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabStats.jsx": {
+    "file": "assets/FasilitasLabStats-CUmnJGxD.js",
+    "name": "FasilitasLabStats",
+    "src": "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabStats.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
     ]
   },
   "resources/js/Pages/Admin/FasilitasLab/Index.jsx": {
-    "file": "assets/Index-BUdEPKvS.js",
+    "file": "assets/Index-DAwSzKX6.js",
     "name": "Index",
     "src": "resources/js/Pages/Admin/FasilitasLab/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_options-EqdkcHqv.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_AdminTable-C5LFBikd.js",
-      "_PageHeader-21MYvaNF.js",
-      "_Badge-C0-EzUTb.js",
-      "_format-Bgcu9aNK.js",
+      "_AdminLayout-VmJRVQRs.js",
+      "_index-DlwJ323F.js",
       "_xlsx-DSqvgYLF.js",
-      "_index-BoIfJA6i.js",
-      "_BulkUpdateModal-D-tnQERj.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_HeaderActions-Dyv-1_ec.js"
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabHeader.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabStats.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabContent.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabModals.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js",
+      "_AdminTable-BTwnGKs4.js",
+      "_format-Bgcu9aNK.js",
+      "_Badge-Dut7k3hU.js",
+      "_options-EqdkcHqv.js",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js"
     ]
   },
-  "resources/js/Pages/Admin/Hilirisasi/Create.jsx": {
-    "file": "assets/Create-UZwxWJyF.js",
-    "name": "Create",
-    "src": "resources/js/Pages/Admin/Hilirisasi/Create.jsx",
+  "resources/js/Pages/Admin/FasilitasLab/Routes/Create/Index.jsx": {
+    "file": "assets/Index-D14nJXce.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/FasilitasLab/Routes/Create/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_AdminLayout-VmJRVQRs.js",
+      "_useFasilitasLabForm-CvI9HZ61.js",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabForm.jsx",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
     ]
   },
-  "resources/js/Pages/Admin/Hilirisasi/Edit.jsx": {
-    "file": "assets/Edit-BSmqPsUm.js",
-    "name": "Edit",
-    "src": "resources/js/Pages/Admin/Hilirisasi/Edit.jsx",
+  "resources/js/Pages/Admin/FasilitasLab/Routes/Edit/Index.jsx": {
+    "file": "assets/Index-BjZwCL1S.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/FasilitasLab/Routes/Edit/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_AdminLayout-VmJRVQRs.js",
+      "_useFasilitasLabForm-CvI9HZ61.js",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabForm.jsx",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiContent.jsx": {
+    "file": "assets/HilirisasiContent-gAr-AnKB.js",
+    "name": "HilirisasiContent",
+    "src": "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiContent.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminTable-BTwnGKs4.js",
+      "_Badge-Dut7k3hU.js",
+      "_format-Bgcu9aNK.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiForm.jsx": {
+    "file": "assets/HilirisasiForm-_uMlnkRQ.js",
+    "name": "HilirisasiForm",
+    "src": "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiForm.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiHeader.jsx": {
+    "file": "assets/HilirisasiHeader-DTsDwTib.js",
+    "name": "HilirisasiHeader",
+    "src": "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiHeader.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiModals.jsx": {
+    "file": "assets/HilirisasiModals-D-b-m-mA.js",
+    "name": "HilirisasiModals",
+    "src": "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiModals.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiStats.jsx": {
+    "file": "assets/HilirisasiStats-BHzR_Iw3.js",
+    "name": "HilirisasiStats",
+    "src": "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiStats.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
     ]
   },
   "resources/js/Pages/Admin/Hilirisasi/Index.jsx": {
-    "file": "assets/Index-DxkqdjhC.js",
+    "file": "assets/Index-D1brkKgW.js",
     "name": "Index",
     "src": "resources/js/Pages/Admin/Hilirisasi/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_options-EqdkcHqv.js",
-      "_index-BoIfJA6i.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_AdminTable-C5LFBikd.js",
-      "_PageHeader-21MYvaNF.js",
-      "_Badge-C0-EzUTb.js",
-      "_format-Bgcu9aNK.js",
+      "_AdminLayout-VmJRVQRs.js",
+      "_index-DlwJ323F.js",
       "_xlsx-DSqvgYLF.js",
-      "_BulkUpdateModal-D-tnQERj.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_HeaderActions-Dyv-1_ec.js"
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiHeader.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiStats.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiContent.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiModals.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js",
+      "_AdminTable-BTwnGKs4.js",
+      "_format-Bgcu9aNK.js",
+      "_Badge-Dut7k3hU.js",
+      "_options-EqdkcHqv.js",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js"
     ]
   },
-  "resources/js/Pages/Admin/Penelitian/Create.jsx": {
-    "file": "assets/Create-CkVr-c9V.js",
-    "name": "Create",
-    "src": "resources/js/Pages/Admin/Penelitian/Create.jsx",
+  "resources/js/Pages/Admin/Hilirisasi/Routes/Create/Index.jsx": {
+    "file": "assets/Index-BUAMbiNI.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/Hilirisasi/Routes/Create/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_options-EqdkcHqv.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_AdminLayout-VmJRVQRs.js",
+      "_useHilirisasiForm-C32LaO8t.js",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiForm.jsx",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
     ]
   },
-  "resources/js/Pages/Admin/Penelitian/Edit.jsx": {
-    "file": "assets/Edit-DU4ILnSn.js",
-    "name": "Edit",
-    "src": "resources/js/Pages/Admin/Penelitian/Edit.jsx",
+  "resources/js/Pages/Admin/Hilirisasi/Routes/Edit/Index.jsx": {
+    "file": "assets/Index-CieKGsrG.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/Hilirisasi/Routes/Edit/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
+      "_AdminLayout-VmJRVQRs.js",
+      "_useHilirisasiForm-C32LaO8t.js",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiForm.jsx",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Penelitian/Components/PenelitianContent.jsx": {
+    "file": "assets/PenelitianContent-BonRpS5U.js",
+    "name": "PenelitianContent",
+    "src": "resources/js/Pages/Admin/Penelitian/Components/PenelitianContent.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminTable-BTwnGKs4.js",
+      "_Badge-Dut7k3hU.js",
+      "_format-Bgcu9aNK.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Penelitian/Components/PenelitianForm.jsx": {
+    "file": "assets/PenelitianForm-t9BdOzRi.js",
+    "name": "PenelitianForm",
+    "src": "resources/js/Pages/Admin/Penelitian/Components/PenelitianForm.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_CustomSelect-91bUSIi7.js",
       "_options-EqdkcHqv.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Penelitian/Components/PenelitianHeader.jsx": {
+    "file": "assets/PenelitianHeader-CbM0KW5O.js",
+    "name": "PenelitianHeader",
+    "src": "resources/js/Pages/Admin/Penelitian/Components/PenelitianHeader.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Penelitian/Components/PenelitianModals.jsx": {
+    "file": "assets/PenelitianModals-O8o6DAIt.js",
+    "name": "PenelitianModals",
+    "src": "resources/js/Pages/Admin/Penelitian/Components/PenelitianModals.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Penelitian/Components/PenelitianStats.jsx": {
+    "file": "assets/PenelitianStats-CJHUS2ek.js",
+    "name": "PenelitianStats",
+    "src": "resources/js/Pages/Admin/Penelitian/Components/PenelitianStats.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
     ]
   },
   "resources/js/Pages/Admin/Penelitian/Index.jsx": {
-    "file": "assets/Index-COCC37hz.js",
+    "file": "assets/Index-COTuPCV-.js",
     "name": "Index",
     "src": "resources/js/Pages/Admin/Penelitian/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_options-EqdkcHqv.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_AdminTable-C5LFBikd.js",
-      "_PageHeader-21MYvaNF.js",
-      "_Badge-C0-EzUTb.js",
+      "_AdminLayout-VmJRVQRs.js",
+      "_index-DlwJ323F.js",
       "_xlsx-DSqvgYLF.js",
-      "_index-BoIfJA6i.js",
-      "_BulkUpdateModal-D-tnQERj.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_LocationSelect-DEj7siYK.js",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianHeader.jsx",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianStats.jsx",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianContent.jsx",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianModals.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js",
+      "_AdminTable-BTwnGKs4.js",
       "_format-Bgcu9aNK.js",
-      "_HeaderActions-Dyv-1_ec.js"
+      "_Badge-Dut7k3hU.js",
+      "_options-EqdkcHqv.js",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js"
     ]
   },
-  "resources/js/Pages/Admin/Pengabdian/Create.jsx": {
-    "file": "assets/Create-D4YB7oy1.js",
-    "name": "Create",
-    "src": "resources/js/Pages/Admin/Pengabdian/Create.jsx",
+  "resources/js/Pages/Admin/Penelitian/Routes/Create/Index.jsx": {
+    "file": "assets/Index-BLs6RvmU.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/Penelitian/Routes/Create/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
-      "_options-EqdkcHqv.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_AdminLayout-VmJRVQRs.js",
+      "_usePenelitianForm-CYX3-dvX.js",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianForm.jsx",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js",
+      "_options-EqdkcHqv.js"
     ]
   },
-  "resources/js/Pages/Admin/Pengabdian/Edit.jsx": {
-    "file": "assets/Edit-BJRTnQWs.js",
-    "name": "Edit",
-    "src": "resources/js/Pages/Admin/Pengabdian/Edit.jsx",
+  "resources/js/Pages/Admin/Penelitian/Routes/Edit/Index.jsx": {
+    "file": "assets/Index-2ZHmDLLb.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/Penelitian/Routes/Edit/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
+      "_AdminLayout-VmJRVQRs.js",
+      "_usePenelitianForm-CYX3-dvX.js",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianForm.jsx",
+      "_CampusSelect-BcHMs-dp.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Pengabdian/Components/PengabdianContent.jsx": {
+    "file": "assets/PengabdianContent-CcGyBiap.js",
+    "name": "PengabdianContent",
+    "src": "resources/js/Pages/Admin/Pengabdian/Components/PengabdianContent.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminTable-BTwnGKs4.js",
+      "_Badge-Dut7k3hU.js",
+      "_format-Bgcu9aNK.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Pengabdian/Components/PengabdianForm.jsx": {
+    "file": "assets/PengabdianForm-CMTsohsU.js",
+    "name": "PengabdianForm",
+    "src": "resources/js/Pages/Admin/Pengabdian/Components/PengabdianForm.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_CustomSelect-91bUSIi7.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_MapLocationPicker-DV1szz-C.js",
       "_options-EqdkcHqv.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Pengabdian/Components/PengabdianHeader.jsx": {
+    "file": "assets/PengabdianHeader-Bb7QsnBV.js",
+    "name": "PengabdianHeader",
+    "src": "resources/js/Pages/Admin/Pengabdian/Components/PengabdianHeader.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Pengabdian/Components/PengabdianModals.jsx": {
+    "file": "assets/PengabdianModals-CE7UOYxI.js",
+    "name": "PengabdianModals",
+    "src": "resources/js/Pages/Admin/Pengabdian/Components/PengabdianModals.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Pengabdian/Components/PengabdianStats.jsx": {
+    "file": "assets/PengabdianStats-QQQXooWL.js",
+    "name": "PengabdianStats",
+    "src": "resources/js/Pages/Admin/Pengabdian/Components/PengabdianStats.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
     ]
   },
   "resources/js/Pages/Admin/Pengabdian/Index.jsx": {
-    "file": "assets/Index-Ds1Ae3aW.js",
+    "file": "assets/Index-B7jTx-35.js",
     "name": "Index",
     "src": "resources/js/Pages/Admin/Pengabdian/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_options-EqdkcHqv.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_AdminTable-C5LFBikd.js",
-      "_PageHeader-21MYvaNF.js",
-      "_Badge-C0-EzUTb.js",
-      "_format-Bgcu9aNK.js",
+      "_AdminLayout-VmJRVQRs.js",
+      "_index-DlwJ323F.js",
       "_xlsx-DSqvgYLF.js",
-      "_index-BoIfJA6i.js",
-      "_BulkUpdateModal-D-tnQERj.js",
-      "_LocationSelect-DEj7siYK.js",
-      "_HeaderActions-Dyv-1_ec.js"
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianHeader.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianStats.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianContent.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianModals.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js",
+      "_AdminTable-BTwnGKs4.js",
+      "_format-Bgcu9aNK.js",
+      "_Badge-Dut7k3hU.js",
+      "_options-EqdkcHqv.js",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CustomSelect-91bUSIi7.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Pengabdian/Routes/Create/Index.jsx": {
+    "file": "assets/Index-CwrWou9T.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/Pengabdian/Routes/Create/Index.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminLayout-VmJRVQRs.js",
+      "_usePengabdianForm-k4RdhA-W.js",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianForm.jsx",
+      "_CustomSelect-91bUSIi7.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Pengabdian/Routes/Edit/Index.jsx": {
+    "file": "assets/Index-CxO2QRsN.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/Pengabdian/Routes/Edit/Index.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminLayout-VmJRVQRs.js",
+      "_usePengabdianForm-k4RdhA-W.js",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianForm.jsx",
+      "_CustomSelect-91bUSIi7.js",
+      "_LocationSelect-DnvcYWLU.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanDataView.jsx": {
+    "file": "assets/PermasalahanDataView-EERTFlE5.js",
+    "name": "PermasalahanDataView",
+    "src": "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanDataView.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminTable-BTwnGKs4.js",
+      "_Badge-Dut7k3hU.js",
+      "_format-Bgcu9aNK.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanFilter.jsx": {
+    "file": "assets/PermasalahanFilter-BLXbGowT.js",
+    "name": "PermasalahanFilter",
+    "src": "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanFilter.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_CustomSelect-91bUSIi7.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanHeader.jsx": {
+    "file": "assets/PermasalahanHeader-CCwLjbMe.js",
+    "name": "PermasalahanHeader",
+    "src": "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanHeader.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanStatistikView.jsx": {
+    "file": "assets/PermasalahanStatistikView-CV6uMN_P.js",
+    "name": "PermasalahanStatistikView",
+    "src": "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanStatistikView.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminTable-BTwnGKs4.js",
+      "_Badge-Dut7k3hU.js",
+      "_format-Bgcu9aNK.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanStats.jsx": {
+    "file": "assets/PermasalahanStats-BHeBZpPX.js",
+    "name": "PermasalahanStats",
+    "src": "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanStats.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
     ]
   },
   "resources/js/Pages/Admin/Permasalahan/Create.jsx": {
-    "file": "assets/Create-08Wdm6r-.js",
+    "file": "assets/Create-CS_9tgra.js",
     "name": "Create",
     "src": "resources/js/Pages/Admin/Permasalahan/Create.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_PageHeader-21MYvaNF.js",
-      "_LocationSelect-DEj7siYK.js"
+      "_CustomSelect-91bUSIi7.js",
+      "_AdminLayout-VmJRVQRs.js",
+      "_PageHeader-D3P4IDTR.js",
+      "_LocationSelect-DnvcYWLU.js"
     ]
   },
   "resources/js/Pages/Admin/Permasalahan/Edit.jsx": {
-    "file": "assets/Edit-DqTN5fQq.js",
+    "file": "assets/Edit-CUSbdFRL.js",
     "name": "Edit",
     "src": "resources/js/Pages/Admin/Permasalahan/Edit.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_PageHeader-21MYvaNF.js",
-      "_LocationSelect-DEj7siYK.js"
+      "_CustomSelect-91bUSIi7.js",
+      "_AdminLayout-VmJRVQRs.js",
+      "_PageHeader-D3P4IDTR.js",
+      "_LocationSelect-DnvcYWLU.js"
     ]
   },
   "resources/js/Pages/Admin/Permasalahan/Index.jsx": {
-    "file": "assets/Index-DrnKPHco.js",
+    "file": "assets/Index-moHk9kH7.js",
     "name": "Index",
     "src": "resources/js/Pages/Admin/Permasalahan/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_AdminTable-C5LFBikd.js",
-      "_PageHeader-21MYvaNF.js",
-      "_Badge-C0-EzUTb.js",
-      "_format-Bgcu9aNK.js",
-      "_HeaderActions-Dyv-1_ec.js",
+      "_AdminLayout-VmJRVQRs.js",
       "resources/js/Components/ResearchModal.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanHeader.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanStats.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanFilter.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanStatistikView.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanDataView.jsx",
+      "_fieldColors-Bj5Bq9Qt.js",
+      "_format-Bgcu9aNK.js",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js",
+      "_CustomSelect-91bUSIi7.js",
       "_options-EqdkcHqv.js",
-      "_fieldColors-Bj5Bq9Qt.js"
+      "_AdminTable-BTwnGKs4.js",
+      "_Badge-Dut7k3hU.js"
     ]
   },
-  "resources/js/Pages/Admin/Produk/Create.jsx": {
-    "file": "assets/Create-DR3a3qnr.js",
-    "name": "Create",
-    "src": "resources/js/Pages/Admin/Produk/Create.jsx",
+  "resources/js/Pages/Admin/Produk/Components/ProdukContent.jsx": {
+    "file": "assets/ProdukContent-CMY8ptM0.js",
+    "name": "ProdukContent",
+    "src": "resources/js/Pages/Admin/Produk/Components/ProdukContent.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
-      "_options-EqdkcHqv.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_AdminTable-BTwnGKs4.js",
+      "_Badge-Dut7k3hU.js",
+      "_format-Bgcu9aNK.js",
+      "_options-EqdkcHqv.js"
     ]
   },
-  "resources/js/Pages/Admin/Produk/Edit.jsx": {
-    "file": "assets/Edit-C8oKQ7cx.js",
-    "name": "Edit",
-    "src": "resources/js/Pages/Admin/Produk/Edit.jsx",
+  "resources/js/Pages/Admin/Produk/Components/ProdukForm.jsx": {
+    "file": "assets/ProdukForm-BXq4QILq.js",
+    "name": "ProdukForm",
+    "src": "resources/js/Pages/Admin/Produk/Components/ProdukForm.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_MapLocationPicker-D-Ur_c5y.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_MapLocationPicker-DV1szz-C.js",
       "_options-EqdkcHqv.js",
-      "_index-CVO_JJKB.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js"
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Produk/Components/ProdukHeader.jsx": {
+    "file": "assets/ProdukHeader-B5_Bqs9n.js",
+    "name": "ProdukHeader",
+    "src": "resources/js/Pages/Admin/Produk/Components/ProdukHeader.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Produk/Components/ProdukModals.jsx": {
+    "file": "assets/ProdukModals-DUdv7Ph0.js",
+    "name": "ProdukModals",
+    "src": "resources/js/Pages/Admin/Produk/Components/ProdukModals.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_options-EqdkcHqv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Produk/Components/ProdukStats.jsx": {
+    "file": "assets/ProdukStats-D6YBsAc5.js",
+    "name": "ProdukStats",
+    "src": "resources/js/Pages/Admin/Produk/Components/ProdukStats.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
     ]
   },
   "resources/js/Pages/Admin/Produk/Index.jsx": {
-    "file": "assets/Index-CM1KmiZO.js",
+    "file": "assets/Index-CkVA_1TC.js",
     "name": "Index",
     "src": "resources/js/Pages/Admin/Produk/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_AdminTable-C5LFBikd.js",
-      "_PageHeader-21MYvaNF.js",
-      "_Badge-C0-EzUTb.js",
-      "_format-Bgcu9aNK.js",
+      "_index-DlwJ323F.js",
+      "_AdminLayout-VmJRVQRs.js",
       "_xlsx-DSqvgYLF.js",
-      "_index-BoIfJA6i.js",
-      "_BulkUpdateModal-D-tnQERj.js",
-      "_CampusSelect-9CM2Wor0.js",
-      "_HeaderActions-Dyv-1_ec.js",
+      "resources/js/Pages/Admin/Produk/Components/ProdukHeader.jsx",
+      "resources/js/Pages/Admin/Produk/Components/ProdukStats.jsx",
+      "resources/js/Pages/Admin/Produk/Components/ProdukContent.jsx",
+      "resources/js/Pages/Admin/Produk/Components/ProdukModals.jsx",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js",
+      "_AdminTable-BTwnGKs4.js",
+      "_format-Bgcu9aNK.js",
+      "_Badge-Dut7k3hU.js",
+      "_options-EqdkcHqv.js",
+      "_BulkUpdateModal-DPkNT7bl.js",
+      "_CustomSelect-91bUSIi7.js",
+      "_CampusSelect-BcHMs-dp.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Produk/Routes/Create/Index.jsx": {
+    "file": "assets/Index-DcAscZgB.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/Produk/Routes/Create/Index.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminLayout-VmJRVQRs.js",
+      "_useProdukForm-pXK6uMjF.js",
+      "resources/js/Pages/Admin/Produk/Components/ProdukForm.jsx",
+      "_CustomSelect-91bUSIi7.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js",
       "_options-EqdkcHqv.js"
     ]
   },
-  "resources/js/Pages/Admin/RumusanMasalahCategory/Create.jsx": {
-    "file": "assets/Create-BU7ihQRS.js",
-    "name": "Create",
-    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Create.jsx",
+  "resources/js/Pages/Admin/Produk/Routes/Edit/Index.jsx": {
+    "file": "assets/Index-yDUhPh04.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/Produk/Routes/Edit/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_AdminLayout-TOp08BlF.js"
+      "_AdminLayout-VmJRVQRs.js",
+      "_useProdukForm-pXK6uMjF.js",
+      "resources/js/Pages/Admin/Produk/Components/ProdukForm.jsx",
+      "_CustomSelect-91bUSIi7.js",
+      "_CampusSelect-BcHMs-dp.js",
+      "_MapLocationPicker-DV1szz-C.js",
+      "_index-CbXCgydv.js",
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js",
+      "_options-EqdkcHqv.js"
     ]
   },
-  "resources/js/Pages/Admin/RumusanMasalahCategory/Edit.jsx": {
-    "file": "assets/Edit-DmNVepmJ.js",
-    "name": "Edit",
-    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Edit.jsx",
+  "resources/js/Pages/Admin/RumusanMasalahCategory/Components/CategoryCard.jsx": {
+    "file": "assets/CategoryCard-Dz-UPKr0.js",
+    "name": "CategoryCard",
+    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Components/CategoryCard.jsx",
     "isDynamicEntry": true,
     "imports": [
-      "resources/js/app.jsx",
-      "_AdminLayout-TOp08BlF.js"
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/Admin/RumusanMasalahCategory/Components/CategoryModals.jsx": {
+    "file": "assets/CategoryModals-Bwi7TDW9.js",
+    "name": "CategoryModals",
+    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Components/CategoryModals.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/Admin/RumusanMasalahCategory/Components/StatementModal.jsx": {
+    "file": "assets/StatementModal-DnahT23J.js",
+    "name": "StatementModal",
+    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Components/StatementModal.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/Admin/RumusanMasalahCategory/Components/StatementTable.jsx": {
+    "file": "assets/StatementTable-C1-UqW3y.js",
+    "name": "StatementTable",
+    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Components/StatementTable.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
     ]
   },
   "resources/js/Pages/Admin/RumusanMasalahCategory/Index.jsx": {
-    "file": "assets/Index-X0skHw0w.js",
+    "file": "assets/Index-UlIH4Sro.js",
     "name": "Index",
     "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_AdminLayout-TOp08BlF.js",
-      "_PageHeader-21MYvaNF.js",
-      "_HeaderActions-Dyv-1_ec.js"
+      "_AdminLayout-VmJRVQRs.js",
+      "_PageHeader-D3P4IDTR.js",
+      "_HeaderActions-K1ZlLRXD.js",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Components/CategoryCard.jsx",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Components/CategoryModals.jsx"
     ]
   },
-  "resources/js/Pages/Admin/RumusanMasalahCategory/StatementIndex.jsx": {
-    "file": "assets/StatementIndex-IUBS8uGU.js",
-    "name": "StatementIndex",
-    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/StatementIndex.jsx",
+  "resources/js/Pages/Admin/RumusanMasalahCategory/Routes/Create/Index.jsx": {
+    "file": "assets/Index-k90qPGle.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Routes/Create/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_AdminLayout-TOp08BlF.js",
-      "_Breadcrumb-3ViZ-yHu.js"
+      "_AdminLayout-VmJRVQRs.js"
     ]
   },
-  "resources/js/Pages/Admin/Statements/create.jsx": {
-    "file": "assets/create-DccszVYk.js",
-    "name": "create",
-    "src": "resources/js/Pages/Admin/Statements/create.jsx",
+  "resources/js/Pages/Admin/RumusanMasalahCategory/Routes/Edit/Index.jsx": {
+    "file": "assets/Index-Bkp2c3Kw.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Routes/Edit/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_PageHeader-21MYvaNF.js"
+      "_AdminLayout-VmJRVQRs.js"
     ]
   },
-  "resources/js/Pages/Admin/Statements/edit.jsx": {
-    "file": "assets/edit-B0n72RG8.js",
-    "name": "edit",
-    "src": "resources/js/Pages/Admin/Statements/edit.jsx",
+  "resources/js/Pages/Admin/RumusanMasalahCategory/Routes/StatementIndex/Index.jsx": {
+    "file": "assets/Index-9uEmR7qK.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Admin/RumusanMasalahCategory/Routes/StatementIndex/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
-      "_AdminLayout-TOp08BlF.js",
-      "_PageHeader-21MYvaNF.js"
+      "_AdminLayout-VmJRVQRs.js",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Components/StatementTable.jsx",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Components/StatementModal.jsx"
     ]
   },
-  "resources/js/Pages/Admin/Statements/index.jsx": {
-    "file": "assets/index-BxsY5O1V.js",
-    "name": "index",
-    "src": "resources/js/Pages/Admin/Statements/index.jsx",
+  "resources/js/Pages/Admin/UserLogs/Components/UserLogsMapModal.jsx": {
+    "file": "assets/UserLogsMapModal-Bokb54g5.js",
+    "name": "UserLogsMapModal",
+    "src": "resources/js/Pages/Admin/UserLogs/Components/UserLogsMapModal.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_AdminLayout-TOp08BlF.js",
-      "_Breadcrumb-3ViZ-yHu.js"
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js",
+      "_index-CbXCgydv.js"
+    ]
+  },
+  "resources/js/Pages/Admin/UserLogs/Components/UserLogsTable.jsx": {
+    "file": "assets/UserLogsTable-Bp7hDJx5.js",
+    "name": "UserLogsTable",
+    "src": "resources/js/Pages/Admin/UserLogs/Components/UserLogsTable.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_AdminTable-BTwnGKs4.js",
+      "_format-Bgcu9aNK.js"
     ]
   },
   "resources/js/Pages/Admin/UserLogs/Index.jsx": {
-    "file": "assets/Index-BUv-FSvJ.js",
+    "file": "assets/Index-D64rGNNU.js",
     "name": "Index",
     "src": "resources/js/Pages/Admin/UserLogs/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_AdminLayout-TOp08BlF.js",
-      "_AdminTable-C5LFBikd.js",
-      "_leaflet-BFSHmysG.js",
-      "_TileLayer-FmTbG74R.js",
+      "_AdminLayout-VmJRVQRs.js",
+      "resources/js/Pages/Admin/UserLogs/Components/UserLogsTable.jsx",
+      "resources/js/Pages/Admin/UserLogs/Components/UserLogsMapModal.jsx",
+      "_AdminTable-BTwnGKs4.js",
       "_format-Bgcu9aNK.js",
-      "_index-CVO_JJKB.js"
+      "_leaflet-B6brpU9g.js",
+      "_TileLayer-CEqmalM9.js",
+      "_index-CbXCgydv.js"
     ]
   },
   "resources/js/Pages/Auth/Components/AuthFooter.jsx": {
-    "file": "assets/AuthFooter-DYOSf5OT.js",
+    "file": "assets/AuthFooter-C_7ywTct.js",
     "name": "AuthFooter",
     "src": "resources/js/Pages/Auth/Components/AuthFooter.jsx",
     "isDynamicEntry": true,
@@ -698,7 +1217,7 @@
     ]
   },
   "resources/js/Pages/Auth/Components/AuthHeader.jsx": {
-    "file": "assets/AuthHeader-BH6eUkXX.js",
+    "file": "assets/AuthHeader-2uXVAMJM.js",
     "name": "AuthHeader",
     "src": "resources/js/Pages/Auth/Components/AuthHeader.jsx",
     "isDynamicEntry": true,
@@ -707,7 +1226,7 @@
     ]
   },
   "resources/js/Pages/Auth/Components/LoginForm.jsx": {
-    "file": "assets/LoginForm-sgdkmMhS.js",
+    "file": "assets/LoginForm-B4v-YJ0N.js",
     "name": "LoginForm",
     "src": "resources/js/Pages/Auth/Components/LoginForm.jsx",
     "isDynamicEntry": true,
@@ -716,7 +1235,7 @@
     ]
   },
   "resources/js/Pages/Auth/Index.jsx": {
-    "file": "assets/Index-CyDxdEWs.js",
+    "file": "assets/Index-D_jQpxT6.js",
     "name": "Index",
     "src": "resources/js/Pages/Auth/Index.jsx",
     "isDynamicEntry": true,
@@ -728,7 +1247,7 @@
     ]
   },
   "resources/js/Pages/Auth/Routes/ForgotPassword/Components/ForgotPasswordForm.jsx": {
-    "file": "assets/ForgotPasswordForm-ZtkzGH8t.js",
+    "file": "assets/ForgotPasswordForm-D7-bfUeh.js",
     "name": "ForgotPasswordForm",
     "src": "resources/js/Pages/Auth/Routes/ForgotPassword/Components/ForgotPasswordForm.jsx",
     "isDynamicEntry": true,
@@ -737,7 +1256,7 @@
     ]
   },
   "resources/js/Pages/Auth/Routes/ForgotPassword/Index.jsx": {
-    "file": "assets/Index-CN6TmU6B.js",
+    "file": "assets/Index-DAYtxBRx.js",
     "name": "Index",
     "src": "resources/js/Pages/Auth/Routes/ForgotPassword/Index.jsx",
     "isDynamicEntry": true,
@@ -749,7 +1268,7 @@
     ]
   },
   "resources/js/Pages/Auth/Routes/ResetPassword/Components/ResetPasswordForm.jsx": {
-    "file": "assets/ResetPasswordForm-BekTW6mP.js",
+    "file": "assets/ResetPasswordForm-D6qDZl85.js",
     "name": "ResetPasswordForm",
     "src": "resources/js/Pages/Auth/Routes/ResetPassword/Components/ResetPasswordForm.jsx",
     "isDynamicEntry": true,
@@ -758,7 +1277,7 @@
     ]
   },
   "resources/js/Pages/Auth/Routes/ResetPassword/Index.jsx": {
-    "file": "assets/Index-DwQNXon4.js",
+    "file": "assets/Index-CTvcnUdy.js",
     "name": "Index",
     "src": "resources/js/Pages/Auth/Routes/ResetPassword/Index.jsx",
     "isDynamicEntry": true,
@@ -770,17 +1289,17 @@
     ]
   },
   "resources/js/Pages/FasilitasLab/Index.jsx": {
-    "file": "assets/Index-Bc_r9itZ.js",
+    "file": "assets/Index-DRTWd6Zu.js",
     "name": "Index",
     "src": "resources/js/Pages/FasilitasLab/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_NavigationTabs-DtyJodFZ.js",
-      "_StatisticsCards-Dr8GT1Yc.js",
+      "_NavigationTabs-BqKkqCx3.js",
+      "_StatisticsCards-COQl7IDX.js",
       "resources/js/Components/ResearchList.jsx",
       "_format-Bgcu9aNK.js",
-      "_CustomSelect-Cc5DhqQz.js",
+      "_CustomSelect-91bUSIi7.js",
       "_fieldColors-Bj5Bq9Qt.js"
     ],
     "dynamicImports": [
@@ -789,19 +1308,19 @@
     ]
   },
   "resources/js/Pages/Hilirisasi/Index.jsx": {
-    "file": "assets/Index-D_50zb5C.js",
+    "file": "assets/Index-C9brj353.js",
     "name": "Index",
     "src": "resources/js/Pages/Hilirisasi/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_NavigationTabs-DtyJodFZ.js",
-      "_index-BoIfJA6i.js",
-      "_StatisticsCards-Dr8GT1Yc.js",
+      "_NavigationTabs-BqKkqCx3.js",
+      "_index-DlwJ323F.js",
+      "_StatisticsCards-COQl7IDX.js",
       "resources/js/Components/ResearchList.jsx",
       "_exportExcel-b88Nferc.js",
       "_format-Bgcu9aNK.js",
-      "_CustomSelect-Cc5DhqQz.js",
+      "_CustomSelect-91bUSIi7.js",
       "_fieldColors-Bj5Bq9Qt.js",
       "_xlsx-DSqvgYLF.js"
     ],
@@ -811,7 +1330,7 @@
     ]
   },
   "resources/js/Pages/Penelitian/Components/Loaders.jsx": {
-    "file": "assets/Loaders-0uRUSYD7.js",
+    "file": "assets/Loaders-6dODaZcm.js",
     "name": "Loaders",
     "src": "resources/js/Pages/Penelitian/Components/Loaders.jsx",
     "isDynamicEntry": true,
@@ -820,15 +1339,15 @@
     ]
   },
   "resources/js/Pages/Penelitian/Index.jsx": {
-    "file": "assets/Index-PDzwCSvx.js",
+    "file": "assets/Index-Di67zGdQ.js",
     "name": "Index",
     "src": "resources/js/Pages/Penelitian/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_index-BoIfJA6i.js",
-      "_NavigationTabs-DtyJodFZ.js",
-      "_StatisticsCards-Dr8GT1Yc.js",
+      "_index-DlwJ323F.js",
+      "_NavigationTabs-BqKkqCx3.js",
+      "_StatisticsCards-COQl7IDX.js",
       "_exportExcel-b88Nferc.js",
       "resources/js/Pages/Penelitian/Components/Loaders.jsx",
       "_format-Bgcu9aNK.js",
@@ -841,20 +1360,20 @@
     ]
   },
   "resources/js/Pages/Pengabdian/Index.jsx": {
-    "file": "assets/Index-BsqFg1iU.js",
+    "file": "assets/Index-DdxwAy6w.js",
     "name": "Index",
     "src": "resources/js/Pages/Pengabdian/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_NavigationTabs-DtyJodFZ.js",
-      "_index-BoIfJA6i.js",
-      "_StatisticsCards-Dr8GT1Yc.js",
+      "_NavigationTabs-BqKkqCx3.js",
+      "_index-DlwJ323F.js",
+      "_StatisticsCards-COQl7IDX.js",
       "resources/js/Components/ResearchList.jsx",
       "_exportExcel-b88Nferc.js",
       "_options-EqdkcHqv.js",
       "_format-Bgcu9aNK.js",
-      "_CustomSelect-Cc5DhqQz.js",
+      "_CustomSelect-91bUSIi7.js",
       "_fieldColors-Bj5Bq9Qt.js",
       "_xlsx-DSqvgYLF.js"
     ],
@@ -864,7 +1383,7 @@
     ]
   },
   "resources/js/Pages/Permasalahan/Components/DataInfoBar.jsx": {
-    "file": "assets/DataInfoBar-CXcp5hqr.js",
+    "file": "assets/DataInfoBar-9TwyRH5W.js",
     "name": "DataInfoBar",
     "src": "resources/js/Pages/Permasalahan/Components/DataInfoBar.jsx",
     "isDynamicEntry": true,
@@ -873,19 +1392,19 @@
     ]
   },
   "resources/js/Pages/Permasalahan/Index.jsx": {
-    "file": "assets/Index-BEVtgNBA.js",
+    "file": "assets/Index-BuVdan20.js",
     "name": "Index",
     "src": "resources/js/Pages/Permasalahan/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_NavigationTabs-DtyJodFZ.js",
-      "_StatisticsCards-Dr8GT1Yc.js",
+      "_NavigationTabs-BqKkqCx3.js",
+      "_StatisticsCards-COQl7IDX.js",
       "_format-Bgcu9aNK.js",
       "resources/js/Components/ResearchList.jsx",
       "_xlsx-DSqvgYLF.js",
       "resources/js/Pages/Permasalahan/Components/DataInfoBar.jsx",
-      "_CustomSelect-Cc5DhqQz.js",
+      "_CustomSelect-91bUSIi7.js",
       "_fieldColors-Bj5Bq9Qt.js"
     ],
     "dynamicImports": [
@@ -894,19 +1413,19 @@
     ]
   },
   "resources/js/Pages/Produk/Index.jsx": {
-    "file": "assets/Index-CBwTNFRs.js",
+    "file": "assets/Index-YhqGw-MH.js",
     "name": "Index",
     "src": "resources/js/Pages/Produk/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_NavigationTabs-DtyJodFZ.js",
-      "_index-BoIfJA6i.js",
-      "_StatisticsCards-Dr8GT1Yc.js",
+      "_NavigationTabs-BqKkqCx3.js",
+      "_index-DlwJ323F.js",
+      "_StatisticsCards-COQl7IDX.js",
       "resources/js/Components/ResearchList.jsx",
       "_exportExcel-b88Nferc.js",
       "_format-Bgcu9aNK.js",
-      "_CustomSelect-Cc5DhqQz.js",
+      "_CustomSelect-91bUSIi7.js",
       "_fieldColors-Bj5Bq9Qt.js",
       "_xlsx-DSqvgYLF.js"
     ],
@@ -916,7 +1435,7 @@
     ]
   },
   "resources/js/Pages/RumusanMasalah/Components/CategoryDetail.jsx": {
-    "file": "assets/CategoryDetail-CNrP6F3K.js",
+    "file": "assets/CategoryDetail-DyZAihmZ.js",
     "name": "CategoryDetail",
     "src": "resources/js/Pages/RumusanMasalah/Components/CategoryDetail.jsx",
     "isDynamicEntry": true,
@@ -925,7 +1444,7 @@
     ]
   },
   "resources/js/Pages/RumusanMasalah/Components/PanduanCharts.jsx": {
-    "file": "assets/PanduanCharts-CsPofTlo.js",
+    "file": "assets/PanduanCharts-DR3VbAsl.js",
     "name": "PanduanCharts",
     "src": "resources/js/Pages/RumusanMasalah/Components/PanduanCharts.jsx",
     "isDynamicEntry": true,
@@ -934,7 +1453,7 @@
     ]
   },
   "resources/js/Pages/RumusanMasalah/Components/PanduanIntro.jsx": {
-    "file": "assets/PanduanIntro-BDTxjz5Z.js",
+    "file": "assets/PanduanIntro-D-pIKU9c.js",
     "name": "PanduanIntro",
     "src": "resources/js/Pages/RumusanMasalah/Components/PanduanIntro.jsx",
     "isDynamicEntry": true,
@@ -943,7 +1462,7 @@
     ]
   },
   "resources/js/Pages/RumusanMasalah/Components/PanduanSteps.jsx": {
-    "file": "assets/PanduanSteps-DEL7-fqz.js",
+    "file": "assets/PanduanSteps-D8k0fEtM.js",
     "name": "PanduanSteps",
     "src": "resources/js/Pages/RumusanMasalah/Components/PanduanSteps.jsx",
     "isDynamicEntry": true,
@@ -952,7 +1471,7 @@
     ]
   },
   "resources/js/Pages/RumusanMasalah/Components/Sidebars.jsx": {
-    "file": "assets/Sidebars-Cb2qEqUL.js",
+    "file": "assets/Sidebars-CjxehLM7.js",
     "name": "Sidebars",
     "src": "resources/js/Pages/RumusanMasalah/Components/Sidebars.jsx",
     "isDynamicEntry": true,
@@ -961,26 +1480,26 @@
     ]
   },
   "resources/js/Pages/RumusanMasalah/Index.jsx": {
-    "file": "assets/Index-CBBRap6i.js",
+    "file": "assets/Index-Szd0YDOU.js",
     "name": "Index",
     "src": "resources/js/Pages/RumusanMasalah/Index.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_NavigationTabs-DtyJodFZ.js",
+      "_NavigationTabs-BqKkqCx3.js",
       "resources/js/Pages/RumusanMasalah/Components/Sidebars.jsx",
       "resources/js/Pages/RumusanMasalah/Components/CategoryDetail.jsx"
     ]
   },
   "resources/js/Pages/RumusanMasalah/Routes/Panduan.jsx": {
-    "file": "assets/Panduan-CYIo30GL.js",
+    "file": "assets/Panduan-BShPjOy3.js",
     "name": "Panduan",
     "src": "resources/js/Pages/RumusanMasalah/Routes/Panduan.jsx",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.jsx",
-      "_PanduanExamples-B34Ua4Ig.js",
-      "_NavigationTabs-DtyJodFZ.js",
+      "_PanduanExamples-ChElgT7E.js",
+      "_NavigationTabs-BqKkqCx3.js",
       "resources/js/Pages/RumusanMasalah/Components/Sidebars.jsx",
       "resources/js/Pages/RumusanMasalah/Components/PanduanIntro.jsx",
       "resources/js/Pages/RumusanMasalah/Components/PanduanCharts.jsx",
@@ -988,37 +1507,74 @@
     ]
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-Bt4ARjV0.js",
+    "file": "assets/app-iGcieC6Y.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
     "dynamicImports": [
-      "resources/js/Pages/Admin/Dashboard.jsx",
-      "resources/js/Pages/Admin/FasilitasLab/Create.jsx",
-      "resources/js/Pages/Admin/FasilitasLab/Edit.jsx",
+      "resources/js/Pages/Admin/Dashboard/Components/ChartsSection.jsx",
+      "resources/js/Pages/Admin/Dashboard/Components/InfoCards.jsx",
+      "resources/js/Pages/Admin/Dashboard/Components/SecondaryStats.jsx",
+      "resources/js/Pages/Admin/Dashboard/Components/StatsGrid.jsx",
+      "resources/js/Pages/Admin/Dashboard/Index.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabContent.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabForm.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabHeader.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabModals.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Components/FasilitasLabStats.jsx",
       "resources/js/Pages/Admin/FasilitasLab/Index.jsx",
-      "resources/js/Pages/Admin/Hilirisasi/Create.jsx",
-      "resources/js/Pages/Admin/Hilirisasi/Edit.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Routes/Create/Index.jsx",
+      "resources/js/Pages/Admin/FasilitasLab/Routes/Edit/Index.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiContent.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiForm.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiHeader.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiModals.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Components/HilirisasiStats.jsx",
       "resources/js/Pages/Admin/Hilirisasi/Index.jsx",
-      "resources/js/Pages/Admin/Penelitian/Create.jsx",
-      "resources/js/Pages/Admin/Penelitian/Edit.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Routes/Create/Index.jsx",
+      "resources/js/Pages/Admin/Hilirisasi/Routes/Edit/Index.jsx",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianContent.jsx",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianForm.jsx",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianHeader.jsx",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianModals.jsx",
+      "resources/js/Pages/Admin/Penelitian/Components/PenelitianStats.jsx",
       "resources/js/Pages/Admin/Penelitian/Index.jsx",
-      "resources/js/Pages/Admin/Pengabdian/Create.jsx",
-      "resources/js/Pages/Admin/Pengabdian/Edit.jsx",
+      "resources/js/Pages/Admin/Penelitian/Routes/Create/Index.jsx",
+      "resources/js/Pages/Admin/Penelitian/Routes/Edit/Index.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianContent.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianForm.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianHeader.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianModals.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Components/PengabdianStats.jsx",
       "resources/js/Pages/Admin/Pengabdian/Index.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Routes/Create/Index.jsx",
+      "resources/js/Pages/Admin/Pengabdian/Routes/Edit/Index.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanDataView.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanFilter.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanHeader.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanStatistikView.jsx",
+      "resources/js/Pages/Admin/Permasalahan/Components/PermasalahanStats.jsx",
       "resources/js/Pages/Admin/Permasalahan/Create.jsx",
       "resources/js/Pages/Admin/Permasalahan/Edit.jsx",
       "resources/js/Pages/Admin/Permasalahan/Index.jsx",
-      "resources/js/Pages/Admin/Produk/Create.jsx",
-      "resources/js/Pages/Admin/Produk/Edit.jsx",
+      "resources/js/Pages/Admin/Produk/Components/ProdukContent.jsx",
+      "resources/js/Pages/Admin/Produk/Components/ProdukForm.jsx",
+      "resources/js/Pages/Admin/Produk/Components/ProdukHeader.jsx",
+      "resources/js/Pages/Admin/Produk/Components/ProdukModals.jsx",
+      "resources/js/Pages/Admin/Produk/Components/ProdukStats.jsx",
       "resources/js/Pages/Admin/Produk/Index.jsx",
-      "resources/js/Pages/Admin/RumusanMasalahCategory/Create.jsx",
-      "resources/js/Pages/Admin/RumusanMasalahCategory/Edit.jsx",
+      "resources/js/Pages/Admin/Produk/Routes/Create/Index.jsx",
+      "resources/js/Pages/Admin/Produk/Routes/Edit/Index.jsx",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Components/CategoryCard.jsx",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Components/CategoryModals.jsx",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Components/StatementModal.jsx",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Components/StatementTable.jsx",
       "resources/js/Pages/Admin/RumusanMasalahCategory/Index.jsx",
-      "resources/js/Pages/Admin/RumusanMasalahCategory/StatementIndex.jsx",
-      "resources/js/Pages/Admin/Statements/create.jsx",
-      "resources/js/Pages/Admin/Statements/edit.jsx",
-      "resources/js/Pages/Admin/Statements/index.jsx",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Routes/Create/Index.jsx",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Routes/Edit/Index.jsx",
+      "resources/js/Pages/Admin/RumusanMasalahCategory/Routes/StatementIndex/Index.jsx",
+      "resources/js/Pages/Admin/UserLogs/Components/UserLogsMapModal.jsx",
+      "resources/js/Pages/Admin/UserLogs/Components/UserLogsTable.jsx",
       "resources/js/Pages/Admin/UserLogs/Index.jsx",
       "resources/js/Pages/Auth/Components/AuthFooter.jsx",
       "resources/js/Pages/Auth/Components/AuthHeader.jsx",
@@ -1038,7 +1594,7 @@
       "resources/js/Pages/Produk/Index.jsx",
       "resources/js/Pages/RumusanMasalah/Components/CategoryDetail.jsx",
       "resources/js/Pages/RumusanMasalah/Components/PanduanCharts.jsx",
-      "_PanduanExamples-B34Ua4Ig.js",
+      "_PanduanExamples-ChElgT7E.js",
       "resources/js/Pages/RumusanMasalah/Components/PanduanIntro.jsx",
       "resources/js/Pages/RumusanMasalah/Components/PanduanSteps.jsx",
       "resources/js/Pages/RumusanMasalah/Components/Sidebars.jsx",

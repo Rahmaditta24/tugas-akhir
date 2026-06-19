@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\User;
+use App\Modules\Auth\Models\User;
 
 trait HasUserOwnership
 {

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Pengabdian;
+use App\Modules\Pengabdian\Models\Pengabdian;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

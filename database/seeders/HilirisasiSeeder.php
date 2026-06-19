@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Hilirisasi;
+use App\Modules\Hilirisasi\Models\Hilirisasi;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

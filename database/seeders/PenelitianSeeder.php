@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Penelitian;
+use App\Modules\Penelitian\Models\Penelitian;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

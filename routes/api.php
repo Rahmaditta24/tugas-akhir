@@ -2,16 +2,16 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\PenelitianController;
-use App\Http\Controllers\Api\HilirisasiController;
-use App\Http\Controllers\Api\PengabdianController;
-use App\Http\Controllers\Api\PermasalahanController;
-use App\Http\Controllers\Api\ProdukController;
-use App\Http\Controllers\Api\FasilitasLabController;
-use App\Http\Controllers\Api\AdminStatsController;
-use App\Http\Controllers\Api\RumusanMasalahApiController;
-use App\Http\Controllers\Api\RegionController;
-use App\Http\Controllers\Admin\ProdukController as AdminProdukController;
+use App\Modules\Penelitian\Controllers\Api\PenelitianController;
+use App\Modules\Hilirisasi\Controllers\Api\HilirisasiController;
+use App\Modules\Pengabdian\Controllers\Api\PengabdianController;
+use App\Modules\Permasalahan\Controllers\Api\PermasalahanController;
+use App\Modules\Produk\Controllers\Api\ProdukController;
+use App\Modules\FasilitasLab\Controllers\Api\FasilitasLabController;
+use App\Modules\Dashboard\Controllers\Api\AdminStatsController;
+use App\Modules\RumusanMasalah\Controllers\Api\RumusanMasalahApiController;
+use App\Modules\Region\Controllers\RegionController;
+use App\Modules\Produk\Controllers\Admin\ProdukController as AdminProdukController;
 
 /*
 |--------------------------------------------------------------------------
