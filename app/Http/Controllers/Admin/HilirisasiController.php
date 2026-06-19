@@ -121,7 +121,7 @@ class HilirisasiController extends Controller
 
     public function create()
     {
-        return Inertia::render('Admin/Hilirisasi/Create');
+        return Inertia::render('Admin/Hilirisasi/Routes/Create/Index');
     }
 
     public function store(Request $request)
@@ -173,7 +173,7 @@ class HilirisasiController extends Controller
             $hilirisasi->$f = ($val === '' || $val === '-' || $val === null) ? '' : $val;
         }
 
-        return Inertia::render('Admin/Hilirisasi/Edit', [
+        return Inertia::render('Admin/Hilirisasi/Routes/Edit/Index', [
             'item' => $hilirisasi,
             'filters' => $request->only(['page', 'search', 'perPage', 'filters', 'sort', 'direction'])
         ]);
