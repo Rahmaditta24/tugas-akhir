@@ -115,7 +115,7 @@ class PengabdianController extends Controller
 
     public function create()
     {
-        return Inertia::render('Admin/Pengabdian/Create');
+        return Inertia::render('Admin/Pengabdian/Routes/Create/Index');
     }
 
     public function store(Request $request)
@@ -272,7 +272,7 @@ class PengabdianController extends Controller
                             'jenis_wilayah_provinsi_mitra' => $clean($it['jenis_wilayah_provinsi_mitra'] ?? null),
                             'bidang_teknologi_inovasi' => $clean($it['bidang_teknologi_inovasi'] ?? null),
                         ];
-                        return Inertia::render('Admin/Pengabdian/Edit', [
+                        return Inertia::render('Admin/Pengabdian/Routes/Edit/Index', [
                         'item' => $item,
                         'filters' => $request->only(['page', 'type', 'search', 'perPage', 'filters'])
                     ]);
@@ -391,7 +391,7 @@ class PengabdianController extends Controller
         if ($pengabdian->prov_mitra) $pengabdian->prov_mitra = $normalizeLoc($pengabdian->prov_mitra);
         if ($pengabdian->kab_mitra) $pengabdian->kab_mitra = $normalizeLoc($pengabdian->kab_mitra);
 
-        return Inertia::render('Admin/Pengabdian/Edit', [
+        return Inertia::render('Admin/Pengabdian/Routes/Edit/Index', [
             'item' => $pengabdian,
             'filters' => $request->only(['page', 'type', 'search', 'perPage', 'filters'])
         ]);
