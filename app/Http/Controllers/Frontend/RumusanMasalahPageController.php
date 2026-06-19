@@ -3,32 +3,29 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
-
-use App\Models\RumusanMasalahCategory;
 use Inertia\Inertia;
+use App\Services\RumusanMasalahService;
 
 class RumusanMasalahPageController extends Controller
 {
+    protected RumusanMasalahService $service;
+
+    public function __construct(RumusanMasalahService $service)
+    {
+        $this->service = $service;
+    }
+
     public function index()
     {
-        $categories = RumusanMasalahCategory::with([
-            'statements' => function ($query) {
-                $query->ordered();
-            }
-        ])
-            ->ordered()
-            ->get();
-
         return Inertia::render('RumusanMasalah/Index', [
-            'categories' => $categories,
+            'categories' => $this->service->getCategoriesWithStatements(),
         ]);
     }
 
     public function panduan()
     {
-        $categories = RumusanMasalahCategory::ordered()->get();
-        return Inertia::render('RumusanMasalah/Panduan', [
-            'categories' => $categories
+        return Inertia::render('RumusanMasalah/Routes/Panduan', [
+            'categories' => $this->service->getCategories()
         ]);
     }
 }

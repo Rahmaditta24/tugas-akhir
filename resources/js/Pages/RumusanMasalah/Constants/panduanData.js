@@ -1,0 +1,151 @@
+export export const chartCategories = [
+        "Ketahanan Pangan", "Kesehatan", "Energi", "Maritim",
+        "Pertahanan", "AI & Semikonduktor", "Material & Manufaktur",
+        "Hilirisasi & Industrialisasi"
+    ];
+
+    export const data_matrix = {
+        "Swasembada Pangan": { 0: ["1.1", "1.5", "1.6"], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] },
+        "Swasembada Energi": { 0: [], 1: [], 2: ["3.1", "3.6", "3.9"], 3: [], 4: [], 5: [], 6: [], 7: [] },
+        "Swasembada Air": { 0: ["1.3", "1.6"], 1: ["2.4", "2.9", "2.11"], 2: [], 3: ["4.4", "4.5", "4.7", "4.11"], 4: [], 5: [], 6: [], 7: [] },
+        "Kesehatan": { 0: ["1.4", "1.8"], 1: ["2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7", "2.8", "2.9", "2.10"], 2: [], 3: [], 4: [], 5: ["6.1", "6.5"], 6: [], 7: [] },
+        "Ekonomi & SDM": { 0: ["1.2", "1.10"], 1: ["2.8", "2.9", "2.10"], 2: ["3.4", "3.7", "3.11"], 3: ["4.1", "4.9", "4.10", "4.11"], 4: ["5.2", "5.7", "5.11"], 5: ["6.7", "6.8", "6.9"], 6: ["7.3", "7.10", "7.11"], 7: ["8.8", "8.9", "8.10"] },
+        "Pendidikan": { 0: ["1.8", "1.10"], 1: ["2.1", "2.2", "2.8"], 2: ["3.6"], 3: ["4.9"], 4: [], 5: ["6.7", "6.8", "6.9"], 6: ["7.3"], 7: ["8.8"] },
+        "Digitalisasi": { 0: ["1.2"], 1: ["2.1", "2.6", "2.7"], 2: ["3.8"], 3: ["4.2", "4.4", "4.10"], 4: [], 5: ["6.1", "6.2", "6.5", "6.6"], 6: [], 7: ["8.5", "8.9", "8.10"] },
+        "AI": { 0: [], 1: ["2.6"], 2: [], 3: [], 4: ["5.5", "5.6", "5.11"], 5: ["6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10"], 6: [], 7: ["8.5"] },
+        "Semikonduktor": { 0: [], 1: [], 2: [], 3: [], 4: ["5.1", "5.4", "5.11"], 5: ["6.1", "6.2", "6.3", "6.4", "6.5"], 6: [], 7: [] },
+        "Material Maju": { 0: [], 1: [], 2: ["3.9"], 3: [], 4: [], 5: [], 6: ["7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "7.7", "7.8", "7.9", "7.10"], 7: ["8.1", "8.7"] },
+        "Mineral": { 0: [], 1: [], 2: ["3.9"], 3: [], 4: [], 5: [], 6: ["7.4", "7.8"], 7: ["8.1", "8.7", "8.9"] },
+        "Industri Manufaktur": { 0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: ["7.1", "7.2", "7.6"], 7: ["8.1", "8.2", "8.8"] },
+        "Ekonomi Hijau": { 0: ["1.3", "1.7"], 1: [], 2: ["3.1", "3.5", "3.7"], 3: [], 4: [], 5: [], 6: ["7.9", "7.10"], 7: ["8.4", "8.7", "8.10"] },
+        "Ekonomi Biru": { 0: [], 1: [], 2: [], 3: ["4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.7", "4.8", "4.9", "4.10"], 4: [], 5: [], 6: [], 7: [] },
+        "Ekonomi Kreatif": { 0: ["1.11"], 1: [], 2: [], 3: [], 4: [], 5: ["6.5", "6.6", "6.11"], 6: [], 7: ["8.5", "8.9", "8.10"] },
+        "Lingkungan Hidup": { 0: ["1.3"], 1: [], 2: ["3.1", "3.3", "3.5"], 3: ["4.6"], 4: [], 5: [], 6: ["7.9"], 7: ["8.4", "8.7", "8.10"] },
+        "Elektrifikasi Transportasi": { 0: [], 1: [], 2: ["3.6", "3.9"], 3: [], 4: [], 5: [], 6: ["7.4", "7.7", "7.11"], 7: [] },
+        "Pengelolaan Sampah": { 0: ["1.6"], 1: [], 2: ["3.3", "3.11"], 3: ["4.6", "4.11"], 4: [], 5: [], 6: ["7.8", "7.9", "7.11"], 7: ["8.4", "8.7", "8.10"] },
+        "Kebencanaan": { 0: ["1.11"], 1: ["2.11"], 2: [], 3: ["4.3", "4.11"], 4: [], 5: [], 6: [], 7: [] },
+        "Sosiologi & Antropologi": { 0: ["1.8", "1.10"], 1: [], 2: [], 3: ["4.9"], 4: [], 5: [], 6: [], 7: [] },
+        "Psikologi": { 0: ["1.8"], 1: ["2.2", "2.8"], 2: [], 3: [], 4: [], 5: ["6.8", "6.9"], 6: ["7.3"], 7: [] },
+        "Komunikasi": { 0: ["1.8"], 1: ["2.2"], 2: [], 3: [], 4: [], 5: [], 6: [], 7: ["8.9"] },
+        "Hukum": { 0: [], 1: [], 2: [], 3: [], 4: [], 5: ["6.3"], 6: ["7.5"], 7: ["8.2"] },
+        "Ilmu Politik": { 0: [], 1: [], 2: ["3.10"], 3: [], 4: ["5.10", "5.11"], 5: [], 6: [], 7: ["8.2", "8.9"] },
+        "Filsafat & Etika": { 0: [], 1: ["2.8"], 2: [], 3: [], 4: ["5.5"], 5: ["6.4"], 6: [], 7: [] },
+        "Geografi": { 0: ["1.3"], 1: [], 2: ["3.6", "3.10"], 3: ["4.2"], 4: [], 5: [], 6: ["7.10"], 7: [] },
+        "Demografi": { 0: ["1.1", "1.10"], 1: ["2.3", "2.4"], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] },
+        "Bahasa & Sastra": { 0: ["1.4", "1.8"], 1: [], 2: [], 3: [], 4: [], 5: ["6.6"], 6: [], 7: [] },
+        "Sejarah": { 0: ["1.4"], 1: [], 2: [], 3: ["4.11"], 4: [], 5: [], 6: [], 7: ["8.10"] },
+        "Seni & Budaya": { 0: ["1.4", "1.8", "1.11"], 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: ["8.6", "8.10"] },
+        "Studi Agama": { 0: ["1.4", "1.8"], 1: ["2.8"], 2: [], 3: [], 4: [], 5: [], 6: [], 7: ["8.10"] },
+        "Studi Area": { 0: [], 1: [], 2: ["3.10"], 3: [], 4: ["5.8"], 5: [], 6: [], 7: ["8.9"] },
+        "Kearifan Lokal": { 0: ["1.4"], 1: [], 2: [], 3: ["4.4", "4.9", "4.11"], 4: [], 5: [], 6: [], 7: [] },
+        "Pariwisata": { 0: ["1.4", "1.11"], 1: [], 2: [], 3: ["4.8", "4.9", "4.11"], 4: [], 5: [], 6: [], 7: ["8.6", "8.9", "8.10"] },
+        "Sustainable Mobility": { 0: [], 1: [], 2: ["3.6", "3.8"], 3: [], 4: [], 5: [], 6: [], 7: [] },
+        "Pembangunan Sosial": { 0: ["1.10", "1.11"], 1: [], 2: ["3.6", "3.11"], 3: [], 4: [], 5: [], 6: [], 7: ["8.8", "8.9", "8.10"] },
+        "Modal Sosial": { 0: ["1.10", "1.11"], 1: [], 2: [], 3: ["4.4", "4.9", "4.11"], 4: [], 5: [], 6: [], 7: ["8.9", "8.10"] },
+        "Perempuan & Gender": { 0: ["1.8", "1.10", "1.11"], 1: ["2.2", "2.8", "2.11"], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [] }
+    };
+
+    export const dataTopik = [
+        {
+            "topik": "Kebencanaan",
+            "contoh": [
+                {
+                    "judul": "Pembangunan Sistem Pemantauan Dini Bencana Degradasi Danau Berdasarkan Distribusi Suhu Permukaan pada Citra Satelit Penginderaan Jauh",
+                    "bidang": ["Hilirisasi & Industrialisasi", "Digitalisasi: AI & Semikonduktor"],
+                    "paragraf": [
+                        "Riset ini berfokus pada pengembangan sistem pemantauan dini yang memanfaatkan analisis citra satelit yang dapat menjadi informasi praktis bagi pemangku kepentingan (pemerintah daerah, pengelola danau, dan lembaga lingkungan) sebagai alat bantu pengambilan keputusan untuk pengelolaan sumber daya air. Teknologi hasil riset juga dapat menjadi produk layanan informasi yang berpotensi dimanfaatkan secara berkelanjutan, sehingga dapat dipetakan kepada bidang hilirisasi.",
+                        "Selain itu, riset ini juga berkaitan erat dengan bidang digitalisasi karena seluruh proses pemantauan berbasis pada data digital citra satelit yang diolah dengan algoritma komputasi dan disajikan melalui sistem atau platform digital. Transformasi dari survei manual menjadi pemantauan digital yang lebih otomatis, berkelanjutan, dan luas cakupannya menjadikan riset ini bagian dari upaya penguatan sistem informasi berbasis data digital dalam manajemen risiko bencana degradasi danau."
+                    ]
+                },
+                {
+                    "judul": "Studi Pengaruh Reklamasi Teluk Jakarta Terhadap Perubahan Tinggi Muka Laut yang Dibangkitkan Gelombang Badai Pasang sebagai Upaya Mitigasi Bencana Rob",
+                    "bidang": ["Maritim", "Pertahanan"],
+                    "paragraf": [
+                        "Riset ini secara langsung berkaitan dengan dinamika laut dan pesisir di Teluk Jakarta yang kemudian mempengaruhi tinggi muka laut saat badai pasang. Analisis perubahan tinggi muka laut akibat kombinasi faktor oseanografi (gelombang, pasang, arus) adalah inti dari ilmu kelautan dan teknik pantai, yang jelas masuk dalam ruang lingkup bidang maritim.",
+                        "Kajian perubahan tinggi muka laut akibat badai pasang dapat digunakan untuk perencanaan mitigasi yang mendukung ketahanan nasional terhadap bencana hidrometeorologi di kawasan strategis seperti Jakarta. Penelitian ini memperkuat pertahanan sipil dan resiliensi kota pesisir terhadap risiko naiknya muka air laut dan banjir rob."
+                    ]
+                }
+            ]
+        },
+        {
+            "topik": "Seni & Budaya",
+            "contoh": [
+                {
+                    "judul": "Optimalisasi dan Implementasi Buku Taktil 3D Printing untuk Pendidikan Inklusif Tunanetra SLB: Motif Batik, Narasi Rempah, dan Peningkatan Literasi Taktil Warisan Budaya",
+                    "bidang": ["Manufaktur & Material Maju", "Hilirisasi & Industrialisasi"],
+                    "paragraf": [
+                        "Riset ini menitikberatkan pengembangan dan evaluasi penggunaan Buku Taktil 3D Printing sebagai upaya hilirisasi untuk menilai kesiapan suatu produk sehingga dapat dilakukan optimalisasi menuju tingkat kesiapan komersil. Kegiatan ini juga sebuah upaya hilirisasi hasil riset manufaktur ke produk konkret alat bantu pendidikan inklusif. Secara sosial-budaya, penelitian ini mendukung penguatan identitas dan literasi warisan budaya (motif batik dan narasi rempah) bagi peserta didik tunanetra, yang menjadi bagian dari penguatan modal sosial dan karakter bangsa."
+                    ]
+                },
+                {
+                    "judul": "Tradisi Sakeco Tau Samawa: Preservation and Innovation dalam Kolaborasi Pertunjukan Musik dan Tari sebagai Pengembangan Pariwisata Berbasis Kesenian Masyarakat",
+                    "bidang": ["Hilirisasi & Industrialisasi"],
+                    "paragraf": [
+                        "Penelitian ini terkait dengan pengembangan pariwisata berbasis kesenian masyarakat, yang pada dasarnya merupakan bagian dari hilirisasi sektor budaya dan ekonomi kreatif. Tradisi Sakeco Tau Samawa yang dikemas dalam kolaborasi pertunjukan musik dan tari diposisikan sebagai produk wisata budaya yang bernilai jual, mendorong terbentuknya rantai nilai ekonomi mulai dari pelaku seni, pengelola pertunjukan, UMKM lokal, hingga sektor jasa penunjang (kuliner, penginapan, transportasi). Dengan demikian, riset ini mendukung agenda Hilirisasi & Industrialisasi karena mengarahkan kekayaan budaya lokal menjadi aktivitas ekonomi di hilir (pariwisata dan industri kreatif), bukan sekadar objek pelestarian pasif."
+                    ]
+                }
+            ]
+        },
+        {
+            "topik": "Hukum",
+            "contoh": [
+                {
+                    "judul": "Identifikasi Hukum Terhadap Pelestarian dan Pemanfaatan Laut oleh Suku Laut di Kabupaten Lingga",
+                    "bidang": ["Maritim"],
+                    "paragraf": [
+                        "Riset ini berhubungan langsung dengan tata kelola ruang laut, keberlanjutan pemanfaatan sumber daya pesisir, serta pengakuan praktik hukum adat dalam pengelolaan wilayah laut. Suku Laut memiliki pengetahuan dan aturan tradisional terkait wilayah tangkap, pelestarian ekosistem, dan cara pemanfaatan laut yang berkelanjutan. Dengan mengidentifikasi dan menganalisis aspek hukum (negara dan adat) yang mengatur pelestarian dan pemanfaatan laut oleh komunitas ini, riset ini mendukung bidang Maritim melalui penguatan dasar hukum dan kebijakan yang lebih inklusif dan berkeadilan. Selain itu, riset ini juga menjadi fondasi sosial bagi pengembangan ekonomi biru yang berkelanjutan."
+                    ]
+                },
+                {
+                    "judul": "Membangun Sinergi Hukum Adat Gorontalo dan Bolaang Mongondow: Studi Komparatif terhadap Nilai, Struktur, dan Mekanisme Penyelesaian Sengketa",
+                    "bidang": ["Pertahanan", "Hilirisasi & Industrialisasi"],
+                    "paragraf": [
+                        "Penelitian tentang sinergi hukum adat dan mekanisme penyelesaian sengketa sangat relevan dengan ketahanan nasional dalam dimensi sosial, hukum, and budaya. Hukum adat yang kuat dan disinergikan antarwilayah (Gorontalo dan Bolaang Mongondow) berkontribusi pada pencegahan konflik horizontal, penguatan kohesi sosial, serta peningkatan legitimasi mekanisme penyelesaian sengketa di tingkat lokal. Ketika masyarakat memiliki saluran penyelesaian konflik yang diakui dan efektif, potensi eskalasi sengketa menjadi konflik yang lebih luas yang bisa mengganggu stabilitas dan keamanan dapat ditekan. Dengan demikian, riset ini mendukung bidang pertahanan dalam arti ketahanan sosial dan keamanan internal, melalui penguatan tata kelola lokal berbasis nilai-nilai kearifan hukum adat.",
+                        "Riset ini juga dapat dipetakan ke bidang hilirisasi & industrialisasi karena sinergi hukum adat berpotensi menjadi fondasi tata kelola sengketa atas sumber daya dan ruang yang sering kali menjadi prasyarat utama keberhasilan proyek hilirisasi di daerah. Mekanisme penyelesaian sengketa yang jelas, legitimasi, dan diterima masyarakat adat akan mengurangi konflik lahan, konflik pemanfaatan sumber daya alam, serta resistensi sosial terhadap implementasi kebijakan pembangunan dan investasi di sektor hilir (misalnya industri pengolahan, infrastruktur, atau pemanfaatan kawasan tertentu). Penguatan sekaligus penyelarasan nilai, struktur, serta mekanisme hukum adat ini dapat mendukung kepastian sosial dan kepastian “aturan main” yang dibutuhkan agar kebijakan hilirisasi berjalan lebih lancar dan berkelanjutan di tingkat lokal."
+                    ]
+                }
+            ]
+        },
+        {
+            "topik": "Bisnis dan Ekonomi",
+            "contoh": [
+                {
+                    "judul": "Menciptakan Model Bisnis Dinamis Berpengetahuan untuk Keberlanjutan Industri Bioetanol Fuel Grade Berbahan Baku Molases di Indonesia",
+                    "bidang": ["Energi", "Hilirisasi & Industrialisasi"],
+                    "paragraf": [
+                        "Riset ini dapat dipetakan pada Bidang Energi terutama pada 3.4 Pengembangan Inovasi dan Transformasi dalam Bisnis dalam Transisi Energi. Fokus pada “Model Bisnis Dinamis Berpengetahuan” untuk industri bioetanol fuel grade secara langsung menjawab kebutuhan transisi dari energi fosil ke bioenergi berkelanjutan, sekaligus meningkatkan pemanfaatan limbah pengolahan tebu atau molases sebagai bahan baku bernilai tambah. Dengan merancang model bisnis yang adaptif terhadap perubahan pasar, regulasi, dan ketersediaan bahan baku, penelitian ini berkontribusi pada keberlanjutan rantai nilai bioetanol dari hulu (agroindustri tebu) hingga hilir (industri energi dan pengguna akhir). Selain itu, riset ini sejalan dengan agenda hilirisasi karena mendorong lahirnya skema komersialisasi dan tata kelola industri bioetanol yang lebih matang, terintegrasi, dan menarik bagi pelaku usaha maupun investor."
+                    ]
+                },
+                {
+                    "judul": "Desain Keberlanjutan Supply Chain Kopi Banyuwangi menggunakan Business Model Canvas",
+                    "bidang": ["Pangan", "Hilirisasi & Industrialisasi"],
+                    "paragraf": [
+                        "Riset ini dapat dipetakan pada dua bidang, yaitu Pangan dan Hilirisasi & Industrialisasi. Dari sisi Pangan, desain keberlanjutan supply chain kopi Banyuwangi menjawab persoalan efisiensi rantai pasok dan penguatan model bisnis yang berorientasi pasar dan keberlanjutan di tingkat petani hingga pelaku hilir. Dari sisi Hilirisasi & Industrialisasi, penggunaan Business Model Canvas untuk merancang rantai nilai kopi yang terintegrasi mendukung agenda hilirisasi komoditas perkebunan menjadi produk bernilai tambah (green bean terstandar, roasted coffee, produk turunan, wisata kopi, dsb.) serta memperkuat keterhubungan antara pelaku usaha kecil dengan industri pengolahan dan pasar ekspor."
+                    ]
+                }
+            ]
+        },
+        {
+            "topik": "Pendidikan",
+            "contoh": [
+                {
+                    "judul": "Pengaruh Model Pembelajaran Berbasis Aktivitas Fisik Terhadap Kesejahteraan Psikologis Siswa Difabel",
+                    "bidang": ["Kesehatan"],
+                    "paragraf": [
+                        "Riset “Pengaruh Model Pembelajaran Berbasis Aktivitas Fisik Terhadap Kesejahteraan Psikologis Siswa Difabel” paling tepat dipetakan ke Bidang Kesehatan. Penelitian ini menguji sebuah model pembelajaran berbasis aktivitas fisik sebagai bentuk intervensi promotif–preventif untuk meningkatkan kesejahteraan psikologis kelompok rentan (siswa difabel), yang sejalan dengan agenda peningkatan kesehatan mental, kualitas hidup, dan layanan inklusif bagi populasi khusus. Pada saat yang sama, riset ini juga berkontribusi pada pengembangan praktik pendidikan inklusif, sehingga dapat dinyatakan mendukung penguatan SDM melalui inovasi di bidang pendidikan khusus."
+                    ]
+                },
+                {
+                    "judul": "Penerapan Model Pembelajaran Advance Organizer berbantuan Artificial Intelligence (AI) terhadap Peningkatan Pemahaman Konsep Mahasiswa Pendidikan Fisika Universitas Sulawesi Barat",
+                    "bidang": ["Digitalisasi: AI & Semikonduktor"],
+                },
+                {
+                    "judul": "Penguatan Model Pembelajaran Berbasis Proyek untuk Meningkatkan Kemampuan Mahasiswa Vokasi Administrasi Bisnis Politeknik Kota Medan",
+                    "bidang": ["Hilirisasi & Industrialisasi"],
+                    "paragraf": [
+                        "Riset ini berfokus pada peningkatan kualitas SDM vokasi di bidang administrasi bisnis. Lulusan vokasi administrasi bisnis merupakan salah satu pendukung kunci proses hilirisasi dan industrialisasi, karena mereka dapat berperan dalam manajemen operasional, tata kelola bisnis, administrasi produksi, logistik, serta layanan pelanggan di berbagai sektor industri. Penguatan model pembelajaran berbasis proyek akan membuat mahasiswa lebih siap menghadapi dunia kerja nyata, memahami alur bisnis dari hulu ke hilir, dan mampu mengelola proses bisnis secara efisien. Dengan demikian, riset ini mendukung hilirisasi & industrialisasi melalui penguatan kapasitas tenaga kerja terampil yang akan mengisi ekosistem industri dan rantai nilai."
+                    ]
+                }
+            ]
+        }
+    ];
