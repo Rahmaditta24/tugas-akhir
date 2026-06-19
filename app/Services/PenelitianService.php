@@ -116,21 +116,13 @@ class PenelitianService
         $cacheKey = 'map_data_cache_v' . $v . '_' . md5(json_encode($request->all()));
 
         return Cache::remember($cacheKey, 300, function () use ($baseQuery) {
-            DB::statement('SET SESSION group_concat_max_len = 1000000');
             $aggregatedData = (clone $baseQuery)
                 ->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('COUNT(*) as total_penelitian'),
                     DB::raw('institusi as institusi_name'),
-                    DB::raw('MAX(provinsi) as provinsi'),
-                    DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, "-") SEPARATOR "|") as all_fields'),
-                    DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as all_ids'),
-                    DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
-                    DB::raw('GROUP_CONCAT(COALESCE(skema, "-") SEPARATOR "|") as all_skema'),
-                    DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan AS CHAR) SEPARATOR "|") as all_years'),
-                    DB::raw('GROUP_CONCAT(COALESCE(tema_prioritas, "-") SEPARATOR "|") as all_themes'),
-                    DB::raw('GROUP_CONCAT(COALESCE(jenis_pt, "-") SEPARATOR "|") as all_pt_types')
+                    DB::raw('MAX(provinsi) as provinsi')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -146,13 +138,6 @@ class PenelitianService
                     'total_penelitian' => (int) $item->total_penelitian,
                     'institusi' => $item->institusi_name,
                     'provinsi' => $item->provinsi,
-                    'bidang_fokus' => $item->all_fields,
-                    'ids' => $item->all_ids,
-                    'titles' => $item->all_titles,
-                    'skema_list' => $item->all_skema,
-                    'tahun_list' => $item->all_years,
-                    'tema_list' => $item->all_themes,
-                    'jenis_pt_list' => $item->all_pt_types,
                 ];
             })->toArray();
         });

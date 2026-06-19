@@ -21,6 +21,7 @@ Route::get('/', [PenelitianPageController::class, 'index'])->name('penelitian.in
 // API routes for export
 Route::get('/api/penelitian/export', [PenelitianPageController::class, 'export'])->name('penelitian.export');
 Route::get('/api/research/{type}/{id}', [PenelitianPageController::class, 'getDetail'])->name('research.detail');
+Route::get('/api/map-detail/{type}', [\App\Http\Controllers\Api\MapDetailController::class, 'getInstitusiDetail'])->name('api.map.detail');
 
 
 Route::get('/pengabdian', [PengabdianPageController::class, 'index'])->name('pengabdian.index');

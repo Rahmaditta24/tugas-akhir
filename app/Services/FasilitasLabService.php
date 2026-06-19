@@ -11,24 +11,33 @@ class FasilitasLabService
 {
     public function getIndexData(Request $request): array
     {
-        $v = (int) Cache::get('fasilitas_lab_cache_version', 1);
-        $baseQuery = FasilitasLab::query();
+    public function getBaseQuery(Request $request)
+    {
+        $query = FasilitasLab::query();
 
         if ($request->filled('search')) {
-            $baseQuery->search($request->search);
+            $query->search($request->search);
         }
 
-        $this->applyAdvancedQueries($baseQuery, $request);
+        $this->applyAdvancedQueries($query, $request);
 
         if ($request->filled('kampus_ptnbh')) {
             $values = is_array($request->kampus_ptnbh) ? $request->kampus_ptnbh : [$request->kampus_ptnbh];
-            $baseQuery->whereIn('institusi', $values);
+            $query->whereIn('institusi', $values);
         }
 
         if ($request->filled('provinsi')) {
             $values = is_array($request->provinsi) ? $request->provinsi : [$request->provinsi];
-            $baseQuery->whereIn('provinsi', $values);
+            $query->whereIn('provinsi', $values);
         }
+
+        return $query;
+    }
+
+    public function getIndexData(Request $request): array
+    {
+        $v = (int) Cache::get('fasilitas_lab_cache_version', 1);
+        $baseQuery = $this->getBaseQuery($request);
 
         $statsCacheKey = 'stats_fasilitas_lab_v' . $v . '_' . md5(json_encode($request->all()));
         $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
@@ -41,62 +50,33 @@ class FasilitasLabService
 
         $mapCacheKey = 'map_data_fasilitas_lab_v' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($mapCacheKey, 1800, function () use ($baseQuery) {
-            DB::statement('SET SESSION group_concat_max_len = 1000000');
+            $aggregatedData = (clone $baseQuery)
+                ->select(
+                    DB::raw('AVG(latitude) as pt_latitude'),
+                    DB::raw('AVG(longitude) as pt_longitude'),
+                    DB::raw('COUNT(*) as total_penelitian'),
+                    DB::raw('institusi as institusi_name'),
+                    DB::raw('MAX(provinsi) as provinsi'),
+                    DB::raw('MAX(kode_universitas) as kode_universitas')
+                )
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->whereNotNull('institusi')
+                ->groupBy('institusi')
+                ->having('total_penelitian', '>', 0)
+                ->get();
 
-            $rows = (clone $baseQuery)->select(
-                'institusi', 'kode_universitas', 'latitude', 'longitude', 'provinsi', 'nama_laboratorium', 'nama_alat'
-            )
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->cursor();
-
-            $grouped = [];
-            foreach ($rows as $item) {
-                $key = $item->institusi ?? 'Unknown';
-                if (!isset($grouped[$key])) {
-                    $grouped[$key] = [
-                        'institusi'        => $item->institusi,
-                        'kode_universitas' => $item->kode_universitas,
-                        'pt_latitude'      => (float) $item->latitude,
-                        'pt_longitude'     => (float) $item->longitude,
-                        'provinsi'         => $item->provinsi,
-                        'total_penelitian' => 0,
-                        'lab_names'        => [],
-                        'tool_names'       => [],
-                        'isFasilitasLab'   => true,
-                    ];
-                }
-                $grouped[$key]['total_penelitian']++;
-                if ($item->nama_laboratorium) {
-                    $grouped[$key]['lab_names'][] = $item->nama_laboratorium;
-                }
-                if ($item->nama_alat) {
-                    foreach (explode('|', $item->nama_alat) as $tool) {
-                        $tool = trim($tool);
-                        if ($tool && !in_array($tool, $grouped[$key]['tool_names'])) {
-                            $grouped[$key]['tool_names'][] = $tool;
-                        }
-                    }
-                }
-            }
-
-            $result = [];
-            foreach ($grouped as $entry) {
-                $tools = $entry['tool_names'];
-                sort($tools);
-                $result[] = [
-                    'institusi'        => $entry['institusi'],
-                    'kode_universitas' => $entry['kode_universitas'],
-                    'pt_latitude'      => $entry['pt_latitude'],
-                    'pt_longitude'     => $entry['pt_longitude'],
-                    'provinsi'         => $entry['provinsi'],
-                    'total_penelitian' => $entry['total_penelitian'],
-                    'lab_list'         => implode('|', $entry['lab_names']),
-                    'tool_list'        => implode('|', $tools),
+            return $aggregatedData->map(function ($item) {
+                return [
+                    'institusi'        => $item->institusi_name,
+                    'kode_universitas' => $item->kode_universitas,
+                    'pt_latitude'      => (float) $item->pt_latitude,
+                    'pt_longitude'     => (float) $item->pt_longitude,
+                    'provinsi'         => $item->provinsi,
+                    'total_penelitian' => (int) $item->total_penelitian,
                     'isFasilitasLab'   => true,
                 ];
-            }
-            return $result;
+            })->toArray();
         });
 
         $isFiltered = $request->filled('search')

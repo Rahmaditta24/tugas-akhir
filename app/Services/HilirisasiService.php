@@ -11,27 +11,36 @@ class HilirisasiService
 {
     public function getIndexData(Request $request): array
     {
-        $v = (int) Cache::get('hilirisasi_cache_version', 1);
-        $baseQuery = Hilirisasi::query();
+    public function getBaseQuery(Request $request)
+    {
+        $query = Hilirisasi::query();
 
         if ($request->filled('search')) {
-            $baseQuery->search($request->search);
+            $query->search($request->search);
         }
 
-        $this->applyAdvancedQueries($baseQuery, $request);
+        $this->applyAdvancedQueries($query, $request);
 
         if ($request->filled('direktorat')) {
-            $baseQuery->where('direktorat', $request->direktorat);
+            $query->where('direktorat', $request->direktorat);
         }
         if ($request->filled('skema')) {
-            $baseQuery->where('skema', $request->skema);
+            $query->where('skema', $request->skema);
         }
         if ($request->filled('provinsi')) {
-            $baseQuery->where('provinsi', $request->provinsi);
+            $query->where('provinsi', $request->provinsi);
         }
         if ($request->filled('tahun')) {
-            $baseQuery->where('tahun', $request->tahun);
+            $query->where('tahun', $request->tahun);
         }
+
+        return $query;
+    }
+
+    public function getIndexData(Request $request): array
+    {
+        $v = (int) Cache::get('hilirisasi_cache_version', 1);
+        $baseQuery = $this->getBaseQuery($request);
 
         $statsCacheKey = 'stats_hilirisasi_v' . $v . '_' . md5(json_encode($request->all()));
         $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
@@ -46,18 +55,13 @@ class HilirisasiService
 
         $cacheKey = 'map_data_hilirisasi_v' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery) {
-            DB::statement('SET SESSION group_concat_max_len = 1000000');
             $query = (clone $baseQuery)
                 ->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('perguruan_tinggi as institusi_name'),
                     DB::raw('MAX(provinsi) as provinsi'),
-                    DB::raw('COUNT(*) as total_hilirisasi'),
-                    DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as all_ids'),
-                    DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
-                    DB::raw('GROUP_CONCAT(COALESCE(skema, "-") SEPARATOR "|") as all_skema'),
-                    DB::raw('GROUP_CONCAT(CAST(tahun AS CHAR) SEPARATOR "|") as all_years')
+                    DB::raw('COUNT(*) as total_hilirisasi')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -71,11 +75,6 @@ class HilirisasiService
                     'pt_longitude' => (float) $item->pt_longitude,
                     'provinsi' => $item->provinsi,
                     'total_hilirisasi' => (int) $item->total_hilirisasi,
-                    'ids' => $item->all_ids,
-                    'titles' => $item->all_titles,
-                    'skema_list' => $item->all_skema,
-                    'tahun_list' => $item->all_years,
-                    'bidang_fokus' => '-',
                 ];
             })->toArray();
         });

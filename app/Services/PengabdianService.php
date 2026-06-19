@@ -14,29 +14,31 @@ class PengabdianService
     {
         $v = (int) Cache::get('pengabdian_cache_version', 1);
 
+    public function getBaseQuery(Request $request)
+    {
         $dataTypeEffective = $request->input('dataType');
         if (!$request->has('dataType') && !$request->has('search') && !$request->has('queries')) {
             $dataTypeEffective = 'Multitahun, Batch I & Batch II';
         }
 
-        $baseQuery = Pengabdian::query();
+        $query = Pengabdian::query();
 
         if ($request->filled('search')) {
-            $baseQuery->search($request->search);
+            $query->search($request->search);
         }
 
-        $this->applyAdvancedQueries($baseQuery, $request);
+        $this->applyAdvancedQueries($query, $request);
 
         if (!empty($dataTypeEffective)) {
             $val = $dataTypeEffective;
             if (stripos($val, 'Multitahun') !== false && stripos($val, 'Batch') !== false) {
-                $baseQuery->where(function ($q) {
+                $query->where(function ($q) {
                     $q->where('batch_type', 'like', '%multitahun%')
                         ->orWhere('batch_type', 'like', '%batch_i%')
                         ->orWhere('batch_type', 'like', '%batch_ii%');
                 });
             } elseif (stripos($val, 'Kosabangsa') !== false) {
-                $baseQuery->where(function ($q) {
+                $query->where(function ($q) {
                     $q->where('batch_type', 'like', '%Kosabangsa%')
                         ->orWhere('nama_skema', 'like', '%Kosabangsa%');
                 });
@@ -45,20 +47,28 @@ class PengabdianService
 
         if ($request->filled('skema')) {
             $skemaValues = (array) $request->skema;
-            $baseQuery->where(function ($q) use ($skemaValues) {
+            $query->where(function ($q) use ($skemaValues) {
                 $q->whereIn('nama_skema', $skemaValues)
                   ->orWhereIn('nama_singkat_skema', $skemaValues);
             });
         }
 
         if ($request->filled('provinsi')) {
-            $baseQuery->whereIn('prov_pt', (array) $request->provinsi);
+            $query->whereIn('prov_pt', (array) $request->provinsi);
         }
 
         if ($request->filled('tahun')) {
             $tahunValues = array_map('intval', (array) $request->tahun);
-            $baseQuery->whereIn('thn_pelaksanaan_kegiatan', $tahunValues);
+            $query->whereIn('thn_pelaksanaan_kegiatan', $tahunValues);
         }
+
+        return $query;
+    }
+
+    public function getIndexData(Request $request): array
+    {
+        $v = (int) Cache::get('pengabdian_cache_version', 1);
+        $baseQuery = $this->getBaseQuery($request);
 
         $statsCacheKey = 'stats_pengabdian_v5_' . $v . '_' . md5(json_encode($request->all()));
         $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
@@ -76,22 +86,14 @@ class PengabdianService
             : 'MAX(COALESCE(bidang_fokus, nama_skema)) as sample_theme';
 
         $cacheKey = 'map_data_pengabdian_v9_' . $v . '_' . md5(json_encode($request->all()));
-        $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery, $themeSql) {
-            DB::statement('SET SESSION group_concat_max_len = 1000000');
+        $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery) {
             $query = (clone $baseQuery)
                 ->select(
                     DB::raw('AVG(pt_latitude) as pt_latitude'),
                     DB::raw('AVG(pt_longitude) as pt_longitude'),
                     DB::raw('nama_institusi as institusi_name'),
                     DB::raw('MAX(prov_pt) as provinsi'),
-                    DB::raw('COUNT(*) as total_penelitian'),
-                    DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, nama_skema, "-") SEPARATOR "|") as all_fields'),
-                    DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as all_ids'),
-                    DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
-                    DB::raw('GROUP_CONCAT(COALESCE(nama_skema, "-") SEPARATOR "|") as all_skema'),
-                    DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan_kegiatan AS CHAR) SEPARATOR "|") as all_years'),
-                    DB::raw('GROUP_CONCAT(COALESCE(bidang_teknologi_inovasi, "-") SEPARATOR "|") as all_themes'),
-                    DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types')
+                    DB::raw('COUNT(*) as total_penelitian')
                 )
                 ->whereNotNull('pt_latitude')
                 ->whereNotNull('pt_longitude')
@@ -106,13 +108,6 @@ class PengabdianService
                     'pt_longitude' => (float) $item->pt_longitude,
                     'provinsi' => $item->provinsi,
                     'total_pengabdian' => (int) $item->total_penelitian,
-                    'bidang_fokus' => $item->all_fields,
-                    'ids' => $item->all_ids,
-                    'titles' => $item->all_titles,
-                    'skema_list' => $item->all_skema,
-                    'tahun_list' => $item->all_years,
-                    'tema_list' => $item->all_themes,
-                    'jenis_pt_list' => $item->all_pt_types,
                 ];
             })->toArray();
         });

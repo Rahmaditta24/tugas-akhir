@@ -152,21 +152,64 @@ export default function MapContainer({
             }
         };
 
-        window.openInstitusiDetail = (dataString) => {
+        window.openInstitusiDetail = async (institusiName) => {
+            if (!institusiName) return;
+            
             try {
+                // If it's a JSON string (backward compatibility), parse it
                 let data;
                 try {
-                    data = JSON.parse(dataString);
+                    data = JSON.parse(institusiName);
+                    institusiName = data.institusi || data.nama_institusi || data._institusi || institusiName;
                 } catch {
-                    data = JSON.parse(decodeURIComponent(dataString));
+                    try {
+                        data = JSON.parse(decodeURIComponent(institusiName));
+                        institusiName = data.institusi || data.nama_institusi || data._institusi || institusiName;
+                    } catch {
+                        // It's just the name
+                    }
                 }
-                const currentDataType = typeof getCurrentDataType === 'function' ? getCurrentDataType() : null;
-                setSelectedResearch({ ...data, isInstitusi: true, currentDataType });
-                setIsModalOpen(true);
 
-                // Panggil callback parent jika tersedia
-                if (onCampusClick && data.institusi) {
-                    onCampusClick(data.institusi);
+                const currentDataType = typeof getCurrentDataType === 'function' ? getCurrentDataType() : null;
+                
+                // Jika sudah ada data detail komplit (dari payload lama), langsung pakai
+                if (data && data.all_titles) {
+                    setSelectedResearch({ ...data, isInstitusi: true, currentDataType });
+                    setIsModalOpen(true);
+                    if (onCampusClickRef.current) onCampusClickRef.current(institusiName);
+                    return;
+                }
+
+                // Ambil filter saat ini
+                const currentFilters = filtersRef.current || {};
+                const searchParams = new URLSearchParams();
+                
+                searchParams.append('institusi', institusiName);
+                
+                Object.entries(currentFilters).forEach(([key, value]) => {
+                    if (value !== null && value !== undefined && value !== '') {
+                        if (Array.isArray(value)) {
+                            value.forEach(v => searchParams.append(`${key}[]`, v));
+                        } else if (typeof value === 'object') {
+                            searchParams.append(key, JSON.stringify(value));
+                        } else {
+                            searchParams.append(key, value);
+                        }
+                    }
+                });
+
+                // Fetch data dari API
+                const response = await fetch(`/api/map-detail/${currentDataType}?${searchParams.toString()}`);
+                if (response.ok) {
+                    const detailData = await response.json();
+                    if (detailData && !detailData.error) {
+                        setSelectedResearch({ ...detailData, isInstitusi: true, currentDataType });
+                        setIsModalOpen(true);
+                        
+                        if (onCampusClickRef.current) {
+                            onCampusClickRef.current(institusiName);
+                        }
+                    }
                 }
             } catch (e) {
                 console.error("Gagal memparse data institusi", e);

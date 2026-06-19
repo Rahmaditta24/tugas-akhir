@@ -11,26 +11,35 @@ class ProdukService
 {
     public function getIndexData(Request $request): array
     {
-        $v = (int) Cache::get('produk_cache_version', 1);
-        $baseQuery = Produk::query();
+    public function getBaseQuery(Request $request)
+    {
+        $query = Produk::query();
 
         if ($request->filled('search')) {
-            $baseQuery->search($request->search);
+            $query->search($request->search);
         }
 
-        $this->applyAdvancedQueries($baseQuery, $request);
+        $this->applyAdvancedQueries($query, $request);
 
         if ($request->filled('bidang')) {
-            $baseQuery->whereIn('bidang', (array) $request->bidang);
+            $query->whereIn('bidang', (array) $request->bidang);
         }
 
         if ($request->filled('tkt')) {
-            $baseQuery->whereIn('tkt', (array) $request->tkt);
+            $query->whereIn('tkt', (array) $request->tkt);
         }
 
         if ($request->filled('provinsi')) {
-            $baseQuery->whereIn('provinsi', (array) $request->provinsi);
+            $query->whereIn('provinsi', (array) $request->provinsi);
         }
+
+        return $query;
+    }
+
+    public function getIndexData(Request $request): array
+    {
+        $v = (int) Cache::get('produk_cache_version', 1);
+        $baseQuery = $this->getBaseQuery($request);
 
         $statsCacheKey = 'stats_produk_v' . $v . '_' . md5(json_encode($request->all()));
         $stats = Cache::remember($statsCacheKey, 3600, function () use ($baseQuery) {
@@ -45,19 +54,13 @@ class ProdukService
 
         $cacheKey = 'map_data_produk_v' . $v . '_' . md5(json_encode($request->all()));
         $mapData = Cache::remember($cacheKey, 1800, function () use ($baseQuery) {
-            DB::statement('SET SESSION group_concat_max_len = 1000000');
             $aggregatedData = (clone $baseQuery)
                 ->select(
                     DB::raw('AVG(latitude) as pt_latitude'),
                     DB::raw('AVG(longitude) as pt_longitude'),
                     DB::raw('COUNT(*) as total_penelitian'),
                     DB::raw('institusi as institusi_name'),
-                    DB::raw('MAX(provinsi) as provinsi'),
-                    DB::raw('GROUP_CONCAT(COALESCE(bidang, "-") ORDER BY id SEPARATOR "|") as all_fields'),
-                    DB::raw('GROUP_CONCAT(CAST(id AS CHAR) ORDER BY id SEPARATOR "|") as all_ids'),
-                    DB::raw('GROUP_CONCAT(COALESCE(nama_produk, "-") ORDER BY id SEPARATOR "|") as all_titles'),
-                    DB::raw('GROUP_CONCAT(COALESCE(nama_inventor, "-") ORDER BY id SEPARATOR "|") as all_researchers'),
-                    DB::raw('GROUP_CONCAT(COALESCE(tkt, "-") ORDER BY id SEPARATOR "|") as all_years')
+                    DB::raw('MAX(provinsi) as provinsi')
                 )
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
@@ -73,12 +76,6 @@ class ProdukService
                     'total_penelitian' => (int) $item->total_penelitian,
                     'institusi' => $item->institusi_name,
                     'provinsi' => $item->provinsi,
-                    'bidang_fokus' => $item->all_fields,
-                    'ids' => $item->all_ids,
-                    'titles' => $item->all_titles,
-                    'all_researchers' => $item->all_researchers,
-                    'tahun_list' => $item->all_years, 
-                    'tkt_list' => $item->all_years,   
                     'isProduk' => true
                 ];
             })->toArray();
