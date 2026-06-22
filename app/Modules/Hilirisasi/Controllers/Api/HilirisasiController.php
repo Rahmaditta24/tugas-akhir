@@ -128,6 +128,7 @@ class HilirisasiController extends Controller
 
                 $query->select(
                     'tahun',
+                    'id_proposal',
                     'judul',
                     'nama_pengusul',
                     'direktorat',
