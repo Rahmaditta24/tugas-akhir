@@ -16,13 +16,13 @@ export default function usePanduan({ categories }) {
             script.src = 'https://cdn.plot.ly/plotly-latest.min.js';
             script.async = true;
             script.onload = () => {
-                renderCharts();
                 setLoading(false);
+                setTimeout(renderCharts, 100);
             };
             document.head.appendChild(script);
         } else {
-            renderCharts();
             setLoading(false);
+            setTimeout(renderCharts, 100);
         }
 
         function renderCharts() {

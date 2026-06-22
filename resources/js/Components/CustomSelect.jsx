@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 const CustomSelect = ({
     value,
@@ -11,7 +12,9 @@ const CustomSelect = ({
     disabled = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState('bottom');
     const containerRef = useRef(null);
+    const dropdownRef = useRef(null);
 
     // Normalisasi opsi menjadi array object {value, label}
     const normalizedOptions = options.map(opt => {
@@ -25,16 +28,60 @@ const CustomSelect = ({
         opt => opt.value?.toString().toLowerCase() === value?.toString().toLowerCase()
     );
 
+    const [dropdownStyle, setDropdownStyle] = useState({});
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (containerRef.current && !containerRef.current.contains(event.target)) {
+                // Also check if click is inside the portal dropdown
+                if (dropdownRef.current && dropdownRef.current.contains(event.target)) {
+                    return;
+                }
                 setIsOpen(false);
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+        const handleScroll = (e) => {
+            // Ignore if the scrolling element is the dropdown itself
+            if (dropdownRef.current && (e.target === dropdownRef.current || dropdownRef.current.contains(e.target))) {
+                return;
+            }
+            if (isOpen) setIsOpen(false);
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+            window.addEventListener('scroll', handleScroll, true); // capture scroll anywhere
+            window.addEventListener('resize', handleScroll);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('scroll', handleScroll, true);
+            window.removeEventListener('resize', handleScroll);
+        };
+    }, [isOpen]);
+
+    useEffect(() => {
+        if (isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            
+            // 260px is approx max-h-60 (240px) + some buffer
+            const isTop = spaceBelow < 260 && spaceAbove > spaceBelow;
+            setDropdownPosition(isTop ? 'top' : 'bottom');
+
+            setDropdownStyle({
+                position: 'fixed',
+                left: rect.left,
+                width: rect.width,
+                ...(isTop 
+                    ? { bottom: window.innerHeight - rect.top + 4, maxHeight: spaceAbove - 20 } 
+                    : { top: rect.bottom + 4, maxHeight: spaceBelow - 20 })
+            });
+        }
+    }, [isOpen]);
 
     const handleSelect = (val) => {
         onChange(val);
@@ -53,6 +100,9 @@ const CustomSelect = ({
                 tabIndex={-1}
             >
                 <option value="">{placeholder}</option>
+                {!selectedOption && value && (
+                    <option value={value}>{value}</option>
+                )}
                 {normalizedOptions.map((opt, idx) => (
                     <option key={idx} value={opt.value}>{opt.label}</option>
                 ))}
@@ -68,8 +118,8 @@ const CustomSelect = ({
                     error ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'
                 }`}
             >
-                <span className={`block truncate ${!selectedOption ? 'text-slate-400' : 'text-slate-700'}`}>
-                    {selectedOption ? selectedOption.label : placeholder}
+                <span className={`block truncate ${!selectedOption && !value ? 'text-slate-400' : 'text-slate-700'}`}>
+                    {selectedOption ? selectedOption.label : (value || placeholder)}
                 </span>
                 <span className="flex items-center pointer-events-none ml-2">
                     <svg
@@ -84,8 +134,16 @@ const CustomSelect = ({
                 </span>
             </button>
 
-            {isOpen && !disabled && (
-                <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto animate-in fade-in slide-in-from-top-1">
+            {isOpen && !disabled && createPortal(
+                <div 
+                    ref={dropdownRef}
+                    style={dropdownStyle}
+                    className={`z-[99999] bg-white border border-slate-200 rounded-lg shadow-xl overflow-auto animate-in fade-in ${
+                        dropdownPosition === 'top' 
+                            ? 'slide-in-from-bottom-1' 
+                            : 'slide-in-from-top-1'
+                    }`}
+                >
                     <ul className="py-1">
                         <li
                             className={`px-4 py-2 text-sm cursor-pointer transition-colors ${!value ? 'bg-blue-50 text-blue-700 font-medium' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
@@ -112,7 +170,8 @@ const CustomSelect = ({
                             </li>
                         ))}
                     </ul>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

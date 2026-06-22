@@ -24,9 +24,9 @@ export default function BulkUpdateModal({
                 {/* Isi Modal (Bisa di-scroll) */}
                 <div className="flex-1 overflow-y-auto bg-slate-50 p-3 sm:p-6 space-y-4 sm:space-y-6">
                     {items.map((item, idx) => (
-                        <div key={item.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative transition-all hover:shadow-md hover:border-blue-200">
+                        <div key={item.id} className="bg-white rounded-xl shadow-sm border border-slate-200 relative transition-all hover:shadow-md hover:border-blue-200">
                             {/* Header Item */}
-                            <div className="bg-slate-50/80 px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-100 flex items-center justify-between">
+                            <div className="bg-slate-50/80 px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-100 flex items-center justify-between rounded-t-xl">
                                 <div className="flex items-center gap-3">
                                     <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs sm:text-sm font-bold shadow-inner">
                                         {idx + 1}
