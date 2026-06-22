@@ -2,6 +2,7 @@
 
 namespace App\Modules\UserLog\Models;
 
+use App\Modules\Auth\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

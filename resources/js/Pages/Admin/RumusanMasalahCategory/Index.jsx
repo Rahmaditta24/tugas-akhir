@@ -12,8 +12,7 @@ export default function RumusanMasalahCategoryIndex({ categories }) {
     const context = useRumusanMasalahCategory();
 
     return (
-        <AdminLayout title="Rumusan Masalah">
-            <Head title="Manajemen Kategori Rumusan Masalah" />
+        <AdminLayout title="Manajemen Kategori Rumusan Masalah" showHeaderTitle={false}>
 
             <div className="py-4">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">

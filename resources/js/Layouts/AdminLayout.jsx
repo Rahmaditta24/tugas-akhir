@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, usePage, router, Head } from '@inertiajs/react';
 import Toast from '../Components/Toast';
 
-export default function AdminLayout({ title = 'Admin', children }) {
+export default function AdminLayout({ title = 'Admin', showHeaderTitle = true, children }) {
     const { url, props } = usePage();
     const user = props?.auth?.user;
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -233,7 +233,7 @@ export default function AdminLayout({ title = 'Admin', children }) {
                 <main className="flex-1 w-full max-w-full overflow-x-hidden p-6 lg:p-8 lg:ml-64">
                     <div className="max-w-7xl mx-auto">
                         {/* Judul Halaman (opsional) */}
-                        {title ? (
+                        {title && showHeaderTitle ? (
                             <div className="mb-6">
                                 <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-slate-900">{title}</h2>
                             </div>

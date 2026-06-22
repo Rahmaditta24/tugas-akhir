@@ -21,7 +21,7 @@ export default function Index({ stats = {} }) {
     const statsCards = getStatsCards(liveStats);
 
     return (
-        <AdminLayout title="Dashboard Admin">
+        <AdminLayout title="Dashboard Admin" showHeaderTitle={false}>
             <PageHeader
                 title="Dashboard"
                 subtitle="Statistik terkini dan ringkasan aktivitas"

@@ -119,17 +119,18 @@ class PenelitianService
             DB::statement('SET SESSION group_concat_max_len = 100000');
             $aggregatedData = (clone $baseQuery)
                 ->select(
-                    DB::raw('AVG(pt_latitude) as pt_latitude'),
-                    DB::raw('AVG(pt_longitude) as pt_longitude'),
+                    DB::raw('MAX(pt_latitude) as pt_latitude'),
+                    DB::raw('MAX(pt_longitude) as pt_longitude'),
                     DB::raw('COUNT(*) as total_penelitian'),
                     DB::raw('institusi as institusi_name'),
                     DB::raw('MAX(provinsi) as provinsi'),
                     DB::raw('GROUP_CONCAT(COALESCE(bidang_fokus, "-") SEPARATOR "|") as all_fields')
                 )
-                ->whereNotNull('pt_latitude')
-                ->whereNotNull('pt_longitude')
                 ->whereNotNull('institusi')
+                ->where('institusi', '!=', '')
+                ->where('institusi', '!=', '-')
                 ->groupBy('institusi')
+                ->havingRaw('MAX(pt_latitude) IS NOT NULL AND MAX(pt_longitude) IS NOT NULL')
                 ->having('total_penelitian', '>', 0)
                 ->get();
 

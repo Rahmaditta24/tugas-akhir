@@ -24,7 +24,8 @@ export default function Home(props) {
         isModalOpen, setIsModalOpen,
         currentMapData,
         currentResearches, setCurrentResearches,
-        
+        handleFilteredResults,
+
         handleSearch,
         handleFilterChange,
         handleReset,
@@ -75,7 +76,7 @@ export default function Home(props) {
                             <ResearchList
                                 researches={currentResearches}
                                 onAdvancedSearch={handleAdvancedSearch}
-                                onFilteredResults={setCurrentResearches}
+                                onFilteredResults={handleFilteredResults}
                                 isFiltered={props.isFiltered}
                                 isPenelitianPage={true}
                                 onItemClick={handleItemClick}

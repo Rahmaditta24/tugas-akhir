@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { router } from '@inertiajs/react';
 import toast from 'react-hot-toast';
 import { exportToExcel } from '@/Utils/exportExcel';
@@ -81,6 +81,11 @@ export default function usePengabdian({ mapData, researches, stats, filters: ini
             showProgress: false,
         });
     };
+
+    // Sinkronisasi hasil filter lokal ke peta dan list sekaligus
+    const handleFilteredResults = useCallback((filtered) => {
+        setCurrentResearches(filtered);
+    }, []);
 
     const handleStatsChange = (newStats) => {
         if (!newStats) {
@@ -197,6 +202,7 @@ export default function usePengabdian({ mapData, researches, stats, filters: ini
         currentStats, currentMapData, currentResearches, setCurrentResearches,
         selectedResearch, isModalOpen, setIsModalOpen,
         isLoading, filterOptions, filterFields,
+        handleFilteredResults,
         handleSearch, handleAdvancedSearch, handleFilterChange,
         handleStatsChange, handleReset, handleItemClick, handleDownload
     };

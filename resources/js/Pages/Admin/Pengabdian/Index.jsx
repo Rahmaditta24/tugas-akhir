@@ -12,7 +12,7 @@ export default function Index({ pengabdian, stats = {}, filters = {} }) {
     const context = usePengabdian(pengabdian, filters);
 
     return (
-        <AdminLayout title="">
+        <AdminLayout title="Pengabdian" showHeaderTitle={false}>
             <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
             <div className="space-y-6 max-w-full">
                 <PengabdianHeader context={context} />

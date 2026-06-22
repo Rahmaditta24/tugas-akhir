@@ -12,7 +12,7 @@ export default function Index({ hilirisasi, stats = {}, filters = {} }) {
     const context = useHilirisasi(hilirisasi, filters);
 
     return (
-        <AdminLayout title="Hilirisasi">
+        <AdminLayout title="Hilirisasi" showHeaderTitle={false}>
             <Toaster position="top-right" />
             <div className="space-y-6">
                 <HilirisasiHeader context={context} />

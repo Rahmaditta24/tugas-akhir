@@ -162,7 +162,7 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
                             <div className="flex items-center gap-2">
                                 <CustomSelect
     value={row.operator}
-    onChange={val => updateFilterRow(row.id, 'operator', val)}
+    onChange={val => updateRow(row.id, { operator: val })}
     options={["AND", "OR", "AND NOT"]}
     placeholder={"-- Pilih --"}
     error={false}
@@ -194,12 +194,12 @@ export default function ResearchList({ researches = [], totalCount = 0, onAdvanc
                                     </button>
                                 )}
                             </div>
-                            <div className="relative shrink-0">
+                            <div className="relative shrink-0 min-w-[160px]">
                                 <CustomSelect
     value={row.field}
-    onChange={val => updateFilterRow(row.id, 'field', val)}
+    onChange={val => updateRow(row.id, { field: val })}
     options={fieldOptions}
-    placeholder="{opt.label}"
+    placeholder="-- Pilih Field --"
     error={false}
     disabled={false}
     

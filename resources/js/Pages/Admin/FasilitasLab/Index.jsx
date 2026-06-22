@@ -12,7 +12,7 @@ export default function Index({ fasilitasLab, stats = {}, filters = {} }) {
     const context = useFasilitasLab(fasilitasLab, filters);
 
     return (
-        <AdminLayout title="Fasilitas Lab">
+        <AdminLayout title="Fasilitas Lab" showHeaderTitle={false}>
             <Toaster position="top-right" />
             <div className="space-y-6 max-w-full">
                 <FasilitasLabHeader context={context} />

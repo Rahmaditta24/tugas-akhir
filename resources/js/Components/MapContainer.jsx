@@ -888,7 +888,15 @@ export default function MapContainer({
                     const count = hasDetails ? ids.length : (item._count || 1);
 
                     const MAX_DOTS = Math.min(count, 150); // Mencegah crash jika data terlalu banyak
+                    
+                    let remainingCount = count;
+                    const countPerDot = Math.floor(count / MAX_DOTS);
+
                     for (let idx = 0; idx < MAX_DOTS; idx++) {
+                            const isLast = idx === MAX_DOTS - 1;
+                            const dotCount = isLast ? remainingCount : countPerDot;
+                            remainingCount -= dotCount;
+
                             const type = getCurrentDataType();
                             let matchedColor = '#3E7DCA';
                             const f = fields[idx] ? fields[idx].toString().toLowerCase() : '';
@@ -933,7 +941,7 @@ export default function MapContainer({
                                 color: 'white',
                                 weight: 2,
                                 className: 'research-circle-marker-premium',
-                                penelitianCount: 1,
+                                penelitianCount: dotCount,
                                 statsData: {
                                     institusi: item._institusi,
                                     provinsi: item._provinsi,

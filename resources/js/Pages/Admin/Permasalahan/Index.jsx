@@ -47,7 +47,7 @@ export default function Index({
     const context = usePermasalahan(filters, stats);
 
     return (
-        <AdminLayout title="">
+        <AdminLayout title="Permasalahan" showHeaderTitle={false}>
             <div className="space-y-4">
                 <PermasalahanHeader 
                     baseData={context.baseData} 

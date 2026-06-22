@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { router } from '@inertiajs/react';
 import toast from 'react-hot-toast';
 import { exportToExcel } from '@/Utils/exportExcel';
@@ -117,10 +117,15 @@ export default function usePenelitian({ mapData = [], researches = [], stats = {
         router.get(route('penelitian.index'), params, {
             preserveState: true,
             preserveScroll: true,
-            only: ['researches', 'stats', 'filters', 'isFiltered'],
+            only: ['mapData', 'researches', 'stats', 'filters', 'isFiltered'],
             replace: true,
         });
     };
+
+    // Sinkronisasi hasil filter lokal ke peta dan list sekaligus
+    const handleFilteredResults = useCallback((filtered) => {
+        setCurrentResearches(filtered);
+    }, []);
 
     const handleStatsChange = (newStats) => {
         if (!newStats) {
@@ -187,7 +192,8 @@ export default function usePenelitian({ mapData = [], researches = [], stats = {
         isModalOpen, setIsModalOpen,
         currentMapData,
         currentResearches, setCurrentResearches,
-        
+        handleFilteredResults,
+
         handleSearch,
         handleFilterChange,
         handleReset,

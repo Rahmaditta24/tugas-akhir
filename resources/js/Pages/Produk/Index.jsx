@@ -62,7 +62,7 @@ export default function Index({ mapData = [], researches = [], stats = {}, title
             <div className="w-full lg:max-w-[90%] mx-auto mb-5">
                 <section className="bg-white/80 backdrop-blur-sm">
                     <div className="container mx-auto sm:px-6 lg:px-0">
-                        <StatisticsCards stats={currentStats} />
+                        <StatisticsCards stats={currentStats} labels={{ totalResearch: 'Total Produk' }} />
                         <ResearchList
                             researches={currentResearches}
                             onAdvancedSearch={handleAdvancedSearch}

@@ -13,7 +13,7 @@ export default function Index({ produk, stats = {}, filters = {} }) {
     const context = useProduk(produk, filters);
 
     return (
-        <AdminLayout title="">
+        <AdminLayout title="Produk" showHeaderTitle={false}>
             <Toaster position="top-right" />
             <div className="space-y-6">
                 <ProdukHeader context={context} />

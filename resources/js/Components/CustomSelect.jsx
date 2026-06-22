@@ -21,7 +21,9 @@ const CustomSelect = ({
         return opt;
     });
 
-    const selectedOption = normalizedOptions.find(opt => opt.value === value);
+    const selectedOption = normalizedOptions.find(
+        opt => opt.value?.toString().toLowerCase() === value?.toString().toLowerCase()
+    );
 
     useEffect(() => {
         const handleClickOutside = (event) => {

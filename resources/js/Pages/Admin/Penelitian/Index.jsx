@@ -12,7 +12,7 @@ export default function Index({ penelitian, stats = {}, filters = {} }) {
     const context = usePenelitian(penelitian, filters);
 
     return (
-        <AdminLayout title="Data Penelitian">
+        <AdminLayout title="Data Penelitian" showHeaderTitle={false}>
             <Toaster position="top-right" />
             <div className="space-y-6">
                 <PenelitianHeader context={context} />

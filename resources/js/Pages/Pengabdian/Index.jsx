@@ -23,6 +23,7 @@ export default function Index({ mapData = [], researches = [], stats = {}, title
         currentStats, currentMapData, currentResearches, setCurrentResearches,
         selectedResearch, isModalOpen, setIsModalOpen,
         isLoading, filterOptions, filterFields,
+        handleFilteredResults,
         handleSearch, handleAdvancedSearch, handleFilterChange,
         handleStatsChange, handleReset, handleItemClick, handleDownload
     } = usePengabdian({ mapData, researches, stats, filters: initialFilters, filterOptions: serverFilterOptions });
@@ -60,11 +61,11 @@ export default function Index({ mapData = [], researches = [], stats = {}, title
             <div className="w-full lg:max-w-[90%] mx-auto mb-5">
                 <section className="bg-white/80 backdrop-blur-sm">
                     <div className="container mx-auto sm:px-6 lg:px-0">
-                        <StatisticsCards stats={currentStats} />
+                        <StatisticsCards stats={currentStats} labels={{ totalResearch: 'Total Pengabdian' }} />
                         <ResearchList
                             researches={currentResearches}
                             onAdvancedSearch={handleAdvancedSearch}
-                            onFilteredResults={setCurrentResearches}
+                            onFilteredResults={handleFilteredResults}
                             onItemClick={handleItemClick}
                             title="Daftar Pengabdian"
                             isFiltered={isFiltered}
