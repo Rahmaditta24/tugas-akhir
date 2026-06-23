@@ -177,10 +177,10 @@ export default function useHilirisasi(hilirisasi, filters = {}) {
         const reader = new FileReader();
         reader.onload = async (evt) => {
             try {
-                const bstr = evt.target.result;
-                const wb = XLSX.read(bstr, { type: 'binary' });
+                const arrayBuffer = evt.target.result;
+                const wb = XLSX.read(arrayBuffer, { type: 'array' });
                 const ws = wb.Sheets[wb.SheetNames[0]];
-                const data = XLSX.utils.sheet_to_json(ws);
+                const data = XLSX.utils.sheet_to_json(ws, { defval: '' });
 
                 if (data.length === 0) {
                     toast.error('Gagal: File tidak berisi data.');
@@ -189,22 +189,35 @@ export default function useHilirisasi(hilirisasi, filters = {}) {
                     return;
                 }
 
-                // 3. Validasi Nama Kolom (Harus ada kolom utama)
+                // 3. Validasi Nama Kolom — normalisasi agresif (hapus semua separator)
+                const normalizeKey = (k) => String(k).toLowerCase().replace(/[\s_\-\/]+/g, '').trim();
                 const requiredColumns = [
-                    'tahun', 'id_proposal', 'judul', 'nama_pengusul', 'direktorat',
-                    'perguruan_tinggi', 'pt_latitude', 'pt_longitude', 'provinsi',
+                    'tahun', 'idproposal', 'judul', 'namapengusul', 'direktorat',
+                    'perguruantinggi', 'ptlatitude', 'ptlongitude', 'provinsi',
                     'mitra', 'skema', 'luaran'
                 ];
+                const aliases = {
+                    'ptlatitude': ['latitude'],
+                    'ptlongitude': ['longitude'],
+                    'namapengusul': ['nama', 'peneliti', 'inventor'],
+                    'perguruantinggi': ['institusi', 'namainstitusi'],
+                };
 
-                const firstRowKeys = Object.keys(data[0]).map(k => k.toLowerCase().replace(/\\s+/g, '_').trim());
-                const missingColumns = requiredColumns.filter(col => {
-                    const normalizedCol = col.toLowerCase().replace(/\\s+/g, '_');
-                    return !firstRowKeys.includes(normalizedCol) &&
-                        !firstRowKeys.includes(normalizedCol.replace('_', ''));
+                const firstRowNormalized = Object.keys(data[0]).map(normalizeKey);
+                const missingColumns = requiredColumns.filter(req => {
+                    if (firstRowNormalized.includes(req)) return false;
+                    const alts = aliases[req] || [];
+                    return !alts.some(alt => firstRowNormalized.includes(normalizeKey(alt)));
                 });
 
                 if (missingColumns.length > 0) {
-                    toast.error(`Gagal: Kolom tidak lengkap. Kurang kolom: ${missingColumns.join(', ')}`, { duration: 5000 });
+                    const readableNames = {
+                        'idproposal': 'ID Proposal', 'namapengusul': 'Nama Pengusul',
+                        'perguruantinggi': 'Perguruan Tinggi', 'ptlatitude': 'pt_latitude',
+                        'ptlongitude': 'pt_longitude',
+                    };
+                    const labels = missingColumns.map(c => readableNames[c] || c);
+                    toast.error(`Gagal: Kolom tidak lengkap. Kurang: ${labels.join(', ')}`, { duration: 6000 });
                     setIsImporting(false);
                     if (onComplete) onComplete();
                     return;
@@ -235,7 +248,7 @@ export default function useHilirisasi(hilirisasi, filters = {}) {
                 if (onComplete) onComplete();
             }
         };
-        reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(file); // Gunakan ArrayBuffer + type:'array' (bukan binary)
     };
 
     const openBulkUpdateModal = () => {

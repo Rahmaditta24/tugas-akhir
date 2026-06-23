@@ -39,7 +39,7 @@ export const MobileSidebar = ({ isOpen, onClose, categories, selectedCategory, o
                     <div className="p-5 overflow-y-auto flex-1 custom-scrollbar">
                         <Link
                             href="/rumusan-masalah/panduan"
-                            className="w-full p-4 bg-[#4285f4] text-white font-bold text-left px-5 rounded-xl mb-6 shadow-md hover:bg-blue-600 transition-all flex items-center justify-between group"
+                            className="w-full p-4 bg-[#4285f4] text-white font-bold text-center px-5 rounded-xl mb-6 shadow-md hover:bg-blue-600 transition-all flex items-center justify-center gap-2 group"
                         >
                             <span>Lihat Panduan</span>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4 group-hover:translate-x-1 transition-transform">
@@ -76,7 +76,7 @@ export const DesktopSidebar = ({ categories, selectedCategory, onCategoryClick }
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden sticky top-24">
                 <Link
                     href="/rumusan-masalah/panduan"
-                    className="p-3 bg-[#3374cd] text-white font-bold text-left px-5 text-lg block hover:bg-blue-700 transition-colors"
+                    className="p-3 bg-[#3374cd] text-white font-bold text-center px-5 text-lg flex items-center justify-center hover:bg-blue-700 transition-colors"
                 >
                     Lihat Panduan
                 </Link>

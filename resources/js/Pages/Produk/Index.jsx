@@ -73,11 +73,12 @@ export default function Index({ mapData = [], researches = [], stats = {}, title
                             isProdukPage={true}
                             customFieldOptions={[
                                 { value: 'all', label: 'Semua' },
-                                { value: 'title', label: 'Judul Produk' },
+                                { value: 'title', label: 'Nama Produk' },
                                 { value: 'university', label: 'Universitas' },
                                 { value: 'researcher', label: 'Inventor' },
                                 { value: 'bidang', label: 'Bidang' },
                             ]}
+                            placeholderAll="Cari nama produk, universitas, bidang..."
                         />
                     </div>
                 </section>

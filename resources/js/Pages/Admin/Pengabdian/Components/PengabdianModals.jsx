@@ -83,7 +83,7 @@ export default function PengabdianModals({ context, pengabdian }) {
                 onImport={handleImport}
                 isImporting={isImporting}
                 onDownloadTemplate={handleDownloadTemplate}
-                title={`Import Data Pengabdian (${type === 'kosabangsa' ? 'Kosabangsa' : 'Batch/Multitahun'})`}
+                title={`Import Data Pengabdian (${type === 'kosabangsa' ? 'Kosabangsa' : 'Multitahun/Batch'})`}
                 moduleName="pengabdian"
             />
 
@@ -299,7 +299,7 @@ export default function PengabdianModals({ context, pengabdian }) {
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="col-span-2">
-                                            <MapLocationPicker 
+                                            <MapLocationPicker
                                                 latitude={f('pt_latitude')}
                                                 longitude={f('pt_longitude')}
                                                 onLatitudeChange={val => setItemField(item.id, 'pt_latitude', val)}
