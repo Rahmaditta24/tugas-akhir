@@ -3,16 +3,30 @@ import { router } from '@inertiajs/react';
 
 export default function useUserLogs() {
     const [selectedLocation, setSelectedLocation] = useState(null);
+    const [showKillModal, setShowKillModal] = useState(false);
+    const [killTarget, setKillTarget] = useState(null);
 
     const handleKillSession = (id) => {
-        if (confirm('Apakah Anda yakin ingin memutus sesi ini secara paksa? Pengguna akan langsung di-logout.')) {
-            router.delete(`/admin/user-logs/${id}/kill-session`);
-        }
+        setKillTarget(id);
+        setShowKillModal(true);
+    };
+
+    const confirmKillSession = () => {
+        if (!killTarget) return;
+        router.delete(`/admin/user-logs/${killTarget}/kill-session`, {
+            onFinish: () => {
+                setShowKillModal(false);
+                setKillTarget(null);
+            }
+        });
     };
 
     return {
         selectedLocation,
         setSelectedLocation,
-        handleKillSession
+        handleKillSession,
+        confirmKillSession,
+        showKillModal,
+        setShowKillModal,
     };
 }

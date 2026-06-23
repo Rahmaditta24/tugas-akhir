@@ -4,6 +4,7 @@ import BulkUpdateModal from '@/Components/BulkUpdateModal';
 import CampusSelect from '@/Components/CampusSelect';
 import LocationSelect from '@/Components/LocationSelect';
 import CustomSelect from '@/Components/CustomSelect';
+import MapLocationPicker from '@/Components/MapLocationPicker';
 import { BIDANG_FOKUS_OPTIONS, TEMA_PRIORITAS_OPTIONS } from '@/Constants/options';
 
 export default function PenelitianModals({ context, penelitian }) {
@@ -101,11 +102,11 @@ export default function PenelitianModals({ context, penelitian }) {
                             </div>
                             <div>
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">NIDN</label>
-                                <input type="text" value={item.nidn} onChange={e => setItemField(item.id, 'nidn', e.target.value.replace(/\D/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                                <input type="text" value={item.nidn} onChange={e => { const val = e.target.value.replace(/\D/g, ''); e.target.value = val; setItemField(item.id, 'nidn', val); }} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
                             </div>
                             <div>
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">NUPTK</label>
-                                <input type="text" value={item.nuptk} onChange={e => setItemField(item.id, 'nuptk', e.target.value.replace(/\D/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                                <input type="text" value={item.nuptk} onChange={e => { const val = e.target.value.replace(/\D/g, ''); e.target.value = val; setItemField(item.id, 'nuptk', val); }} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
                             </div>
                         </div>
 
@@ -122,7 +123,7 @@ export default function PenelitianModals({ context, penelitian }) {
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Kode PT</label>
-                                    <input type="text" value={item.kode_pt} onChange={e => setItemField(item.id, 'kode_pt', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
+                                    <input type="text" value={item.kode_pt} onChange={e => { const val = e.target.value.replace(/\D/g, ''); e.target.value = val; setItemField(item.id, 'kode_pt', val); }} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-amber-400 focus:border-amber-400" />
                                 </div>
                                 <div>
                                     <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Jenis PT</label>
@@ -160,8 +161,8 @@ export default function PenelitianModals({ context, penelitian }) {
                                         value={item.institusi_pilihan}
                                         onChange={val => setItemField(item.id, 'institusi_pilihan', val)}
                                         options={[
-                                            'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
-                                            'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'
+                                            'LLDIKTI Wilayah I', 'LLDIKTI Wilayah II', 'LLDIKTI Wilayah III', 'LLDIKTI Wilayah IV', 'LLDIKTI Wilayah V', 'LLDIKTI Wilayah VI', 'LLDIKTI Wilayah VII', 'LLDIKTI Wilayah VIII', 'LLDIKTI Wilayah IX', 'LLDIKTI Wilayah X',
+                                            'LLDIKTI Wilayah XI', 'LLDIKTI Wilayah XII', 'LLDIKTI Wilayah XIII', 'LLDIKTI Wilayah XIV', 'LLDIKTI Wilayah XV', 'LLDIKTI Wilayah XVI'
                                         ]}
                                         placeholder="-- Pilih --"
                                         error={false}
@@ -182,13 +183,13 @@ export default function PenelitianModals({ context, penelitian }) {
                                     isRegencyOptional={true}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Latitude</label>
-                                <input type="text" value={item.pt_latitude} onChange={e => setItemField(item.id, 'pt_latitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="-6.2000" />
-                            </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Longitude</label>
-                                <input type="text" value={item.pt_longitude} onChange={e => setItemField(item.id, 'pt_longitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="106.8166" />
+                            <div className="md:col-span-2">
+                                <MapLocationPicker 
+                                    latitude={item.pt_latitude || ''}
+                                    longitude={item.pt_longitude || ''}
+                                    onLatitudeChange={val => setItemField(item.id, 'pt_latitude', val)}
+                                    onLongitudeChange={val => setItemField(item.id, 'pt_longitude', val)}
+                                />
                             </div>
                         </div>
 

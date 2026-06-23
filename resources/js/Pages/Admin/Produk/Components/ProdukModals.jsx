@@ -3,6 +3,7 @@ import ImportModal from '@/Components/ImportModal';
 import BulkUpdateModal from '@/Components/BulkUpdateModal';
 import CustomSelect from '@/Components/CustomSelect';
 import CampusSelect from '@/Components/CampusSelect';
+import MapLocationPicker from '@/Components/MapLocationPicker';
 import { BIDANG_OPTIONS, TKT_OPTIONS } from '@/Constants/options';
 
 export default function ProdukModals({ context, produk }) {
@@ -156,7 +157,7 @@ export default function ProdukModals({ context, produk }) {
                                     errors={{}}
                                 />
                             </div>
-                            <div>
+                            <div className="md:col-span-2">
                                 <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Provinsi</label>
                                 <CustomSelect
                                     value={item.provinsi}
@@ -166,16 +167,12 @@ export default function ProdukModals({ context, produk }) {
                                     error={false}
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Lat</label>
-                                    <input type="text" value={item.latitude} onChange={e => setItemField(item.id, 'latitude', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
-                                </div>
-                                <div>
-                                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Lng</label>
-                                    <input type="text" value={item.longitude} onChange={e => setItemField(item.id, 'longitude', e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" />
-                                </div>
-                            </div>
+                            <MapLocationPicker 
+                                latitude={item.latitude || ''}
+                                longitude={item.longitude || ''}
+                                onLatitudeChange={val => setItemField(item.id, 'latitude', val)}
+                                onLongitudeChange={val => setItemField(item.id, 'longitude', val)}
+                            />
                         </div>
 
                         {/* Section: Paten */}

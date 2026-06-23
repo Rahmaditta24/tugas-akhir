@@ -509,8 +509,8 @@ class HilirisasiController extends Controller
                     'skema' => $normalizedRow['skema'] ?? 'tidak tersedia',
                     'mitra' => $normalizedRow['mitra'] ?? 'tidak tersedia',
                     'provinsi' => $this->formatProvinsi($normalizedRow['provinsi'] ?? 'tidak tersedia'),
-                    'pt_latitude' => $normalizedRow['ptlatitude'] ?? $normalizedRow['latitude'] ?? -6.2,
-                    'pt_longitude' => $normalizedRow['ptlongitude'] ?? $normalizedRow['longitude'] ?? 106.8,
+                    'pt_latitude' => str_replace(',', '.', $normalizedRow['ptlatitude'] ?? $normalizedRow['latitude'] ?? -6.2),
+                    'pt_longitude' => str_replace(',', '.', $normalizedRow['ptlongitude'] ?? $normalizedRow['longitude'] ?? 106.8),
                     'id_proposal' => $normalizedRow['idproposal'] ?? '0',
                     'luaran' => $normalizedRow['luaran'] ?? 'tidak tersedia',
                 ];

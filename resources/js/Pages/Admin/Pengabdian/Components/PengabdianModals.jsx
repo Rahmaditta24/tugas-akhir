@@ -3,6 +3,7 @@ import ImportModal from '@/Components/ImportModal';
 import BulkUpdateModal from '@/Components/BulkUpdateModal';
 import LocationSelect from '@/Components/LocationSelect';
 import CustomSelect from '@/Components/CustomSelect';
+import MapLocationPicker from '@/Components/MapLocationPicker';
 import { NAMA_SINGKAT_SKEMA_PENGABDIAN_OPTIONS, NAMA_SKEMA_PENGABDIAN_OPTIONS } from '@/Constants/options';
 
 export default function PengabdianModals({ context, pengabdian }) {
@@ -101,7 +102,11 @@ export default function PengabdianModals({ context, pengabdian }) {
                         <input
                             type={opts.type || 'text'}
                             value={f(key)}
-                            onChange={e => setItemField(item.id, key, opts.numeric ? e.target.value.replace(/\D/g, '') : e.target.value)}
+                            onChange={e => {
+                                const val = opts.numeric ? e.target.value.replace(/\D/g, '') : e.target.value;
+                                e.target.value = val;
+                                setItemField(item.id, key, val);
+                            }}
                             className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                             placeholder={opts.placeholder || ''}
                         />
@@ -255,7 +260,7 @@ export default function PengabdianModals({ context, pengabdian }) {
                                         </div>
                                         <div>
                                             <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kode PT Pendamping</label>
-                                            {inp('kd_perguruan_tinggi_pendamping')}
+                                            {inp('kd_perguruan_tinggi_pendamping', { numeric: true })}
                                         </div>
                                         <div>
                                             <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">LLDIKTI Pendamping</label>
@@ -293,13 +298,13 @@ export default function PengabdianModals({ context, pengabdian }) {
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Latitude</label>
-                                            <input type="text" value={f('pt_latitude')} onChange={e => setItemField(item.id, 'pt_latitude', e.target.value.replace(',', '.'))} placeholder="-5.168843" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
-                                        </div>
-                                        <div>
-                                            <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Longitude</label>
-                                            <input type="text" value={f('pt_longitude')} onChange={e => setItemField(item.id, 'pt_longitude', e.target.value.replace(',', '.'))} placeholder="119.436063" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                                        <div className="col-span-2">
+                                            <MapLocationPicker 
+                                                latitude={f('pt_latitude')}
+                                                longitude={f('pt_longitude')}
+                                                onLatitudeChange={val => setItemField(item.id, 'pt_latitude', val)}
+                                                onLongitudeChange={val => setItemField(item.id, 'pt_longitude', val)}
+                                            />
                                         </div>
                                     </div>
                                 </div>

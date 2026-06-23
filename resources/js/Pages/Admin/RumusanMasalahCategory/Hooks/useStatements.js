@@ -6,13 +6,24 @@ export default function useStatements(category) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create'); // 'create' | 'edit'
     const [editingStatement, setEditingStatement] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     // --- Actions ---
     const { delete: destroy } = useForm();
     const handleDelete = (id) => {
-        if (confirm('Apakah Anda yakin ingin menghapus statement ini?')) {
-            destroy(route('admin.rumusan-masalah.category.statements.destroy', [category.slug, id]));
-        }
+        setDeleteTarget(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = () => {
+        if (!deleteTarget) return;
+        destroy(route('admin.rumusan-masalah.category.statements.destroy', [category.slug, deleteTarget]), {
+            onSuccess: () => {
+                setShowDeleteModal(false);
+                setDeleteTarget(null);
+            }
+        });
     };
 
     // --- Form Handling ---
@@ -70,8 +81,9 @@ export default function useStatements(category) {
         isModalOpen, setIsModalOpen,
         modalMode, setModalMode,
         editingStatement, setEditingStatement,
+        showDeleteModal, setShowDeleteModal,
         data, setData, processing, errors,
         openCreateModal, openEditModal, closeModal,
-        handleSubmit, handleDelete
+        handleSubmit, handleDelete, confirmDelete
     };
 }

@@ -36,6 +36,7 @@ export default function Index({ mapData = [], researches = [], stats = {}, title
                         mapData={currentMapData}
                         displayMode={displayMode}
                         onCampusClick={handleCampusClick}
+                        filters={filters}
                     />
                 </Suspense>
                 <MapControls

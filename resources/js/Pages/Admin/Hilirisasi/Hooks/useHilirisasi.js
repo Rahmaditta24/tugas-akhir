@@ -211,10 +211,14 @@ export default function useHilirisasi(hilirisasi, filters = {}) {
                 }
 
                 router.post(route('admin.hilirisasi.import-excel'), { data }, {
-                    onSuccess: () => {
+                    onSuccess: (page) => {
                         setIsImporting(false);
                         setShowImportModal(false);
-                        toast.success('Data hilirisasi berhasil diimport.');
+                        if (page.props.flash?.error) {
+                            toast.error(page.props.flash.error);
+                        } else {
+                            toast.success(page.props.flash?.success || 'Data hilirisasi berhasil diimport.');
+                        }
                         if (onComplete) onComplete();
                     },
                     onError: (errors) => {

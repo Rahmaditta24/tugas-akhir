@@ -4,6 +4,7 @@ import BulkUpdateModal from '@/Components/BulkUpdateModal';
 import CampusSelect from '@/Components/CampusSelect';
 import LocationSelect from '@/Components/LocationSelect';
 import CustomSelect from '@/Components/CustomSelect';
+import MapLocationPicker from '@/Components/MapLocationPicker';
 
 export default function HilirisasiModals({ context, hilirisasi }) {
     const {
@@ -140,13 +141,13 @@ export default function HilirisasiModals({ context, hilirisasi }) {
                                     hideRegency={true}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Latitude</label>
-                                <input type="text" value={item.pt_latitude} onChange={e => setItemField(item.id, 'pt_latitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="-6.2000" />
-                            </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Longitude</label>
-                                <input type="text" value={item.pt_longitude} onChange={e => setItemField(item.id, 'pt_longitude', e.target.value.replace(',', '.'))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="106.8166" />
+                            <div className="md:col-span-2">
+                                <MapLocationPicker 
+                                    latitude={item.pt_latitude || ''}
+                                    longitude={item.pt_longitude || ''}
+                                    onLatitudeChange={val => setItemField(item.id, 'pt_latitude', val)}
+                                    onLongitudeChange={val => setItemField(item.id, 'pt_longitude', val)}
+                                />
                             </div>
                         </div>
 

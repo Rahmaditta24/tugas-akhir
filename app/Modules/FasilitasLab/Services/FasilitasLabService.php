@@ -19,6 +19,10 @@ class FasilitasLabService
 
         $this->applyAdvancedQueries($query, $request);
 
+        if ($request->filled('institusi')) {
+            $query->where('institusi', $request->institusi);
+        }
+
         if ($request->filled('kampus_ptnbh')) {
             $values = is_array($request->kampus_ptnbh) ? $request->kampus_ptnbh : [$request->kampus_ptnbh];
             $query->whereIn('institusi', $values);
@@ -80,7 +84,8 @@ class FasilitasLabService
         $isFiltered = $request->filled('search')
             || $request->filled('queries')
             || $request->filled('kampus_ptnbh')
-            || $request->filled('provinsi');
+            || $request->filled('provinsi')
+            || $request->filled('institusi');
 
         $items = $isFiltered
             ? (clone $baseQuery)->select(

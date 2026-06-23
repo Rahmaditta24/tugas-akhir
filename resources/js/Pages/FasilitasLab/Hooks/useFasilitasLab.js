@@ -66,7 +66,12 @@ export default function useFasilitasLab({ mapData, researches, stats, filters: i
     const handleDownload = () => { };
 
     const handleCampusClick = (campusName) => {
-        handleFilterChange({ ...filters, kampus_ptnbh: [campusName] });
+        router.get(route('fasilitas.index'), { ...filters, institusi: campusName }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+            only: ['researches', 'stats', 'isFiltered', 'filters'],
+        });
     };
 
     return {

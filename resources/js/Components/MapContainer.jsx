@@ -740,6 +740,8 @@ export default function MapContainer({
                         </div>
                     </div>`;
 
+                    const fasilitasRawItem = { ...rawItem, isInstitusi: true, isFasilitasLab: true };
+
                     const marker = L.marker([lat, lng], {
                         icon: L.divIcon({
                             html: iconHtml,
@@ -751,13 +753,6 @@ export default function MapContainer({
                         statsData: { institusi: item._institusi, provinsi: item._provinsi },
                     });
 
-                    marker.on('click', () => {
-                        if (onCampusClick && item._institusi) {
-                            onCampusClick(item._institusi);
-                        }
-                    });
-
-                    const fasilitasRawItem = { ...rawItem, isInstitusi: true, isFasilitasLab: true };
                     marker._fasilitasData = fasilitasRawItem;
 
                     marker.bindPopup(`
@@ -773,6 +768,7 @@ export default function MapContainer({
                             </div>
                         </div>
                     `, { maxWidth: 320, autoPanPadding: [50, 100] });
+
                     marker.on('click', (e) => {
                         L.DomEvent.stopPropagation(e);
 
@@ -782,7 +778,13 @@ export default function MapContainer({
                             calculateStatsFromMarkers([marker]);
                             marker.openPopup();
                         }
+
+                        // Filter daftar fasilitas lab berdasarkan institusi yang diklik
+                        if (onCampusClickRef.current && item._institusi) {
+                            onCampusClickRef.current(item._institusi);
+                        }
                     });
+
                     markersToAdd.push(marker);
                     continue;
                 }

@@ -4,6 +4,7 @@ import BulkUpdateModal from '@/Components/BulkUpdateModal';
 import CampusSelect from '@/Components/CampusSelect';
 import LocationSelect from '@/Components/LocationSelect';
 import CustomSelect from '@/Components/CustomSelect';
+import MapLocationPicker from '@/Components/MapLocationPicker';
 
 export default function FasilitasLabModals({ context, fasilitasLab }) {
     const {
@@ -166,13 +167,13 @@ export default function FasilitasLabModals({ context, fasilitasLab }) {
                                     showRequiredIndicator={false}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Latitude</label>
-                                <input type="text" inputMode="decimal" value={item.latitude || ''} onChange={e => setItemField(item.id, 'latitude', e.target.value.replace(',', '.').replace(/[^0-9.-]/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white" />
-                            </div>
-                            <div>
-                                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-1.5">Longitude</label>
-                                <input type="text" inputMode="decimal" value={item.longitude || ''} onChange={e => setItemField(item.id, 'longitude', e.target.value.replace(',', '.').replace(/[^0-9.-]/g, ''))} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white" />
+                            <div className="md:col-span-2">
+                                <MapLocationPicker 
+                                    latitude={item.latitude || ''}
+                                    longitude={item.longitude || ''}
+                                    onLatitudeChange={val => setItemField(item.id, 'latitude', val)}
+                                    onLongitudeChange={val => setItemField(item.id, 'longitude', val)}
+                                />
                             </div>
                         </div>
 

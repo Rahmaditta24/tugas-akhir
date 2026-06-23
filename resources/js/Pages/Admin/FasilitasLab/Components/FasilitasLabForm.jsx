@@ -148,7 +148,6 @@ export default function FasilitasLabForm({ context }) {
                                     onLatBlur={e => validateLatLng('latitude', e.target.value)}
                                     onLngBlur={e => validateLatLng('longitude', e.target.value)}
                                 />
-                                <p className="mt-1 text-xs text-slate-400">Rentang valid: -90 hingga 90, -180 hingga 180 (Opsional)</p>
                             </div>
                         </div>
                     </div>

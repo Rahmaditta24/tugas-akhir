@@ -333,6 +333,7 @@ export default function MapLocationPicker({
                         value={latitude}
                         onChange={(e) => {
                             const val = e.target.value.replace(',', '.').replace(/[^0-9.-]/g, '');
+                            e.target.value = val;
                             onLatitudeChange(val);
                         }}
                         onBlur={onLatBlur}
@@ -355,6 +356,7 @@ export default function MapLocationPicker({
                         value={longitude}
                         onChange={(e) => {
                             const val = e.target.value.replace(',', '.').replace(/[^0-9.-]/g, '');
+                            e.target.value = val;
                             onLongitudeChange(val);
                         }}
                         onBlur={onLngBlur}

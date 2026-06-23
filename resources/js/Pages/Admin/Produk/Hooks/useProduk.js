@@ -36,7 +36,7 @@ export default function useProduk(produk, filters = {}) {
         setColumnFilters(newFilters);
         router.get(route('admin.produk.index'), {
             search, filters: newFilters, perPage, sort, direction
-        }, { preserveState: true, preserveScroll: true, replace: true });
+        }, { only: ['produk'], preserveState: true, preserveScroll: true, replace: true });
     };
 
     const handlePerPageChange = (e) => {
@@ -44,14 +44,14 @@ export default function useProduk(produk, filters = {}) {
         setPerPage(next);
         router.get(route('admin.produk.index'), {
             search, filters: columnFilters, perPage: next, sort, direction
-        }, { preserveState: true, preserveScroll: true, replace: true });
+        }, { only: ['produk'], preserveState: true, preserveScroll: true, replace: true });
     };
 
     const handleSearch = (e) => {
         if (e) e.preventDefault();
         router.get(route('admin.produk.index'), {
             search, filters: columnFilters, perPage, sort, direction
-        }, { preserveState: true, preserveScroll: true, replace: true });
+        }, { only: ['produk'], preserveState: true, preserveScroll: true, replace: true });
     };
 
     const handleDelete = (item) => {

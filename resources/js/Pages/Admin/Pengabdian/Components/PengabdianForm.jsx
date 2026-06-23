@@ -93,7 +93,11 @@ export default function PengabdianForm({ context }) {
                                         type="text"
                                         inputMode="numeric"
                                         value={data.nidn}
-                                        onChange={e => setData('nidn', e.target.value.replace(/\D/g, ''))}
+                                        onChange={e => {
+                                            const val = e.target.value.replace(/\D/g, '');
+                                            e.target.value = val;
+                                            setData('nidn', val);
+                                        }}
                                         className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                                         placeholder="Nomor NIDN"
                                     />
@@ -108,7 +112,11 @@ export default function PengabdianForm({ context }) {
                                         type="text"
                                         inputMode="numeric"
                                         value={data.kd_perguruan_tinggi}
-                                        onChange={e => setData('kd_perguruan_tinggi', e.target.value.replace(/\D/g, ''))}
+                                        onChange={e => {
+                                            const val = e.target.value.replace(/\D/g, '');
+                                            e.target.value = val;
+                                            setData('kd_perguruan_tinggi', val);
+                                        }}
                                         className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.kd_perguruan_tinggi ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                         placeholder="Contoh: 041012"
                                         required
@@ -298,7 +306,11 @@ export default function PengabdianForm({ context }) {
                                             type="text"
                                             inputMode="numeric"
                                             value={data.nidn_pendamping}
-                                            onChange={e => setData('nidn_pendamping', e.target.value.replace(/\D/g, ''))}
+                                            onChange={e => {
+                                                const val = e.target.value.replace(/\D/g, '');
+                                                e.target.value = val;
+                                                setData('nidn_pendamping', val);
+                                            }}
                                             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                             placeholder="Nomor Induk Dosen Nasional"
                                         />
@@ -322,7 +334,11 @@ export default function PengabdianForm({ context }) {
                                             <input
                                                 type="text"
                                                 value={data.kd_perguruan_tinggi_pendamping}
-                                                onChange={e => setData('kd_perguruan_tinggi_pendamping', e.target.value)}
+                                                onChange={e => {
+                                                    const val = e.target.value.replace(/\D/g, '');
+                                                    e.target.value = val;
+                                                    setData('kd_perguruan_tinggi_pendamping', val);
+                                                }}
                                                 className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                             />
                                         </div>

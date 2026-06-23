@@ -448,11 +448,24 @@ class PenelitianController extends Controller
                         return str_replace(["\r", "\n"], ' ', (string)$val);
                     };
 
+                    // Normalisasi kolom numerik panjang (NIDN/NUPTK) dari scientific notation
+                    // Prefix \t memaksa Excel membaca sebagai teks, bukan angka
+                    $cleanNumeric = function($val) {
+                        if ($val === null || trim((string)$val) === '') return '';
+                        $val = trim((string)$val);
+                        // Konversi scientific notation (E+ / e+) ke integer string
+                        if (preg_match('/e[+\-]/i', $val)) {
+                            $val = sprintf('%.0f', (float) $val);
+                        }
+                        // Prefix tab agar Excel tidak mengkonversi ke scientific notation
+                        return "\t" . $val;
+                    };
+
                     fputcsv($file, [
                         $row->id,
                         $clean($row->nama),
-                        $clean($row->nidn),
-                        $clean($row->nuptk),
+                        $cleanNumeric($row->nidn),
+                        $cleanNumeric($row->nuptk),
                         $clean($row->institusi),
                         $clean($row->jenis_pt),
                         $clean($row->kategori_pt),
@@ -683,10 +696,12 @@ class PenelitianController extends Controller
 
     private function normalizeNumeric($val)
     {
-        if (empty($val) || trim($val) === '') return '0';
-        $val = trim($val);
-        // Jika mengandung E+ (scientific notation)
-        if (str_contains(strtoupper($val), 'E+')) {
+        if ($val === null || trim((string)$val) === '') return '0';
+        $val = trim((string)$val);
+        // Hapus prefix apostrof yang kadang muncul dari Excel
+        $val = ltrim($val, "'");
+        // Konversi scientific notation (1.5E+15, 1.5e+15, dll) ke integer string
+        if (preg_match('/e[+\-]/i', $val)) {
             return sprintf('%.0f', (float) $val);
         }
         return $val;

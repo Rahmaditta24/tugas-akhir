@@ -146,7 +146,6 @@ export default function useProduk({ mapData, researches, stats, filters: initial
         await exportToExcel({
             apiUrl: `/api/produk/export?${queryString}`,
             mapRow: (item) => ({
-                'ID': item.id,
                 'Nama Produk': item.nama_produk || '-',
                 'Institusi': item.institusi || '-',
                 'Bidang': item.bidang || '-',
@@ -155,16 +154,14 @@ export default function useProduk({ mapData, researches, stats, filters: initial
                 'Nama Inventor': item.nama_inventor || '-',
                 'Email Inventor': item.email_inventor || '-',
                 'Nomor Paten': item.nomor_paten ? item.nomor_paten.split(/[;.(,\s ]/)[0].trim() : '-',
-                'Latitude': item.latitude,
-                'Longitude': item.longitude,
                 'Deskripsi': item.deskripsi_produk || '-',
             }),
             sheetName: 'Produk',
             fileName: `data-produk${filterInfo}_${timestamp}.xlsx`,
             colWidths: [
-                { wch: 8 }, { wch: 40 }, { wch: 40 }, { wch: 20 },
+                { wch: 40 }, { wch: 40 }, { wch: 20 },
                 { wch: 8 }, { wch: 20 }, { wch: 30 }, { wch: 30 },
-                { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 60 }
+                { wch: 20 }, { wch: 60 }
             ],
             onSuccess: (count) => {
                 toast.success(`Berhasil export ${count} data produk!`, {

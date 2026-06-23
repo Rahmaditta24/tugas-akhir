@@ -15,6 +15,8 @@ export default function usePermasalahan(filters, stats) {
     const [isStatsLoading, setIsStatsLoading] = useState(false);
     const [selectedItem, setSelectedItem] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState(null);
 
     const sort = filters.sort || 'id';
     const direction = filters.direction || 'desc';
@@ -106,10 +108,19 @@ export default function usePermasalahan(filters, stats) {
     };
 
     const handleDelete = (id, type) => {
-        if (!confirm('Yakin ingin menghapus data ini?')) return;
-        router.delete(route('admin.permasalahan.destroy', id), {
-            data: { type },
+        setDeleteTarget({ id, type });
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = () => {
+        if (!deleteTarget) return;
+        router.delete(route('admin.permasalahan.destroy', deleteTarget.id), {
+            data: { type: deleteTarget.type },
             preserveScroll: true,
+            onFinish: () => {
+                setShowDeleteModal(false);
+                setDeleteTarget(null);
+            },
         });
     };
 
@@ -131,9 +142,10 @@ export default function usePermasalahan(filters, stats) {
         selectedItem, setSelectedItem,
         isModalOpen, setIsModalOpen,
         sort, direction,
+        showDeleteModal, setShowDeleteModal, deleteTarget,
         handleSearch, handleColumnFilterChange, handlePerPageChange,
         handleBaseDataChange, handleJenisChange, handleTabChange,
-        handleListrikModeChange, handleExportCSV, handleDelete,
+        handleListrikModeChange, handleExportCSV, handleDelete, confirmDelete,
         resetFilters
     };
 }

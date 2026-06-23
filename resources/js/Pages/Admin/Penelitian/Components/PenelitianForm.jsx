@@ -55,7 +55,11 @@ export default function PenelitianForm({ context }) {
                                     type="text"
                                     inputMode="numeric"
                                     value={data.nidn}
-                                    onChange={e => setData('nidn', e.target.value.replace(/\\D/g, ''))}
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        e.target.value = val;
+                                        setData('nidn', val);
+                                    }}
                                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.nidn ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                     placeholder="Nomor Induk Dosen Nasional"
                                 />
@@ -70,7 +74,11 @@ export default function PenelitianForm({ context }) {
                                     type="text"
                                     inputMode="numeric"
                                     value={data.nuptk}
-                                    onChange={e => setData('nuptk', e.target.value.replace(/\\D/g, ''))}
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        e.target.value = val;
+                                        setData('nuptk', val);
+                                    }}
                                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.nuptk ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                     placeholder="Nomor Unik Pendidik dan Tenaga Kependidikan"
                                 />
@@ -100,7 +108,11 @@ export default function PenelitianForm({ context }) {
                                     type="text"
                                     inputMode="numeric"
                                     value={data.kode_pt}
-                                    onChange={e => setData('kode_pt', e.target.value.replace(/\\D/g, ''))}
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/\D/g, '');
+                                        e.target.value = val;
+                                        setData('kode_pt', val);
+                                    }}
                                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${errors.kode_pt ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
                                     placeholder="Contoh: 041012"
                                     required
@@ -146,8 +158,8 @@ export default function PenelitianForm({ context }) {
                                     value={data.institusi_pilihan}
                                     onChange={val => setData('institusi_pilihan', val)}
                                     options={[
-                                        'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 
-                                        'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'
+                                        'LLDIKTI Wilayah I', 'LLDIKTI Wilayah II', 'LLDIKTI Wilayah III', 'LLDIKTI Wilayah IV', 'LLDIKTI Wilayah V', 'LLDIKTI Wilayah VI', 'LLDIKTI Wilayah VII', 'LLDIKTI Wilayah VIII', 'LLDIKTI Wilayah IX', 'LLDIKTI Wilayah X', 
+                                        'LLDIKTI Wilayah XI', 'LLDIKTI Wilayah XII', 'LLDIKTI Wilayah XIII', 'LLDIKTI Wilayah XIV', 'LLDIKTI Wilayah XV', 'LLDIKTI Wilayah XVI'
                                     ]}
                                     placeholder="Pilih Institusi"
                                     error={false}

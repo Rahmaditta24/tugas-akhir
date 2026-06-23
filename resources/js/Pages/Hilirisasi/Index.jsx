@@ -21,10 +21,12 @@ export default function Index({ mapData = [], researches = [], stats = {}, title
         displayMode, setDisplayMode,
         filters, searchTerm,
         currentStats, currentMapData, currentResearches, setCurrentResearches,
+        filteredResearchesForMap, isLocalFiltered,
         selectedResearch, isModalOpen, setIsModalOpen,
         isLoading, filterOptions, filterFields,
         handleSearch, handleAdvancedSearch, handleFilterChange,
-        handleStatsChange, handleReset, handleItemClick, handleDownload
+        handleStatsChange, handleReset, handleItemClick, handleDownload,
+        handleFilteredResults
     } = useHilirisasi({ mapData, researches, stats, filters: initialFilters, filterOptions: serverFilterOptions });
 
     return (
@@ -34,9 +36,14 @@ export default function Index({ mapData = [], researches = [], stats = {}, title
 
             <div className="relative">
                 <Suspense fallback={<MapLoading />}>
+                    {/* 
+                      * Ketika ada filter advanced search aktif (isLocalFiltered = true),
+                      * kosongkan mapData agar MapContainer menggunakan data individual (filteredResearchesForMap)
+                      * sehingga bubble peta sinkron dengan hasil filter daftar.
+                      */}
                     <MapContainer 
-                        mapData={currentMapData} 
-                        data={currentResearches}
+                        mapData={isLocalFiltered ? [] : currentMapData} 
+                        data={filteredResearchesForMap}
                         displayMode={displayMode} 
                         onStatsChange={handleStatsChange}
                         filters={filters} 
@@ -63,7 +70,7 @@ export default function Index({ mapData = [], researches = [], stats = {}, title
                         <ResearchList
                             researches={currentResearches}
                             onAdvancedSearch={handleAdvancedSearch}
-                            onFilteredResults={setCurrentResearches}
+                            onFilteredResults={handleFilteredResults}
                             onItemClick={handleItemClick}
                             title="Daftar Hilirisasi"
                             isFiltered={isFiltered}

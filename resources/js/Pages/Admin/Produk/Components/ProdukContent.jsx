@@ -158,8 +158,8 @@ export default function ProdukContent({ context, produk }) {
                     setSelectedIds([]);
                     setIsAllSelectedGlobal(false);
                 }}
-                columnFilters={columnFilters}
-                onColumnFilterChange={handleColumnFilterChange}
+                filters={columnFilters}
+                onFilterChange={handleColumnFilterChange}
                 data={tableData}
                 pagination={produk}
                 columns={[
