@@ -1,0 +1,1 @@
+import{j as t}from"./app-BOxicayH.js";function s(){return t.jsxs("p",{className:"mt-6 sm:mt-8 text-center text-xs sm:text-sm text-slate-500",children:["© ",new Date().getFullYear()," BIMA Indonesia - Ditjen Risbang."]})}export{s as default};
