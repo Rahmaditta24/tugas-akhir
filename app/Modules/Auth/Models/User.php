@@ -3,6 +3,13 @@
 namespace App\Modules\Auth\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Modules\FasilitasLab\Models\FasilitasLab;
+use App\Modules\Hilirisasi\Models\Hilirisasi;
+use App\Modules\Penelitian\Models\Penelitian;
+use App\Modules\Pengabdian\Models\Pengabdian;
+use App\Modules\Produk\Models\Produk;
+use App\Modules\RumusanMasalah\Models\RumusanMasalahCategory;
+use App\Modules\RumusanMasalah\Models\RumusanMasalahStatement;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;

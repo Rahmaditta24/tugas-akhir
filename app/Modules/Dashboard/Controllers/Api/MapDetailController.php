@@ -62,7 +62,8 @@ class MapDetailController extends Controller
                 DB::raw('GROUP_CONCAT(COALESCE(skema, "-") SEPARATOR "|") as all_skema'),
                 DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan AS CHAR) SEPARATOR "|") as all_years'),
                 DB::raw('GROUP_CONCAT(COALESCE(tema_prioritas, "-") SEPARATOR "|") as all_themes'),
-                DB::raw('GROUP_CONCAT(COALESCE(jenis_pt, "-") SEPARATOR "|") as all_pt_types')
+                DB::raw('GROUP_CONCAT(COALESCE(jenis_pt, "-") SEPARATOR "|") as all_pt_types'),
+                DB::raw('GROUP_CONCAT(COALESCE(nama, "-") SEPARATOR "|") as all_researchers')
             )
             ->groupBy('institusi')
             ->first();
@@ -80,6 +81,7 @@ class MapDetailController extends Controller
             'tahun_list' => $item->all_years,
             'tema_list' => $item->all_themes,
             'jenis_pt_list' => $item->all_pt_types,
+            'researchers' => $item->all_researchers,
         ];
     }
 
@@ -97,7 +99,8 @@ class MapDetailController extends Controller
                 DB::raw('GROUP_CONCAT(CAST(id AS CHAR) SEPARATOR "|") as all_ids'),
                 DB::raw('GROUP_CONCAT(COALESCE(judul, "-") SEPARATOR "|") as all_titles'),
                 DB::raw('GROUP_CONCAT(COALESCE(skema, "-") SEPARATOR "|") as all_skema'),
-                DB::raw('GROUP_CONCAT(CAST(tahun AS CHAR) SEPARATOR "|") as all_years')
+                DB::raw('GROUP_CONCAT(CAST(tahun AS CHAR) SEPARATOR "|") as all_years'),
+                DB::raw('GROUP_CONCAT(COALESCE(nama_pengusul, "-") SEPARATOR "|") as all_researchers')
             )
             ->groupBy('perguruan_tinggi')
             ->first();
@@ -113,6 +116,7 @@ class MapDetailController extends Controller
             'skema_list' => $item->all_skema,
             'tahun_list' => $item->all_years,
             'bidang_fokus' => '-',
+            'researchers' => $item->all_researchers,
         ];
     }
 
@@ -133,7 +137,8 @@ class MapDetailController extends Controller
                 DB::raw('GROUP_CONCAT(COALESCE(nama_skema, "-") SEPARATOR "|") as all_skema'),
                 DB::raw('GROUP_CONCAT(CAST(thn_pelaksanaan_kegiatan AS CHAR) SEPARATOR "|") as all_years'),
                 DB::raw('GROUP_CONCAT(COALESCE(bidang_teknologi_inovasi, "-") SEPARATOR "|") as all_themes'),
-                DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types')
+                DB::raw('GROUP_CONCAT(COALESCE(ptn_pts, "-") SEPARATOR "|") as all_pt_types'),
+                DB::raw('GROUP_CONCAT(COALESCE(nama, "-") SEPARATOR "|") as all_researchers')
             )
             ->groupBy('nama_institusi')
             ->first();
@@ -151,6 +156,7 @@ class MapDetailController extends Controller
             'tahun_list' => $item->all_years,
             'tema_list' => $item->all_themes,
             'jenis_pt_list' => $item->all_pt_types,
+            'researchers' => $item->all_researchers,
         ];
     }
 
@@ -183,7 +189,7 @@ class MapDetailController extends Controller
             'bidang_fokus' => $item->all_fields,
             'ids' => $item->all_ids,
             'titles' => $item->all_titles,
-            'all_researchers' => $item->all_researchers,
+            'researchers' => $item->all_researchers,
             'tahun_list' => $item->all_years, 
             'tkt_list' => $item->all_years,   
             'isProduk' => true
